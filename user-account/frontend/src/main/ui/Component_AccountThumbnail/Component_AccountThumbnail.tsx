@@ -1,12 +1,12 @@
 import * as React from 'react';
-import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {_className, AwaitModules, ComponentSync, TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm-frontend/index';
-import {cloneObj, filterDuplicates, MUSTNeverHappenException, ResolvableContent, resolveContent, UniqueId} from '@nu-art/ts-common';
+import {cloneObj, MUSTNeverHappenException, ResolvableContent, resolveContent, UniqueId} from '@nu-art/ts-common';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
-import {AccountDB_Prototype, DB_Account} from '@nu-art/user-account-shared';
+import {DB_Account} from '@nu-art/user-account-shared';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_AccountThumbnail.scss';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ApiCallerEventType} from '@nu-art/db-api-shared';
+import {ComponentSync, TS_ErrorBoundary} from '@nu-art/thunder-widgets';
+import {_className} from '@nu-art/thunder-core';
 
 
 type Props = {
@@ -20,25 +20,26 @@ type State = {
 	acronym: string;
 };
 
-export const Component_AccountThumbnail = (props: Props & { modulesToAwait?: ModuleFE_BaseApi<any>[] }) => {
-	const {modulesToAwait, ...rest} = props;
-	const modules = [...(modulesToAwait ?? []), ModuleFE_Account] as unknown as ModuleFE_BaseApi<any>[];
-	return <AwaitModules modules={filterDuplicates(modules)}
-											 customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
-		<Component_AccountThumbnail_Impl {...rest} />
-	</AwaitModules>;
-};
+// Going forward await modules and permissions assertions are moving to be up level stuff and not asserted by infra
+// export const Component_AccountThumbnail = (props: Props & { modulesToAwait?: ModuleFE_BaseApi<any>[] }) => {
+// 	const {modulesToAwait, ...rest} = props;
+// 	const modules = [...(modulesToAwait ?? []), ModuleFE_Account] as unknown as ModuleFE_BaseApi<any>[];
+// 	return <AwaitModules modules={filterDuplicates(modules)}
+// 											 customLoader={() => <TS_Loader className={'user-thumbnail__loader'}/>}>
+// 		<Component_AccountThumbnail_Impl {...rest} />
+// 	</AwaitModules>;
+// };
 
-class Component_AccountThumbnail_Impl
+export class Component_AccountThumbnail
 	extends ComponentSync<Props, State>
 	implements OnAccountsUpdated {
 
-	
+
 	shouldReDeriveState() {
 		return true;
 	}
 
-	__onAccountsUpdated = (...params: ApiCallerEventType<AccountDB_Prototype>) => {
+	__onAccountsUpdated = (...params: ApiCallerEventType<DB_Account>) => {
 		this.reDeriveState();
 	};
 
@@ -52,7 +53,7 @@ class Component_AccountThumbnail_Impl
 		return state;
 	}
 
-	
+
 	private generateThumbnailAcronym(account: DB_Account) {
 		const accountAcronym = account.displayName ? account.displayName.substring(0, 2).toUpperCase() : account.email.substring(0, 2).toUpperCase();
 		if (!this.props.acronymComposer)
@@ -68,7 +69,7 @@ class Component_AccountThumbnail_Impl
 		this.props.onClick(e, cloneObj(this.state.account));
 	};
 
-	
+
 	render() {
 		const className = _className('user-thumbnail', this.props.onClick && 'clickable');
 		return <TS_ErrorBoundary>

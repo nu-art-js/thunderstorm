@@ -4,15 +4,15 @@
  */
 import * as React from 'react';
 import {createRoot} from 'react-dom/client';
-import {TS_Input} from '../main/input/v1/index.js';
-import {TS_InputV2} from '../main/input/v2/index.js';
-import {TS_InputV3} from '../main/input/v3/index.js';
+import {TS_Input as TS_InputV1} from '../main/input/v1/index.js';
+import {TS_Input as TS_InputFromV2} from '../main/input/v2/index.js';
+import {TS_Input as TS_InputFromV3} from '../main/input/v3/index.js';
 import {TS_Checkbox} from '../main/checkbox/v1/index.js';
-import {TS_CheckboxV2 as TS_CheckboxV2FromV2} from '../main/checkbox/v2/index.js';
-import {TS_CheckboxV2 as TS_CheckboxV2FromV3} from '../main/checkbox/v3/index.js';
+import {TS_Checkbox as TS_CheckboxFromV2} from '../main/checkbox/v2/index.js';
+import {TS_Checkbox as TS_CheckboxFromV3} from '../main/checkbox/v3/index.js';
 import {TS_CollapsableContainer} from '../main/collapsable-container/v1/index.js';
-import {TS_CollapsableContainerV2 as TS_CollapsableContainerV2FromV2} from '../main/collapsable-container/v2/index.js';
-import {TS_CollapsableContainerV2 as TS_CollapsableContainerV2FromV3} from '../main/collapsable-container/v3/index.js';
+import {TS_CollapsableContainer as TS_CollapsableContainerFromV2} from '../main/collapsable-container/v2/index.js';
+import {TS_CollapsableContainer as TS_CollapsableContainerFromV3} from '../main/collapsable-container/v3/index.js';
 import {Label as LabelV1} from '../main/label/v1/index.js';
 import {Label as LabelV3} from '../main/label/v3/index.js';
 import {TS_Link as TS_LinkV1} from '../main/link/v1/index.js';
@@ -36,8 +36,8 @@ import {TS_ReadMore as TS_ReadMoreV1} from '../main/read-more/v1/index.js';
 import {TS_ReadMore as TS_ReadMoreV3} from '../main/read-more/v3/index.js';
 import {TS_Radio as TS_RadioV1} from '../main/radio/v1/index.js';
 import {TS_Radio as TS_RadioV3} from '../main/radio/v3/index.js';
-import {TS_TextArea} from '../main/textarea/v1/index.js';
-import {TS_TextAreaV2} from '../main/textarea/v2/index.js';
+import {TS_TextArea as TS_TextAreaV1} from '../main/textarea/v1/index.js';
+import {TS_TextArea as TS_TextAreaFromV2} from '../main/textarea/v2/index.js';
 import {TS_Tabs} from '../main/tabs/v1/index.js';
 import {TS_Table} from '../main/table/v1/index.js';
 import {TS_JSONViewer} from '../main/json-viewer/v1/index.js';
@@ -71,7 +71,7 @@ function CheckboxV2Demo() {
 	const [checked, setChecked] = React.useState(false);
 	return (
 		<div data-testid="checkbox-v2-container">
-			<TS_CheckboxV2FromV2 label="Label v2" checked={checked} onCheck={setChecked} id="checkbox-v2"/>
+			<TS_CheckboxFromV2 label="Label v2" checked={checked} onCheck={setChecked} id="checkbox-v2"/>
 		</div>
 	);
 }
@@ -79,7 +79,7 @@ function CheckboxV3Demo() {
 	const [checked, setChecked] = React.useState(false);
 	return (
 		<div data-testid="checkbox-v3-container">
-			<TS_CheckboxV2FromV3 label="Label v3" checked={checked} onCheck={setChecked} id="checkbox-v3"/>
+			<TS_CheckboxFromV3 label="Label v3" checked={checked} onCheck={setChecked} id="checkbox-v3"/>
 		</div>
 	);
 }
@@ -89,15 +89,15 @@ function TestApp() {
 		<div id="widgets-test-app">
 			<div data-testid="input-v1-container">
 				<label htmlFor="input-v1">Input v1</label>
-				<TS_Input id="input-v1" type="text" placeholder="v1"/>
+				<TS_InputV1 id="input-v1" type="text" placeholder="v1"/>
 			</div>
 			<div data-testid="input-v2-container">
 				<label htmlFor="input-v2">Input v2</label>
-				<TS_InputV2 id="input-v2" type="text" placeholder="v2"/>
+				<TS_InputFromV2 id="input-v2" type="text" placeholder="v2"/>
 			</div>
 			<div data-testid="input-v3-container">
 				<label htmlFor="input-v3">Input v3</label>
-				<TS_InputV3 id="input-v3" type="text" placeholder="v3"/>
+				<TS_InputFromV3 id="input-v3" type="text" placeholder="v3"/>
 			</div>
 			<CheckboxV1Demo/>
 			<CheckboxV2Demo/>
@@ -110,10 +110,10 @@ function TestApp() {
 				/>
 			</div>
 			<div data-testid="collapsable-v2-container">
-				<TS_CollapsableContainerV2FromV2 headerRenderer="Header v2" containerRenderer="Content v2" initialCollapsed={false}/>
+				<TS_CollapsableContainerFromV2 headerRenderer="Header v2" containerRenderer="Content v2" initialCollapsed={false}/>
 			</div>
 			<div data-testid="collapsable-v3-container">
-				<TS_CollapsableContainerV2FromV3 headerRenderer="Header v3" containerRenderer="Content v3" initialCollapsed={false}/>
+				<TS_CollapsableContainerFromV3 headerRenderer="Header v3" containerRenderer="Content v3" initialCollapsed={false}/>
 			</div>
 			<div data-testid="label-v1-container">
 				<LabelV1>Label v1 text</LabelV1>
@@ -317,11 +317,11 @@ function TextAreaDemo() {
 		<>
 			<div data-testid="textarea-v1-container">
 				<label htmlFor="textarea-v1">TextArea v1</label>
-				<TS_TextArea id="textarea-v1" type="text" placeholder="v1 placeholder"/>
+				<TS_TextAreaV1 id="textarea-v1" type="text" placeholder="v1 placeholder"/>
 			</div>
 			<div data-testid="textarea-v2-container">
 				<label htmlFor="textarea-v2">TextArea v2</label>
-				<TS_TextAreaV2 id="textarea-v2" placeholder="v2 placeholder" value={v2Value} onChange={(v) => setV2Value(v)}/>
+				<TS_TextAreaFromV2 id="textarea-v2" placeholder="v2 placeholder" value={v2Value} onChange={(v) => setV2Value(v)}/>
 			</div>
 		</>
 	);
@@ -592,5 +592,5 @@ declare global {
 }
 window.WidgetsTestReady = true;
 
-export {TS_Input, TS_InputV2, TS_InputV3};
+export {TS_InputV1, TS_InputFromV2, TS_InputFromV3};
 export {TS_Checkbox};

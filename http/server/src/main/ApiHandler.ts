@@ -8,9 +8,9 @@ import type {ApiDef, GeneralApi} from '@nu-art/api-types';
 import {isQueryMethod} from '@nu-art/api-types';
 import type {ResolvableContent} from '@nu-art/ts-common';
 import {resolveContent} from '@nu-art/ts-common';
-import {_ServerBodyApi, _ServerQueryApi} from './server-api.js';
+import {_ServerBodyApi, _ServerQueryApi} from './ServerApi.js';
 import {HttpServer} from './HttpServer.js';
-import type {ServerApi_Middleware} from '../types.js';
+import type {ServerApi_Middleware} from './types.js';
 
 /** Configuration options for ApiHandler decorator. Mirror of client ApiCallerOptions. */
 export type ApiHandlerOptions<Module> = {

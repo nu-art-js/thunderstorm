@@ -20,7 +20,7 @@
  */
 import * as React from 'react';
 import './TS_AppTools.scss';
-import {LL_H_C, LL_V_L, TS_CollapsableContainer, TS_ErrorBoundary} from '@nu-art/thunder-widgets';
+import {LL_H_C, LL_V_L, TS_CollapsableContainer, TS_ErrorBoundary} from '@nu-art/thunder-widgets/v2';
 import {TS_NavLink, TS_Route} from '@nu-art/thunder-routing';
 import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
 import {Outlet} from 'react-router-dom';
@@ -160,7 +160,7 @@ export class TS_AppTools
 		return <LL_V_L className={className}>
 			{groups.map(group => {
 				return <TS_CollapsableContainer key={group.label} headerRenderer={group.label} containerRenderer={group.screens.map(this.renderNavbarItem)}
-																				customCaret={<TS_Icons.treeCollapse.component/>} flipHeaderOrder={true}
+																				customCaret={<TS_Icons.treeCollapse.component/>}
 																				onCollapseToggle={() => this.toggleGroupCollapse(group.label)} collapsed={this.state.groups[group.label]}/>;
 			})}
 		</LL_V_L>;

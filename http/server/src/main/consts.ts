@@ -8,7 +8,7 @@ import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {QueryParams} from '@nu-art/api-types';
 import type {IncomingHttpHeaders} from 'http';
 import type {ExpressRequest} from './types.js';
-import type {ApiResponse, ServerApi} from './core/server-api.js';
+import type {ApiResponse, ServerApi} from './ServerApi.js';
 
 export const MemKey_ServerApi = new MemKey<ServerApi<any>>('server-api', true);
 export const MemKey_HttpRequest = new MemKey<ExpressRequest>('http-request', true);

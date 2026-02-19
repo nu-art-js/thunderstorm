@@ -20,7 +20,7 @@
  */
 
 /** Same names as v2; only the entry point (./v3) distinguishes. */
-export {TS_InputV3 as TS_InputV2} from './TS_InputV3.js';
+export {TS_InputV3 as TS_Input, editableString} from './TS_InputV3.js';
 export type {
 	BaseAppLevelProps_TS_InputV2,
 	InputTypeV2,

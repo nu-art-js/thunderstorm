@@ -1,5 +1,5 @@
-import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
-import {DB_Account} from '../account/index.js';
+import {DB_Object, DB_ProtoSeed, DB_Prototype, DB_UniqueId, VersionsDeclaration} from '@nu-art/db-api-shared';
+import {DatabaseDef_Account} from '../account/index.js';
 
 type VersionTypes = { '1.0.0': DB_Session };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>;
@@ -13,10 +13,10 @@ export type DatabaseDef_Session = DB_Prototype<DB_ProtoSeed<DB_Session, DBKey, G
 export type UI_Session = DatabaseDef_Session['uiType'];
 
 export type DB_Session = DB_Object<DBKey> & {
-	validSessionJwtMd5s: DB_Session['_id'][];
+	validSessionJwtMd5s: DB_UniqueId<DBKey>[];
 	label?: string;
-	accountId: DB_Account['_id'];
+	accountId: DatabaseDef_Account['id'];
 	deviceId: string;
-	linkedSessionId?: DB_Session['_id'];
+	linkedSessionId?: DB_UniqueId<DBKey>;
 	sessionIdJwt: string;
 };

@@ -1,6 +1,8 @@
 import {__stringify} from '@nu-art/ts-common';
 import {ModuleFE_Account} from '../_entity/account/index.js';
-import {AppToolsScreen, ComponentSync, LL_V_L, OnStorageKeyChangedListener, TS_Input, TS_TextArea} from '@nu-art/thunderstorm-frontend/index';
+import {ComponentSync, LL_V_L, TS_Input, TS_TextArea} from '@nu-art/thunder-widgets';
+import {AppToolsScreen} from '@nu-art/thunder-ui-modules';
+import {OnStorageKeyChangedListener} from '@nu-art/thunder-core';
 
 type ATS_SessionData_Props = {};
 

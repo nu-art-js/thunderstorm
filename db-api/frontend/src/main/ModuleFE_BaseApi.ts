@@ -62,6 +62,8 @@ export abstract class ModuleFE_BaseApi<Proto extends DB_Prototype<any>>
 
 	protected constructor(params: Params<Proto>) {
 		super(params.config, params.dispatcher);
+		this.addToClassStack(ModuleFE_BaseApi);
+
 		this.crudApiDef = params.crudApiDef;
 		this.httpClient = params.httpClient ?? (() => HttpClient.default);
 	}

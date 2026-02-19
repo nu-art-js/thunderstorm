@@ -19,4 +19,11 @@
  * limitations under the License.
  */
 
-export * from './TS_InputV2.js';
+export {TS_InputV2 as TS_Input} from './TS_InputV2.js';
+export type {
+	BaseAppLevelProps_TS_InputV2,
+	InputTypeV2,
+	NativeProps_TS_InputV2,
+	Props_TS_InputV2,
+	TemplatingProps_TS_InputV2
+} from './TS_InputV2.js';

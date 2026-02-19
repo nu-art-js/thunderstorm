@@ -53,10 +53,11 @@ import {BaseDBDefBE, PostWriteProcessingDataShape} from './backend-types.js';
 
 export type BaseDBApiConfig = {
 	projectId?: string;
-	chunksSize: number;
+	chunksSize?: number;
 };
 
 export type DBApiConfig = BaseDBApiConfig & DBApiBEConfig;
+
 
 const CONST_DefaultWriteChunkSize = 200;
 
@@ -65,22 +66,21 @@ const CONST_DefaultWriteChunkSize = 200;
  *
  * Typed by ModuleTypesBE (symmetric to FE ModuleTypes); no Proto in the base.
  */
-export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, ConfigType = any,
-	Config extends ConfigType & DBApiConfig = ConfigType & DBApiConfig>
-	extends Module<Config>
+export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config extends object = object>
+	extends Module<Config & DBApiConfig>
 	implements EntityDependencyCollection {
 
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
 
-	public collection!: FirestoreCollectionV3<any>;
+	public collection!: FirestoreCollectionV3<Database>;
 	public readonly dbDef: BaseDBDefBE;
-	public query!: FirestoreCollectionV3<any>['query'];
-	public create!: FirestoreCollectionV3<any>['create'];
-	public set!: FirestoreCollectionV3<any>['set'];
-	public delete!: FirestoreCollectionV3<any>['delete'];
-	public doc!: FirestoreCollectionV3<any>['doc'];
-	public runTransaction!: FirestoreCollectionV3<any>['runTransaction'];
+	public query!: FirestoreCollectionV3<Database>['query'];
+	public create!: FirestoreCollectionV3<Database>['create'];
+	public set!: FirestoreCollectionV3<Database>['set'];
+	public delete!: FirestoreCollectionV3<Database>['delete'];
+	public doc!: FirestoreCollectionV3<Database>['doc'];
+	public runTransaction!: FirestoreCollectionV3<Database>['runTransaction'];
 
 	protected constructor(dbDef: BaseDBDefBE, appConfig?: BaseDBApiConfig) {
 		super();
@@ -302,7 +302,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, ConfigType 
 
 	processCollection = async (processInstances: (instances: Database['dbType'][]) => Promise<void>) => {
 		let docs: DocWrapperV3<any>[];
-		const itemsCount = this.config.chunksSize;
+		const itemsCount = this.config.chunksSize ?? CONST_DefaultWriteChunkSize;
 
 		const query = {
 			limit: {page: 0, itemsCount},

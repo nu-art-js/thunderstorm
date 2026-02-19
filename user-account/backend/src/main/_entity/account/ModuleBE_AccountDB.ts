@@ -9,54 +9,39 @@ import {
 	generateHex,
 	hashPasswordWithSalt,
 	md5,
+	Module,
 	MUSTNeverHappenException,
 	Year
 } from '@nu-art/ts-common';
 import {DB_BaseObject} from '@nu-art/db-api-shared';
 import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
+import {ApiHandler} from '@nu-art/http-server';
 import {FirestoreQuery} from '@nu-art/firebase-shared';
 import {FirestoreInterfaceV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreInterfaceV3';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {
 	_SessionKey_Account,
-	Account_ChangePassword,
-	Account_ChangeThumbnail,
-	Account_CreateAccount,
-	Account_CreateToken,
-	Account_Login,
-	Account_RegisterAccount,
-	Account_SetPassword,
 	AccountEmail,
 	AccountEmailWithDevice,
 	AccountToAssertPassword,
 	AccountToSpice,
 	AccountType,
-	AccountDB_Prototype,
+	API_UserAccount,
 	ApiDef_UserAccount,
 	assertPasswordRules,
+	DatabaseDef_Account,
 	DB_Account,
 	DBDef_Accounts,
-	DBProto_Account,
 	PasswordAssertionConfig,
 	PasswordAssertionResponseError,
 	SafeDB_Account,
 	UI_Account
 } from '@nu-art/user-account-shared';
-import {
-	BaseSessionClaims,
-	CollectSessionData,
-	Header_Authorization,
-	MemKey_AccountEmail,
-	MemKey_AccountId,
-	MemKey_AccountType,
-	MemKey_DB_Session,
-	ModuleBE_SessionDB,
-	SessionKey_Account_BE,
-} from '../session/index.js';
-import {ModuleBE_FailedLoginAttemptDB} from '../failed-login-attempt/index.js';
 import {QueryDocumentSnapshot} from 'firebase-admin/firestore';
+import {Header_Authorization, MemKey_AccountEmail, MemKey_AccountId, MemKey_AccountType, MemKey_DB_Session, SessionKey_Account_BE} from '../session/consts.js';
+import {BaseSessionClaims, CollectSessionData, ModuleBE_SessionDB} from '../session/ModuleBE_SessionDB.js';
+import {ModuleBE_FailedLoginAttemptDB} from '../failed-login-attempt/ModuleBE_FailedLoginAttemptDB.js';
 import Transaction = firestore.Transaction;
 
 
@@ -94,7 +79,7 @@ type Config = {
 }
 
 export class ModuleBE_AccountDB_Class
-	extends ModuleBE_BaseDB<AccountDB_Prototype, Config>
+	extends ModuleBE_BaseDB<DatabaseDef_Account, Config>
 	implements CollectSessionData<_SessionKey_Account> {
 
 	readonly Middleware = async () => {
@@ -110,26 +95,65 @@ export class ModuleBE_AccountDB_Class
 
 	init() {
 		super.init();
+	}
 
-		addRoutes([
-			createQueryServerApi(ApiDef_UserAccount.refreshSession, async () => {
-				this.logInfo(`Refreshing session for account id = ${MemKey_AccountId.get()}`);
-			}),
-			createBodyServerApi(ApiDef_UserAccount.registerAccount, this.account.register),
-			createBodyServerApi(ApiDef_UserAccount.changePassword, this.account.changePassword),
-			createBodyServerApi(ApiDef_UserAccount.login, this.account.login),
-			createBodyServerApi(ApiDef_UserAccount.createAccount, this.account.create),
-			createQueryServerApi(ApiDef_UserAccount.logout, this.account.logout),
-			createBodyServerApi(ApiDef_UserAccount.createToken, this.token.create),
-			createBodyServerApi(ApiDef_UserAccount.setPassword, this.account.setPassword),
-			createQueryServerApi(ApiDef_UserAccount.getSessions, this.account.getSessions),
-			createBodyServerApi(ApiDef_UserAccount.changeThumbnail, this.account.changeThumbnail),
-			createQueryServerApi(ApiDef_UserAccount.getPasswordAssertionConfig, async () => ({
-				config: this.config.ignorePasswordAssertion
-					? undefined
-					: this.config.passwordAssertion
-			}))
-		]);
+	@ApiHandler(ApiDef_UserAccount.refreshSession)
+	async handleRefreshSession(_params: API_UserAccount['refreshSession']['Params']): Promise<API_UserAccount['refreshSession']['Response']> {
+		this.logInfo(`Refreshing session for account id = ${MemKey_AccountId.get()}`);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.registerAccount)
+	async handleRegisterAccount(body: API_UserAccount['registerAccount']['Body']): Promise<API_UserAccount['registerAccount']['Response']> {
+		return this.account.register(body);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.changePassword)
+	async handleChangePassword(body: API_UserAccount['changePassword']['Body']): Promise<API_UserAccount['changePassword']['Response']> {
+		return this.account.changePassword(body);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.login)
+	async handleLogin(body: API_UserAccount['login']['Body']): Promise<API_UserAccount['login']['Response']> {
+		return this.account.login(body);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.createAccount)
+	async handleCreateAccount(body: API_UserAccount['createAccount']['Body']): Promise<API_UserAccount['createAccount']['Response']> {
+		return this.account.create(body);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.logout)
+	async handleLogout(_params: API_UserAccount['logout']['Params']): Promise<API_UserAccount['logout']['Response']> {
+		return this.account.logout();
+	}
+
+	@ApiHandler(ApiDef_UserAccount.createToken)
+	async handleCreateToken(body: API_UserAccount['createToken']['Body']): Promise<API_UserAccount['createToken']['Response']> {
+		return this.token.create(body);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.setPassword)
+	async handleSetPassword(body: API_UserAccount['setPassword']['Body']): Promise<API_UserAccount['setPassword']['Response']> {
+		return this.account.setPassword(body);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.getSessions)
+	async handleGetSessions(params: API_UserAccount['getSessions']['Params']): Promise<API_UserAccount['getSessions']['Response']> {
+		return this.account.getSessions(params);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.changeThumbnail)
+	async handleChangeThumbnail(body: API_UserAccount['changeThumbnail']['Body']): Promise<API_UserAccount['changeThumbnail']['Response']> {
+		return this.account.changeThumbnail(body);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.getPasswordAssertionConfig)
+	async handleGetPasswordAssertionConfig(_params: API_UserAccount['getPasswordAssertionConfig']['Params']): Promise<API_UserAccount['getPasswordAssertionConfig']['Response']> {
+		return {
+			config: this.config.ignorePasswordAssertion
+				? undefined
+				: this.config.passwordAssertion
+		};
 	}
 
 	manipulateQuery(query: FirestoreQuery<DB_Account>): FirestoreQuery<DB_Account> {
@@ -154,7 +178,7 @@ export class ModuleBE_AccountDB_Class
 		};
 	}
 
-	protected async preWriteProcessing(dbInstance: UI_Account, originalDbInstance: DBProto_Account['dbType'], transaction?: Transaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: UI_Account, originalDbInstance: DatabaseDef_Account['dbType'], transaction?: Transaction): Promise<void> {
 		try {
 			dbInstance._auditorId = MemKey_AccountId.get();
 		} catch (e) {
@@ -201,7 +225,7 @@ export class ModuleBE_AccountDB_Class
 			await dispatch_onAccountLogin.dispatchModuleAsync(account, transaction);
 		},
 		queryUnsafeAccount: async (credentials: AccountEmail, transaction?: Transaction) => {
-			const firestoreQuery = FirestoreInterfaceV3.buildQuery<DBProto_Account>(this.collection, {where: {email: credentials.email}});
+			const firestoreQuery = FirestoreInterfaceV3.buildQuery(this.collection as any, {where: {email: credentials.email}});
 			let results;
 			if (transaction)
 				results = (await transaction.get(firestoreQuery)).docs as QueryDocumentSnapshot<DB_Account>[];
@@ -211,7 +235,7 @@ export class ModuleBE_AccountDB_Class
 			if (results.length !== 1)
 				if (results.length === 0) {
 					const apiException = new ApiException(401, `There is no account for email '${credentials.email}'.`);
-					await dispatch_onApplicationException.dispatchModuleAsync(apiException, this);
+					await dispatch_onApplicationException.dispatchModuleAsync(apiException, this as Module);
 					throw apiException;
 				} else if (results.length > 1) {
 					this.logWarningBold(`Too many accounts using this email! '${credentials.email}'`);
@@ -226,9 +250,10 @@ export class ModuleBE_AccountDB_Class
 		}
 	};
 
+
 	account = {
 		// this flow is for creating real human users with email and password
-		register: async (accountWithPassword: Account_RegisterAccount['request'], transaction?: Transaction): Promise<Account_RegisterAccount['response']> => {
+		register: async (accountWithPassword: API_UserAccount['registerAccount']['Body'], transaction?: Transaction): Promise<API_UserAccount['registerAccount']['Response']> => {
 			if (!this.config.canRegister)
 				throw new ApiException(418, 'Registration is disabled!!');
 
@@ -252,7 +277,7 @@ export class ModuleBE_AccountDB_Class
 			});
 			return {...dbSafeAccount};
 		},
-		login: async (credentials: Account_Login['request']): Promise<Account_Login['response']> => {
+		login: async (credentials: API_UserAccount['login']['Body']): Promise<API_UserAccount['login']['Response']> => {
 			this.impl.fixEmail(credentials);
 
 			const safeAccount = await this.runTransaction(async transaction => {
@@ -273,7 +298,7 @@ export class ModuleBE_AccountDB_Class
 			await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
 			return safeAccount;
 		},
-		create: async (createAccountRequest: Account_CreateAccount['request']): Promise<Account_CreateAccount['response']> => {
+		create: async (createAccountRequest: API_UserAccount['createAccount']['Body']): Promise<API_UserAccount['createAccount']['Response']> => {
 			const password = createAccountRequest.password;
 			let dbSafeAccount: SafeDB_Account;
 			this.impl.fixEmail(createAccountRequest);
@@ -313,7 +338,7 @@ export class ModuleBE_AccountDB_Class
 			const initialClaims = {accountId: dbSafeAccount._id, deviceId: oAuthAccount.deviceId, label: 'saml-login'};
 			return ModuleBE_SessionDB._session.create({initialClaims});
 		},
-		changePassword: async (passwordToChange: Account_ChangePassword['request']): Promise<Account_ChangePassword['response']> => {
+		changePassword: async (passwordToChange: API_UserAccount['changePassword']['Body']): Promise<API_UserAccount['changePassword']['Response']> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
 				const deviceId = MemKey_DB_Session.get().deviceId;
@@ -346,7 +371,7 @@ export class ModuleBE_AccountDB_Class
 				return makeAccountSafe(updatedAccount);
 			});
 		},
-		setPassword: async (passwordBody: Account_SetPassword['request']): Promise<Account_SetPassword['response']> => {
+		setPassword: async (passwordBody: API_UserAccount['setPassword']['Body']): Promise<API_UserAccount['setPassword']['Response']> => {
 			return this.runTransaction(async transaction => {
 				const email = MemKey_AccountEmail.get();
 				const deviceId = MemKey_DB_Session.get().deviceId;
@@ -383,11 +408,11 @@ export class ModuleBE_AccountDB_Class
 			await dispatch_onPreLogout.dispatchModuleAsync();
 			await ModuleBE_SessionDB._session.invalidate.bySession();
 		},
-		getSessions: async (query: DB_BaseObject) => {
+		getSessions: async (query: DB_BaseObject<DatabaseDef_Account['dbKey']>) => {
 			return {sessions: await ModuleBE_SessionDB.query.where({accountId: query._id})};
 		},
-		changeThumbnail: async (request: Account_ChangeThumbnail['request']): Promise<Account_ChangeThumbnail['response']> => {
-			const account = await this.doc.unique(request.accountId);
+		changeThumbnail: async (request: API_UserAccount['changeThumbnail']['Body']): Promise<API_UserAccount['changeThumbnail']['Response']> => {
+			const account = this.doc.unique(request.accountId);
 			if (!account)
 				throw HttpCodes._4XX.NOT_FOUND('Could not change account thumbnail', `Could not find account with id ${request.accountId}`);
 
@@ -425,14 +450,9 @@ export class ModuleBE_AccountDB_Class
 		}
 	};
 
-
 	// @ts-ignore
 	private token = {
-		create: async ({
-										 accountId,
-										 ttl,
-										 label
-									 }: Account_CreateToken['request']): Promise<Account_CreateToken['response']> => {
+		create: async ({accountId, ttl, label}: API_UserAccount['createToken']['Body']): Promise<API_UserAccount['createToken']['Response']> => {
 			if (!exists(ttl) || ttl < Year)
 				throw HttpCodes._4XX.BAD_REQUEST('Invalid token TTL', `TTL value is invalid (${ttl})`);
 

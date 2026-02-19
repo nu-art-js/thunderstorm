@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, DB_BaseObject, Module, ResolvableContent, resolveContent} from '@nu-art/ts-common';
-import type {CrudApiTypes, DB_Prototype} from '@nu-art/db-api-shared';
+import {__stringify, _values, ApiException, Module, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import type {CrudApiTypes, DB_BaseObject, DB_Prototype} from '@nu-art/db-api-shared';
 import {CrudApiDef, CrudApiDef_Type, CrudEmptyQuery} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
@@ -49,6 +49,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 		super(`GenApi(${params.dbModule.getName()})`);
 		if (!params.crudApiDef)
 			throw new Error('ModuleBE_BaseApi: crudApiDef is required');
+
 		this.dbModule = params.dbModule;
 		this.crudApiDef = params.crudApiDef;
 		this.httpServer = params.httpServer ?? (() => HttpServer.getDefault());
@@ -76,7 +77,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 			httpServer: m => resolveContent(m.httpServer)
 		}
 	)
-	async queryUnique(queryObject: DB_BaseObject): Promise<Database['dbType']> {
+	async queryUnique(queryObject: DB_BaseObject<Database['dbKey']>): Promise<Database['dbType']> {
 		const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 		if (!toReturnItem)
 			throw new ApiException(404, `Could not find ${this.dbModule.dbDef.entityName} with _id: ${queryObject._id}`);
@@ -131,6 +132,6 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 	}
 }
 
-export const createApisForDBModule = <Database extends DB_Prototype>(dbModule: ModuleBE_BaseDB<Database>, version?: string) => {
-	return new ModuleBE_BaseApi_Class<Database>({dbModule, crudApiDef: CrudApiDef(dbModule.config, version)});
+export const createApisForDBModule = <Database extends DB_Prototype>(dbModule: ModuleBE_BaseDB<Database, any>, version?: string) => {
+	return new ModuleBE_BaseApi_Class<Database>({dbModule, crudApiDef: CrudApiDef<Database>(dbModule.dbDef.dbKey, version)});
 };

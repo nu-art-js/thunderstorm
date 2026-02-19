@@ -1,5 +1,5 @@
 import {thunderstormATSGroups} from '../consts.js';
-import {ComponentSync, Grid, TS_CheckboxV2} from '@nu-art/thunder-widgets';
+import {ComponentSync, Grid, TS_Checkbox} from '@nu-art/thunder-widgets/v3';
 import './ATS_Checkbox.scss';
 import {voidFunction} from '@nu-art/ts-common';
 import {AppToolsScreen} from '../TS_AppTools/index.js';
@@ -9,7 +9,7 @@ type State = {
 	checked: boolean | undefined;
 };
 
-class ATS_CheckboxV2_Class
+class ATS_Checkbox_Class
 	extends ComponentSync<unknown, State> {
 	render() {
 		return <Grid id={'ats-checkbox-v2'} onClick={() => console.log('Grid Click')}>
@@ -31,23 +31,23 @@ class ATS_CheckboxV2_Class
 	private render_Enabled = () => {
 		return <>
 			<div>Enabled</div>
-			<TS_CheckboxV2 checked={true} label={'text'} onCheck={voidFunction}/>
-			<TS_CheckboxV2 checked={false} label={'text'} onCheck={voidFunction}/>
-			<TS_CheckboxV2 checked={undefined} label={'text'} onCheck={voidFunction}/>
+			<TS_Checkbox checked={true} label={'text'} onCheck={voidFunction}/>
+			<TS_Checkbox checked={false} label={'text'} onCheck={voidFunction}/>
+			<TS_Checkbox checked={undefined} label={'text'} onCheck={voidFunction}/>
 		</>;
 	};
 	private render_Disabled = () => {
 		return <>
 			<div>Disabled</div>
-			<TS_CheckboxV2 checked={true} label={'text'} onCheck={voidFunction} disabled={true}/>
-			<TS_CheckboxV2 checked={false} label={'text'} onCheck={voidFunction} disabled={true}/>
-			<TS_CheckboxV2 checked={undefined} label={'text'} onCheck={voidFunction} disabled={true}/>
+			<TS_Checkbox checked={true} label={'text'} onCheck={voidFunction} disabled={true}/>
+			<TS_Checkbox checked={false} label={'text'} onCheck={voidFunction} disabled={true}/>
+			<TS_Checkbox checked={undefined} label={'text'} onCheck={voidFunction} disabled={true}/>
 		</>;
 	};
 	private render_Free = () => {
 		return <>
 			<div>Test</div>
-			<TS_CheckboxV2 checked={this.state.checked} onCheck={checked => this.setState({checked})} label={'Text'}/>
+			<TS_Checkbox checked={this.state.checked} onCheck={checked => this.setState({checked})} label={'Text'}/>
 		</>;
 	};
 }
@@ -56,5 +56,5 @@ export const ATS_Checkbox: AppToolsScreen = {
 	key: 'checkbox-v2',
 	name: 'Checkbox V2',
 	group: thunderstormATSGroups,
-	renderer: ATS_CheckboxV2_Class,
+	renderer: ATS_Checkbox_Class,
 };

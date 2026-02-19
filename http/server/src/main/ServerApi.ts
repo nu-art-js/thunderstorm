@@ -23,7 +23,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {ApiDef, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi, QueryParams, TypedApi} from '@nu-art/api-types';
 import {Stream} from 'stream';
 import {parse} from 'url';
-import type {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../types.js';
+import type {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from './types.js';
 import {
 	MemKey_HttpRequest,
 	MemKey_HttpRequestBody,
@@ -34,7 +34,7 @@ import {
 	MemKey_HttpRequestUrl,
 	MemKey_HttpResponse,
 	MemKey_ServerApi
-} from '../consts.js';
+} from './consts.js';
 
 export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	extends Logger {

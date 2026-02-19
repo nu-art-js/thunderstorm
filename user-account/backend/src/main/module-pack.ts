@@ -17,30 +17,28 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {
-	ModulePackBE_AccountDB, ModulePackBE_FailedLoginAttemptDB,
-	ModulePackBE_SAML,
-	ModulePackBE_SessionDB
-} from './_entity.js';
-import {ModuleBE_SecretManager} from '@nu-art/google-services-backend/modules/ModuleBE_SecretManager';
-import {ModulePackBE_LoginAttemptDB} from './_entity/login-attempts/index.js';
+import {ModulePackBE_AccountDB, ModulePackBE_SAML} from './_entity/account/module-pack.js';
+import {ModulePackBE_SessionDB} from './_entity/session/module-pack.js';
+import {ModulePackBE_LoginAttemptDB} from './_entity/login-attempts/module-pack.js';
+import {ModulePackBE_FailedLoginAttemptDB} from './_entity/failed-login-attempt/module-pack.js';
+import {ModuleBE_SecretManager} from '@nu-art/google-services-backend';
 
 const modulesWithSAML: Module[] = [
-	...(ModulePackBE_AccountDB as unknown as Module[]),
-	...(ModulePackBE_SAML as unknown as Module[]),
-	...(ModulePackBE_SessionDB as unknown as Module[]),
-	...(ModulePackBE_LoginAttemptDB as unknown as Module[]),
-	...(ModulePackBE_FailedLoginAttemptDB as unknown as Module[]),
+	...ModulePackBE_AccountDB,
+	...ModulePackBE_SAML,
+	...ModulePackBE_SessionDB,
+	...ModulePackBE_LoginAttemptDB,
+	...ModulePackBE_FailedLoginAttemptDB,
 	ModuleBE_SecretManager
 ];
 
 export const ModulePackBE_Accounts = modulesWithSAML;
 
 const modulesWOSAML: Module[] = [
-	...(ModulePackBE_AccountDB as unknown as Module[]),
-	...(ModulePackBE_SessionDB as unknown as Module[]),
-	...(ModulePackBE_LoginAttemptDB as unknown as Module[]),
-	...(ModulePackBE_FailedLoginAttemptDB as unknown as Module[]),
+	...ModulePackBE_AccountDB,
+	...ModulePackBE_SessionDB,
+	...ModulePackBE_LoginAttemptDB,
+	...ModulePackBE_FailedLoginAttemptDB,
 	ModuleBE_SecretManager
 ];
 

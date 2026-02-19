@@ -53,8 +53,8 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/main/index.d.ts",
-      "import": "./dist/main/index.js"
+      "types": "./index.d.ts",
+      "import": "./index.js"
     }
   }
 }

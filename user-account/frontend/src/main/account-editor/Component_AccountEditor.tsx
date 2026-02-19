@@ -1,11 +1,23 @@
 import * as React from 'react';
-import {AccountType, accountTypes, DB_Account} from '@nu-art/user-account-shared';
-import {Button, ComponentSync, Grid, LL_H_C, LL_V_L, ModuleFE_Toaster, SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@nu-art/thunder-widgets';
+import {AccountType, accountTypes, API_UserAccount, DB_Account} from '@nu-art/user-account-shared';
+import {
+	Button,
+	ComponentSync,
+	Grid,
+	LL_H_C,
+	LL_V_L,
+	ModuleFE_Clipboard,
+	ModuleFE_Toaster,
+	SimpleListAdapter,
+	TS_DropDown,
+	TS_PropRenderer
+} from '@nu-art/thunder-widgets';
 import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, JwtTools, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_Account} from '../_entity.js';
 import {TS_Input} from '@nu-art/thunder-widgets/v3';
+import {_className} from '@nu-art/thunder-core';
 
 
 type Props = {
@@ -24,7 +36,7 @@ type SessionJWT = {
 	sessionIdJwt: string
 };
 
-type State = Partial<Account_CreateAccount['request']> & {
+type State = Partial<API_UserAccount['createAccount']['Body']> & {
 	isPreview: boolean,
 	tokenTTL: number
 	tokenLabel: string
@@ -63,27 +75,18 @@ export class Component_AccountEditor
 	}
 
 	private addAccount = async () => {
-		return performAction(async () => {
-			const account = await ModuleFE_Account.createAccount({
-				password: this.state.password!,
-				type: this.state.type!,
-				email: this.state.email!,
-				passwordCheck: this.state.password!
-			});
-			this.props.onComplete?.(account._id);
-			this.setState({
-				email: undefined,
-				password: undefined,
-				passwordCheck: undefined,
-				type: undefined
-			});
-		}, {
-			type: 'notification',
-			notificationLabels: {
-				inProgress: 'Creating Account',
-				success: 'Account Created',
-				failed: 'Failed Creating Account'
-			}
+		const account = await ModuleFE_Account.createAccount({
+			password: this.state.password!,
+			type: this.state.type!,
+			email: this.state.email!,
+			passwordCheck: this.state.password!
+		});
+		this.props.onComplete?.(account._id);
+		this.setState({
+			email: undefined,
+			password: undefined,
+			passwordCheck: undefined,
+			type: undefined
 		});
 	};
 
@@ -192,7 +195,7 @@ export class Component_AccountEditor
 								ttl: this.state.tokenTTL,
 								label: this.state.tokenLabel
 							});
-							await ModuleFE_Thunderstorm.copyToClipboard(token.token);
+							await ModuleFE_Clipboard.copyToClipboard(token.token);
 							ModuleFE_Toaster.toastSuccess('Token copied to clipboard');
 							this.reDeriveState();
 						} catch (e) {
@@ -225,7 +228,7 @@ export class Component_AccountEditor
 							<LL_H_C className={'grid-cell'}>{`${validTill}`}</LL_H_C>
 							<LL_H_C className={'grid-cell'}>{session.deviceId}</LL_H_C>
 							<TS_Icons.copy.component
-								onClick={() => ModuleFE_Thunderstorm.copyToClipboard(session.sessionIdJwt)}/>
+								onClick={() => ModuleFE_Clipboard.copyToClipboard(session.sessionIdJwt)}/>
 						</React.Fragment>;
 					} catch (e) {
 						return '';

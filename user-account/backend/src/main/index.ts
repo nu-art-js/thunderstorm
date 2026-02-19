@@ -16,5 +16,20 @@
  * limitations under the License.
  */
 export * from './module-pack.js';
-export * from './_entity.js';
 export * from './SlackReporter.js';
+
+export * from './_entity/account/ModuleBE_AccountDB.js';
+export * from './_entity/account/module-pack.js';
+export * from './_entity/account/ModuleBE_SAML.js';
+
+export * from './_entity/session/ModuleBE_SessionDB.js';
+export * from './_entity/session/module-pack.js';
+export * from './_entity/session/ModuleBE_JWT.js';
+export * from './_entity/session/consts.js';
+
+export * from './_entity/login-attempts/ModuleBE_LoginAttemptDB.js';
+export * from './_entity/login-attempts/dispatchers.js';
+export * from './_entity/login-attempts/module-pack.js';
+
+export * from './_entity/failed-login-attempt/ModuleBE_FailedLoginAttemptDB.js';
+export * from './_entity/failed-login-attempt/module-pack.js';

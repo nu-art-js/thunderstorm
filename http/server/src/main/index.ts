@@ -11,6 +11,7 @@ export * from './types.js';
 export * from './consts.js';
 
 // Core: server runtime and decorator
-export * from './core/HttpServer.js';
-export * from './core/server-api.js';
-export * from './core/api-handler.js';
+export * from './HttpServer.js';
+export * from './ServerApi.js';
+export * from './ApiHandler.js';
+export * from './HeaderKey.js';

@@ -23,26 +23,22 @@ import {CustomException} from '../core/exceptions/exceptions.js';
 
 /**
  * Type resolver that maps a type to its appropriate validator type.
- * 
+ *
  * Determines the validator structure based on the input type:
  * - Arrays: Use Validator for the array type
  * - Objects: Use TypeValidator (object with validators for each property) or Validator
  * - Primitives: Use Validator
- * 
+ *
  * This enables type-safe validation where the validator structure matches the data structure.
  */
 export type ValidatorTypeResolver<K> =
-	K extends [any] ? Validator<K> :
-		K extends [any, any] ? Validator<K> :
-			K extends [any, any, any] ? Validator<K> :
-				K extends [any, any, any, any] ? Validator<K> :
-					K extends any[] ? Validator<K> :
-						K extends TS_Object ? TypeValidator<K> | Validator<K> :
-							Validator<K>;
+	K extends (any[] | readonly any[]) ? Validator<K> :
+		K extends TS_Object ? TypeValidator<K> | Validator<K> :
+			Validator<K>;
 
 /**
  * Core validator function type.
- * 
+ *
  * Returns undefined if validation passes, or an InvalidResult if validation fails.
  * The parentObj parameter allows validators to access the parent object context.
  */
@@ -55,7 +51,7 @@ export type Validator<P> = ValidatorImpl<P> | ValidatorImpl<P>[];
 
 /**
  * Type validator for objects - maps each property to its validator.
- * 
+ *
  * All properties are required (non-optional) in the validator, but the actual
  * object properties can be optional if the validator allows it (e.g., tsValidateOptional).
  */
@@ -70,10 +66,10 @@ export type InvalidResult<T> =
 
 /**
  * Exception thrown when validation fails in strict mode.
- * 
+ *
  * Contains both the input that failed validation and the detailed validation
  * result showing what was wrong.
- * 
+ *
  * @template T - Type of the object that failed validation
  */
 export class ValidationException<T>
@@ -125,10 +121,10 @@ export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 
 /**
  * Validates an instance against a validator, optionally throwing on failure.
- * 
+ *
  * In strict mode (default), throws a ValidationException if validation fails.
  * In non-strict mode, returns the validation result (undefined if valid).
- * 
+ *
  * @param instance - Object to validate
  * @param _validator - Validator to use (function, array of functions, or object validator)
  * @param strict - If true, throws on validation failure. If false, returns result.
@@ -148,15 +144,15 @@ export const tsValidate = <T>(instance: T | undefined, _validator: ValidatorType
 
 /**
  * Core validation function that applies a validator to an instance.
- * 
+ *
  * Handles three validator types:
  * 1. Single function: Wraps in array and validates
  * 2. Array of functions: All must pass (short-circuits on first failure)
  * 3. Object validator: Validates each property recursively
- * 
+ *
  * **Special handling**: The constant `CONST_NO_ERROR` is used internally to
  * distinguish "optional field is missing" (not an error) from actual validation failures.
- * 
+ *
  * @param instance - Value to validate
  * @param _validator - Validator to apply
  * @param key - Optional property key (for better error messages)
@@ -190,10 +186,10 @@ export const tsValidateResult = <T>(instance: T | undefined, _validator: Validat
 
 /**
  * Validates an object against a TypeValidator (object with validators for each property).
- * 
+ *
  * In strict mode, also checks for unexpected keys in the instance that aren't in the validator.
  * Validates each property recursively and collects all validation errors.
- * 
+ *
  * @param __validator - Object validator mapping each property to its validator
  * @param instance - Object instance to validate
  * @param path - Current path (for nested error messages)

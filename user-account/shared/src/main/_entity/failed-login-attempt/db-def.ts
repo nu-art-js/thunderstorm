@@ -1,7 +1,7 @@
 import {tsValidateNumber, tsValidateUniqueId} from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
 import {DatabaseDef_FailedLoginAttempt} from './types.js';
-import {accountGroupName} from '../session/index.js';
+import {accountGroupName} from '../session/consts.js';
 
 const Validator_ModifiableProps: DatabaseDef_FailedLoginAttempt['modifiablePropsValidator'] = {
 	count: tsValidateNumber(),

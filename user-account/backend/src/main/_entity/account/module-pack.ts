@@ -3,7 +3,7 @@ import {createApisForDBModule} from '@nu-art/db-api-backend';
 import {ModuleBE_AccountDB} from './ModuleBE_AccountDB.js';
 import {ModuleBE_SAML} from './ModuleBE_SAML.js';
 
-export const ModulePackBE_AccountDB: Module[] = [
+export const ModulePackBE_AccountDB = [
 	ModuleBE_AccountDB, createApisForDBModule(ModuleBE_AccountDB),
 ];
 

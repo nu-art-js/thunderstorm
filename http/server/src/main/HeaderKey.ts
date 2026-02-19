@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {MemKey_HttpRequest} from '@nu-art/http-server';
 import {ApiException} from '@nu-art/ts-common';
+import {MemKey_HttpRequest} from './consts.js';
 
 export class HeaderKey {
 	private readonly key: string;

@@ -1,27 +1,13 @@
 import * as React from 'react';
-import {
-	_className,
-	ComponentSync,
-	getElementCenterPos,
-	Grid,
-	LL_H_C,
-	LL_V_C,
-	LL_V_L,
-	ModuleFE_MouseInteractivity,
-	ModuleFE_Thunderstorm,
-	mouseInteractivity_PopUp,
-	TS_ComponentTransition,
-	TS_ErrorBoundary,
-	Button
-} from '@nu-art/thunderstorm-frontend/index';
+import {Button, ComponentSync, Grid, LL_H_C, LL_V_C, LL_V_L, TS_ComponentTransition, TS_ErrorBoundary} from '@nu-art/thunder-widgets';
 import {ResolvableContent, resolveContent, RuntimeVersion, TypedMap, UniqueId} from '@nu-art/ts-common';
 import {DB_Account} from '@nu-art/user-account-shared';
-import {Component_AccountThumbnail} from '../Component_AccountThumbnail/Component_AccountThumbnail.js';
 import './PopUp_AccountMenu.scss';
 import {Component_ChangePassword} from '../Component_ChangePassword/Component_ChangePassword.js';
-import {ModuleFE_Utils} from '@nu-art/thunderstorm-frontend/modules/ModuleFE_Utils/ModuleFE_Utils';
-import {RendererKey_AccountMenu_SubHeader} from '../../consts.js';
 import {ModuleFE_Account} from '../../_entity/account/index.js';
+import {_className, openUrl} from '@nu-art/thunder-core';
+import {Component_AccountThumbnail} from '../Component_AccountThumbnail/Component_AccountThumbnail.js';
+import {getElementCenterPos, ModuleFE_MouseInteractivity, mouseInteractivity_PopUp} from '@nu-art/thunder-mouse-interactivity-frontend';
 
 
 type ModalProps = {
@@ -58,7 +44,7 @@ export type PopUp_AccountMenu_Action = {
 export class PopUp_AccountMenu
 	extends ComponentSync<Props, State> {
 
-	
+
 	static show(e: React.MouseEvent, props: Props, modalProps?: ModalProps) {
 		ModuleFE_MouseInteractivity.showContent({
 			id: 'pop-up__account-menu',
@@ -74,7 +60,7 @@ export class PopUp_AccountMenu
 		type: 'action',
 		closePopUp: true,
 		action: () => {
-			ModuleFE_Thunderstorm.openUrl(url, '_blank');
+			openUrl(url, '_blank');
 		}
 	} as PopUp_AccountMenu_Action);
 
@@ -89,7 +75,7 @@ export class PopUp_AccountMenu
 		menuActions: [PopUp_AccountMenu.Action_AppToolsButton('/app-tools'), PopUp_AccountMenu.Action_EditPassword]
 	};
 
-	
+
 	protected deriveStateFromProps(nextProps: Props, state: State): State {
 		state.account = ModuleFE_Account.cache.unique(nextProps.accountId);
 		if (!state.account)
@@ -107,7 +93,7 @@ export class PopUp_AccountMenu
 		return state;
 	}
 
-	
+
 	private closePopUp = () => {
 		ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
 	};
@@ -141,7 +127,7 @@ export class PopUp_AccountMenu
 		this.setState({pageKey: undefined});
 	};
 
-	
+
 	render() {
 		return <TS_ErrorBoundary>
 			{this.renderNoAccount()}
@@ -173,21 +159,22 @@ export class PopUp_AccountMenu
 		return <span className={'account-menu__separator'} style={style}/>;
 	};
 
-	
+
 	private renderHeader = () => {
 		const account = this.state.account;
 		if (!account)
 			return;
 
 		const accountDisplay = this.props.accountDisplayModifier?.(account) ?? account.displayName ?? account.email;
-		const AdditionalHeaderRenderer: React.ComponentType = ModuleFE_Utils.getRenderer(RendererKey_AccountMenu_SubHeader, {account: account});
+		// These usages must be applicative... perhaps add them as children to the component
+		// const AdditionalHeaderRenderer: React.ComponentType = ModuleFE_Utils.getRenderer(RendererKey_AccountMenu_SubHeader, {account: account});
 
 		return <>
 			<LL_H_C className={'account-menu__header'}>
 				<Component_AccountThumbnail accountId={() => account._id} acronymComposer={this.props.acronymComposer}/>
 				<div className={'account-menu__header__display-name'}>{accountDisplay}</div>
 			</LL_H_C>
-			{AdditionalHeaderRenderer && <AdditionalHeaderRenderer/>}
+			{/*{AdditionalHeaderRenderer && <AdditionalHeaderRenderer/>}*/}
 			{this.renderSeparatorBar()}
 		</>;
 	};
@@ -223,7 +210,7 @@ export class PopUp_AccountMenu
 		</>;
 	};
 
-	
+
 	private renderCustomPage = () => {
 		const pageKey = this.state.pageKey;
 		const account = this.state.account;
