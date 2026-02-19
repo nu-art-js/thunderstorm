@@ -1,7 +1,7 @@
-import {ComponentSync, LL_H_C, Show} from '@nu-art/thunderstorm-frontend/index';
+import {ComponentSync, LL_H_C, Show} from '@nu-art/thunder-widgets';
 import {FocusData_Map, FocusedEntity} from '@nu-art/ts-focused-object-shared';
 import {compare, filterDuplicates, UniqueId} from '@nu-art/ts-common';
-import {ModuleFE_FocusedObject, OnFocusedDataReceived} from '../modules/ModuleFE_FocusedObject.js';
+import {dispatch_onFocusedDataReceived, ModuleFE_FocusedObject, OnFocusedDataReceived} from '../modules/ModuleFE_FocusedObject.js';
 import {Component_AccountThumbnail, ModuleFE_Account} from '@nu-art/user-account-frontend/index';
 import './Component_FocusedEntityRef.scss';
 
@@ -47,12 +47,13 @@ export class Component_FocusedEntityRef
 
 
 	componentWillUnmount() {
+		dispatch_onFocusedDataReceived.removeListener(this);
 		if (this.state.focusedEntities)
 			ModuleFE_FocusedObject.unfocus(this.state.focusedEntities);
 	}
 
 	componentDidMount() {
-		//If mounted with focus entities, focus on them
+		dispatch_onFocusedDataReceived.addListener(this);
 		if (this.state.focusedEntities)
 			ModuleFE_FocusedObject.focus(this.state.focusedEntities);
 	}

@@ -1,8 +1,7 @@
 import {_keys, debounce, filterDuplicates, Module, removeItemFromArray, Second, TypedMap, UniqueId} from '@nu-art/ts-common';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
-import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
+import {ApiCaller} from '@nu-art/http-client';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {ApiDef_FocusedObject, ApiStruct_FocusedObject, FocusData_Map, FocusedEntity,} from '@nu-art/ts-focused-object-shared';
+import {API_FocusedObject, ApiDef_FocusedObject, FocusData_Map, FocusedEntity,} from '@nu-art/ts-focused-object-shared';
 import {LoggedStatus, ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account-frontend/index';
 import {DefaultTTL_FocusedObject, getRelationalPath} from '@nu-art/ts-focused-object-shared/consts';
 import {DataSnapshot} from 'firebase/database';
@@ -30,13 +29,28 @@ export interface OnFocusedDataReceived {
 	__onFocusedDataReceived: (map: FocusData_Map) => void;
 }
 
-export const dispatch_onFocusedDataReceived = new ThunderDispatcher<OnFocusedDataReceived, '__onFocusedDataReceived'>('__onFocusedDataReceived');
+class FocusedDataDispatcher {
+	private readonly listeners = new Set<OnFocusedDataReceived>();
+
+	addListener(l: OnFocusedDataReceived): void {
+		this.listeners.add(l);
+	}
+
+	removeListener(l: OnFocusedDataReceived): void {
+		this.listeners.delete(l);
+	}
+
+	dispatchAll(map: FocusData_Map): void {
+		this.listeners.forEach(l => l.__onFocusedDataReceived(map));
+	}
+}
+
+export const dispatch_onFocusedDataReceived = new FocusedDataDispatcher();
 
 export class ModuleFE_FocusedObject_Class
 	extends Module
 	implements OnLoginStatusUpdated {
 
-	readonly _v1: ApiDefCaller<ApiStruct_FocusedObject>['_v1'];
 	private focusFirebaseListener!: RefListenerFE<FocusData_Map>;
 	private focusDataMap: FocusData_Map;
 	private currentlyFocused: TypedMap<UniqueId[]> = {};
@@ -54,13 +68,6 @@ export class ModuleFE_FocusedObject_Class
 	constructor() {
 		super();
 		this.focusDataMap = {};
-		this._v1 = {
-			// updateFocusData: apiWithBody(ApiDef_FocusedObject._v1.updateFocusData),
-			// setFocusStatusByTabId: apiWithBody(ApiDef_FocusedObject._v1.setFocusStatusByTabId),
-			// releaseObject: apiWithBody(ApiDef_FocusedObject._v1.releaseObject),
-			// releaseByTabId: apiWithBody(ApiDef_FocusedObject._v1.releaseByTabId),
-			update: apiWithBody(ApiDef_FocusedObject._v1.update),
-		};
 		this.apiDebounce = debounce(this.updateRTDB, 2 * Second, 10 * Second);
 	}
 
@@ -70,6 +77,10 @@ export class ModuleFE_FocusedObject_Class
 		this.initWindowCloseListeners();
 	}
 
+	@ApiCaller(ApiDef_FocusedObject.update)
+	async update(body: API_FocusedObject['update']['B']): Promise<API_FocusedObject['update']['R']> {
+		return undefined as unknown as Promise<API_FocusedObject['update']['R']>;
+	}
 	
 	private initFirebaseListening = () => {
 		this.focusFirebaseListener = ModuleFE_FirebaseListener.createListener(getRelationalPath());
@@ -82,9 +93,8 @@ export class ModuleFE_FocusedObject_Class
 	}
 
 	private initWindowCloseListeners() {
-		window.addEventListener('beforeunload', async (event) => {
-			this._v1.update({focusedEntities: []}).execute();
-			// navigator.sendBeacon('/log', JSON.stringify({ type:'application/json' }));
+		window.addEventListener('beforeunload', () => {
+			void this.update({focusedEntities: []});
 		});
 	}
 
@@ -157,11 +167,8 @@ export class ModuleFE_FocusedObject_Class
 
 	
 	private updateRTDB = () => {
-		//Call API
 		const focusedEntities = this.translateCurrentlyFocusedToFocusedEntities();
-		this._v1.update({focusedEntities})
-			.executeSync()
-			.then()
+		this.update({focusedEntities})
 			.catch(e => {
 				this.logError('Update focused object failed', e);
 			})
