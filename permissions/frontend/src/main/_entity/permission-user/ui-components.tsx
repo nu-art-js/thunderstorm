@@ -2,7 +2,7 @@ import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2
 import {DBProto_PermissionUser} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionUser} from './ModuleFE_PermissionUser.js';
 import {DBItemDropDownMultiSelector} from '@nu-art/thunderstorm-frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
-import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';
+import {ModuleFE_Account} from '@nu-art/user-account-frontend';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 

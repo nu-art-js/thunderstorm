@@ -61,7 +61,7 @@ export class ModuleBE_PermissionUserDB_Class
 					usersToUpsert.push({
 						_id: accounts[index]._id,
 						groups: [] as User_Group[],
-					} as DB_PermissionUser);
+					} as unknown as DB_PermissionUser);
 				});
 
 				await this.set.all(usersToUpsert);
@@ -282,7 +282,7 @@ export class ModuleBE_PermissionUserDB_Class
 			return;
 
 		//Collect all sessions connected to account
-		const sessions = await batchActionParallel(accountIds, 10, async ids => await ModuleBE_SessionDB.query.custom({where: {accountId: {$in: ids}}}));
+		const sessions = await batchActionParallel(accountIds, 10, async ids => await ModuleBE_SessionDB.query.custom({where: {accountId: {$in: ids as any}}}));
 		//TODO - Make sure new logic in ModuleBE_SessionDB that deletes expired sessions happens before this code, this will be redundant
 		//Filter to sessions that aren't expired
 		const validSessions = filterInstances(await Promise.all(sessions.map(async session => {

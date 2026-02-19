@@ -4,11 +4,17 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {ApiDef_AppConfig, DatabaseDef_AppConfig, DB_AppConfig, DBDef_AppConfig, RequestBody_GetResolverByKey} from '@nu-art/app-config-shared';
+import {
+	ApiDef_AppConfig,
+	ApiDef_CRUD_AppConfig,
+	DatabaseDef_AppConfig,
+	DB_AppConfig,
+	DBDef_AppConfig,
+	RequestBody_GetResolverByKey
+} from '@nu-art/app-config-shared';
 import {DBConfig_ModuleFE, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {ApiCaller, HttpClient} from '@nu-art/http-client';
 import {BadImplementationException, cloneObj} from '@nu-art/ts-common';
-import {CrudApiDef} from '@nu-art/db-api-shared';
 
 type InferType<T> = T extends AppConfigKey_FE<infer V> ? V : never;
 
@@ -31,13 +37,13 @@ export class ModuleFE_AppConfig_Class
 	constructor() {
 		super({
 			config,
-			crudApiDef: CrudApiDef(DBDef_AppConfig),
+			crudApiDef: ApiDef_CRUD_AppConfig,
 			dispatcher: () => {
 			}
 		});
 	}
 
-	@ApiCaller(ApiDef_AppConfig._v1.getConfigByKey, {httpClient: () => HttpClient.default})
+	@ApiCaller(ApiDef_AppConfig.getConfigByKey, {httpClient: () => HttpClient.default})
 	async getConfigByKey(params: RequestBody_GetResolverByKey): Promise<unknown> {
 		void params;
 		return undefined as unknown;
@@ -90,4 +96,3 @@ export class AppConfigKey_FE<Binder extends { key: string; value: unknown }> {
 		await ModuleFE_AppConfig.deleteByKey(this as AppConfigKey_FE<any>);
 	}
 }
-

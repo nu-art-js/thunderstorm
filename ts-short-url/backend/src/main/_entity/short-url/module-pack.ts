@@ -1,7 +1,6 @@
-import {ModuleBE_ShortUrlDB} from './ModuleBE_ShortUrlDB.js';
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm-backend';
-import {Module_ShortUrlResolver} from '../../function-module/Module_ShortUrlResolver.js';
+import {createApisForDBModule} from '@nu-art/db-api-backend';
 import {Module} from '@nu-art/ts-common';
+import {Module_ShortUrlResolver} from '../../function-module/Module_ShortUrlResolver.js';
+import {ModuleBE_ShortUrlDB} from './ModuleBE_ShortUrlDB.js';
 
-
-export const ModulePackBE_ShortUrlDB:Module[] = [ModuleBE_ShortUrlDB, Module_ShortUrlResolver, createApisForDBModuleV3(ModuleBE_ShortUrlDB)];
+export const ModulePackBE_ShortUrlDB: Module[] = [ModuleBE_ShortUrlDB, Module_ShortUrlResolver, createApisForDBModule(ModuleBE_ShortUrlDB)];

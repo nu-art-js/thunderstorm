@@ -24,4 +24,3 @@ export type DB_AppConfig<D = any> = DB_Object<DBKey> & {
 	key: string;
 	data: D;
 }
-

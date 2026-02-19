@@ -32,6 +32,9 @@
   },
   "dependencies": {
     "@nu-art/ts-short-url-shared": "?",
+    "@nu-art/db-api-frontend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/http-client": "?",
     "@nu-art/firebase-frontend": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/permissions-frontend": "?",

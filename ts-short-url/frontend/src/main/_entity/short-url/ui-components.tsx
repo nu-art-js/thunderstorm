@@ -1,16 +1,16 @@
-import {DBProto_ShortUrl} from '@nu-art/ts-short-url-shared';
+import {DatabaseDef_ShortUrl} from '@nu-art/ts-short-url-shared';
 import {ModuleFE_ShortUrl} from './ModuleFE_ShortUrl.js';
-import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown} from '@nu-art/thunderstorm-frontend/index';
+import {GenericDropDownV3} from '@nu-art/thunderstorm-frontend/index';
 
-const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_ShortUrl> = {
+const Props_DropDown = {
 	module: ModuleFE_ShortUrl,
 	modules: [ModuleFE_ShortUrl],
-	mapper: item => [item.title],
+	mapper: (item: DatabaseDef_ShortUrl['dbType']) => [item.title],
 	placeholder: 'Choose a ShortUrl',
-	renderer: item => <div className="ll_h_c"> {item.title} </div>
+	renderer: (item: DatabaseDef_ShortUrl['dbType']) => <div className="ll_h_c"> {item.title} </div>
 };
 
-export const DropDown_ShortUrl = GenericDropDownV3.prepare(Props_DropDown);
+export const DropDown_ShortUrl = GenericDropDownV3.prepare(Props_DropDown as any);
 
 // const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 // 	module: ModuleFE_ShortUrl,

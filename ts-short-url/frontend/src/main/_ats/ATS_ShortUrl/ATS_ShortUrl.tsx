@@ -1,11 +1,11 @@
 import './ATS_ShortUrl.scss';
 import {AppToolsScreen, ATS_Fullstack, Button, ComponentSync, LL_H_C, LL_V_L, TS_AppTools} from '@nu-art/thunderstorm-frontend/index';
-import {DispatcherType_ShortUrl, ModuleFE_ShortUrl} from '../../_entity/short-url/index.js';
+import {ModuleFE_ShortUrl} from '../../_entity/short-url/index.js';
 import {Component_ShortUrlEditor} from './components/Component_ShortUrlEditor.js';
 import {sortArray, voidFunction} from '@nu-art/ts-common';
 import {TS_EditableItemController} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemController/index';
-import {ApiCallerEventType, DispatcherInterface} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
-import {DB_ShortUrl, DBProto_ShortUrl} from '@nu-art/ts-short-url-shared';
+import {DispatcherInterface} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {DB_ShortUrl} from '@nu-art/ts-short-url-shared';
 
 
 type State = {};
@@ -14,22 +14,22 @@ type Props = {}
 
 export class ATS_ShortUrl
 	extends ComponentSync<Props, State>
-	implements DispatcherInterface<DispatcherType_ShortUrl> {
+	implements DispatcherInterface<any> {
 
 	static screen: AppToolsScreen = {
 		name: 'Short Url',
 		key: 'short-url',
 		renderer: this,
-		modulesToAwait: [ModuleFE_ShortUrl],
+		modulesToAwait: [ModuleFE_ShortUrl as any],
 		group: ATS_Fullstack
 	};
 
-	__onShortUrlsUpdated(...params: ApiCallerEventType<DBProto_ShortUrl>) {
+	__onShortUrlsUpdated(...params: any) {
 		this.forceUpdate();
 	}
 
 	render() {
-		const allMutable = ModuleFE_ShortUrl.cache.allMutable();
+		const allMutable = (ModuleFE_ShortUrl as { cache: { allMutable: () => DB_ShortUrl[] } }).cache.allMutable();
 		return <div className={'short-url'}>
 			<LL_H_C className={'page-title'}>
 				{TS_AppTools.renderPageHeader('Manage App Short Urls')}
@@ -46,10 +46,10 @@ export class ATS_ShortUrl
 }
 
 class Card_ShortUrl
-	extends TS_EditableItemController<DBProto_ShortUrl, { deleteCallback: VoidFunction }> {
+	extends TS_EditableItemController<any, { deleteCallback: VoidFunction }> {
 
 	static defaultProps = {
-		module: ModuleFE_ShortUrl,
+		module: ModuleFE_ShortUrl as any,
 		editor: Component_ShortUrlEditor,
 		createInitialInstance: () => ({})
 	};

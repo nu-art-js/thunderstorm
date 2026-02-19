@@ -6,17 +6,19 @@
 
 import type {ApiDefResolver, QueryApi} from '@nu-art/http-client';
 import {HttpMethod} from '@nu-art/http-client';
+import {DatabaseDef_AppConfig} from './types.js';
+import {CrudApiDef} from '@nu-art/db-api-shared';
+import {DBDef_AppConfig} from './db-def.js';
 
 export type RequestBody_GetResolverByKey = { key: string };
 
 export type ApiStruct_AppConfig = {
-	_v1: {
-		getConfigByKey: QueryApi<unknown, RequestBody_GetResolverByKey>;
-	};
+	getConfigByKey: QueryApi<unknown, RequestBody_GetResolverByKey>;
 };
 
 export const ApiDef_AppConfig: ApiDefResolver<ApiStruct_AppConfig> = {
-	_v1: {
-		getConfigByKey: {method: HttpMethod.GET, path: 'v1/app-config/get-resolver-data-by-key'},
-	},
+	getConfigByKey: {method: HttpMethod.GET, path: 'v1/app-config/get-resolver-data-by-key'},
 };
+
+
+export const ApiDef_CRUD_AppConfig = CrudApiDef<DatabaseDef_AppConfig>(DBDef_AppConfig.dbKey);
