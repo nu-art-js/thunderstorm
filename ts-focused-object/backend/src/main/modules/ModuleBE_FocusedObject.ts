@@ -1,8 +1,8 @@
 import {_keys, cloneObj, compare, currentTimeMillis, flatArray, Module, UniqueId} from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm-backend';
+import {ApiHandler} from '@nu-art/http-server';
 import {Header_DeviceId, Header_TabId, MemKey_AccountId, OnPreLogout} from '@nu-art/user-account-backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {ApiDef_FocusedObject, FocusData_Map, FocusedEntity, FocusedItem_Update,} from '@nu-art/ts-focused-object-shared';
+import {API_FocusedObject, ApiDef_FocusedObject, FocusData_Map, FocusedEntity,} from '@nu-art/ts-focused-object-shared';
 import {DefaultTTL_FocusedObject, getRelationalPath} from '@nu-art/ts-focused-object-shared/consts';
 
 type Config = {}
@@ -26,13 +26,16 @@ export class ModuleBE_FocusedObject_Class
 	};
 
 	protected init() {
-		addRoutes([
-			createBodyServerApi(ApiDef_FocusedObject._v1.update, this.updateFocusData)
-		]);
+	}
+
+	@ApiHandler(() => ApiDef_FocusedObject.update)
+	async update(body: API_FocusedObject['update']['B']): Promise<API_FocusedObject['update']['R']> {
+		await this.updateFocusData(body);
+		return undefined as API_FocusedObject['update']['R'];
 	}
 
 	
-	private updateFocusData = async (request: FocusedItem_Update['request']) => {
+	private updateFocusData = async (request: API_FocusedObject['update']['B']) => {
 		const tabId = Header_TabId.get();
 		const oldFocusMap = await this.getFocusMap();
 		const newFocusMap = cloneObj(oldFocusMap);
@@ -91,23 +94,6 @@ export class ModuleBE_FocusedObject_Class
 				return false;
 
 			delete map[dbKey][itemId][accountId][deviceId][tabId];
-
-			// //No more entries under this deviceId
-			// if (!_keys(map[dbKey][itemId][accountId][deviceId]).length)
-			// 	delete map[dbKey][itemId][accountId][deviceId];
-			//
-			// //No more entries under this accountId
-			// if (!_keys(map[dbKey][itemId][accountId]).length)
-			// 	delete map[dbKey][itemId][accountId];
-			//
-			// //If no more entries under this itemId
-			// if (_keys(map[dbKey][itemId]).length)
-			// 	delete map[dbKey][itemId];
-			//
-			// //If no more entries under this dbKey
-			// if (_keys(map[dbKey]).length)
-			// 	delete map[dbKey];
-
 			return true;
 		});
 	};
@@ -132,18 +118,6 @@ export class ModuleBE_FocusedObject_Class
 				return false;
 
 			delete map[dbKey][itemId][accountId][deviceId];
-
-			// //No more entries under this accountId
-			// if (!_keys(map[dbKey][itemId][accountId]).length)
-			// 	delete map[dbKey][itemId][accountId];
-			//
-			// //If no more entries under this itemId
-			// if (_keys(map[dbKey][itemId]).length)
-			// 	delete map[dbKey][itemId];
-			//
-			// //If no more entries under this dbKey
-			// if (_keys(map[dbKey]).length)
-			// 	delete map[dbKey];
 
 			return true;
 		});

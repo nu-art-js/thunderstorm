@@ -31,8 +31,8 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@nu-art/api-types": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/user-account-shared": "?",
     "firebase": "?",
