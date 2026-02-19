@@ -22,7 +22,7 @@ Add `@nu-art/db-api-frontend`, `@nu-art/db-api-shared`, and `@nu-art/http-client
 
 ### ModuleFE_BaseApi (HTTP CRUD layer)
 
-- Extend `ModuleFE_BaseApi<Types>`. Constructor: `{ config: BaseDBConfig<Types>, crudApiDef: CrudApiDef_Type<Types>, dispatcher?, httpClient? }`. Pass the same `CrudApiDef` (e.g. `CrudApiDef(dbKey, 'v1')`) as the backend.
+- Extend `ModuleFE_BaseApi<Types>`. `Types` is either `CrudTypes` from shared or a `DatabaseDef_*` type when using the Database + DBDef pattern (see db-api-shared rule). Constructor: `{ config: BaseDBConfig<Types>, crudApiDef: CrudApiDef_Type<Types>, dispatcher?, httpClient? }`. Pass the same `CrudApiDef` (e.g. `CrudApiDef(dbKey, 'v1')`) as the backend. Build `config` from your `DBDef_*` (dbKey, validator, uniqueKeys, versions, dbConfig).
 - CRUD methods are implemented in the base with `@ApiCaller` (from @nu-art/http-client): `query`, `queryUnique`, `upsert`, `upsertAll`, `delete`, `deleteQuery`, `deleteAll`. Each uses `crudApiDef` and optional `httpClient` (default `HttpClient.default`).
 - Override `cleanUp(toUpsert)` to prepare data before upsert. Handlers like `handleUpsertComplete`, `handleQueryComplete` update cache/IDB and dispatch events; override if you need custom behavior.
 - Serialization: `runSerializedById(id, requestType, fn)` runs one upsert/patch/delete at a time per document id to avoid races.

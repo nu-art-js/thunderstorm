@@ -32,6 +32,10 @@ Add `@nu-art/db-api-shared`; it depends on `@nu-art/ts-common`, `@nu-art/http-cl
 - `DB_Object`, `DB_BaseObject`, `DB_Key`, `DBPointer` from `types/db-object.js`.
 - `Database<Proto>`, `DatabasePrototype<P>`, `Proto_DB_Object`, `OmitDBObject`, `DBIndex`, `VersionsDeclaration`, `TypeOfTypeAsString`, etc.: for defining entity metadata and versioning; used by apps that define DBProtos. Backend base (ModuleBE_BaseDB) uses only the minimal `BaseDBDefBE` shape from db-api-backend, not Proto.
 
+### Alternative: Database + DBDef
+
+Entities can use the **Database + DBDef** style instead of the full CrudTypes/DBProto pattern: define a `DatabaseDef_*` type and a `Database<DatabaseDef_*>` constant (e.g. `DBDef_Accounts` with `dbKey`, `entityName`, `modifiablePropsValidator`, `versions`, `uniqueKeys`, `frontend`/`backend`). Same shared types and backend/frontend steps apply (e.g. `DB_Object` from here, `createApisForDBModule` on backend). See `_thunderstorm/user-account` shared for an example.
+
 ## Convention
 
 - Define CrudTypes and use CrudApiDef with the same dbKey and version on both frontend and backend. Shared is the single place for CRUD API shapes and query types so FE/BE stay aligned.
