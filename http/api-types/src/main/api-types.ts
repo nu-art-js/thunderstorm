@@ -35,10 +35,16 @@ export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, 
 	Body: B;
 	Params: P;
 	Error: E;
+
+	/** @deprecated */
 	M: M;
+	/** @deprecated */
 	R: R;
+	/** @deprecated */
 	B: B;
+	/** @deprecated */
 	P: P;
+	/** @deprecated */
 	E: E;
 };
 

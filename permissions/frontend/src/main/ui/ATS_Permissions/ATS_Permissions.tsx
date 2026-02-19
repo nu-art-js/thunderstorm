@@ -68,7 +68,7 @@ export class ATS_Permissions
 			this.setState({creatingPermissions: true});
 			await ModuleFE_PermissionsAssert.v1.toggleStrictMode({}).executeSync();
 			await timeout(3000);
-			await ModuleFE_Account._v1.refreshSession({}).executeSync();
+			await ModuleFE_Account.refreshSession({});
 		}, 'Toggling Strict Mode');
 
 		this.setState({creatingPermissions: false});

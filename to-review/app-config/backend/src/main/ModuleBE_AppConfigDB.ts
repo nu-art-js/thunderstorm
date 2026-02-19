@@ -5,26 +5,23 @@
  */
 
 import {_keys, ApiException, Logger, TypedMap} from '@nu-art/ts-common';
-import type {Types_AppConfig} from '@nu-art/app-config-shared';
-import {BaseDBDefBE_AppConfig} from '@nu-art/app-config-shared';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {DatabaseDef_AppConfig, DB_AppConfig, DBDef_AppConfig, UI_AppConfig} from '@nu-art/app-config-shared';
+import {firestore} from 'firebase-admin';
+import Transaction = firestore.Transaction;
 
 type InferType<T> = T extends AppConfigKey_BE<infer V> ? V : never;
 
 export class ModuleBE_AppConfigDB_Class
-	extends ModuleBE_BaseDB<Types_AppConfig> {
+	extends ModuleBE_BaseDB<DatabaseDef_AppConfig> {
 
 	private keyMap: TypedMap<AppConfigKey_BE<any>> = {};
 
 	constructor() {
-		super(BaseDBDefBE_AppConfig);
+		super(DBDef_AppConfig);
 	}
 
-	protected async preWriteProcessing(
-		dbInstance: Types_AppConfig['uiItem'],
-		_originalDbInstance: Types_AppConfig['dbItem'],
-		_transaction?: import('firebase-admin/firestore').Transaction
-	): Promise<void> {
+	protected async preWriteProcessing(dbInstance: UI_AppConfig, _originalDbInstance: DB_AppConfig, _transaction?: Transaction): Promise<void> {
 		const appKey = this.keyMap[dbInstance.key];
 		if (!appKey)
 			return;
@@ -58,12 +55,9 @@ export class ModuleBE_AppConfigDB_Class
 		this.keyMap[appConfigKey.key as string] = appConfigKey;
 	}
 
-	getAppKey = async <K extends AppConfigKey_BE<any>>(
-		appConfigKey: K,
-		logger: Logger = this
-	): Promise<InferType<K>> => {
+	getAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K, logger: Logger = this): Promise<InferType<K>> => {
 		try {
-			const items = await this.query.where({where: {key: appConfigKey.key}});
+			const items = await this.query.where({key: appConfigKey.key});
 			const config = items[0];
 			if (config?.data !== undefined)
 				return config.data as InferType<K>;
@@ -75,24 +69,21 @@ export class ModuleBE_AppConfigDB_Class
 		return data as InferType<K>;
 	};
 
-	setAppKey = async <K extends AppConfigKey_BE<any>>(
-		appConfigKey: K,
-		data: InferType<K>
-	): Promise<Types_AppConfig['dbItem']> => {
-		let existing: Types_AppConfig['dbItem'] | undefined;
+	setAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K, data: InferType<K>): Promise<DB_AppConfig> => {
+		let existing: DB_AppConfig | undefined;
 		try {
-			const items = await this.query.where({where: {key: appConfigKey.key}});
+			const items = await this.query.where({key: appConfigKey.key});
 			existing = items[0];
 		} catch {
 			// new config
 		}
-		const toSet: Types_AppConfig['uiItem'] = existing
+		const toSet: UI_AppConfig = existing
 			? {...existing, data}
 			: {key: appConfigKey.key as string, data};
 		return this.set.item(toSet);
 	};
 
-	_deleteAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K): Promise<Types_AppConfig['dbItem'][]> => {
+	_deleteAppKey = async <K extends AppConfigKey_BE<any>>(appConfigKey: K): Promise<DB_AppConfig[]> => {
 		return this.delete.query({where: {key: appConfigKey.key}});
 	};
 }

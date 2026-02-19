@@ -1,23 +1,24 @@
-import {DBProto_ShortUrl} from './types.js';
-import {DBDef_V3, tsValidateGeneralUrl, tsValidateShortUrl, tsValidateString} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {tsValidateGeneralUrl, tsValidateShortUrl, tsValidateString} from '@nu-art/ts-common';
+import {DatabaseDef_ShortUrl} from './types.js';
 
-
-const Validator_ModifiableProps: DBProto_ShortUrl['modifiablePropsValidator'] = {
+const modifiablePropsValidator: DatabaseDef_ShortUrl['modifiablePropsValidator'] = {
 	fullUrl: tsValidateGeneralUrl(true),
 	title: tsValidateString(),
 	description: tsValidateString(undefined, false),
 };
 
-const Validator_GeneratedProps: DBProto_ShortUrl['generatedPropsValidator'] = {
+const generatedPropsValidator: DatabaseDef_ShortUrl['generatedPropsValidator'] = {
 	_shortUrl: tsValidateShortUrl(),
 };
 
-export const DBDef_ShortUrl: DBDef_V3<DBProto_ShortUrl> = {
-	modifiablePropsValidator: Validator_ModifiableProps,
-	generatedPropsValidator: Validator_GeneratedProps,
-	versions: ['1.0.0'],
+export const DBDef_ShortUrl: Database<DatabaseDef_ShortUrl> = {
 	dbKey: 'short-url',
 	entityName: 'short-url',
+	modifiablePropsValidator,
+	generatedPropsValidator,
+	versions: ['1.0.0'],
+	uniqueKeys: ['_id'],
 	frontend: {
 		group: 'app',
 		name: 'short-url'

@@ -1,18 +1,21 @@
-import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
 
-type VersionTypes_ShortUrl = { '1.0.0': DB_ShortUrl }
+export const ShortUrl_DbKey = 'short-url';
+type DBKey = typeof ShortUrl_DbKey;
+
+type VersionTypes_ShortUrl = { '1.0.0': DB_ShortUrl };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_ShortUrl>;
-type Dependencies = {}
 type UniqueKeys = '_id';
-type GeneratedProps = '_shortUrl'
-type DBKey = 'short-url'
-type Proto = Proto_DB_Object<DB_ShortUrl, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>;
-export type DBProto_ShortUrl = DBProto<Proto>;
-export type UI_ShortUrl = DBProto_ShortUrl['uiType'];
+type GeneratedKeys = '_shortUrl';
+type Dependencies = {};
 
-export type DB_ShortUrl = DB_Object & {
-	fullUrl: string,
-	title: string,
-	description?: string
-	_shortUrl: string,
-}
+export type DB_ShortUrl = DB_Object<DBKey> & {
+	fullUrl: string;
+	title: string;
+	description?: string;
+	_shortUrl: string;
+};
+
+/** Previously DBProto_ShortUrl; use DatabaseDef_ShortUrl everywhere. */
+export type DatabaseDef_ShortUrl = DB_Prototype<DB_ProtoSeed<DB_ShortUrl, DBKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
+export type UI_ShortUrl = DatabaseDef_ShortUrl['uiType'];
