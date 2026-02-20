@@ -12,11 +12,11 @@ export class SlackBuilderFE
 	}
 
 	send = async () => {
-		await ModuleFE_Slack.vv1.sendFEMessage({
+		await ModuleFE_Slack.sendFEMessage({
 			channel: this.channel,
 			messageBlocks: this.blocks,
 			messageReplies: this.replies,
-		}).executeSync();
+		});
 	};
 
 	protected sendMessage = undefined;
