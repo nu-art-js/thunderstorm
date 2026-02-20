@@ -40,7 +40,6 @@
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "firebase": "?",
     "firebase-admin": "?",
     "firebase-functions": "?",
@@ -48,7 +47,8 @@
     "react-dom": "?",
     "react-router-dom": "?",
     "moment": "?",
-    "express": "?"
+    "express": "?",
+    "@nu-art/api-types": "?"
   },
   "devDependencies": {
     "@types/react": "?",

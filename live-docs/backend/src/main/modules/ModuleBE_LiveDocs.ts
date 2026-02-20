@@ -35,8 +35,8 @@ import {
 
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend/v1';
 
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
-import {ApiDef_LiveDoc} from '@nu-art/live-docs-shared/api';
+import {ApiHandler} from '@nu-art/http-server';
+import {ApiDef_LiveDoc, API_LiveDoc} from '@nu-art/live-docs-shared/api';
 
 
 export const CollectionName_LiveDocs = 'live-docs';
@@ -59,11 +59,21 @@ export class ModuleBE_LiveDocs_Class
 		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
 		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);
-		addRoutes([
-			createQueryServerApi(ApiDef_LiveDoc.v1.get, this.getLiveDoc),
-			createBodyServerApi(ApiDef_LiveDoc.v1.upsert, this.updateLiveDoc),
-			createQueryServerApi(ApiDef_LiveDoc.v1.history, this.changeHistory)
-		]);
+	}
+
+	@ApiHandler(ApiDef_LiveDoc.get)
+	async getLiveDocHandler(params: API_LiveDoc['get']['Params']): Promise<API_LiveDoc['get']['Response']> {
+		return this.getLiveDoc(params);
+	}
+
+	@ApiHandler(ApiDef_LiveDoc.upsert)
+	async updateLiveDocHandler(document: API_LiveDoc['upsert']['Body']): Promise<API_LiveDoc['upsert']['Response']> {
+		return this.updateLiveDoc(document);
+	}
+
+	@ApiHandler(ApiDef_LiveDoc.history)
+	async changeHistoryHandler(params: API_LiveDoc['history']['Params']): Promise<API_LiveDoc['history']['Response']> {
+		return this.changeHistory(params);
 	}
 
 	async changeHistory(params: LiveDocHistoryReqParams) {

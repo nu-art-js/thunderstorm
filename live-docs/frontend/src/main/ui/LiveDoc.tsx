@@ -32,7 +32,7 @@ type Props = {
 
 const showLiveDoc = (e: React.MouseEvent) => {
 	const key = (e.currentTarget as HTMLElement).id;
-	ModuleFE_LiveDocs.v1.get({key}).execute();
+	void ModuleFE_LiveDocs.get({key});
 };
 
 export class LiveDoc

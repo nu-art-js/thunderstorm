@@ -17,46 +17,62 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm-frontend/index';
+import {ApiCaller} from '@nu-art/http-client';
+import {ToastBuilder} from '@nu-art/thunder-widgets';
 import {DB_Document, LiveDocReqParams} from '@nu-art/live-docs-shared';
-import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '@nu-art/live-docs-shared/api';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
+import {ApiDef_LiveDoc, API_LiveDoc} from '@nu-art/live-docs-shared/api';
 import {DefaultLiveDocEditor} from '../utils.js';
 
 
 export type LiveDocActionResolver = (doc: DB_Document) => ToastBuilder;
 
 export class ModuleFE_LiveDocs_Class
-	extends Module
-	implements ApiDefCaller<ApiStruct_LiveDoc> {
+	extends Module {
 
 	private docs: { [key: string]: DB_Document } = {};
 	private toasterResolver: LiveDocActionResolver = DefaultLiveDocEditor;
-	readonly v1: ApiDefCaller<ApiStruct_LiveDoc>['v1'];
 
 	constructor() {
 		super();
-
-		this.v1 = {
-			get: apiWithQuery(ApiDef_LiveDoc.v1.get, this.onGotDoc),
-			upsert: apiWithBody(ApiDef_LiveDoc.v1.upsert, this.onGotDoc),
-			history: apiWithQuery(ApiDef_LiveDoc.v1.history, this.onGotDoc),
-		};
 	}
 
 	protected init(): void {
 	}
 
-	onGotDoc = async (response: DB_Document, params: LiveDocReqParams) => {
-		const _doc = this.docs[params.key];
+	onGotDoc = async (response: DB_Document, key: string) => {
+		const _doc = this.docs[key];
 		if (_doc && response.document === _doc.document)
 			return;
 
-		this.docs[params.key] = response;
+		this.docs[key] = response;
 		this.toasterResolver(response).show();
 	};
 
-	get(key: string) {
+	@ApiCaller(ApiDef_LiveDoc.get, {
+		onComplete: (m, ctx) => m.onGotDoc(ctx.response, (ctx.params as LiveDocReqParams).key)
+	})
+	async get(params: API_LiveDoc['get']['Params']): Promise<API_LiveDoc['get']['Response']> {
+		void params;
+		return undefined as unknown as API_LiveDoc['get']['Response'];
+	}
+
+	@ApiCaller(ApiDef_LiveDoc.upsert, {
+		onComplete: (m, ctx) => m.onGotDoc(ctx.response, (ctx.body as { key: string }).key)
+	})
+	async upsert(body: API_LiveDoc['upsert']['Body']): Promise<API_LiveDoc['upsert']['Response']> {
+		void body;
+		return undefined as unknown as API_LiveDoc['upsert']['Response'];
+	}
+
+	@ApiCaller(ApiDef_LiveDoc.history, {
+		onComplete: (m, ctx) => m.onGotDoc(ctx.response, (ctx.params as { key: string }).key)
+	})
+	async history(params: API_LiveDoc['history']['Params']): Promise<API_LiveDoc['history']['Response']> {
+		void params;
+		return undefined as unknown as API_LiveDoc['history']['Response'];
+	}
+
+	getDoc(key: string) {
 		return this.docs[key];
 	}
 
