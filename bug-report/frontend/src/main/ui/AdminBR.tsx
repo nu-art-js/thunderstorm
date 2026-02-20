@@ -17,26 +17,23 @@
  * limitations under the License.
  */
 
-import {ComponentSync,} from '@nu-art/thunderstorm-frontend/index';
+import * as React from 'react';
 import {DB_BugReport} from '@nu-art/bug-report-shared/api';
 import {__stringify} from '@nu-art/ts-common';
-import {OnRequestListener} from '@nu-art/thunderstorm-shared';
-import {ModuleFE_BugReportAdmin, RequestKey_GetLog} from '../modules/ModuleFE_BugReportAdmin.js';
+import {ModuleFE_BugReportAdmin} from '../modules/ModuleFE_BugReportAdmin.js';
 
 
 export class AdminBR
-	extends ComponentSync
-	implements OnRequestListener {
+	extends React.Component<Record<string, unknown>> {
 
-	protected deriveStateFromProps(nextProps: any) {
-		return {...nextProps};
-	}
-
-	render() {
+	override render() {
 		const logs = ModuleFE_BugReportAdmin.getLogs();
 		return (
 			<div>
-				<button onClick={() => ModuleFE_BugReportAdmin.v1.retrieveLogs({}).execute()}>click to display logs</button>
+				<button onClick={async () => {
+					await ModuleFE_BugReportAdmin.retrieveLogs();
+					this.forceUpdate();
+				}}>click to display logs</button>
 				<div>
 					<table style={{width: '100%'}}>{logs.map(this.createRow)}</table>
 				</div>
@@ -52,14 +49,4 @@ export class AdminBR
 			<button onClick={() => ModuleFE_BugReportAdmin.downloadMultiLogs(report.reports)}>download</button>
 		</td>
 	</tr>;
-
-	__onRequestCompleted = (key: string, success: boolean) => {
-		switch (key) {
-			default:
-				return;
-
-			case RequestKey_GetLog:
-				this.forceUpdate();
-		}
-	};
 }

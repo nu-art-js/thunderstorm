@@ -35,8 +35,6 @@
     "@nu-art/jira-shared": "?",
     "@nu-art/slack-frontend": "?",
     "@nu-art/slack-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/user-account-frontend": "?",
     "@nu-art/user-account-shared": "?",
@@ -47,7 +45,8 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?"
+    "react-router-dom": "?",
+    "@nu-art/http-client": "?"
   },
   "devDependencies": {
     "@types/express": "?",

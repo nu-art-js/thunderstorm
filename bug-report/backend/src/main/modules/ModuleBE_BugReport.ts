@@ -18,14 +18,11 @@
  */
 
 import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
-
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend/v1';
-
-
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm-backend';
+import {ApiHandler} from '@nu-art/http-server';
 import JSZip from 'jszip';
 import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared';
-import {MemKey_AccountId} from '@nu-art/user-account-backend/_entity/session/index';
+import {MemKey_AccountId} from '@nu-art/user-account-backend';
 
 type Config = {
 	projectId?: string,
@@ -49,14 +46,12 @@ export class ModuleBE_BugReport_Class
 		const firestore = sessionAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessionAdmin.getStorage();
-		addRoutes([
-			createBodyServerApi(ApiDef_BugReport.v1.sendBugReport, (body) => this.sendBugReport(body)),
-		]);
 	}
 
-	private sendBugReport = async (body: Request_BugReport) => {
+	@ApiHandler(ApiDef_BugReport.sendBugReport)
+	async handleSendBugReport(body: Request_BugReport): Promise<TicketDetails[]> {
 		return await ModuleBE_BugReport.saveFile(body, MemKey_AccountId.get());
-	};
+	}
 
 	addTicketCreator(ticketCreator: TicketCreatorApi) {
 		addItemToArray(this.ticketCreatorApis, ticketCreator);

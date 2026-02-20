@@ -32,7 +32,6 @@
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/slack-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/user-account-shared": "?",
     "@nu-art/jira-shared": "?",
     "firebase": "?",
@@ -42,7 +41,8 @@
     "react-router-dom": "?",
     "express": "?",
     "jszip": "^3.3.0",
-    "moment": "?"
+    "moment": "?",
+    "@nu-art/api-types": "?"
   },
   "devDependencies": {
     "@types/express": "?",
