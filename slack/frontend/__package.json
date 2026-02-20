@@ -32,8 +32,6 @@
   },
   "dependencies": {
     "@nu-art/slack-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@slack/web-api": "7.13.0",
     "firebase": "?",
@@ -43,7 +41,10 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?"
+    "react-router-dom": "?",
+    "@nu-art/http-client": "?",
+    "@nu-art/thunder-widgets": "?",
+    "@nu-art/thunder-ui-modules": "?"
   },
   "devDependencies": {
     "@types/react": "?",

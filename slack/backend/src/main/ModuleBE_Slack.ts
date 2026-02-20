@@ -23,13 +23,12 @@
 
 import {currentTimeMillis, ImplementationMissingException, md5, Minute, Module} from '@nu-art/ts-common';
 import {ChatPostMessageArguments, WebAPICallResult, WebClient, WebClientOptions,} from '@slack/web-api';
-import {addRoutes, AxiosHttpModule, createBodyServerApi} from '@nu-art/thunderstorm-backend';
-import {ApiDef_Slack, PreSendSlackStructuredMessage} from '@nu-art/slack-shared';
+import {ApiHandler} from '@nu-art/http-server';
+import {ApiDef_Slack, API_Slack, PreSendSlackStructuredMessage} from '@nu-art/slack-shared';
 import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {SlackBuilderBE} from './SlackBuilderBE.js';
-import {HttpMethod} from '@nu-art/thunderstorm-shared';
 
 
 interface ChatPostMessageResult
@@ -86,20 +85,27 @@ export class ModuleBE_Slack_Class
 				rejectRateLimitedCalls: true,
 				...this.config.slackConfig
 			});
+	}
 
-		addRoutes([
-			createBodyServerApi(ApiDef_Slack.vv1.postMessage, async (request): Promise<void> => {
-				await this.postMessage(request.message, request.channel);
-			}),
-			createBodyServerApi(ApiDef_Slack.vv1.postStructuredMessage, async (request) => {
-				return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
-			}),
-			createBodyServerApi(ApiDef_Slack.vv1.sendFEMessage, async (request) => {
-				const slackMessage = new SlackBuilderBE(request.channel, request.messageBlocks, request.messageReplies);
-				await slackMessage.send();
-			}),
-			createBodyServerApi(ApiDef_Slack.vv1.postFiles, async (request) => this.postFile(request.file, request.name, request.thread))
-		]);
+	@ApiHandler(ApiDef_Slack.postMessage)
+	async postMessageHandler(request: API_Slack['postMessage']['Body']): Promise<void> {
+		await this.postMessage(request.message, request.channel);
+	}
+
+	@ApiHandler(ApiDef_Slack.postStructuredMessage)
+	async postStructuredMessageHandler(request: API_Slack['postStructuredMessage']['Body']): Promise<API_Slack['postStructuredMessage']['Response']> {
+		return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
+	}
+
+	@ApiHandler(ApiDef_Slack.sendFEMessage)
+	async sendFEMessageHandler(request: API_Slack['sendFEMessage']['Body']): Promise<void> {
+		const slackMessage = new SlackBuilderBE(request.channel, request.messageBlocks, request.messageReplies);
+		await slackMessage.send();
+	}
+
+	@ApiHandler(ApiDef_Slack.postFiles)
+	async postFilesHandler(request: API_Slack['postFiles']['Body']): Promise<API_Slack['postFiles']['Response']> {
+		return this.postFile(request.file, request.name, request.thread);
 	}
 
 	public async postMessage(text: string, channel?: string, thread?: ThreadPointer) {
@@ -132,15 +138,15 @@ export class ModuleBE_Slack_Class
 		const {upload_url, file_id} = uploadUrlResponse;
 
 		try {
-			await AxiosHttpModule.createRequest({
-				fullUrl: upload_url,
-				path: '',
-				method: HttpMethod.POST
-			})
-				.setBody(file)
-				.executeSync();
-		} catch (e: any) {
-			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(`Failed at uploading file to url: ${e.message}`);
+			const res = await fetch(upload_url!, {
+				method: 'POST',
+				body: file as unknown as BodyInit,
+			});
+			if (!res.ok)
+				throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
+		} catch (e: unknown) {
+			const message = e instanceof Error ? e.message : String(e);
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(`Failed at uploading file to url: ${message}`);
 		}
 
 		// Complete the upload - post the file to slack message
