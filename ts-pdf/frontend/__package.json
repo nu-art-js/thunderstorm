@@ -33,7 +33,6 @@
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "react": "?",
     "pdf.js": "^0.1.0",
     "pdfjs-dist": "5.4.149"
