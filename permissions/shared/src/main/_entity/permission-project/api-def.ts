@@ -1,9 +1,5 @@
-import {ApiDefResolver} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver} from '@nu-art/api-types';
 
-export type ApiStruct_PermissionProject = {
-	_v1: {}
-}
+export type API_PermissionProject = Record<string, never>;
 
-export const ApiDef_PermissionProject: ApiDefResolver<ApiStruct_PermissionProject> = {
-	_v1: {}
-};
+export const ApiDef_PermissionProject: ApiDefResolver<API_PermissionProject> = {};

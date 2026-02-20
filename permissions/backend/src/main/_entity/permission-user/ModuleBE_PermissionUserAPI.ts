@@ -1,5 +1,6 @@
-import {addRoutes, createBodyServerApi, ModuleBE_BaseApi_Class} from '@nu-art/thunderstorm-backend';
-import {ApiDef_PermissionUser, DBProto_PermissionUser} from '@nu-art/permissions-shared';
+import {ApiHandler} from '@nu-art/http-server';
+import {ModuleBE_BaseApi_Class} from '@nu-art/thunderstorm-backend';
+import {ApiDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB.js';
 
 class ModuleBE_PermissionUserAPI_Class
@@ -11,7 +12,11 @@ class ModuleBE_PermissionUserAPI_Class
 
 	init() {
 		super.init();
-		addRoutes([createBodyServerApi(ApiDef_PermissionUser._v1.assignPermissions, ModuleBE_PermissionUserDB.assignPermissions)]);
+	}
+
+	@ApiHandler(ApiDef_PermissionUser.assignPermissions)
+	async handleAssignPermissions(body: Request_AssignPermissions): Promise<void> {
+		await ModuleBE_PermissionUserDB.assignPermissions(body);
 	}
 }
 

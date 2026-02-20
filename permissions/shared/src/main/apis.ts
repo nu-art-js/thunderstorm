@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
 import {Minute, PreDB, StringMap} from '@nu-art/ts-common';
 import {DB_PermissionProject} from './_entity.js';
 
@@ -80,52 +80,28 @@ export type Response_User = {
 	userId: string;
 };
 
-//ModuleBE_PermissionUser
-export type _ApiStruct_PermissionsUser = {
-	pah: {
-		assignAppPermissions: BodyApi<void, Request_AssignAppPermissions>;
-	}
-}
-export const _ApiDef_PermissionUser: ApiDefResolver<_ApiStruct_PermissionsUser> = {
-	pah: {
-		assignAppPermissions: {method: HttpMethod.POST, path: '/v1/permissions/assign/app-permissions'}
-	}
+// ModuleBE_PermissionUser (legacy apis.ts shape)
+export type API_PermissionsUser = {
+	assignAppPermissions: BodyApi<void, Request_AssignAppPermissions>;
+};
+export const _ApiDef_PermissionUser: ApiDefResolver<API_PermissionsUser> = {
+	assignAppPermissions: {method: HttpMethod.POST, path: '/v1/permissions/assign/app-permissions'}
 };
 
-//ModuleBE_PermissionsAssert
-export type ApiStruct_PermissionsAssert = {
-	vv1: {
-		assertUserPermissions: BodyApi<Response_User, Request_AssertApiForUser>;
-	}
-}
-export const ApiDef_PermissionsAssert: ApiDefResolver<ApiStruct_PermissionsAssert> = {
-	vv1: {
-		assertUserPermissions: {method: HttpMethod.POST, path: 'v1/permissions/assert-user-access'}
-	}
+// ModuleBE_PermissionsAssert
+export type API_PermissionsAssert = {
+	assertUserPermissions: BodyApi<Response_User, Request_AssertApiForUser>;
+};
+export const ApiDef_PermissionsAssert: ApiDefResolver<API_PermissionsAssert> = {
+	assertUserPermissions: {method: HttpMethod.POST, path: 'v1/permissions/assert-user-access'}
 };
 
-//ModuleBE_Permissions
-export type ApiStruct_Permissions = {
-	v1: {
-		// getUserUrlsPermissions: BodyApi<UserUrlsPermissions, Request_UserUrlsPermissions>;
-		// getUserCFsByShareGroups: BodyApi<StringMap[], Request_UserCFsByShareGroups>;
-		// getUsersCFsByShareGroups: BodyApi<Response_UsersCFsByShareGroups, Request_UsersCFsByShareGroups>;
-		// registerExternalProject: BodyApi<void, Request_RegisterProject>;
-		// registerProject: QueryApi<void>;
-		toggleStrictMode: QueryApi<void>;
-		createProject: QueryApi<void>;
-		// connectDomainToRoutes: BodyApi<void, Request_ConnectDomainToRoutes>
-	}
-}
-export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
-	v1: {
-		// getUserUrlsPermissions: {method: HttpMethod.POST, path: 'v1/permissions/user-urls-permissions'},
-		// getUserCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/user-cf-by-share-groups'},
-		// getUsersCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/users-cf-by-share-groups'},
-		// registerExternalProject: {method: HttpMethod.POST, path: 'v1/register/register-external-project'},
-		// registerProject: {method: HttpMethod.GET, path: 'v1/register/register-project'},
-		toggleStrictMode: {method: HttpMethod.GET, path: 'v1/permissions/toggle-strict-mode', timeout: Minute},
-		createProject: {method: HttpMethod.GET, path: 'v1/permissions/create-first-project', timeout: Minute},
-		// connectDomainToRoutes: {method: HttpMethod.POST, path: 'v1/permissions/connect-domain-to-routes'},
-	}
+// ModuleBE_Permissions
+export type API_Permissions = {
+	toggleStrictMode: QueryApi<void>;
+	createProject: QueryApi<void>;
+};
+export const ApiDef_Permissions: ApiDefResolver<API_Permissions> = {
+	toggleStrictMode: {method: HttpMethod.GET, path: 'v1/permissions/toggle-strict-mode', timeout: Minute},
+	createProject: {method: HttpMethod.GET, path: 'v1/permissions/create-first-project', timeout: Minute},
 };

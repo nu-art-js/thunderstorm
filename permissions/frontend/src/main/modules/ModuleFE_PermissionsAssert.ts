@@ -18,7 +18,8 @@
  */
 
 import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
-import {apiWithQuery, ModuleFE_Utils,} from '@nu-art/thunderstorm-frontend/index';
+import {ApiCaller} from '@nu-art/http-client';
+import {ModuleFE_Utils} from '@nu-art/thunderstorm-frontend/index';
 import {PermissionKey_FE} from '../PermissionKey_FE.js';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts.js';
 import {RendererKey_AccountMenu_SubHeader} from '@nu-art/user-account-frontend/consts';
@@ -38,8 +39,6 @@ export interface OnPermissionsFailed {
 	__onPermissionsFailed: () => void;
 }
 
-// const dispatch_onPermissionsChanged = new ThunderDispatcher<OnPermissionsChanged, '__onPermissionsChanged'>('__onPermissionsChanged');
-// const dispatch_onPermissionsFailed = new ThunderDispatcher<OnPermissionsFailed, '__onPermissionsFailed'>('__onPermissionsFailed');
 export enum AccessLevel {
 	Undefined,
 	NoAccessLevelsDefined,
@@ -50,15 +49,19 @@ export enum AccessLevel {
 export class ModuleFE_PermissionsAssert_Class
 	extends Module<PermissionsModuleFEConfig> {
 	permissionKeys: TypedMap<PermissionKey_FE<any>> = {};
-	readonly v1;
 
 	constructor() {
 		super();
+	}
 
-		this.v1 = {
-			toggleStrictMode: apiWithQuery(ApiDef_Permissions.v1.toggleStrictMode),
-			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject),
-		};
+	@ApiCaller(ApiDef_Permissions.toggleStrictMode)
+	async toggleStrictMode(_params?: unknown): Promise<void> {
+		return undefined;
+	}
+
+	@ApiCaller(ApiDef_Permissions.createProject)
+	async createProject(_params?: unknown): Promise<void> {
+		return undefined;
 	}
 
 	protected init() {

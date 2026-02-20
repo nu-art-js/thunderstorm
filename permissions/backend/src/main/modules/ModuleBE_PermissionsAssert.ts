@@ -32,15 +32,15 @@ import {
 	StringMap,
 	TypedMap
 } from '@nu-art/ts-common';
+import {ApiHandler} from '@nu-art/http-server';
+import {ApiModule} from '@nu-art/thunderstorm-shared';
 import {
-	addRoutes,
-	createBodyServerApi,
 	ModuleBE_BaseApi_Class,
 	ModuleBE_BaseDB,
 	ModuleBE_SyncManager,
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm-backend';
-import {ApiModule, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {HttpMethod} from '@nu-art/api-types';
 import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account-backend';
 import {
 	ApiDef_PermissionsAssert,
@@ -49,6 +49,7 @@ import {
 	DB_PermissionAPI,
 	DomainToLevelValueMap,
 	Request_AssertApiForUser,
+	Response_User,
 	SessionData_StrictMode
 } from '@nu-art/permissions-shared';
 import {
@@ -143,12 +144,9 @@ export class ModuleBE_PermissionsAssert_Class
 
 	init() {
 		super.init();
-		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
 		/** @deprecated Path-based sync filter; use function-based permissions instead. API collection deprecated. */
 		ModuleBE_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDB<any>)[]) => {
-			// return dbModules;
-			//Filter out any module we don't have permission to sync
 			const userPermissions = MemKey_UserPermissions.get();
 
 			const mapDbNameToApiModules = arrayToMap(RuntimeModules()
@@ -157,13 +155,11 @@ export class ModuleBE_PermissionsAssert_Class
 			const paths = dbModules.map(module => {
 				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbKey];
 				if (!mapDbNameToApiModule) {
-					// this.logWarning(`no module found for ${module.dbDef.dbKey}`);
 					return undefined;
 				}
 
 				return mapDbNameToApiModule.apiDef?.['v1']?.['query'].path;
 			});
-			// this.logWarning(`Paths(${paths.length}):`, paths);
 			const _allApis = await ModuleBE_PermissionAPIDB.query.where({});
 
 			const apis = _allApis.filter(_api => paths.includes(_api.path));
@@ -172,13 +168,11 @@ export class ModuleBE_PermissionsAssert_Class
 			return dbModules.filter((dbModule, index) => {
 				const path = paths[index];
 				if (!path) {
-					// this.logWarningBold('no path');
 					return false;
 				}
 
 				const dbApi = mapPathToDBApi[path];
 				if (!dbApi) {
-					// this.logWarningBold(`no dbApi ${path}`);
 					return !ModuleBE_PermissionsAssert.isStrictMode();
 				}
 
@@ -201,6 +195,11 @@ export class ModuleBE_PermissionsAssert_Class
 				}, true);
 			});
 		});
+	}
+
+	@ApiHandler(ApiDef_PermissionsAssert.assertUserPermissions)
+	async handleAssertUserPermissions(body: Request_AssertApiForUser): Promise<Response_User> {
+		return this.assertPermission(body);
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {

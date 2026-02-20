@@ -37,7 +37,6 @@
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/user-account-shared": "?",
     "@nu-art/ts-styles": "?",
     "firebase": "?",
@@ -48,7 +47,8 @@
     "react-router-dom": "?",
     "moment": "?",
     "saml2-js": "^4.0.1",
-    "express": "?"
+    "express": "?",
+    "@nu-art/api-types": "?"
   },
   "devDependencies": {
     "@types/react": "?",
