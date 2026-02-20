@@ -20,7 +20,9 @@ import {ApiException, BadImplementationException, composeUrl, ImplementationMiss
 import {CoreOptions, Headers, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils.js';
 import {JiraVersion, JiraVersion_Create} from '@nu-art/jira-shared/version';
-import {HeaderKey_ContentType, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {HttpMethod} from '@nu-art/api-types';
+
+const HeaderKey_ContentType = 'content-type';
 
 
 type Config = {

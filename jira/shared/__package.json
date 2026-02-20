@@ -20,7 +20,6 @@
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "dependencies": {
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-shared": "?",
     "firebase-admin": "?",
