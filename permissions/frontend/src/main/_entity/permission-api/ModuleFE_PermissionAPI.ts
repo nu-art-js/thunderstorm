@@ -1,7 +1,6 @@
 import {ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
-import {ApiStruct_PermissionAPI, DBDef_PermissionAPI, DBProto_PermissionAPI} from '@nu-art/permissions-shared';
+import {DBDef_PermissionAPI, DBProto_PermissionAPI} from '@nu-art/permissions-shared';
 
 
 export type DispatcherType_PermissionAPI = DispatcherDef<DBProto_PermissionAPI, `__onPermissionAPIUpdated`>;
@@ -9,14 +8,10 @@ export type DispatcherType_PermissionAPI = DispatcherDef<DBProto_PermissionAPI, 
 export const dispatch_onPermissionAPIChanged = new ThunderDispatcherV3<DispatcherType_PermissionAPI>('__onPermissionAPIUpdated');
 
 export class ModuleFE_PermissionAPI_Class
-	extends ModuleFE_BaseApi<DBProto_PermissionAPI>
-	implements ApiDefCaller<ApiStruct_PermissionAPI> {
-
-	_v1: ApiDefCaller<ApiStruct_PermissionAPI>['_v1'];
+	extends ModuleFE_BaseApi<DBProto_PermissionAPI> {
 
 	constructor() {
 		super(DBDef_PermissionAPI, dispatch_onPermissionAPIChanged);
-		this._v1 = {};
 	}
 }
 

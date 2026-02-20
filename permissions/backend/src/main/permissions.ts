@@ -34,8 +34,8 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 	dbNames: [DBDef_PermissionProject, DBDef_PermissionDomain, DBDef_PermissionAPI, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbKey),
 	customApis: [
 		{path: ApiDef_UserAccount.refreshSession.path, accessLevel: DefaultAccessLevel_NoAccess.name},
-		{path: ApiDef_Permissions.v1.createProject.path, accessLevel: DefaultAccessLevel_Admin.name},
-		{path: ApiDef_Permissions.v1.toggleStrictMode.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDef_Permissions.createProject.path, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: ApiDef_Permissions.toggleStrictMode.path, accessLevel: DefaultAccessLevel_Admin.name},
 	]
 };
 

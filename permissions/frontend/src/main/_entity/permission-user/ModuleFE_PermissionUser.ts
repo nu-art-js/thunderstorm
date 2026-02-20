@@ -1,7 +1,7 @@
-import {apiWithBody, ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
+import {ApiCaller} from '@nu-art/http-client';
+import {ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
 import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
-import {ApiDef_PermissionUser, ApiStruct_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser} from '@nu-art/permissions-shared';
+import {ApiDef_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions} from '@nu-art/permissions-shared';
 
 
 export type DispatcherType_PermissionUser = DispatcherDef<DBProto_PermissionUser, `__onPermissionUserUpdated`>;
@@ -9,16 +9,15 @@ export type DispatcherType_PermissionUser = DispatcherDef<DBProto_PermissionUser
 export const dispatch_onPermissionUserChanged = new ThunderDispatcherV3<DispatcherType_PermissionUser>('__onPermissionUserUpdated');
 
 export class ModuleFE_PermissionUser_Class
-	extends ModuleFE_BaseApi<DBProto_PermissionUser>
-	implements ApiDefCaller<ApiStruct_PermissionUser> {
-
-	_v1: ApiDefCaller<ApiStruct_PermissionUser>['_v1'];
+	extends ModuleFE_BaseApi<DBProto_PermissionUser> {
 
 	constructor() {
 		super(DBDef_PermissionUser, dispatch_onPermissionUserChanged);
-		this._v1 = {
-			assignPermissions: apiWithBody(ApiDef_PermissionUser._v1.assignPermissions),
-		};
+	}
+
+	@ApiCaller(ApiDef_PermissionUser.assignPermissions)
+	async assignPermissions(body: Request_AssignPermissions): Promise<void> {
+		void body;
 	}
 }
 

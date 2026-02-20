@@ -52,7 +52,9 @@
     "react": "?",
     "react-dom": "?",
     "react-router-dom": "?",
-    "saml2-js": "^4.0.1"
+    "saml2-js": "^4.0.1",
+    "@nu-art/http-server": "?",
+    "@nu-art/api-types": "?"
   },
   "devDependencies": {
     "@types/react": "?",

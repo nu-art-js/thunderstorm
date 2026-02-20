@@ -66,7 +66,7 @@ export class ATS_Permissions
 	private toggleStrictMode = async () => {
 		await genericNotificationAction(async (notification) => {
 			this.setState({creatingPermissions: true});
-			await ModuleFE_PermissionsAssert.v1.toggleStrictMode({}).executeSync();
+			await ModuleFE_PermissionsAssert.toggleStrictMode();
 			await timeout(3000);
 			await ModuleFE_Account.refreshSession({});
 		}, 'Toggling Strict Mode');

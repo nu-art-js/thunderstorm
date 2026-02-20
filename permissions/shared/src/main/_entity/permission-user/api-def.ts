@@ -1,20 +1,16 @@
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/api-types';
 
-//Assign Permissions
+// Assign Permissions
 export type Request_AssignPermissions = {
 	projectId?: string
 	permissionGroupIds: string[]
 	targetAccountIds: string[]
-}
+};
 
-export type ApiStruct_PermissionUser = {
-	_v1: {
-		assignPermissions: BodyApi<void, Request_AssignPermissions>;
-	}
-}
+export type API_PermissionUser = {
+	assignPermissions: BodyApi<void, Request_AssignPermissions>;
+};
 
-export const ApiDef_PermissionUser: ApiDefResolver<ApiStruct_PermissionUser> = {
-	_v1: {
-		assignPermissions: {method: HttpMethod.POST, path: '/pah/permissions/assign/app-permissions'}
-	}
+export const ApiDef_PermissionUser: ApiDefResolver<API_PermissionUser> = {
+	assignPermissions: {method: HttpMethod.POST, path: '/pah/permissions/assign/app-permissions'}
 };

@@ -11,7 +11,8 @@ import {
 	RuntimeModules,
 	TypedMap,
 } from '@nu-art/ts-common';
-import {addRoutes, createQueryServerApi, MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm-backend';
+import {ApiHandler} from '@nu-art/http-server';
+import {MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm-backend';
 import {
 	ApiDef_Permissions,
 	DB_PermissionAccessLevel,
@@ -154,12 +155,16 @@ class ModuleBE_Permissions_Class
 
 	protected init() {
 		super.init();
+	}
 
-		addRoutes([
-			createQueryServerApi(ApiDef_Permissions.v1.toggleStrictMode, this.toggleStrictMode),
-			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.__performProjectSetup().processor),
-			// createBodyServerApi(ApiDef_Permissions.v1.connectDomainToRoutes, this.connectDomainToRoutes)
-		]);
+	@ApiHandler(ApiDef_Permissions.toggleStrictMode)
+	async handleToggleStrictMode(_params?: unknown): Promise<void> {
+		await this.toggleStrictMode();
+	}
+
+	@ApiHandler(ApiDef_Permissions.createProject)
+	async handleCreateProject(_params?: unknown): Promise<void> {
+		await this.__performProjectSetup().processor();
 	}
 
 	// __collectPermissionsProjects() {
