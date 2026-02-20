@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
 import {Auditable, DB_Object} from '@nu-art/ts-common';
 
 export type TicketDetails = {
@@ -71,26 +71,18 @@ export type SignedUrl = {
 // export type ApiPostPath = BodyApi<'v1/bug-reports/download-logs', Paths, SignedUrl>
 // export type ApiBugReport = BodyApi<'v1/bug-reports/report', Request_BugReport, TicketDetails[]>
 
-export type ApiStruct_AdminBugReport = {
-	v1: {
-		downloadLogs: BodyApi<SignedUrl, Paths>;
-		retrieveLogs: QueryApi<DB_BugReport[]>;
-	}
-}
-export const ApiDef_AdminBugReport: ApiDefResolver<ApiStruct_AdminBugReport> = {
-	v1: {
-		downloadLogs: {method: HttpMethod.POST, path: 'v1/bug-reports/download-logs'},
-		retrieveLogs: {method: HttpMethod.GET, path: 'v1/bug-reports/get-logs'},
-	}
+export type API_AdminBugReport = {
+	downloadLogs: BodyApi<SignedUrl, Paths>;
+	retrieveLogs: QueryApi<DB_BugReport[]>;
+};
+export const ApiDef_AdminBugReport: ApiDefResolver<API_AdminBugReport> = {
+	downloadLogs: {method: HttpMethod.POST, path: 'v1/bug-reports/download-logs'},
+	retrieveLogs: {method: HttpMethod.GET, path: 'v1/bug-reports/get-logs'},
 };
 
-export type ApiStruct_BugReport = {
-	v1: {
-		sendBugReport: BodyApi<TicketDetails[], Request_BugReport>
-	}
-}
-export const ApiDef_BugReport: ApiDefResolver<ApiStruct_BugReport> = {
-	v1: {
-		sendBugReport: {method: HttpMethod.POST, path: 'v1/bug-reports/report'}
-	}
+export type API_BugReport = {
+	sendBugReport: BodyApi<TicketDetails[], Request_BugReport>;
+};
+export const ApiDef_BugReport: ApiDefResolver<API_BugReport> = {
+	sendBugReport: {method: HttpMethod.POST, path: 'v1/bug-reports/report'},
 };

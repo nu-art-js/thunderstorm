@@ -18,10 +18,9 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ApiDef_AdminBugReport, DB_BugReport, Paths} from '@nu-art/bug-report-shared/api';
-
+import {ApiDef_AdminBugReport, DB_BugReport, Paths, SignedUrl} from '@nu-art/bug-report-shared/api';
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend/v1';
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm-backend';
+import {ApiHandler} from '@nu-art/http-server';
 
 
 type Config = {
@@ -46,11 +45,16 @@ export class ModuleBE_AdminBR_Class
 		const firestore = sessAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessAdmin.getStorage();
-		addRoutes([
-			createBodyServerApi(ApiDef_AdminBugReport.v1.downloadLogs, ModuleBE_AdminBR.downloadFiles),
-			createQueryServerApi(ApiDef_AdminBugReport.v1.retrieveLogs, ModuleBE_AdminBR.getFilesFirebase),
+	}
 
-		]);
+	@ApiHandler(ApiDef_AdminBugReport.retrieveLogs)
+	async handleRetrieveLogs(_params?: unknown): Promise<DB_BugReport[]> {
+		return this.bugReport.getAll();
+	}
+
+	@ApiHandler(ApiDef_AdminBugReport.downloadLogs)
+	async handleDownloadLogs(body: Paths): Promise<SignedUrl> {
+		return ModuleBE_AdminBR.downloadFiles(body);
 	}
 
 	getFilesFirebase = async () => this.bugReport.getAll();

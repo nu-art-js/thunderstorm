@@ -17,9 +17,8 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
-import {ApiDef_AdminBugReport, ApiStruct_AdminBugReport, DB_BugReport, ReportLogFile} from '@nu-art/bug-report-shared/api';
+import {ApiCallContext, ApiCaller} from '@nu-art/http-client';
+import {API_AdminBugReport, ApiDef_AdminBugReport, DB_BugReport, Paths, ReportLogFile, SignedUrl} from '@nu-art/bug-report-shared/api';
 
 
 export const RequestKey_GetLog = 'GetLog';
@@ -27,47 +26,35 @@ export const RequestKey_PostPath = 'PostPath';
 
 export class ModuleFE_BugReportAdmin_Class
 	extends Module {
-	readonly v1: ApiDefCaller<ApiStruct_AdminBugReport>['v1'];
-
-	constructor() {
-		super();
-		this.v1 = {
-			downloadLogs: apiWithBody(ApiDef_AdminBugReport.v1.downloadLogs),
-			retrieveLogs: apiWithQuery(ApiDef_AdminBugReport.v1.retrieveLogs),
-		};
-	}
 
 	private logs: DB_BugReport[] = [];
 
-	// public retrieveLogs = () => {
-	// 	this.logInfo('getting logs from firestore...');
-	// 	ModuleFE_XHR
-	// 		.createRequest<ApiGetLog>(HttpMethod.GET, RequestKey_GetLog)
-	// 		.setRelativeUrl('v1/bug-reports/get-logs')
-	// 		.setOnError(`Error getting new message from backend`)
-	// 		.execute(async response => {
-	// 			this.logs = response;
-	// 		});
-	//
-	// 	this.logInfo('continue... will receive an event once request is completed..');
-	// };
+	constructor() {
+		super();
+	}
 
-	// public downloadLogs = (path: string) => {
-	// 	this.logInfo('downloading the logs to the client..');
-	// 	const bodyObject: Paths = {path: path};
-	// 	ModuleFE_XHR
-	// 		.createRequest<ApiPostPath>(HttpMethod.POST, RequestKey_PostPath)
-	// 		.setBodyAsJson(bodyObject)
-	// 		.setRelativeUrl('v1/bug-reports/download-logs')
-	// 		.setOnError(`Error getting new message from backend`)
-	// 		.execute();
-	// };
+	@ApiCaller(ApiDef_AdminBugReport.retrieveLogs, {
+		onComplete: (m: ModuleFE_BugReportAdmin_Class, ctx: ApiCallContext<API_AdminBugReport['retrieveLogs']>) => m.setLogs(ctx.response)
+	})
+	async retrieveLogs(_params?: unknown): Promise<DB_BugReport[]> {
+		return [];
+	}
+
+	@ApiCaller(ApiDef_AdminBugReport.downloadLogs)
+	async downloadLogs(body: Paths): Promise<SignedUrl> {
+		void body;
+		return {fileName: '', signedUrl: '', publicUrl: ''};
+	}
 
 	public downloadMultiLogs = (reports: ReportLogFile[]) => {
-		reports.forEach(report => this.v1.downloadLogs({path: report.path}).execute());
+		reports.forEach(report => void this.downloadLogs({path: report.path}));
 	};
 
-	public getLogs = () => this.logs;
+	public getLogs = (): DB_BugReport[] => this.logs;
+
+	setLogs(logs: DB_BugReport[]): void {
+		this.logs = logs;
+	}
 }
 
 export const ModuleFE_BugReportAdmin = new ModuleFE_BugReportAdmin_Class();
