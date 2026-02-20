@@ -41,8 +41,6 @@
     "@nu-art/live-docs-shared": "?",
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "express": "?",
     "firebase": "?",
@@ -51,7 +49,9 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?"
+    "react-router-dom": "?",
+    "@nu-art/http-server": "?",
+    "@nu-art/api-types": "?"
   },
   "devDependencies": {
     "@types/react": "?",
