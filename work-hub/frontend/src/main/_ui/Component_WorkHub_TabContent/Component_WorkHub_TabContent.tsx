@@ -2,7 +2,7 @@ import {WorkHubTab} from '@nu-art/work-hub-shared';
 import {createRef} from 'react';
 import {ModuleFE_WorkHub} from '../../_module/index.js';
 import './Component_WorkHub_TabContent.scss';
-import {AwaitModules, ComponentSync, TS_ErrorBoundary} from '@nu-art/thunderstorm-frontend';
+import {ComponentSync, TS_ErrorBoundary} from '@nu-art/thunder-widgets';
 import {WorkHubItem} from '../../_core/work-hub-item.js';
 import {OnWorkHubTabs} from '../../dispatchers.js';
 import {voidFunction} from '@nu-art/ts-common';
@@ -47,31 +47,14 @@ export class Component_WorkHub_TabContent
 	}
 
 	
+	// Await-modules is up-level per user-account pattern (Component_AccountThumbnail); no AwaitModules wrapper here.
 	render() {
-		if (this.state.item.modulesToAwait?.length)
-			return this.renderAsync();
-
-		return this.renderSync();
-	}
-
-	private renderAsync = () => {
 		const item = this.state.item;
 		const tab = this.state.tab;
 		return <div className={'c__work-hub-tab-content'} ref={this.ref} tabIndex={0}>
-			<AwaitModules modules={item.modulesToAwait!}>
-				<TS_ErrorBoundary>
-					{item.renderer(item, tab.id, tab.renderArgs)}
-				</TS_ErrorBoundary>
-			</AwaitModules>
-		</div>;
-	};
-
-	private renderSync = () => {
-		const item = this.state.item;
-		return <div className={'c__work-hub-tab-content'} ref={this.ref} tabIndex={0}>
 			<TS_ErrorBoundary>
-				{item.renderer(item, this.state.tab.id, this.state.renderArgs)}
+				{item.renderer(item, tab.id, this.state.renderArgs)}
 			</TS_ErrorBoundary>
 		</div>;
-	};
+	}
 }

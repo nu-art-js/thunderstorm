@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {DB_Object, ResolvableContent, TypedMap} from '@nu-art/ts-common';
-import {BaseAsyncState} from '@nu-art/thunderstorm-frontend/index';
+import {BaseAsyncState} from '@nu-art/thunder-widgets';
 
 
 export type Props_BaseWorkspace = {

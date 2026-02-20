@@ -1,4 +1,4 @@
-import {ComponentSync, LL_V_L} from '@nu-art/thunderstorm-frontend';
+import {ComponentSync, LL_V_L} from '@nu-art/thunder-widgets';
 import './Component_WorkHub.scss';
 import {WorkHubTab, WorkHubTabGroup} from '@nu-art/work-hub-shared';
 import {ModuleFE_WorkHub} from '../../_module/index.js';

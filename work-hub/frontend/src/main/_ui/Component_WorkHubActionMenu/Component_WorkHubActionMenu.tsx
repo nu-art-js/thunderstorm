@@ -1,14 +1,7 @@
 import {CSSProperties, Fragment, MouseEvent} from 'react';
-import {
-	_className,
-	Button,
-	ComponentSync,
-	LL_H_C,
-	LL_V_L,
-	Model_PopUp,
-	ModuleFE_MouseInteractivity,
-	mouseInteractivity_PopUp
-} from '@nu-art/thunderstorm-frontend';
+import {_className} from '@nu-art/thunder-core';
+import {Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
+import {Model_PopUp, ModuleFE_MouseInteractivity, mouseInteractivity_PopUp} from '@nu-art/thunder-mouse-interactivity-frontend';
 import {WorkHubItem_MenuAction, WorkHubItem_MenuSection} from './types.js';
 import {ModuleFE_WorkHub} from '../../_module/index.js';
 import './Component_WorkHubActionMenu.scss';

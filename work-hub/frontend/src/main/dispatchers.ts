@@ -1,4 +1,4 @@
-import {ThunderDispatcher} from '@nu-art/thunderstorm-frontend';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 export interface OnWorkHubTabs {
 	__onWorkHubTabsUpdated: VoidFunction;

@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/permissions-shared": "?",
     "@nu-art/permissions-backend": "?",
     "@nu-art/work-hub-shared": "?"
