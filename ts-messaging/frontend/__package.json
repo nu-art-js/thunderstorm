@@ -32,8 +32,7 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/db-api-frontend": "?",
     "@nu-art/user-account-frontend": "?",
     "@nu-art/user-account-shared": "?",
     "@nu-art/permissions-frontend": "?",

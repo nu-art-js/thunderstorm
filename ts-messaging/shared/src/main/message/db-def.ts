@@ -1,5 +1,4 @@
 import {
-	DBDef_V3,
 	deleteKeysObject,
 	exists,
 	InvalidResult,
@@ -10,13 +9,14 @@ import {
 	tsValidateValue,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
 import {
 	BaseMessage,
 	DB_Message,
 	DB_Message_Image,
 	DB_Message_Text,
 	DB_Message_Video,
-	DBProto_Message,
+	DatabaseDef_Message,
 	MessageType_Image,
 	MessageType_Text,
 	MessageType_Video,
@@ -24,31 +24,16 @@ import {
 } from './types.js';
 import {MessagingDBGroup} from '../consts.js';
 
-/**
- * Utility object containing type guard methods for different message types
- */
 export const MessageTools = {
-	isText: (instance: UI_Message): instance is DB_Message_Text => {
-		return instance.type === 'text';
-	},
-	isImage: (instance: UI_Message): instance is DB_Message_Image => {
-		return instance.type === 'image';
-	},
-	isVideo: (instance: UI_Message): instance is DB_Message_Video => {
-		return instance.type === 'video';
-	}
+	isText: (instance: UI_Message): instance is DB_Message_Text => instance.type === 'text',
+	isImage: (instance: UI_Message): instance is DB_Message_Image => instance.type === 'image',
+	isVideo: (instance: UI_Message): instance is DB_Message_Video => instance.type === 'video',
 };
 
-/**
- * Validator for automatically generated message properties
- */
-const Validator_GeneratedProps_Text: DBProto_Message['generatedPropsValidator'] = {
+const Validator_GeneratedProps_Message: DatabaseDef_Message['generatedPropsValidator'] = {
 	_auditorId: tsValidateUniqueId,
 };
 
-/**
- * Base validator for common message properties
- */
 const Validator_BaseMessage: ValidatorTypeResolver<BaseMessage> = {
 	topicId: tsValidateUniqueId,
 };
@@ -70,12 +55,6 @@ const Validator_DB_Message_Text: ValidatorTypeResolver<DB_Message_Text> = {
 	text: tsValidateString(),
 };
 
-/**
- * Validates modifiable properties of a message based on its type
- *
- * @param instance - The message instance to validate
- * @returns Validation result or error message
- */
 const Validator_ModifiableProps_Message = (instance?: DB_Message): InvalidResult<DB_Message> => {
 	if (!exists(instance))
 		return 'No object received';
@@ -90,27 +69,22 @@ const Validator_ModifiableProps_Message = (instance?: DB_Message): InvalidResult
 		case MessageType_Video:
 			return tsValidate(__toValidate, Validator_DB_Message_Video);
 		default:
-			// @ts-ignore
-			return `Could not find message type('${instance.type}') when attempting to validate a message!`;
+			return `Could not find message type('${(instance as DB_Message)?.type}') when attempting to validate a message!`;
 	}
 };
 
-
-/**
- * Database definition for messages
- * Includes validation rules, versioning, and database configuration
- */
-export const DBDef_message: DBDef_V3<DBProto_Message> = {
-	modifiablePropsValidator: Validator_ModifiableProps_Message as DBProto_Message['modifiablePropsValidator'],
-	generatedPropsValidator: Validator_GeneratedProps_Text,
-	versions: ['1.0.0'],
+export const DBDef_message: Database<DatabaseDef_Message> = {
 	dbKey: 'messages',
+	entityName: 'Message',
+	modifiablePropsValidator: Validator_ModifiableProps_Message as DatabaseDef_Message['modifiablePropsValidator'],
+	generatedPropsValidator: Validator_GeneratedProps_Message,
+	versions: ['1.0.0'],
+	uniqueKeys: ['_id'],
 	frontend: {
 		group: MessagingDBGroup,
 		name: 'message',
 	},
 	backend: {
-		name: 'messages'
+		name: 'messages',
 	},
-	entityName: 'Message',
 };
