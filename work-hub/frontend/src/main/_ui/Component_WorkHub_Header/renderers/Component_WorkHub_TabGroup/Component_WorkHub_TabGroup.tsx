@@ -1,4 +1,4 @@
-import {LL_H_C, TS_CollapsableContainerV2} from '@nu-art/thunderstorm-frontend';
+import {LL_H_C, TS_CollapsableContainer} from '@nu-art/thunder-widgets';
 import {WorkHubTabGroup} from '@nu-art/work-hub-shared';
 import {CSSProperties, FC} from 'react';
 import {Component_WorkHub_Tab} from '../Component_WorkHub_Tab/Component_WorkHub_Tab.js';
@@ -13,7 +13,7 @@ type Props = {
 
 export const Component_WorkHub_TabGroup: FC<Props> = (props) => {
 	const style = {'--color-fg': props.group.color.foreground, '--color-bg': props.group.color.background} as CSSProperties;
-	return <TS_CollapsableContainerV2
+	return <TS_CollapsableContainer
 		className={'c__work-hub-tab-group'}
 		style={style}
 		animated

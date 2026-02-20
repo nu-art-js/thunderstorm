@@ -1,5 +1,5 @@
 import {Config_PanelParent, PanelConfig, Props_WorkspacePanel, State_WorkspacePanel} from './types.js';
-import {ComponentAsync, ComponentSync} from '@nu-art/thunderstorm-frontend/index';
+import {ComponentAsync, ComponentSync} from '@nu-art/thunder-widgets';
 import {compare, resolveContent} from '@nu-art/ts-common';
 
 

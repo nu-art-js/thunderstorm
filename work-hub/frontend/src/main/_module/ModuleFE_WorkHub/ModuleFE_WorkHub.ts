@@ -2,7 +2,7 @@ import {BadImplementationException, filterInstances, lastElement, mergeObject, M
 import {isWorkHubTab, isWorkHubTabGroup, WorkHubTab, WorkHubTabGroup} from '@nu-art/work-hub-shared';
 import {ModuleFE_WorkHub_GroupActions, ModuleFE_WorkHub_TabActions} from './types.js';
 import {dispatch_OnWorkHubTabSelected, dispatch_OnWorkHubTabsUpdated} from '../../dispatchers.js';
-import {StorageKey} from '@nu-art/thunderstorm-frontend';
+import {StorageKey} from '@nu-art/thunder-core';
 import {WorkHubItem} from '../../_core/work-hub-item.js';
 import {workHubTabGroupColors} from '../../_ui/Component_WorkHub_Header/renderers/Component_WorkHub_TabGroup/consts.js';
 import {ModuleFE_PermissionMapper, PermissionKey_FE} from '@nu-art/permissions-frontend';

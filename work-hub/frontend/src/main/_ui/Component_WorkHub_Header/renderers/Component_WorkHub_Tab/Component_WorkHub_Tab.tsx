@@ -1,6 +1,7 @@
 import {FC, MouseEvent} from 'react';
 import './Component_WorkHub_Tab.scss';
-import {_className, LL_H_C} from '@nu-art/thunderstorm-frontend';
+import {_className} from '@nu-art/thunder-core';
+import {LL_H_C} from '@nu-art/thunder-widgets';
 import {exists} from '@nu-art/ts-common';
 import {WorkHubTab} from '@nu-art/work-hub-shared';
 import { ModuleFE_WorkHub } from '../../../../_module/index.js';
