@@ -37,9 +37,12 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/db-api-frontend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-widgets": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
-    "@nu-art/thunderstorm-frontend": "?",
     "react": "?"
   },
   "devDependencies": {

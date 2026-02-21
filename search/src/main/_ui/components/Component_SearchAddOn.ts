@@ -1,4 +1,4 @@
-import {ComponentSync} from '@nu-art/thunderstorm-frontend';
+import {ComponentSync} from '@nu-art/thunder-widgets';
 import {compare} from '@nu-art/ts-common';
 import {SearchAddOn, SearchAddOnDef, SearchAddOnRenderer, SearchContext} from '../../_core/index.js';
 
@@ -22,24 +22,20 @@ export abstract class Component_SearchAddOn<
 
 	public abstract readonly addOn: SearchAddOn<AddOnDef>;
 
-	//######################### Life Cycle #########################
-
 	__onSearchFilterChanged() {
 		const nextValue = this.props.context.filter.get(this.addOn.key);
 		if (!compare(this.state.value, nextValue))
 			this.setState({value: nextValue});
 	}
 
-	componentDidMount() {
+	override componentDidMount() {
 		this.props.context.filterChangeListeners.register(this);
-		this.setState({value: this.props.context.filter.get(this.addOn.key)})
+		this.setState({value: this.props.context.filter.get(this.addOn.key)});
 	}
 
-	componentWillUnmount() {
+	override componentWillUnmount() {
 		this.props.context.filterChangeListeners.unregister(this);
 	}
-
-	//######################### Logic #########################
 
 	protected setValue = (val?: AddOnDef['valueType']) => {
 		this.props.context.filter.set(this.addOn.key, val);

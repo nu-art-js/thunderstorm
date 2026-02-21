@@ -1,41 +1,36 @@
 import * as React from 'react';
 import './PDF_Renderer.scss';
 import {ModuleFE_PDF} from '../modules/ModuleFE_PDF.js';
-import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm-frontend/index';
-import {_logger_logException} from '@nu-art/ts-common';
+import {PDF_Loader} from './PDF_Loader.js';
 import {PDFDocumentProxy} from 'pdfjs-dist';
 
-
 type State = {
-	index: number
-	pdfFile?: PDFDocumentProxy
-	width: number
-	height: number
-}
+	index: number;
+	pdfFile?: PDFDocumentProxy;
+	width: number;
+	height: number;
+	isLoading?: boolean;
+	error?: string;
+};
 
 type Props = {
-	pageIndex?: number
-	src: string
-}
+	pageIndex?: number;
+	src: string;
+};
 
 export class PDF_Renderer
-	extends ComponentAsync<Props, State> {
+	extends React.Component<Props, State> {
+
 	private ctx!: CanvasRenderingContext2D;
 	private textLayer!: HTMLDivElement;
 
 	constructor(props: Props) {
 		super(props);
-	}
-
-	protected async deriveStateFromProps(nextProps: Props) {
-		const state = {
-			index: nextProps.pageIndex || 1,
-			isLoading: false,
+		this.state = {
+			index: props.pageIndex ?? 1,
 			width: 500,
-			height: 500
+			height: 500,
 		};
-
-		return state;
 	}
 
 	private async loadPdf(pdfSrc: string) {
@@ -43,74 +38,61 @@ export class PDF_Renderer
 		try {
 			const pdfFile = await ModuleFE_PDF.loadFromUrl(pdfSrc);
 			this.setState({pdfFile});
-
 			await this.renderPage(this.state.index);
-
 			this.setState({isLoading: false});
-		} catch (err: any) {
-			this.setState({error: err.message, isLoading: false});
+		} catch (err: unknown) {
+			this.setState({error: err instanceof Error ? err.message : String(err), isLoading: false});
 		}
 	}
 
-	async componentDidMount() {
-		return this.loadPdf(this.props.src);
+	override componentDidMount() {
+		void this.loadPdf(this.props.src);
 	}
 
-	async componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
-		if (this.props.src !== prevProps.src) {
-			return this.loadPdf(this.props.src);
-		}
+	override componentDidUpdate(prevProps: Readonly<Props>) {
+		if (this.props.src !== prevProps.src)
+			void this.loadPdf(this.props.src);
 	}
 
-	render() {
+	override render() {
 		return <>
 			<div
-				className={'pdf-renderer'}
+				className="pdf-renderer"
 				ref={instance => {
 					if (!instance)
 						return;
-
 					if (!this.ctx)
 						this.ctx = ModuleFE_PDF.appendCanvas(instance, {position: 'absolute'});
-
-				}}>{this.renderState()}</div>
+				}}
+			>
+				{this.renderState()}
+			</div>
 			<div
 				ref={instance => {
-					if (!instance)
-						return;
-
-					if (!this.textLayer)
+					if (instance)
 						this.textLayer = instance;
-				}}/>
+				}}
+			/>
 		</>;
-
-		// new Array(this.state.pdfFile?._pdfInfo.numPages || 0)
-		// 	.fill(0)
-		// 	.map((val, index) => <div key={index} className="clickable" style={{margin: "5px", padding: "3px"}}
-		// 	                          onClick={async () => {
-		// 		                          await this.renderPage(index + 1);
-		// 	                          }}>{index + 1}</div>);
-
 	}
 
-	renderState(): React.ReactNode {
+	private renderState(): React.ReactNode {
 		if (this.state.isLoading)
-			return <TS_Loader/>;
+			return <PDF_Loader/>;
 
 		if (this.state.error)
-			return <div>{_logger_logException(this.state.error)}</div>;
+			return <div className="pdf-renderer-error">{this.state.error}</div>;
+
+		return null;
 	}
 
 	private async renderPage(index: number) {
 		const pdfFile = this.state.pdfFile;
 		if (!pdfFile) {
-			this.logError('cannot render pdfFile - undefined');
+			console.warn('PDF_Renderer: cannot render pdfFile - undefined');
 			return;
 		}
-		this.logInfo(`isLoading page ${index}`);
 		const viewport = await ModuleFE_PDF.renderPage(this.ctx, pdfFile, index, this.textLayer);
-		this.logInfo(`loaded page ${index}`);
-
 		this.setState({index, width: viewport.width, height: viewport.height});
 	}
 }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ComponentSync, LL_V_L, VirtualizedList} from '@nu-art/thunderstorm-frontend';
+import {ComponentSync, LL_V_L, VirtualizedList} from '@nu-art/thunder-widgets';
 import {SearchContext, SearchItem, SearchResult, SearchResultsRenderer} from '../../../_core/index.js';
 import './Component_SearchResults.scss';
 import {filterInstances, ResolvableContent} from '@nu-art/ts-common';
@@ -19,9 +19,7 @@ export class Component_SearchResults
 	extends ComponentSync<Props, State>
 	implements SearchResultsRenderer {
 
-	//######################### Life Cycle #########################
-
-	protected deriveStateFromProps(nextProps: Props, state: State) {
+	protected override deriveStateFromProps(nextProps: Props, state: State) {
 		state.maxHeight = nextProps.maxItemsOnScreen * nextProps.itemHeight;
 		return state;
 	}
@@ -30,22 +28,20 @@ export class Component_SearchResults
 		this.setState({searchResults: this.props.context.getSearchResults()});
 	};
 
-	componentDidMount() {
+	override componentDidMount() {
 		this.props.context.searchResultChangeListeners.register(this);
 	}
 
-	componentWillUnmount() {
+	override componentWillUnmount() {
 		this.props.context.searchResultChangeListeners.unregister(this);
 	}
-
-	//######################### Render #########################
 
 	private getList = (): ResolvableContent<React.ReactNode>[] => {
 		if (!this.state.searchResults?.length)
 			return [];
 
 		const activeSearchItemMap = this.props.context.getActiveSearchItems().reduce((map, item) => {
-			map[item.module.dbDef.dbKey] = item;
+			map[item.module.config.dbKey] = item;
 			return map;
 		}, {} as { [key: string]: SearchItem<any, any> });
 
@@ -53,14 +49,11 @@ export class Component_SearchResults
 			const item = activeSearchItemMap[result.dbKey];
 			if (!item)
 				return;
-
 			return (style?: React.CSSProperties) => item.resultRenderer(result, style);
 		}));
 	};
 
-	//######################### Render #########################
-
-	render() {
+	override render() {
 		if (!this.state.searchResults?.length)
 			return this.render_NoResults();
 

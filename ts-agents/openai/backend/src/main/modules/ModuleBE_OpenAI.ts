@@ -1,24 +1,23 @@
 import {__stringify, BadImplementationException, Module, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
-
+import {ApiHandler} from '@nu-art/http-server';
 import {OpenAI} from 'openai';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm-backend';
 import {GPT_Model} from '@nu-art/ts-openai-shared/types';
-import {ApiDef_OpenAI, Request_ChatGPT} from '@nu-art/ts-openai-shared/api-def';
+import {API_OpenAI, ApiDef_OpenAI, Request_ChatGPT} from '@nu-art/ts-openai-shared/api-def';
 
 type Config = {
 	directives: TypedMap<{
-		agent?: GPT_Model,
-		directive: string
-	}>
-	defaultModel: GPT_Model
-	apiKey: string
-	orgId?: string
-}
+		agent?: GPT_Model;
+		directive: string;
+	}>;
+	defaultModel: GPT_Model;
+	apiKey: string;
+	orgId?: string;
+};
 
 export type Request_PredefinedDirective = {
-	directiveKey: string,
-	message: string
-	model?: GPT_Model
+	directiveKey: string;
+	message: string;
+	model?: GPT_Model;
 };
 
 export class ModuleBE_OpenAI_Class
@@ -36,13 +35,12 @@ export class ModuleBE_OpenAI_Class
 		const opts = {apiKey, organization};
 		this.logDebug(opts);
 		this.openai = new OpenAI(opts);
-
-		addRoutes([
-			createBodyServerApi(ApiDef_OpenAI.v1.test, this.test),
-		]);
 	}
 
-	test = async (query: Request_ChatGPT) => this.simpleQuery(query);
+	@ApiHandler(ApiDef_OpenAI.test)
+	async test(body: Request_ChatGPT): Promise<API_OpenAI['test']['Response']> {
+		return this.simpleQuery(body);
+	}
 
 	predefinedQuery = async (query: Request_PredefinedDirective) => {
 		const directive = this.config.directives[query.directiveKey];
@@ -52,17 +50,11 @@ export class ModuleBE_OpenAI_Class
 		return this.simpleQuery({model: directive.agent ?? query.model, message: query.message, directive: directive.directive});
 	};
 
-	simpleQuery = async (query: Request_ChatGPT) => {
+	simpleQuery = async (query: Request_ChatGPT): Promise<{ response: string }> => {
 		const completion = await this.openai.chat.completions.create({
 			messages: [
-				{
-					role: 'system',
-					content: query.directive
-				},
-				{
-					role: 'user',
-					content: query.message
-				}
+				{role: 'system', content: query.directive},
+				{role: 'user', content: query.message}
 			],
 			model: query.model || this.config.defaultModel || 'gpt-3.5-turbo',
 		});
@@ -77,4 +69,3 @@ export class ModuleBE_OpenAI_Class
 }
 
 export const ModuleBE_OpenAI = new ModuleBE_OpenAI_Class();
-

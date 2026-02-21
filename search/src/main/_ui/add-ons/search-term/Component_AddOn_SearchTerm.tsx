@@ -1,10 +1,10 @@
-import {LL_H_C, TS_Input} from '@nu-art/thunderstorm-frontend';
+import {LL_H_C, TS_Input} from '@nu-art/thunder-widgets';
 import {SearchAddOn} from '../../../_core/index.js';
 import {Component_SearchAddOn} from '../../components/Component_SearchAddOn.js';
 import {AddOn_SearchTerm, AddOnDef_SearchTerm} from './types.js';
 import './Component_AddOn_SearchTerm.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {InferProps, InferState} from '@nu-art/thunderstorm-frontend';
+import {InferProps, InferState} from '@nu-art/thunder-widgets';
 
 type Props = {
 	placeholder?: string;
@@ -17,14 +17,14 @@ type State = {
 export class Component_AddOn_SearchTerm
 	extends Component_SearchAddOn<AddOnDef_SearchTerm, Props, State> {
 
-	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
+	protected override deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		state.placeholder = nextProps.placeholder;
 		return state;
 	}
 
 	public addOn: SearchAddOn<AddOnDef_SearchTerm> = AddOn_SearchTerm;
 
-	render() {
+	override render() {
 		return <LL_H_C className={'search-add-on__search-term'}>
 			<TS_Input
 				type={'text'}
