@@ -21,6 +21,7 @@ import {arrayToMap, batchActionParallel, compare, currentTimeMillis, Day, filter
 import {FirebaseType_BatchResponse, ModuleBE_Firebase, PushMessagesWrapperBE} from '@nu-art/firebase-backend';
 import {
 	ApiDef_PushMessages,
+	BaseSubscriptionData,
 	DB_PushSubscription,
 	PushMessage,
 	PushMessage_Payload,
@@ -28,15 +29,25 @@ import {
 	Request_PushRegister
 } from '@nu-art/push-pub-sub-shared';
 
-import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm-backend';
+import {ApiHandler, HttpServer} from '@nu-art/http-server';
+
+export type CleanupDetails = {
+	cleanup: () => Promise<void>;
+	interval: number;
+	moduleKey: string;
+};
+
+export interface OnCleanupSchedulerAct {
+	__onCleanupSchedulerAct: () => CleanupDetails;
+}
 
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import {firestore} from 'firebase-admin';
 import {UI_PushSession} from '@nu-art/push-pub-sub-shared/push-session/index';
-import {ModuleBE_PushSessionDB} from './ModuleBE_PushSessionDB.js';
+import {ModuleBE_PushSessionDB, ModuleBE_PushSessionDB_Class} from './ModuleBE_PushSessionDB.js';
 import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB.js';
 import {DBProto_PushMessagesHistory} from '@nu-art/push-pub-sub-shared/push-messages-history/index';
-import {ModuleBE_PushMessagesHistoryDB} from './ModuleBE_PushMessagesHistoryDB.js';
+import {ModuleBE_PushMessagesHistoryDB, ModuleBE_PushMessagesHistoryDB_Class} from './ModuleBE_PushMessagesHistoryDB.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {Message} from 'firebase-admin/messaging';
 import Transaction = firestore.Transaction;
@@ -67,13 +78,29 @@ export class ModuleBE_PushPubSub_Class
 		const session = ModuleBE_Firebase.createAdminSession();
 
 		this.messaging = session.getMessaging();
+	}
 
-		addRoutes([
-			createBodyServerApi(ApiDef_PushMessages.v1.test, (r) => this.pushToKey(r.message)),
-			createBodyServerApi(ApiDef_PushMessages.v1.register, this.register),
-			createBodyServerApi(ApiDef_PushMessages.v1.unregister, this.register),
-			createBodyServerApi(ApiDef_PushMessages.v1.registerAll, this.register)
-		]);
+	@ApiHandler(ApiDef_PushMessages.test, {httpServer: () => HttpServer.getDefault()})
+	async test(body: { message: PushMessage<any, any, any> }): Promise<void> {
+		await this.pushToKey(body.message);
+	}
+
+	@ApiHandler(ApiDef_PushMessages.register, {httpServer: () => HttpServer.getDefault()})
+	async registerHandler(body: Request_PushRegister): Promise<BaseSubscriptionData> {
+		await this.register(body);
+		return body.subscriptions?.[0] ?? {topic: '', filter: undefined};
+	}
+
+	@ApiHandler(ApiDef_PushMessages.unregister, {httpServer: () => HttpServer.getDefault()})
+	async unregisterHandler(body: Request_PushRegister): Promise<BaseSubscriptionData> {
+		await this.register(body);
+		return body.subscriptions?.[0] ?? {topic: '', filter: undefined};
+	}
+
+	@ApiHandler(ApiDef_PushMessages.registerAll, {httpServer: () => HttpServer.getDefault()})
+	async registerAllHandler(body: Request_PushRegister): Promise<BaseSubscriptionData[]> {
+		await this.register(body);
+		return body.subscriptions ?? [];
 	}
 
 	register = async (body: Request_PushRegister) => {
@@ -85,7 +112,7 @@ export class ModuleBE_PushPubSub_Class
 			accountId
 		};
 
-		await ModuleBE_PushSessionDB.set.item(session);
+		await ModuleBE_PushSessionDB.set.item(session as Parameters<ModuleBE_PushSessionDB_Class['set']['item']>[0]);
 
 		const subscriptions: DB_PushSubscription[] = body.subscriptions.map((subscription): DB_PushSubscription => {
 			return filterKeys({
@@ -145,7 +172,7 @@ export class ModuleBE_PushPubSub_Class
 			if (messagesToCreate.length === 0)
 				return this.logDebug('No subscribers match message: ', message);
 
-			const dbMessages = await ModuleBE_PushMessagesHistoryDB.create.all(messagesToCreate);
+			const dbMessages = await ModuleBE_PushMessagesHistoryDB.create.all(messagesToCreate as Parameters<ModuleBE_PushMessagesHistoryDB_Class['create']['all']>[0]);
 			const messagesToSend: Message[] = dbMessages.map(dbMessage => {
 				const messageBody: PushMessage_Payload = {
 					_id: dbMessage._id,

@@ -18,7 +18,7 @@ const _PermissionsDomain_PushMessages: DefaultDef_Domain = {
 	dbNames: [],
 	levels: CreateDefaultAccessLevels(Domain_PushMessages_ID, accessLevels),
 	customApis: [
-		..._values(ModuleBE_PushSubscriptionAPI.apiDef.v1).map(api => {
+		..._values(ModuleBE_PushSubscriptionAPI.crudApiDef).map(api => {
 			return {
 				path: api.path,
 				accessLevel: DefaultAccessLevel_Admin.name,
@@ -26,10 +26,10 @@ const _PermissionsDomain_PushMessages: DefaultDef_Domain = {
 
 			};
 		}),
-		{path: ApiDef_PushMessages.v1.test.path, accessLevel: DefaultAccessLevel_Admin.name, domainId: Domain_Developer._id},
-		{path: ApiDef_PushMessages.v1.register.path, accessLevel: DefaultAccessLevel_Active.name},
-		{path: ApiDef_PushMessages.v1.registerAll.path, accessLevel: DefaultAccessLevel_Active.name},
-		{path: ApiDef_PushMessages.v1.unregister.path, accessLevel: DefaultAccessLevel_Active.name},
+		{path: ApiDef_PushMessages.test.path, accessLevel: DefaultAccessLevel_Admin.name, domainId: Domain_Developer._id},
+		{path: ApiDef_PushMessages.register.path, accessLevel: DefaultAccessLevel_Active.name},
+		{path: ApiDef_PushMessages.registerAll.path, accessLevel: DefaultAccessLevel_Active.name},
+		{path: ApiDef_PushMessages.unregister.path, accessLevel: DefaultAccessLevel_Active.name},
 	]
 };
 

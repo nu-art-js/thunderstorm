@@ -16,28 +16,23 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/api-types';
 import {BaseSubscriptionData, PushMessage, Request_PushRegister} from './types.js';
 
-
 export type Request_PushTest = {
-	message: PushMessage<any, any, any>
-}
+	message: PushMessage<any, any, any>;
+};
 
-export type ApiStruct_PushMessages = {
-	v1: {
-		test: BodyApi<void, Request_PushTest>
-		unregister: BodyApi<void, Request_PushRegister, BaseSubscriptionData>
-		register: BodyApi<void, Request_PushRegister, BaseSubscriptionData>
-		registerAll: BodyApi<void, Request_PushRegister, BaseSubscriptionData[]>
-	}
-}
+export type API_PushMessages = {
+	test: BodyApi<void, Request_PushTest>;
+	unregister: BodyApi<BaseSubscriptionData, Request_PushRegister>;
+	register: BodyApi<BaseSubscriptionData, Request_PushRegister>;
+	registerAll: BodyApi<BaseSubscriptionData[], Request_PushRegister>;
+};
 
-export const ApiDef_PushMessages: ApiDefResolver<ApiStruct_PushMessages> = {
-	v1: {
-		test: {method: HttpMethod.POST, path: 'v1/push-messages/test'},
-		unregister: {method: HttpMethod.POST, path: 'v1/push-messages/unregister'},
-		register: {method: HttpMethod.POST, path: 'v1/push-messages/register'},
-		registerAll: {method: HttpMethod.POST, path: 'v1/push-messages/register-all'}
-	}
+export const ApiDef_PushMessages: ApiDefResolver<API_PushMessages> = {
+	test: {method: HttpMethod.POST, path: 'v1/push-messages/test'},
+	unregister: {method: HttpMethod.POST, path: 'v1/push-messages/unregister'},
+	register: {method: HttpMethod.POST, path: 'v1/push-messages/register'},
+	registerAll: {method: HttpMethod.POST, path: 'v1/push-messages/register-all'}
 };

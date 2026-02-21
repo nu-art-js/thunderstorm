@@ -17,17 +17,17 @@
  */
 
 import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {apiWithBody, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
+import {ApiCaller} from '@nu-art/http-client';
+import {StorageKey, ThunderDispatcher} from '@nu-art/thunder-core';
 import {MessagingWrapperFE} from '@nu-art/firebase-frontend/index';
 import {
 	ApiDef_PushMessages,
-	ApiStruct_PushMessages,
 	BaseSubscriptionData,
 	OnPushMessageReceived,
 	PushMessage_Payload,
 	PushMessage_PayloadWrapper,
-	Request_PushRegister
+	Request_PushRegister,
+	Request_PushTest
 } from '@nu-art/push-pub-sub-shared';
 
 
@@ -52,8 +52,7 @@ export const pushSessionIdKey = 'x-push-session-id';
 const pushSessionId = new StorageKey<string>(pushSessionIdKey, false);
 
 export class ModuleFE_PushPubSub_Class
-	extends Module<PushPubSubConfig>
-	implements ApiDefCaller<ApiStruct_PushMessages> {
+	extends Module<PushPubSubConfig> {
 
 	private subscriptions: BaseSubscriptionData[] = [];
 	private firebaseToken?: string;
@@ -61,7 +60,12 @@ export class ModuleFE_PushPubSub_Class
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived, '__onMessageReceived'>('__onMessageReceived');
 
-	readonly v1: ApiDefCaller<ApiStruct_PushMessages>['v1'];
+	readonly v1: {
+		test: (params: Request_PushTest) => { executeSync: () => Promise<unknown> };
+		register: (subscription: BaseSubscriptionData) => { executeSync: () => Promise<unknown> };
+		unregister: (subscription: BaseSubscriptionData) => { executeSync: () => Promise<unknown> };
+		registerAll: (subscriptions: BaseSubscriptionData[]) => { executeSync: () => Promise<unknown> };
+	};
 
 	private readonly pushSessionId: string;
 	protected timeout: number = 800;
@@ -70,25 +74,34 @@ export class ModuleFE_PushPubSub_Class
 		super();
 		window.name = window.name || generateHex(32);
 		this.pushSessionId = pushSessionId.set(window.name);
-		const register = apiWithBody(ApiDef_PushMessages.v1.register);
 		this.v1 = {
-			test: apiWithBody(ApiDef_PushMessages.v1.test),
+			test: (params: Request_PushTest) => ({executeSync: () => this.test(params)}),
 			register: (subscription: BaseSubscriptionData) => {
 				this.subscribeImpl(subscription);
-				return register(this.composeRegisterRequest());
+				return {executeSync: () => this._register(this.composeRegisterRequest())};
 			},
 			unregister: (subscription: BaseSubscriptionData) => {
 				removeFromArray(this.subscriptions, d => d.topic === subscription.topic && compare(subscription.filter, d.filter));
-				return register(this.composeRegisterRequest());
+				return {executeSync: () => this._register(this.composeRegisterRequest())};
 			},
 			registerAll: (subscriptions: BaseSubscriptionData[]) => {
 				subscriptions.forEach(subscription => this.subscribeImpl(subscription));
-				return register(this.composeRegisterRequest());
+				return {executeSync: () => this._register(this.composeRegisterRequest())};
 			}
 		};
 	}
 
-	private composeRegisterRequest() {
+	@ApiCaller(ApiDef_PushMessages.test)
+	async test(_body: Request_PushTest): Promise<void> {
+		void _body;
+	}
+
+	@ApiCaller(ApiDef_PushMessages.register)
+	async _register(_body: Request_PushRegister): Promise<BaseSubscriptionData> {
+		return undefined as unknown as BaseSubscriptionData;
+	}
+
+	private composeRegisterRequest(): Request_PushRegister {
 		if (!this.firebaseToken)
 			throw new ThisShouldNotHappenException('Firebase token not found');
 

@@ -1,4 +1,4 @@
-import {ApiDefResolver} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver} from '@nu-art/api-types';
 
 export type ApiStruct_PushMessagesHistory = {
 	_v1: {}
