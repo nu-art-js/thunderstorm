@@ -2,8 +2,7 @@ import {arrayIncludesAll, BadImplementationException, Debounce, Logger, removeIt
 import {SearchAddOn, SearchAddOnDef, SearchResult} from './SearchAddOn.js';
 import {SearchItem} from './SearchItem.js';
 import {SearchSorter} from './SearchSorter.js';
-import {StorageKey, Thunder} from '@nu-art/thunderstorm-frontend';
-import {OnSyncStatusChangedListener} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {StorageKey} from '@nu-art/thunder-core';
 
 export interface SearchAddOnRenderer {
 	__onSearchFilterChanged: VoidFunction;
@@ -15,81 +14,63 @@ export interface SearchResultsRenderer {
 }
 
 export class SearchContext
-	extends Logger
-	implements OnSyncStatusChangedListener<any> {
+	extends Logger {
 
-	private searchItems: SearchItem<any, any>[];
-	private activeSearchItems: SearchItem<any, any>[];
-	private addOns: SearchAddOn<any>[];
-	private activeAddOns: SearchAddOn<any>[];
-	private sorters: SearchSorter<any>[];
+	private searchItems: SearchItem<any, any>[] = [];
+	private activeSearchItems: SearchItem<any, any>[] = [];
+	private addOns: SearchAddOn<any>[] = [];
+	private activeAddOns: SearchAddOn<any>[] = [];
+	private sorters: SearchSorter<any>[] = [];
 
-	private minimumRequiredActiveAddons: number = 0;
+	private minimumRequiredActiveAddons = 0;
 	private readonly searchDebouncer = new Debounce(() => this.search(), 200, 500);
 	private saveFilterDebounce: Debounce<any, any> | undefined;
 	private readonly filterDictionary: { [AddOnKey: string]: any };
-	private readonly _filterChangeListeners: SearchAddOnRenderer[] = [];
+	private readonly filterChangeListenersList: SearchAddOnRenderer[] = [];
 	private searchResults?: SearchResult[];
 	private searchTime?: number;
-	private readonly _searchResultChangeListeners: SearchResultsRenderer[] = [];
-	private _retainFilters: boolean = false;
+	private readonly searchResultChangeListenersList: SearchResultsRenderer[] = [];
+	private retainFiltersFlag = false;
 	private readonly filterStorage: StorageKey<{ [AddOnKey: string]: any }>;
 
 	constructor(key: string) {
 		super(`SearchContext-${key}`);
-		this.searchItems = [];
-		this.activeSearchItems = [];
-		this.addOns = [];
-		this.activeAddOns = [];
-		this.sorters = [];
 		this.filterStorage = new StorageKey(`search-context-data__${key}`);
 		this.filterDictionary = this.filterStorage.get({});
-		//Register listeners with a delay to let Thunder instance be created
-		setTimeout(() => {
-			// @ts-ignore
-			Thunder.getInstance().addUIListener(this);
-			this.searchItems.forEach(searchItem => {
-				// @ts-ignore
-				this[searchItem.module.defaultDispatcher.method] = () => this.searchDebouncer.trigger();
-			});
-		});
 	}
 
+	/** Call this when sync/data changes to re-run search. App is responsible for wiring. */
 	__onSyncStatusChanged = () => this.searchDebouncer.trigger();
 
-	//######################### Factory Logic #########################
-
-	public setSearchItems = (items: SearchItem<any, any>[]) => {
+	setSearchItems = (items: SearchItem<any, any>[]) => {
 		this.searchItems = items;
 		this.setActiveSearchItems();
 		this.logInfo('Set Search Items', this.searchItems);
 		return this;
 	};
 
-	public setAddOns = (addOns: SearchAddOn<any>[]) => {
+	setAddOns = (addOns: SearchAddOn<any>[]) => {
 		this.addOns = addOns;
 		this.setActiveAddOns();
 		this.setActiveSearchItems();
 		return this;
 	};
 
-	public setSorters = (sorters: SearchSorter<any>[]) => {
+	setSorters = (sorters: SearchSorter<any>[]) => {
 		this.sorters = sorters;
 		return this;
 	};
 
-	public setMinimumRequiredActiveAddOns = (num: number) => {
+	setMinimumRequiredActiveAddOns = (num: number) => {
 		this.minimumRequiredActiveAddons = num;
 		return this;
 	};
 
-	public retainFilters = () => {
-		this._retainFilters = true;
+	retainFilters = () => {
+		this.retainFiltersFlag = true;
 		this.saveFilterDebounce = new Debounce(() => this.saveFilters(), 200, 500);
 		return this;
 	};
-
-	//######################### Internal Logic #########################
 
 	private setActiveAddOns = () => {
 		this.activeAddOns = this.addOns.filter(addOn => {
@@ -101,15 +82,21 @@ export class SearchContext
 	private setActiveSearchItems = () => {
 		const activeAddOnKeys = this.activeAddOns.map(addOn => addOn.key);
 		if (!activeAddOnKeys.length)
-			return this.activeSearchItems = [...this.searchItems];
+			return void (this.activeSearchItems = [...this.searchItems]);
 
-		this.activeSearchItems = this.searchItems.filter(searchItem => arrayIncludesAll(searchItem.compatibleAddOnKeys as string[], activeAddOnKeys));
+		this.activeSearchItems = this.searchItems.filter(searchItem =>
+			arrayIncludesAll(searchItem.compatibleAddOnKeys as string[], activeAddOnKeys));
 	};
 
 	private getInitialSearchResults = (): SearchResult[] => {
 		const results: SearchResult[] = [];
 		this.activeSearchItems.forEach(searchItem => {
-			const pointers: SearchResult[] = searchItem.module.cache.all().map(i => ({dbKey: searchItem.module.dbDef.dbKey, id: i._id, filterResults: {}}));
+			const all = searchItem.module.cache.all();
+			const pointers: SearchResult[] = all.map(i => ({
+				dbKey: searchItem.module.config.dbKey,
+				id: (i as { _id: string })._id,
+				filterResults: {}
+			}));
 			results.push(...pointers);
 		});
 		return results;
@@ -120,20 +107,18 @@ export class SearchContext
 			if (this.addOns.length) {
 				delete this.searchResults;
 				delete this.searchTime;
-				this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
+				this.searchResultChangeListenersList.forEach(listener => listener.__onSearchResultsChanged());
 			}
 			return;
 		}
 
 		const startTime = Date.now();
 		let searchResults = this.getInitialSearchResults();
-		//Map active search item to dbKeys for O(1) access
 		const searchItemMap = this.activeSearchItems.reduce((map, item) => {
-			map[item.module.dbDef.dbKey] = item;
+			map[item.module.config.dbKey] = item;
 			return map;
 		}, {} as { [key: string]: SearchItem<any, any> });
 
-		//Cycle filter the results by active add-ons
 		this.activeAddOns.forEach(addOn => {
 			const filterValue = this.filterDictionary[addOn.key];
 			searchResults = searchResults.filter(result => {
@@ -145,82 +130,70 @@ export class SearchContext
 			});
 		});
 
-		//Sort results
 		this.sorters.forEach(sorter => {
-			const addOn = this.activeAddOns.find(addOn => addOn.key === sorter.key);
-			if (!addOn) //No connected active addon was found, do not run sorter
+			const addOn = this.activeAddOns.find(a => a.key === sorter.key);
+			if (!addOn)
 				return;
-
 			sorter.sortFunction(searchResults);
 		});
 
 		this.searchResults = searchResults;
 		this.searchTime = Date.now() - startTime;
-		this._searchResultChangeListeners.forEach(listener => listener.__onSearchResultsChanged());
+		this.searchResultChangeListenersList.forEach(listener => listener.__onSearchResultsChanged());
 	};
 
 	private saveFilters = () => {
-		if (!this._retainFilters)
+		if (!this.retainFiltersFlag)
 			return;
-
 		this.filterStorage.set({...this.filterDictionary});
 	};
 
-	//######################### Public Logic #########################
+	getActiveSearchItems = () => [...this.activeSearchItems];
 
-	public getActiveSearchItems = () => [...this.activeSearchItems];
+	getSearchResults = () => this.searchResults;
 
-	public getSearchResults = () => this.searchResults;
+	getSearchTime = () => this.searchTime;
 
-	public getSearchTime = () => this.searchTime;
+	getAddOns = () => [...this.addOns];
 
-	public getAddOns = () => [...this.addOns];
-
-	public filter = {
+	filter = {
 		set: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key'], value: AddOn['valueType']): void => {
 			this.filterDictionary[key] = value;
 			this.saveFilterDebounce?.trigger();
 			this.saveFilters();
-			//Re-calculate active addons and search items
 			this.setActiveAddOns();
 			this.setActiveSearchItems();
-			//Notify all listeners that filters have changed
-			this._filterChangeListeners.forEach(listener => listener.__onSearchFilterChanged());
-			//Trigger search
+			this.filterChangeListenersList.forEach(listener => listener.__onSearchFilterChanged());
 			this.searchDebouncer.trigger();
 		},
-		get: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key']): AddOn['valueType'] | undefined => {
-			return this.filterDictionary[key];
-		},
+		get: <AddOn extends SearchAddOnDef<string, any, any, any>>(key: AddOn['key']): AddOn['valueType'] | undefined =>
+			this.filterDictionary[key],
 	};
 
-	public filterChangeListeners = {
+	filterChangeListeners = {
 		register: (renderer: SearchAddOnRenderer) => {
-			if (this._filterChangeListeners.includes(renderer))
+			if (this.filterChangeListenersList.includes(renderer))
 				return;
-
-			const addOn = this.addOns.find(addOn => addOn.key === renderer.addOn.key);
+			const addOn = this.addOns.find(a => a.key === renderer.addOn.key);
 			if (!addOn) {
 				this.logError(renderer, this.addOns);
 				throw new BadImplementationException('Trying to register a listener that is not connected to an addon');
 			}
-
-			this._filterChangeListeners.push(renderer);
+			this.filterChangeListenersList.push(renderer);
 		},
 		unregister: (renderer: SearchAddOnRenderer) => {
-			removeItemFromArray(this._filterChangeListeners, renderer);
-		}
+			removeItemFromArray(this.filterChangeListenersList, renderer);
+		},
 	};
 
-	public searchResultChangeListeners = {
+	searchResultChangeListeners = {
 		register: (renderer: SearchResultsRenderer) => {
-			if (this._searchResultChangeListeners.includes(renderer))
+			if (this.searchResultChangeListenersList.includes(renderer))
 				return;
-
-			this._searchResultChangeListeners.push(renderer);
+			this.searchResultChangeListenersList.push(renderer);
 		},
 		unregister: (renderer: SearchResultsRenderer) => {
-			removeItemFromArray(this._searchResultChangeListeners, renderer);
-		}
+			removeItemFromArray(this.searchResultChangeListenersList, renderer);
+		},
 	};
 }

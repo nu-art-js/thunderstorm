@@ -1,27 +1,23 @@
 import {Module} from '@nu-art/ts-common';
-import {apiWithBody} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDefCaller} from '@nu-art/thunderstorm-shared';
-import {ApiDef_OpenAI, ApiStruct_OpenAI} from '@nu-art/ts-openai-shared/api-def';
+import {ApiCaller} from '@nu-art/http-client';
+import {API_OpenAI, ApiDef_OpenAI, Request_ChatGPT} from '@nu-art/ts-openai-shared/api-def';
 
-
-type Config = {
-// config here
-}
+type Config = Record<string, never>;
 
 export class ModuleFE_OpenAI_Class
 	extends Module<Config> {
 
-	readonly v1: ApiDefCaller<ApiStruct_OpenAI>['v1'];
-
 	constructor() {
 		super();
-
-		this.v1 = {
-			test: apiWithBody(ApiDef_OpenAI.v1.test),
-		};
 	}
 
-	init() {
+	protected init() {
+	}
+
+	@ApiCaller(ApiDef_OpenAI.test)
+	async test(body: Request_ChatGPT): Promise<API_OpenAI['test']['Response']> {
+		void body;
+		return undefined as unknown as API_OpenAI['test']['Response'];
 	}
 }
 

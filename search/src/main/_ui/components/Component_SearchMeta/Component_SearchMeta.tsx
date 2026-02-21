@@ -1,8 +1,9 @@
 import * as React from 'react';
-import {ComponentSync, LL_H_C, ModuleFE_Thunderstorm, stopPropagation} from '@nu-art/thunderstorm-frontend';
+import {ComponentSync, LL_H_C} from '@nu-art/thunder-widgets';
+import {stopPropagation} from '@nu-art/thunder-core';
 import './Component_SearchMeta.scss';
 import {filterInstances, formatTimestamp, TypedMap} from '@nu-art/ts-common';
-import {ModuleFE_CSVParser} from '@nu-art/thunderstorm-frontend/modules/ModuleFE_CSVParser';
+import {downloadFile, objectsToCsvString} from '../../utils/csv-and-download.js';
 import {SearchContext, SearchResultsRenderer} from '../../../_core/SearchContext.js';
 import {SearchItem} from '../../../_core/SearchItem.js';
 
@@ -14,26 +15,21 @@ export class Component_SearchMeta
 	extends ComponentSync<Props>
 	implements SearchResultsRenderer {
 
-	//######################### Life Cycle #########################
-
 	__onSearchResultsChanged = () => {
 		this.forceUpdate();
 	};
 
-	componentDidMount() {
+	override componentDidMount() {
 		this.props.context.searchResultChangeListeners.register(this);
 	}
 
-	componentWillUnmount() {
+	override componentWillUnmount() {
 		this.props.context.searchResultChangeListeners.unregister(this);
 	}
-
-	//######################### Logic #########################
 
 	private printResults = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (!e.metaKey)
 			return;
-
 		stopPropagation(e);
 		this.logInfo('SearchResults', this.props.context.getSearchResults());
 	};
@@ -42,37 +38,28 @@ export class Component_SearchMeta
 		const results = this.props.context.getSearchResults();
 		if (!results?.length)
 			return;
-
 		stopPropagation(e);
 		const searchItemMap = this.props.context.getActiveSearchItems().reduce((map, searchItem) => {
-			map[searchItem.module.dbDef.dbKey] = searchItem;
+			map[searchItem.module.config.dbKey] = searchItem;
 			return map;
 		}, {} as TypedMap<SearchItem<any, any>>);
 
-		//Map results csv ready objects
 		const objects = filterInstances(results.map(result => {
 			const searchItem = searchItemMap[result.dbKey];
 			if (!searchItem)
 				return;
-
 			return {
 				collection: result.dbKey,
 				id: result.id,
 				label: searchItem.labelResolver(result),
 			};
 		}));
-		const str = ModuleFE_CSVParser.toString(objects);
+		const str = objectsToCsvString(objects, ['collection', 'id', 'label']);
 		const fileName = `Search Results - [${formatTimestamp('DD/MM/YYYY-HH:mm:ss')}]`;
-		ModuleFE_Thunderstorm.downloadFile({
-			fileName,
-			content: str,
-			mimeType: 'text/csv',
-		});
+		downloadFile({fileName, content: str, mimeType: 'text/csv'});
 	};
 
-	//######################### Render #########################
-
-	render() {
+	override render() {
 		const searchResults = this.props.context.getSearchResults();
 		if (!searchResults?.length)
 			return;
@@ -87,7 +74,6 @@ export class Component_SearchMeta
 		const searchTime = this.props.context.getSearchTime();
 		if (!searchTime)
 			return;
-
 		const str = searchTime >= 1000 ? `${searchTime / 1000}s` : `${searchTime}ms`;
 		return <div className={'c__search-meta__time'}>{str}</div>;
 	};
