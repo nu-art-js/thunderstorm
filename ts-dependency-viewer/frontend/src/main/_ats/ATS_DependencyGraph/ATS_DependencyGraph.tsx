@@ -1,8 +1,8 @@
-import {AppToolsScreen, ATS_Frontend, ComponentSync} from '@nu-art/thunderstorm-frontend/index';
+import {AppToolsScreen, ATS_Frontend} from '@nu-art/thunder-ui-modules';
+import {ComponentSync} from '@nu-art/thunder-widgets';
 import {Component_DependencyViewer} from '../../dependency-viewer/Component_DependencyViewer.js';
 
-
-type State = {}
+type State = Record<string, never>;
 
 export class ATS_DependencyViewer
 	extends ComponentSync<{}, State> {
@@ -12,11 +12,11 @@ export class ATS_DependencyViewer
 	static screen: AppToolsScreen = {
 		name: 'Dependency Graph',
 		key: 'dependency-graph',
-		renderer: this,
+		renderer: ATS_DependencyViewer,
 		group: ATS_Frontend
 	};
 
-	protected deriveStateFromProps(nextProps: {}, state: State) {
+	protected deriveStateFromProps(nextProps: {}, state: State): State {
 		return state;
 	}
 
