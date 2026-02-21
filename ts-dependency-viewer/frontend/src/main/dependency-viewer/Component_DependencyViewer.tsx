@@ -1,13 +1,20 @@
 import * as React from 'react';
-import {ComponentSync, ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
+import {ComponentSync} from '@nu-art/thunder-widgets';
 import {_keys, filterDuplicates, RuntimeModules, TypedMap} from '@nu-art/ts-common';
-import {DBModuleType} from '@nu-art/thunderstorm-shared';
 import {graphviz} from 'd3-graphviz';
 import {Digraph, Edge, Node, Subgraph, toDot} from 'ts-graphviz';
 
+/** Module shape used for dependency graph: config with dbKey and optional entityName/dependencies (v2 / db-api style). */
+export type DependencyGraphModule = {
+	config: {
+		dbKey: string;
+		entityName?: string;
+		dependencies?: Record<string, { dbKey: string }>;
+	};
+};
 
 type State = {
-	protoModules: ModuleFE_BaseApi<any>[]
+	protoModules: DependencyGraphModule[];
 };
 
 export class Component_DependencyViewer
@@ -25,7 +32,7 @@ export class Component_DependencyViewer
 
 	protected deriveStateFromProps(nextProps: {}, state: State): State {
 		state = super.deriveStateFromProps(nextProps, state);
-		state.protoModules = RuntimeModules().filter<ModuleFE_BaseApi<any>>((module: DBModuleType) => !!module.dbDef?.dbKey);
+		state.protoModules = RuntimeModules().filter((m): m is DependencyGraphModule => !!(m as DependencyGraphModule).config?.dbKey);
 		return state;
 	}
 
@@ -42,13 +49,13 @@ export class Component_DependencyViewer
 		});
 	};
 
-	private getModuleNode = (module: DBModuleType) => {
-		const id = module.dbDef!.dbKey;
+	private getModuleNode = (module: DependencyGraphModule) => {
+		const id = module.config.dbKey;
 		return new Node(id, {
 			id: id,
 			shape: 'rect',
 			style: 'filled',
-			label: module.dbDef!.entityName,
+			label: module.config.entityName ?? module.config.dbKey,
 			fillcolor: '#ffffff',
 			fontsize: 13,
 			fontcolor: '#333333',
@@ -67,17 +74,18 @@ export class Component_DependencyViewer
 		graph.addSubgraph(subgraph);
 		const moduleNodes: TypedMap<Node> = {};
 
-		this.state.protoModules.forEach(module => {
+		this.state.protoModules.forEach((module: DependencyGraphModule) => {
 			const moduleNode = this.getModuleNode(module);
-			moduleNodes[module.dbDef.dbKey!] = moduleNode;
+			moduleNodes[module.config.dbKey] = moduleNode;
 			subgraph.addNode(moduleNode);
 		});
 
-		this.state.protoModules.forEach(module => {
-			const startNode = moduleNodes[module.dbDef.dbKey];
-			if (module.dbDef.dependencies)
-				filterDuplicates(_keys(module.dbDef.dependencies), item => module.dbDef.dependencies[item].dbKey).map(key => {
-					const endNode = moduleNodes[module.dbDef.dependencies[key].dbKey];
+		this.state.protoModules.forEach((module: DependencyGraphModule) => {
+			const startNode = moduleNodes[module.config.dbKey];
+			const deps = module.config.dependencies;
+			if (deps)
+				filterDuplicates(_keys(deps), item => deps[item].dbKey).map(key => {
+					const endNode = moduleNodes[deps[key].dbKey];
 					const midNode = this.getMidNode(startNode, endNode, key as string);
 					const edge = this.getDependencyNode(startNode, endNode, midNode);
 					subgraph.addNode(midNode);
