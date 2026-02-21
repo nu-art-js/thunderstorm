@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 
-import {ModuleBase_AssetUploader, UploaderConfig,} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader';
+import type {IAssetUploadRequest} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader';
+import {ModuleBase_AssetUploader, UploaderConfig} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader';
 import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@nu-art/thunderstorm-backend';
 import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
-import {ApiDef, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm-shared';
+import {ApiDef, TypedApi} from '@nu-art/thunderstorm-shared';
 
 
 export type ServerFilesToUpload = UI_Asset & {
@@ -45,8 +46,8 @@ export class ModuleBE_AssetUploader_Class
 		AxiosHttpModule.setRequestOption(this.config.requestConfig);
 	}
 
-	createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): BaseHttpRequest<API> {
-		return AxiosHttpModule.createRequest(uploadFile);
+	createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): IAssetUploadRequest<API> {
+		return AxiosHttpModule.createRequest(uploadFile) as unknown as IAssetUploadRequest<API>;
 	}
 
 	upload(files: ServerFilesToUpload[]): UI_Asset[] {

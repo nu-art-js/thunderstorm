@@ -1,5 +1,5 @@
 import {PushMessage} from '@nu-art/push-pub-sub-shared';
-import {DB_Asset} from './types1.js';
+import {DB_Asset} from './types.js';
 
 
 export const PushKey_FileUploaded = 'file-uploaded';

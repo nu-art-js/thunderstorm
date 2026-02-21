@@ -48,7 +48,7 @@ export class ModuleBE_BucketListener_Class
 			if (!accountId)
 				throw new BadImplementationException('Need to perform project setup to setup this feature');
 
-			MemKey_AccountId.set(accountId);
+			MemKey_AccountId.set(accountId as any);
 			let filePath = event.data.name || '';
 			if (filePath.endsWith('}'))
 				filePath = filePath.substring(0, filePath.length - 1);

@@ -1,5 +1,5 @@
-import {AppToolsScreen, Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunderstorm-frontend/index';
-import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm-frontend/consts';
+import {AppToolsScreen, ATS_Frontend} from '@nu-art/thunder-ui-modules';
+import {Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
 import {Model_FloatingWindow} from '../../types.js';
 import {ModuleFE_FloatingWindows} from '../../_modules/ModuleFE_FloatingWindows.js';
 import {windowRect} from '../../_utils/get-window-rect.js';
@@ -84,5 +84,5 @@ export const ATS_FloatingWindows: AppToolsScreen = {
 	key: 'ats__floating-windows',
 	name: 'Floating Windows',
 	renderer: ATS_FloatingWindows_Class,
-	group: thunderstormCapabilitiesGroup
+	group: ATS_Frontend
 };

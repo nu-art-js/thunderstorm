@@ -1,8 +1,8 @@
-import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
-import {DB_Asset} from './types1.js';
+import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
+import {DB_Asset} from './types.js';
 import {DB_BaseObject} from '@nu-art/ts-common';
 import {UI_Asset} from './types.js';
-import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
+import type {ResponseError} from '@nu-art/api-types';
 import {FileStatus} from '../types.js';
 
 
@@ -27,7 +27,7 @@ export const ApiDef_Assets: ApiDefResolver<ApiStruct_Assets> = {
 };
 
 export type FileUploadResult = { status: FileStatus, asset: DB_Asset };
-export type Api_UploadFile = BodyApi<FileUploadResult, any, any, ResponseError, HttpMethod.PUT>;
+export type Api_UploadFile = BodyApi<FileUploadResult, any, ResponseError, HttpMethod.PUT>;
 export const ApiDef_UploadFile: ApiDef<Api_UploadFile> = {method: HttpMethod.PUT, path: ''};
 
 export type ApiStruct_AssetUploader = {

@@ -7,7 +7,6 @@
     "infra",
     "nu-art",
     "storm",
-    "thunderstorm",
     "typescript"
   ],
   "homepage": "https://github.com/nu-art-js/file-upload",
@@ -36,7 +35,9 @@
     "@nu-art/push-pub-sub-shared": "?",
     "@nu-art/permissions-shared": "?",
     "@nu-art/user-account-shared": "?",
-    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/api-types": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/storm-shared": "?",
     "@nu-art/ts-common": "?",
     "@google-cloud/common": "?",
     "@google-cloud/storage": "?",

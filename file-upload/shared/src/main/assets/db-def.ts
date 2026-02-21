@@ -1,6 +1,5 @@
 import {
 	convertUpperCamelCase,
-	DBDef_V3,
 	tsValidateBoolean,
 	tsValidateDynamicObject,
 	tsValidateExists,
@@ -10,6 +9,7 @@ import {
 	tsValidateRegexp,
 	tsValidateString
 } from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
 import {AssetDBGroup, DBProto_Assets, DBProto_AssetsDeleted, DBProto_AssetsTemp} from './types.js';
 
 
@@ -35,43 +35,35 @@ const Validator_GeneratedProps: DBProto_Assets['generatedPropsValidator'] = {
 	)
 };
 
-export const DBDef_Assets: DBDef_V3<DBProto_Assets> = {
+const AssetVersions: ['1.0.2', '1.0.1', '1.0.0'] = ['1.0.2', '1.0.1', '1.0.0'];
+
+const BaseDef = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
-	versions: ['1.0.2', '1.0.1', '1.0.0'],
+	versions: AssetVersions,
+	frontend: { group: AssetDBGroup, name: 'asset' },
+	backend: { name: 'assets' },
+};
+
+export const DBDef_Assets: Database<DBProto_Assets> = {
+	...BaseDef,
 	dbKey: 'assets',
 	entityName: convertUpperCamelCase('Assets', '-').toLowerCase(),
-	frontend: {
-		group: AssetDBGroup,
-		name: 'asset'
-	},
-	backend: {
-		name: 'assets',
-	}
+	backend: { name: 'assets' },
 };
 
-export const DBDef_TempAssets: DBDef_V3<DBProto_AssetsTemp> = {
-	...DBDef_Assets,
+export const DBDef_TempAssets: Database<DBProto_AssetsTemp> = {
+	...BaseDef,
 	dbKey: 'assets-temp',
 	entityName: 'assets-temp',
-	frontend: {
-		group: AssetDBGroup,
-		name: 'temp'
-	},
-	backend: {
-		name: 'assets-temp',
-	}
+	frontend: { group: AssetDBGroup, name: 'temp' },
+	backend: { name: 'assets-temp' },
 };
 
-export const DBDef_TempDeleted: DBDef_V3<DBProto_AssetsDeleted> = {
-	...DBDef_Assets,
+export const DBDef_TempDeleted: Database<DBProto_AssetsDeleted> = {
+	...BaseDef,
 	dbKey: 'assets-deleted',
 	entityName: 'assets-deleted',
-	frontend: {
-		group: AssetDBGroup,
-		name: 'deleted'
-	},
-	backend: {
-		name: 'assets-deleted',
-	}
+	frontend: { group: AssetDBGroup, name: 'deleted' },
+	backend: { name: 'assets-deleted' },
 };
