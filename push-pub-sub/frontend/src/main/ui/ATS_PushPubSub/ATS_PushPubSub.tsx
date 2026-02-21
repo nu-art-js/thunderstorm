@@ -1,8 +1,8 @@
 import * as React from 'react';
+import type {ApiCallerEventType} from '@nu-art/db-api-shared';
+import {_className} from '@nu-art/thunder-core';
+import {AppToolsScreen, ATS_Fullstack} from '@nu-art/thunder-ui-modules';
 import {
-	_className,
-	AppToolsScreen,
-	ATS_Fullstack,
 	Button,
 	CellRenderer,
 	ComponentSync,
@@ -13,16 +13,13 @@ import {
 	TS_Input,
 	TS_PropRenderer,
 	TS_Table
-} from '@nu-art/thunderstorm-frontend/index';
+} from '@nu-art/thunder-widgets';
 import {__stringify, DateTimeFormat_yyyyMMDDTHHmmss, groupArrayBy, removeFromArrayByIndex, TS_Object,} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_PushPubSub} from '../../modules/ModuleFE_PushPubSub.js';
 import {OnPushMessageReceived, PushMessage_Payload} from '@nu-art/push-pub-sub-shared';
 import './ATS_PushPubSub.scss';
-import {TS_InputV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_Input/index';
 import {ModuleFE_PushSubscription} from '../../modules/ModuleFE_PushSubscription.js';
-import {ApiCallerEventType} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
-import {DBProto_PushSubscription} from '@nu-art/push-pub-sub-shared/push-subscription/index';
 
 
 type ObjProps = {
@@ -70,7 +67,7 @@ export class ATS_PushPubSub
 	};
 
 	
-	__onSubscriptionUpdated(...params: ApiCallerEventType<DBProto_PushSubscription>): void {
+	__onSubscriptionUpdated(...params: ApiCallerEventType<any>): void {
 		this.forceUpdate();
 	}
 
@@ -144,7 +141,7 @@ export class ATS_PushPubSub
 							<LL_H_C style={{width: 100}}>{subscription.key}</LL_H_C>
 							<LL_V_L>{subscription.values.map((value, index) => <LL_H_C
 								key={index}><TS_Icons.bin.component
-								onClick={() => ModuleFE_PushSubscription.v1.delete({_id: value._id}).executeSync()}/>{JSON.stringify(value.filter)}
+								onClick={() => void ModuleFE_PushSubscription.delete({_id: value._id})}/>{JSON.stringify(value.filter)}
 							</LL_H_C>)}</LL_V_L>
 						</LL_H_C>)}
 				</LL_V_L>
@@ -191,7 +188,7 @@ export class ATS_PushPubSub
 			</LL_H_C>
 			<LL_V_L className="panel-content v-gap__n">
 				<TS_PropRenderer.Vertical label={'Key'}>
-					<TS_InputV2
+					<TS_Input
 						onChange={(value) => this.setState({[key]: value} as unknown as State)}
 						type="text"
 						id={key}

@@ -1,8 +1,7 @@
 import {ReactNode} from 'react';
 import {EditableContentType, EditableItem, TS_EditableContent} from '@nu-art/thunderstorm-frontend';
 import {__stringify, tsValidateResult, ValidatorTypeResolver} from '@nu-art/ts-common';
-import {TS_TextAreaV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_TextArea/index';
-import {InferProps, InferState} from '@nu-art/thunderstorm-frontend/utils/types';
+import {InferProps, InferState, TS_TextArea} from '@nu-art/thunder-widgets';
 import './Editor_JsonToObject.scss';
 
 type Props<T> = {
@@ -35,7 +34,7 @@ export class Editor_JsonToObject<T>
 		const {isFreeTextMode, value, editable, isValid} = this.state;
 		return <>
 			{!isFreeTextMode && this.props.renderer(editable)}
-			{isFreeTextMode && <TS_TextAreaV2
+			{isFreeTextMode && <TS_TextArea
 				className={'ts-json-to-object'}
 				resizeWithText
 				data-valid={isValid}

@@ -25,7 +25,6 @@
     "build": "tsc -b -f"
   },
   "dependencies": {
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-styles": "?",
     "@nu-art/permissions-shared": "?",
     "@nu-art/ts-common": "?",
@@ -34,7 +33,8 @@
     "firebase": "?",
     "firebase-admin": "?",
     "moment": "?",
-    "react": "?"
+    "react": "?",
+    "@nu-art/api-types": "?"
   },
   "devDependencies": {
     "@types/react": "?"
