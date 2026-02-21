@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {EditableContentType, EditableItem, TS_EditableContent} from '@nu-art/thunderstorm-frontend';
+import {EditableContentType, EditableItem, TS_EditableContent} from '@nu-art/editable-item';
 import {__stringify, tsValidateResult, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {InferProps, InferState, TS_TextArea} from '@nu-art/thunder-widgets';
 import './Editor_JsonToObject.scss';

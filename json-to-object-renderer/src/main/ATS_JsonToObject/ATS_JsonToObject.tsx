@@ -1,4 +1,4 @@
-import {EditableItem} from '@nu-art/thunderstorm-frontend';
+import {EditableItem} from '@nu-art/editable-item';
 import {AppToolsScreen} from '@nu-art/thunder-ui-modules';
 import {ComponentSync, InferProps, InferState, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {Editor_JsonToObject} from '../Editor_JsonToObject.js';
