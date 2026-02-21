@@ -1,10 +1,9 @@
 /**
  * @nu-art/editable-item — public API.
  *
- * Exports only the core EditableItem and EditableDBItemV3 that compile against
- * @nu-art/db-api-frontend and @nu-art/ts-common. Components, controllers, and
- * Page_ItemsEditor that depend on @nu-art/web-client, @nu-art/storm-shared, or
- * legacy thunderstorm APIs are excluded from build until those deps are available.
+ * Core + UI components that compile against @nu-art/db-api-frontend, @nu-art/thunder-widgets,
+ * and @nu-art/ts-common. Controllers, editables, and Page_ItemsEditor that depend on
+ * @nu-art/storm-shared or legacy APIs remain in _excluded-from-build until migrated.
  * See _thunderstorm/editable-item-imports-dictionary.md and ISSUES.md.
  */
 export {
@@ -28,3 +27,14 @@ export {
 	Editable_DeleteAction,
 	Editable_OnChange,
 } from './core/EditableItem.js';
+
+export type {EditableRef} from './components/TS_EditableContent/types.js';
+export {
+	TS_EditableContent,
+	type EditableContentType,
+} from './components/TS_EditableContent/TS_EditableContent.js';
+export {
+	TS_EditableItemComponent,
+	TS_EditableItemComponentProto,
+} from './components/TS_EditableItemComponent/TS_EditableItemComponent.js';
+export {TS_EditableItemStatus} from './components/TS_EditableItemStatus/TS_EditableItemStatus.js';
