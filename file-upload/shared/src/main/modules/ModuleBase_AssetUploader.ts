@@ -17,27 +17,37 @@
  * limitations under the License.
  */
 import {__stringify, _keys, BadImplementationException, Dispatcher, Minute, Module, Queue} from '@nu-art/ts-common';
-import {ApiDef, ApiDefCaller, BaseHttpRequest, HeaderKey_ContentType, TS_Progress, TypedApi} from '@nu-art/thunderstorm-shared';
-
+import {ApiDef, HeaderKey_ContentType, TypedApi} from '@nu-art/api-types';
+import type {ApiDefCaller} from '@nu-art/storm-shared';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub-shared';
 import {PushMessage_Payload} from '@nu-art/push-pub-sub-shared';
 import {FileStatus, PushKey_FileUploaded, PushMessage_FileUploaded} from '../assets/messages.js';
 import {DB_Asset, UI_Asset} from '../assets/types.js';
-import {ApiDef_UploadFile, ApiStruct_AssetUploader, TempSignedUrl } from '../assets/apis.js';
+import {ApiDef_UploadFile, ApiStruct_AssetUploader, TempSignedUrl} from '../assets/apis.js';
+import type {ProgressableRequest, UploadProgressEvent} from '../assets/types.js';
 import {OnFileStatusChanged} from '../types.js';
 
+/** Request handle for upload: used by createRequest and FileInfo.request. Replaces BaseHttpRequest in shared. */
+export interface IAssetUploadRequest<API> {
+	setUrl(url: string): this;
+	setHeader(key: string, value: string): this;
+	setTimeout(ms: number): this;
+	setBody(body: unknown): this;
+	setOnProgressListener(cb: (ev: UploadProgressEvent) => void): this;
+	executeSync(): Promise<unknown>;
+	execute(cb: (response: unknown) => void): void;
+}
 
 export type FilesToUpload = UI_Asset & {
-	// Unfortunately be doesn't know File and File doesn't map to ArrayBuffer
 	file: any
-}
+};
 
 export type FileInfo = {
 	status: FileStatus
 	messageStatus?: string
 	progress?: number
 	name: string
-	request?: BaseHttpRequest<any>
+	request?: ProgressableRequest
 	file?: any
 	asset?: DB_Asset
 };
@@ -121,14 +131,13 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 			return fileInfo;
 		});
 
-		this.vv1.getUploadUrl?.(body)
-			.execute(async (response: TempSignedUrl[]) => {
+		(this.vv1.getUploadUrl?.(body) as IAssetUploadRequest<unknown> | undefined)
+			?.execute((response: unknown) => {
 				body.forEach(f => this.setFileInfo(f.feId, {status: FileStatus.UrlObtained}));
 				if (!response)
 					return;
 
-				// Not a relevant await but still...
-				await this.uploadFiles(response);
+				void this.uploadFiles(response as TempSignedUrl[]);
 			});
 
 		return body;
@@ -174,8 +183,8 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 			.setHeader(HeaderKey_ContentType, response.asset.mimeType)
 			.setTimeout(20 * Minute)
 			.setBody(fileInfo.file)
-			.setOnProgressListener((ev: TS_Progress) => {
-				this.setFileInfo(feId, {progress: ev.loaded / ev.total});
+			.setOnProgressListener((ev: UploadProgressEvent) => {
+				this.setFileInfo(feId, {progress: ev.total ? ev.loaded / ev.total : 0});
 			});
 		fileInfo.request = request;
 		await request.executeSync();
@@ -189,12 +198,7 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 	};
 
 	processAssetManually = (feId?: string) => {
-		const request = this.vv1.processAssetManually({feId});
-
-		// const request = this
-		// 	.httpModule
-		// 	.createRequest<Api_ProcessAssetManually>(HttpMethod.GET, RequestKey_ProcessAssetManually, feId)
-		// 	.setRelativeUrl('v1/upload/process-asset-manually');
+		const request = this.vv1.processAssetManually({feId}) as { setUrlParam(key: string, value: string): void; execute(): void };
 
 		if (feId)
 			request.setUrlParam('feId', feId);
@@ -202,7 +206,7 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 		request.execute();
 	};
 
-	protected abstract createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): BaseHttpRequest<API> ;
+	protected abstract createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): IAssetUploadRequest<API>;
 }
 
 
