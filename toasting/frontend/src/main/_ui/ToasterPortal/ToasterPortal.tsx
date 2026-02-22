@@ -1,68 +1,48 @@
-import {createRef} from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm-frontend';
-import './ToasterPortal.scss';
+import {ComponentSync, DefaultProps, InferProps, InferState} from '@nu-art/thunderstorm-frontend';
 import {ModuleFE_Toasting, OnToastingModelsChange} from '../../_core/ModuleFE_Toasting.js';
 import {ToastItem, ToastItemStatus} from '../types.js';
+import {Model_Toast} from '../../_core/types.js';
 
-type Props = {};
+type Props = {
+	modelFilter: (model: Model_Toast) => boolean;
+};
 
 type State = {
 	items: ToastItem[];
 };
 
-export class ToasterPortal
-	extends ComponentSync<Props, State>
+export abstract class ToasterPortal<_P extends {} = {}, _S extends {} = {}>
+	extends ComponentSync<Props & _P, State & _S>
 	implements OnToastingModelsChange {
 
-	private readonly ref = createRef<HTMLDivElement>();
-	// @ts-ignore
-	private parentHeight: number = 0;
+	static defaultProps: DefaultProps<ToasterPortal> = {
+		modelFilter: () => true,
+	};
+
+	// ######################### Abstract Logic #########################
+
+	protected abstract handleModelChanges: (toAdd: ToastItem[], toRemove: ToastItem[]) => void;
 
 	// ######################### Life Cycle #########################
 
 	__onToastingModelsChange = () => {
+		const allModels = ModuleFE_Toasting.getModels();
 		const existingModelIds = new Set<string>(this.state.items.map(i => i.model.id));
-		const newModels = ModuleFE_Toasting.getModels().filter(model => !existingModelIds.has(model.id));
-		if (!newModels.length)
+		const allModelIds = new Set<string>(allModels.map(m => m.id));
+		const itemsToAdd = allModels.filter(model => !existingModelIds.has(model.id) && this.props.modelFilter(model)).map(model => ({model, status: ToastItemStatus.Loaded}) as ToastItem);
+		const itemsToRemove = this.state.items.filter(item => !allModelIds.has(item.model.id));
+		if(!itemsToAdd.length && !itemsToRemove.length)
 			return;
 
-		this.setState({
-			items: [
-				...this.state.items,
-				...newModels.map(model => ({model, status: ToastItemStatus.Loaded}))
-			]
-		});
+		this.handleModelChanges(itemsToAdd, itemsToRemove);
 	};
 
-	protected deriveStateFromProps(nextProps: Props, state: State) {
+	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		state.items ??= [];
 		return state;
 	}
 
-	componentDidMount() { //Once on load
-		this.refreshParentHeight();
-	}
-
-	componentDidUpdate() { //After each render
-
-	}
-
 	// ######################### Logic #########################
 
-	private refreshParentHeight() {
-		if (!this.ref.current)
-			return;
-
-		const parent = this.ref.current.parentElement!;
-		this.parentHeight = parent.offsetHeight ?? 0;
-	}
-
-	// ######################### Render #########################
-
-	render() {
-		this.logInfo(this.state.items);
-		return <div className={'portal__toasting'} ref={this.ref}>
-
-		</div>;
-	}
+	protected reportConsumeModel = (id: string) => ModuleFE_Toasting.toast.process(id);
 }

@@ -5,17 +5,21 @@ import {ModuleFE_Toasting} from './ModuleFE_Toasting.js';
 export class Toaster<CustomVariant extends string>
 	extends Logger {
 
+	private readonly toastingKey: string;
 	private readonly fallbackToastDuration: number = 4 * Second;
 
-	constructor(defaultDuration?: number) {
+	constructor(key: string, defaultDuration?: number) {
 		super('Toaster');
 		if (defaultDuration)
 			this.fallbackToastDuration = defaultDuration;
+
+		this.toastingKey = key;
 	}
 
 	private toast(variant: BaseToastVariant | CustomVariant, properties: ToastProperties) {
 		const model: Model_Toast = {
 			id: properties.id ?? generateHex(8),
+			key: this.toastingKey,
 			duration: properties.duration ?? this.fallbackToastDuration,
 			variant: variant,
 			title: properties.title,
@@ -34,5 +38,9 @@ export class Toaster<CustomVariant extends string>
 
 	public toastError(properties: ToastProperties) {
 		this.toast(BaseToastVariant.Error, properties);
+	}
+
+	public toastSuccess(properties: ToastProperties) {
+		this.toast(BaseToastVariant.Success, properties);
 	}
 }

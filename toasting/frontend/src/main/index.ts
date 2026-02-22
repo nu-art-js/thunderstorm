@@ -2,4 +2,4 @@
 export * from './_core/index.js';
 
 //UI
-export * from './_ui/ToasterPortal/ToasterPortal.js';
+export * from './_ui/ToasterPortal/index.js';
