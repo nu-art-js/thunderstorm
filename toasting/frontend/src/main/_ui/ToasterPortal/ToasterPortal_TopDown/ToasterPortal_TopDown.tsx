@@ -81,7 +81,6 @@ export class ToasterPortal_TopDown
 
 	render() {
 		const item = this.state.items[0];
-		this.logWarning(`Rendering line clamp ${this.toasterItemLineClamp}`);
 		return <div
 			ref={this.ref}
 			className={'toasting-portal__top-down'}

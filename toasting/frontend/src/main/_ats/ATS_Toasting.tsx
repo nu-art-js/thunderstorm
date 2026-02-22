@@ -7,7 +7,7 @@ import {ToastProperties} from '../_core/types.js';
 import {generateLoremIpsum} from '@nu-art/ts-common';
 
 const generateModel = (title: string): ToastProperties => {
-	const length = Math.floor(Math.random() * 1350);
+	const length = Math.floor(Math.random() * 1000);
 	return {
 		title,
 		body: generateLoremIpsum(length)
@@ -18,7 +18,7 @@ class ATS_Toasting_Class
 	extends ComponentSync {
 
 	private toaster_Vertical = new Toaster('ats-vertical');
-	private toaster_TopDown = new Toaster('ats-top-down', 100000);
+	private toaster_TopDown = new Toaster('ats-top-down', 1000);
 
 	render() {
 		return <LL_H_C className={'ats__toasting'}>
