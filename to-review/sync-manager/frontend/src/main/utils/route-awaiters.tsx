@@ -3,7 +3,7 @@ import {ComponentClass, FunctionComponent} from 'react';
 import {ResolvableContent} from '@nu-art/ts-common';
 import {AwaitSync} from '../components/AwaitSync/AwaitSync.js';
 import {AwaitModule_LoaderProps, AwaitModules} from '../components/AwaitModules/AwaitModules.js';
-import {ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
+import {ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend';
 
 export type RouteAwaiterOptions = {
 	modules?: ResolvableContent<(ModuleFE_BaseDB<any>)[]>;

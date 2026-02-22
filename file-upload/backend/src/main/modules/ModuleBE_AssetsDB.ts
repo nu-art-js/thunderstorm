@@ -34,21 +34,25 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp.js';
-import {addRoutes, CleanupDetails, createBodyServerApi, DBApiConfigV3, ModuleBE_BaseDB, OnCleanupSchedulerAct} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_BaseDB, PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
+import {ApiHandler} from '@nu-art/http-server';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {OnAssetUploaded} from './ModuleBE_BucketListener.js';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage.js';
 import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
-import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
 import {FileMetadata} from '@google-cloud/storage';
 import {fileTypeFromBuffer} from 'file-type';
 import {FileWrapper} from '@nu-art/firebase-backend';
 import {Transaction} from 'firebase-admin/firestore';
 
+/** Local type for cleanup scheduler (replaces thunderstorm-backend). */
+export type CleanupDetails = { moduleKey: string; interval: number; cleanup: () => Promise<void> };
+export interface OnCleanupSchedulerAct { __onCleanupSchedulerAct(): CleanupDetails }
 
-type MyConfig = DBApiConfigV3<DBProto_Assets> & {
+type MyConfig = {
 	authKey: string
 	bucketName?: string
 	storagePath: string
@@ -110,17 +114,25 @@ export class ModuleBE_AssetsDB_Class
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_Assets>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
+	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DB_Asset>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
 		const deletedItems = data.deleted;
 		if (exists(deletedItems))
-			await ModuleBE_AssetsDeleted.create.all(asArray(deletedItems), transaction);
+			await ModuleBE_AssetsDeleted.set.all(asArray(deletedItems), transaction);
+	}
+
+	@ApiHandler(ApiDef_AssetUploader.vv1.getUploadUrl)
+	async getUploadUrlHandler(body: UI_Asset[]): Promise<TempSignedUrl[]> {
+		return this.getUrl(body);
+	}
+
+	@ApiHandler(ApiDef_AssetUploader.vv1.processAssetManually)
+	async processAssetManuallyHandler(params: { feId?: string }): Promise<void[]> {
+		await this.processAssetManually(params.feId);
+		return [];
 	}
 
 	init() {
 		super.init();
-		addRoutes([
-			createBodyServerApi(ApiDef_AssetUploader.vv1.getUploadUrl, this.getUrl)
-		]);
 
 		this.registerVersionUpgradeProcessor('1.0.1', async (assets) => {
 			assets.forEach(asset => {

@@ -114,6 +114,8 @@ export * from './modules/component-loader/entry-component-loading-module.js';
 export * from './core/db-api-gen/consts.js';
 export * from './modules/db-api-gen/ModuleFE_BaseDB.js';
 export * from './modules/db-api-gen/ModuleFE_BaseApi.js';
+export * from './modules/db-api-gen/types.js';
+export * from './modules/ModuleFE_CSVParser.js';
 export * from './modules/archiving/ModuleFE_Archiving.js';
 export * from './modules/ModuleFE_BrowserHistory.js';
 export * from './modules/ModuleFE_ConnectivityModule.js';

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { ResolvableContent, resolveContent } from '@nu-art/ts-common';
 import './AwaitSync.scss';
-import { ModuleFE_SyncManager, PermissibleModulesUpdated } from '../../modules/sync-manager/ModuleFE_SyncManager.js';
-import { ComponentSync } from "@nu-art/thunder-routing";
+import {ModuleFE_SyncManager, PermissibleModulesUpdated} from '../../modules/ModuleFE_SyncManager.js';
+import {ComponentSync} from '@nu-art/thunder-widgets';
 type Props = React.PropsWithChildren<{
     customLoader?: ResolvableContent<React.ReactNode>;
 }>;

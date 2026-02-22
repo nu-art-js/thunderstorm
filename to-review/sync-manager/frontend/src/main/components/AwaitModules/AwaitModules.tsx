@@ -2,7 +2,10 @@ import * as React from 'react';
 import {exists, ResolvableContent, resolveContent, RuntimeModules} from '@nu-art/ts-common';
 import './AwaitModules.scss';
 import {ComponentSync, LL_H_C, LL_V_L, TS_ProgressBar} from '@nu-art/thunder-widgets';
-import {DataStatus, ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
+import {DataStatus, ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend';
+import {type QueryAwaitedModules} from './dispatchers.js';
+import {ModuleFE_SyncManager} from '../../modules/ModuleFE_SyncManager.js';
+import {ModuleSyncType} from '@nu-art/thunderstorm-frontend';
 
 type Props = React.PropsWithChildren<{
 	modules: ResolvableContent<(ModuleFE_BaseDB<any>)[]>;
@@ -24,11 +27,7 @@ export type AwaitModule_LoaderProps = {
 	onClick: VoidFunction;
 };
 
-interface QueryAwaitedModules {
-	__queryAwaitedModule(): (ModuleFE_BaseDB<any>)[];
-}
-
-// export const dispatch_QueryAwaitedModules = new ThunderDispatcher<QueryAwaitedModules, '__queryAwaitedModule'>('__queryAwaitedModule');
+export {dispatch_QueryAwaitedModules} from './dispatchers.js';
 
 export class AwaitModules
 	extends ComponentSync<Props, State>

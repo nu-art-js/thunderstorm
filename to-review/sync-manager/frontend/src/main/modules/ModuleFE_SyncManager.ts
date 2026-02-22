@@ -51,16 +51,22 @@ import {
 	SyncDataFirebaseState,
 	SyncDbData,
 	SyncManagerAPI_SmartSync
-} from '@nu-art/thunderstorm-sync-manager-shared';
+} from '@nu-art/sync-manager-shared';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
-import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitModules.js';
-import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule.js';
-import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi.js';
-import {ModuleSyncType} from '../db-api-gen/types.js';
+import {dispatch_QueryAwaitedModules} from '../components/AwaitModules/dispatchers.js';
+import {
+	apiWithBody,
+	DataStatus,
+	EventType_Query,
+	ModuleFE_BaseApi,
+	ModuleFE_ConnectivityModule,
+	OnConnectivityChange
+} from '@nu-art/thunderstorm-frontend';
+import {ModuleSyncType} from '@nu-art/thunderstorm-frontend';
+import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend';
 import {BaseHttpRequest} from '@nu-art/thunderstorm-shared';
-import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-import {ThunderDispatcher} from '@nu-art/web-client';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 
 export interface PermissibleModulesUpdated {
@@ -201,12 +207,13 @@ export class ModuleFE_SyncManager_Class
 
 		// if the module have a custom base url for this api apply it to the api def keeping the original path
 		const customBase = resolveContent(this.smartSyncApiUrl);
-		if (customBase)
-			ApiDef_SyncManager.v1.smartSync.fullUrl = customBase;
+		const smartSyncDef = customBase
+			? {...ApiDef_SyncManager.v1.smartSync, fullUrl: customBase}
+			: ApiDef_SyncManager.v1.smartSync;
 
 		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
 		try {
-			await apiWithBody(ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
+			await apiWithBody(smartSyncDef as typeof ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
 		} catch (e: any) {
 			this.logError(e);
 			this.syncing = false;

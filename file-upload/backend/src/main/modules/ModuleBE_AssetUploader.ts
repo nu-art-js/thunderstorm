@@ -1,62 +1,134 @@
-/*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import type {IAssetUploadRequest} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader';
-import {ModuleBase_AssetUploader, UploaderConfig} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader';
-import {apiWithBodyAxios, apiWithQueryAxios, Axios_RequestConfig, AxiosHttpModule} from '@nu-art/thunderstorm-backend';
+import type {ApiDef, GeneralApi} from '@nu-art/api-types';
 import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
-import {ApiDef, TypedApi} from '@nu-art/thunderstorm-shared';
-
+import type {IAssetUploadRequest} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader.js';
+import {ModuleBase_AssetUploader, type UploaderConfig} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader.js';
 
 export type ServerFilesToUpload = UI_Asset & {
 	file: Buffer
-}
+};
 
-type Config = UploaderConfig & { requestConfig: Axios_RequestConfig };
+type Config = UploaderConfig & { baseUrl?: string };
+
+function createFetchRequest<API extends GeneralApi>(apiDef: ApiDef<API>, baseUrl: string): IAssetUploadRequest<API> {
+	let url = '';
+	const headers: Record<string, string> = {};
+	let body: unknown;
+
+	return {
+		setUrl(u: string) {
+			url = u;
+			return this;
+		},
+		setHeader(key: string, value: string) {
+			headers[key] = value;
+			return this;
+		},
+		setTimeout(_ms: number) {
+			return this;
+		},
+		setBody(b: unknown) {
+			body = b;
+			return this;
+		},
+		setOnProgressListener(_cb: (ev: { loaded: number; total?: number }) => void) {
+			return this;
+		},
+		executeSync: async () => {
+			const fullUrl = url || `${(baseUrl || '').replace(/\/$/, '')}/${apiDef.path}`;
+			const res = await fetch(fullUrl, {
+				method: (apiDef as { method?: string }).method ?? 'POST',
+				headers: {'Content-Type': 'application/json', ...headers},
+				body: body !== undefined ? (typeof body === 'string' ? body : JSON.stringify(body)) : undefined
+			});
+			if (!res.ok)
+				throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+			const text = await res.text();
+			return text ? JSON.parse(text) : undefined;
+		},
+		execute(cb: (response: unknown) => void) {
+			this.executeSync().then(cb).catch((e: unknown) => { throw e; });
+		}
+	};
+}
 
 export class ModuleBE_AssetUploader_Class
 	extends ModuleBase_AssetUploader<Config> {
 
 	constructor() {
 		super();
+		const baseUrl = () => this.config?.baseUrl ?? '';
 		this.vv1 = {
-			getUploadUrl: apiWithBodyAxios(ApiDef_AssetUploader.vv1.getUploadUrl),
-			processAssetManually: apiWithQueryAxios(ApiDef_AssetUploader.vv1.processAssetManually),
+			getUploadUrl: (body: UI_Asset[]) => createFetchRequest(ApiDef_AssetUploader.vv1.getUploadUrl as ApiDef<GeneralApi>, baseUrl()).setBody(body),
+			processAssetManually: (params: { feId?: string }) => {
+				const query: Record<string, string> = {};
+				if (params.feId)
+					query.feId = params.feId;
+				const req = createFetchRequest(
+					{method: 'GET', path: ApiDef_AssetUploader.vv1.processAssetManually.path} as ApiDef<GeneralApi>,
+					baseUrl()
+				);
+				const path = ApiDef_AssetUploader.vv1.processAssetManually.path;
+				return {
+					...req,
+					setUrlParam(key: string, value: string) {
+						query[key] = value;
+						return this;
+					},
+					execute() {
+						const qs = Object.keys(query).length ? '?' + Object.entries(query).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&') : '';
+						req.setUrl(`${(baseUrl() || '').replace(/\/$/, '')}/${path}${qs}`);
+						void req.executeSync();
+					}
+				};
+			}
 		};
 	}
 
-	init() {
-		super.init();
-		AxiosHttpModule.setRequestOption(this.config.requestConfig);
-	}
-
-	createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): IAssetUploadRequest<API> {
-		return AxiosHttpModule.createRequest(uploadFile) as unknown as IAssetUploadRequest<API>;
+	createRequest<API extends GeneralApi>(uploadFile: ApiDef<API>): IAssetUploadRequest<API> {
+		let url = '';
+		const headers: Record<string, string> = {};
+		let body: unknown;
+		return {
+			setUrl(u: string) {
+				url = u;
+				return this;
+			},
+			setHeader(key: string, value: string) {
+				headers[key] = value;
+				return this;
+			},
+			setTimeout(_ms: number) {
+				return this;
+			},
+			setBody(b: unknown) {
+				body = b;
+				return this;
+			},
+			setOnProgressListener(_cb: (ev: { loaded: number; total?: number }) => void) {
+				return this;
+			},
+			executeSync: async () => {
+				const res = await fetch(url, {
+					method: (uploadFile as { method?: string }).method ?? 'PUT',
+					headers: {...headers},
+					body: body !== undefined ? JSON.stringify(body) : undefined
+				});
+				if (!res.ok)
+					throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
+				return res.json().catch(() => undefined);
+			},
+			execute(cb: (response: unknown) => void) {
+				this.executeSync().then(cb).catch((e: unknown) => { throw e; });
+			}
+		};
 	}
 
 	upload(files: ServerFilesToUpload[]): UI_Asset[] {
 		return this.uploadImpl(files);
 	}
 
-	protected async subscribeToPush(toSubscribe: TempSignedUrl[]): Promise<void> {
-		// Not sure now
-		// We said timeout
+	protected async subscribeToPush(_toSubscribe: TempSignedUrl[]): Promise<void> {
+		// Not used in backend flow
 	}
 }
 

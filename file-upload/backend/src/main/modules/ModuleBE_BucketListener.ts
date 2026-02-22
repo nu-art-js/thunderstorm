@@ -21,9 +21,12 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_StorageListener} from '@nu-art/firebase-backend';
 import {PermissionsGroup_PushMessanger} from '@nu-art/push-pub-sub-backend/core/permissions';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
-import {DefaultDef_ServiceAccount, RequiresServiceAccount, ServiceAccountCredentials} from '@nu-art/thunderstorm-backend/modules/_tdb/service-accounts';
 import {StorageEvent} from 'firebase-functions/storage';
 
+/** Local types (replaces thunderstorm-backend service-accounts). */
+export type ServiceAccountCredentials = { serviceAccount?: { accountId?: string } };
+export interface RequiresServiceAccount { __requiresServiceAccount(): DefaultDef_ServiceAccount }
+export type DefaultDef_ServiceAccount = { moduleName: string; email: string; groupIds: string[] };
 
 export interface OnAssetUploaded {
 	__processAsset(filePath?: string): void;
@@ -44,7 +47,7 @@ export class ModuleBE_BucketListener_Class
 		// need to create a dispatch that collects a list of services that requires service account and
 		// service account details, the permissions  create project will create these account for the rest of the system ;
 		return new MemStorage().init(async () => {
-			const accountId = this.config.serviceAccount.accountId;
+			const accountId = this.config?.serviceAccount?.accountId;
 			if (!accountId)
 				throw new BadImplementationException('Need to perform project setup to setup this feature');
 

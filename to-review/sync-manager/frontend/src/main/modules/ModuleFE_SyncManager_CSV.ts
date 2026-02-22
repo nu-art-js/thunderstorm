@@ -1,11 +1,14 @@
-import { _keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap } from '@nu-art/ts-common';
-import { Readable, Writable } from 'stream';
-import { DataStatus } from '@nu-art/thunderstorm-frontend/core/db-api-gen/consts';
-import { ModuleFE_BaseDB } from "@nu-art/thunder-routing";
-import { ModuleFE_CSVParser, PapaparseConfig } from '@nu-art/thunderstorm-frontend/modules/ModuleFE_CSVParser';
-import { ModuleSyncType } from '@nu-art/thunderstorm-frontend/modules/db-api-gen/types';
-import { Thunder } from "@nu-art/web-client/core/Thunder";
-import { HeaderKey_ContentType } from "@nu-art/thunder-db-api-shared/shared";
+import {_keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
+import {Readable, Writable} from 'stream';
+import {
+	DataStatus,
+	ModuleFE_BaseDB,
+	ModuleFE_CSVParser,
+	ModuleSyncType,
+	PapaparseConfig,
+	Thunder
+} from '@nu-art/thunderstorm-frontend';
+import {HeaderKey_ContentType} from '@nu-art/api-types';
 export class ModuleFE_SyncManager_CSV_Class extends Module {
     constructor() {
         super();
@@ -22,7 +25,7 @@ export class ModuleFE_SyncManager_CSV_Class extends Module {
             const finalConfig = config ? mergeObject({ downloadRequestHeaders }, config) : { downloadRequestHeaders };
             ModuleFE_CSVParser.fromURL(url, {
                 transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
-                step: async (results) => {
+                step: async (results: { errors?: unknown[]; data?: unknown }) => {
                     if (results.errors?.length)
                         return errors.push(...results.errors);
                     const item = results.data as {
