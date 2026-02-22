@@ -4,6 +4,5 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-export {ModuleFE_SyncManager_Class} from './ModuleFE_SyncManager.js';
-export type {SyncManagerFEConfig} from './ModuleFE_SyncManager.js';
+export {ModuleFE_SyncManager_Class} from './modules/ModuleFE_SyncManager.js';
 export type {SyncManagerAPI_SmartSync, SyncDbData, NoNeedToSyncModule, DeltaSyncModule, FullSyncModule, SyncDataFirebaseState} from '@nu-art/sync-manager-shared';

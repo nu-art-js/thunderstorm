@@ -19,6 +19,7 @@ import {
 import {ModuleBE_FirestoreListener} from '@nu-art/firebase-backend';
 import type {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
+import {DB_BaseObject} from '@nu-art/db-api-shared';
 import {ApiHandler} from '@nu-art/http-server';
 import {ApiDef_Archiving, RequestBody_HardDeleteUnique, RequestQuery_DeleteAll, RequestQuery_GetHistory} from '@nu-art/archiving-shared';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
@@ -27,22 +28,22 @@ type Params = { collectionName: string; docId: string };
 
 export const Const_ArchivedCollectionPath = '/_archived';
 
+
 type AnyBaseDB = ModuleBE_BaseDB<DB_Prototype>;
 
 /**
  * Handles Firestore database operations with custom logic for archiving and Time-To-Live (TTL).
  * Apps must register DB modules via constructor or registerModule(); routes are registered via @ApiHandler.
  */
-export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
-	extends ModuleBE_FirestoreListener<DBType> {
+export class ModuleBE_ArchiveModule_Class
+	extends ModuleBE_FirestoreListener<DB_BaseObject> {
 
 	private readonly TTL: number;
 	private readonly lastUpdatedTTL: number;
-	protected readonly moduleMapper: Record<string, AnyBaseDB>;
+	protected readonly moduleMapper: Record<string, AnyBaseDB> = {};
 
-	constructor(options?: { moduleMapper?: Record<string, AnyBaseDB> }) {
+	constructor() {
 		super('{collectionName}');
-		this.moduleMapper = options?.moduleMapper ?? {};
 		this.lastUpdatedTTL = Day;
 		this.TTL = Hour * 2;
 	}
@@ -67,7 +68,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 			throw new BadImplementationException('no module found');
 
 		return dbModule.runTransaction(async (transaction) => {
-			const instance = (dbInstance as DBType) ?? await dbModule.query.unique(_id, transaction);
+			const instance = dbInstance ?? await dbModule.query.unique({_id}, transaction);
 
 			if (!instance)
 				throw new BadImplementationException(`couldn't find doc with id ${_id}`);
@@ -163,7 +164,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		})));
 	}
 
-	async processChanges(params: Params, before: DBType | undefined, after: DBType | undefined) {
+	async processChanges(params: Params, before?: any, after?: any) {
 		const dbModule = this.moduleMapper[params.collectionName];
 
 		if (!dbModule)

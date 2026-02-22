@@ -41,7 +41,9 @@
     "@nu-art/conflict-resolution-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
-    "react": "?"
+    "react": "?",
+    "@nu-art/thunderstorm-frontend": "?",
+    "@nu-art/thunderstorm-shared": "?"
   },
   "devDependencies": {
     "@types/react": "?"

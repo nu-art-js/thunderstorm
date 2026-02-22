@@ -23,7 +23,7 @@ import {ModuleBE_BucketListener} from '../modules/ModuleBE_BucketListener.js';
 import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub-backend';
 import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader.js';
 import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI.js';
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm-backend';
+import {createApisForDBModule} from '@nu-art/db-api-backend';
 import {ModuleBE_AssetsStorage} from '../modules/ModuleBE_AssetsStorage.js';
 import {ModuleBE_AssetsDeleted} from '../modules/ModuleBE_AssetsDeleted.js';
 
@@ -31,9 +31,9 @@ import {ModuleBE_AssetsDeleted} from '../modules/ModuleBE_AssetsDeleted.js';
 export const ModulePackBE_FileUploader = [
 	...ModulePackBE_PushPubSub,
 	ModuleBE_AssetUploader,
-	ModuleBE_AssetsTemp, createApisForDBModuleV3(ModuleBE_AssetsTemp),
+	ModuleBE_AssetsTemp, createApisForDBModule(ModuleBE_AssetsTemp),
 	ModuleBE_AssetsDeleted,
 	ModuleBE_AssetsStorage,
-	ModuleBE_AssetsDB, ModuleBE_AssetsAPI,
+	ModuleBE_AssetsDB, createApisForDBModule(ModuleBE_AssetsDB), ModuleBE_AssetsAPI,
 	ModuleBE_BucketListener
 ];

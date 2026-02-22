@@ -29,7 +29,13 @@
     "@nu-art/db-api-frontend": "?",
     "@nu-art/sync-manager-shared": "?",
     "@nu-art/ts-common": "?",
-    "react": "?"
+    "react": "?",
+    "@nu-art/thunderstorm-frontend": "?",
+    "@nu-art/thunderstorm-shared": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/firebase-frontend": "?",
+    "@nu-art/api-types": "?",
+    "@nu-art/thunder-core": "?"
   },
   "devDependencies": {
     "@types/react": "?",
