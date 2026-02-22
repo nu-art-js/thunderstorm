@@ -21,7 +21,7 @@
   .toaster-item-body {
     width: 100%;
     margin: 0;
-    padding: 8px;
+    padding: 8px 8px 0;
     white-space: pre-wrap;
     word-break: break-word;
   }
@@ -29,6 +29,7 @@
   .toaster-item-timer {
     width: 100%;
     height: 4px;
+    margin-top: 8px;
     background: var(--primary-color-fade);
 
     &::after {

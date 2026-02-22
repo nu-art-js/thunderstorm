@@ -1,10 +1,10 @@
 import {createRef} from 'react';
-import {ToasterPortal} from './ToasterPortal.js';
-import {ToastItem, ToastItemStatus} from '../types.js';
-import {InferProps, InferState} from '@nu-art/thunderstorm-frontend';
-import {ToasterItem} from '../ToasterItem/ToasterItem.js';
+import {InferProps, InferState, OnWindowResized} from '@nu-art/thunderstorm-frontend';
 import './ToasterPortal_Vertical.scss';
 import {TypedMap} from '@nu-art/ts-common';
+import {ToasterPortal} from '../_base/ToasterPortal.js';
+import {ToastItemStatus} from '../../types.js';
+import {ToasterItem} from '../../ToasterItem/ToasterItem.js';
 
 type Props = {
 	verticalPadding?: number;
@@ -19,11 +19,14 @@ type State = {
 };
 
 export class ToasterPortal_Vertical
-	extends ToasterPortal<Props, State> {
+	extends ToasterPortal<Props, State>
+	implements OnWindowResized {
 
 	private readonly ref = createRef<HTMLDivElement>();
 
 	// ######################### Life Cycle #########################
+
+	__onWindowResized = () => this.refreshParentHeight();
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
 		state = super.deriveStateFromProps(nextProps, state);
@@ -44,22 +47,6 @@ export class ToasterPortal_Vertical
 	}
 
 	// ######################### Logic #########################
-
-	protected handleModelChanges = (toAdd: ToastItem[], toRemove: ToastItem[]) => {
-		const newItems = toAdd.length ? [...this.state.items, ...toAdd] : [...this.state.items];
-		if (toRemove.length) {
-			const toRemoveIds = new Set<string>(toRemove.map(i => i.model.id));
-			newItems.forEach(item => {
-				if (toRemoveIds.has(item.model.id))
-					item.status = ToastItemStatus.Closed;
-			});
-			setTimeout(() => {
-				const items = this.state.items.filter(i => !toRemoveIds.has(i.model.id));
-				this.setState({items});
-			}, 200);
-		}
-		this.setState({items: newItems});
-	};
 
 	private refreshParentHeight() {
 		if (!this.ref.current)
@@ -90,12 +77,13 @@ export class ToasterPortal_Vertical
 		if (!unProcessedItems.length)
 			return;
 
+		//Calculate available height for new items
 		let availableHeight = this.state.parentHeight - (this.state.verticalPadding * 2);
 		currentlyVisibleItems.forEach(item => {
 			availableHeight -= this.state.childrenHeightMap[item.model.id] + this.state.verticalGap;
 		});
 
-
+		//Update new items that can be visible in this render cycle
 		for (const item of unProcessedItems) {
 			const itemHeight = this.state.childrenHeightMap[item.model.id];
 			if (!itemHeight || itemHeight > availableHeight)
@@ -123,9 +111,7 @@ export class ToasterPortal_Vertical
 					key={item.model.id}
 					model={item.model}
 					status={item.status}
-					style={{
-						top: `${currentOffset}px`,
-					}}
+					style={{top: `${currentOffset}px`}}
 				/>;
 			})}
 		</div>;

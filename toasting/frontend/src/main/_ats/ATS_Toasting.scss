@@ -4,5 +4,10 @@
   padding: 8px;
   align-items: start;
   justify-content: flex-end;
-  gap: 8px
+  gap: 8px;
+
+  & > .ts-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
 }
