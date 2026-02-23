@@ -79,7 +79,6 @@
     "@types/compression": "^1.7.0",
     "@types/express": "?",
     "@types/history": "^4.7.2",
-    "@types/request": "^2.48.1",
     "@types/chrome": "^0.0.202",
     "@types/react-window": "^1.8.5",
     "@types/react-virtualized-auto-sizer": "^1.0.1"

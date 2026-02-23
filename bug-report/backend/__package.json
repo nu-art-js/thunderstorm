@@ -55,8 +55,7 @@
     "@types/file-saver": "^2.0.1",
     "@types/history": "^4.7.2",
     "@types/jszip": "^3.1.7",
-    "@types/react": "?",
-    "@types/request": "^2.48.1"
+    "@types/react": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

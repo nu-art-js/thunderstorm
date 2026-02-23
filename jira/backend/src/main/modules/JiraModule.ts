@@ -17,10 +17,18 @@
  * limitations under the License.
  */
 import {ApiException, BadImplementationException, composeUrl, ImplementationMissingException, MimeType_json, Module, TypedMap} from '@nu-art/ts-common';
-import {CoreOptions, Headers, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils.js';
 import {JiraVersion, JiraVersion_Create} from '@nu-art/jira-shared/version';
 import {HeaderKey_ContentType, HttpMethod} from '@nu-art/thunderstorm-shared';
+
+type JiraFetchOptions = {
+	url: string;
+	method: string;
+	headers: Record<string, string>;
+	body?: object;
+	json?: boolean;
+	formData?: Record<string, { value: Buffer; options?: { filename?: string } }>;
+};
 
 
 type Config = {
@@ -124,8 +132,8 @@ const createFormData = (filename: string, buffer: Buffer) => ({file: {value: buf
 
 export class ModuleBE_Jira_Class
 	extends Module<Config> {
-	private headersJson!: Headers;
-	private headersForm!: Headers;
+	private headersJson!: Record<string, string>;
+	private headersForm!: Record<string, string>;
 	private projects!: JiraProject[];
 	private versions: { [projectId: string]: JiraVersion[] } = {};
 	private restUrl!: string;
@@ -143,8 +151,8 @@ export class ModuleBE_Jira_Class
 		this.headersForm = this.buildHeaders(this.config.auth, false);
 	}
 
-	private buildHeaders = ({apiKey, email}: JiraAuth, check: boolean) => {
-		const headers: Headers = {
+	private buildHeaders = ({apiKey, email}: JiraAuth, check: boolean): Record<string, string> => {
+		const headers: Record<string, string> = {
 			Authorization: `Basic ${Buffer.from(email + ':' + apiKey).toString('base64')}`
 		};
 
@@ -250,50 +258,34 @@ export class ModuleBE_Jira_Class
 		return this.executeFormRequest(`/issue/${issue}/attachments`, file);
 	};
 
-	private executeFormRequest = async (url: string, buffer: Buffer) => {
-		const request: UriOptions & CoreOptions = {
-			headers: this.headersForm,
-			uri: `${this.restUrl}${url}`,
-			formData: createFormData('logs.zip', buffer),
+	private executeFormRequest = async (path: string, buffer: Buffer) => {
+		return this.executeRequest<unknown>({
+			url: `${this.restUrl}${path}`,
 			method: HttpMethod.POST,
-		};
-		return this.executeRequest(request);
+			headers: this.headersForm,
+			formData: createFormData('logs.zip', buffer),
+		});
 	};
 
-	private async executePostRequest<Res, Req>(url: string, body: Req, label?: string[]) {
-		const request: UriOptions & CoreOptions = {
-			headers: this.headersJson,
-			uri: `${this.restUrl}${url}`,
-			body,
+	private async executePostRequest<Res, Req>(path: string, body: Req) {
+		return this.executeRequest<Res>({
+			url: `${this.restUrl}${path}`,
 			method: HttpMethod.POST,
-			json: true
-		};
-		return this.executeRequest<Res>(request);
-	}
-
-	private async executePutRequest<T>(url: string, body: T) {
-		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
-			uri: `${this.restUrl}${url}`,
-			body,
-			method: HttpMethod.PUT,
-			json: true
-		};
-		return this.executeRequest(request);
+			body: body as object,
+			json: true,
+		});
 	}
 
-	// async executeGetRequestNew<T>(url: string, _params?: { [k: string]: string }): Promise<T> {
-	// 	if (!this.restUrl)
-	// 		throw new ImplementationMissingException('Need a baseUrl');
-	//
-	// 	return AxiosHttpModule
-	// 		.createRequest(HttpMethod.GET, generateHex(8))
-	// 		.setOrigin(this.restUrl)
-	// 		.setUrl(url)
-	// 		.setUrlParams(_params)
-	// 		.setHeaders(this.headersJson)
-	// 		.executeSync();
-	// }
+	private async executePutRequest<T>(path: string, body: T) {
+		return this.executeRequest<unknown>({
+			url: `${this.restUrl}${path}`,
+			method: HttpMethod.PUT,
+			headers: this.headersJson,
+			body: body as object,
+			json: true,
+		});
+	}
 
 	private async handleResponse<T>(response: globalThis.Response): Promise<T> {
 		if (!response.ok)
@@ -302,55 +294,42 @@ export class ModuleBE_Jira_Class
 		return response.json() as Promise<T>;
 	}
 
-	private async executeGetRequest<T>(url: string, _params?: { [k: string]: string }) {
-
-		const request: UriOptions & CoreOptions = {
-			headers: this.headersJson,
-			uri: `${composeUrl(`${this.restUrl}${url}`, _params)}`,
+	private async executeGetRequest<T>(path: string, params?: Record<string, string>) {
+		return this.executeRequest<T>({
+			url: composeUrl(`${this.restUrl}${path}`, params),
 			method: HttpMethod.GET,
-			json: true
-		};
-
-		return this.executeRequest<T>(request);
+			headers: this.headersJson,
+			json: true,
+		});
 	}
 
-	private async executeRequest<T>(request: UriOptions & CoreOptions) {
-		const {uri, method, headers, body, json, formData} = request;
-		
-		// Ensure uri is a string
-		const url = typeof uri === 'string' ? uri : uri.toString();
-		
+	private async executeRequest<T>(request: JiraFetchOptions): Promise<T> {
+		const {url, method, headers, body, json, formData} = request;
+
 		let fetchBody: BodyInit | undefined;
-		const fetchHeaders: HeadersInit = {...headers};
-		
+		const fetchHeaders: Record<string, string> = {...headers};
+
 		if (formData) {
-			// Handle formData (for file uploads)
 			const form = new FormData();
 			for (const [key, value] of Object.entries(formData)) {
 				if (value && typeof value === 'object' && 'value' in value) {
-					const fileData = value as {value: Buffer; options?: {filename?: string}};
-					// Convert Buffer to Uint8Array for Blob
+					const fileData = value as { value: Buffer; options?: { filename?: string } };
 					const blob = new Blob([new Uint8Array(fileData.value)]);
 					form.append(key, blob, fileData.options?.filename);
 				}
 			}
 			fetchBody = form;
-			// Remove Content-Type header to let browser set it with boundary
-			delete (fetchHeaders as any)[HeaderKey_ContentType];
-		} else if (body) {
-			if (json) {
-				fetchBody = JSON.stringify(body);
-			} else {
-				fetchBody = body as BodyInit;
-			}
+			delete fetchHeaders[HeaderKey_ContentType];
+		} else if (body !== undefined) {
+			fetchBody = json ? JSON.stringify(body) : (body as BodyInit);
 		}
-		
+
 		const response = await fetch(url, {
 			method: method || HttpMethod.GET,
 			headers: fetchHeaders,
-			body: fetchBody
+			body: fetchBody,
 		});
-		
+
 		return this.handleResponse<T>(response);
 	}
 }
