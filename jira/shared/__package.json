@@ -33,7 +33,6 @@
     "@types/debug": "^4.1.2",
     "@types/express": "?",
     "@types/js-base64": "^2.3.1",
-    "@types/request": "^2.48.3",
     "@types/saml2-js": "^1.6.8"
   },
   "unitConfig": {
