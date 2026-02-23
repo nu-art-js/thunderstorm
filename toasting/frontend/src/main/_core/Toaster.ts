@@ -16,7 +16,7 @@ export class Toaster<CustomVariant extends string>
 		this.toastingKey = key;
 	}
 
-	private toast(variant: BaseToastVariant | CustomVariant, properties: ToastProperties) {
+	public toast(variant: BaseToastVariant | CustomVariant, properties: ToastProperties) {
 		const model: Model_Toast = {
 			id: properties.id ?? generateHex(8),
 			key: this.toastingKey,

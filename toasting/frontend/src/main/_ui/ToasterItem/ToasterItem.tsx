@@ -4,7 +4,7 @@ import {ToastItemStatus} from '../types.js';
 import {Model_Toast} from '../../_core/types.js';
 import './ToasterItem.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {exists} from '@nu-art/ts-common';
+import {exists, resolveContent} from '@nu-art/ts-common';
 import {ModuleFE_Toasting} from '../../_core/ModuleFE_Toasting.js';
 
 type Props = {
@@ -32,12 +32,14 @@ export const ToasterItem: FC<Props> = (props) => {
 		data-duration={`${props.model.duration}ms`}
 	>
 		<LL_H_C className={'toaster-item-header'}>
-			<div className={'toaster-item-header__title'}>{props.model.title}</div>
+			<div className={'toaster-item-header__title'}>
+				{resolveContent(props.model.title)}
+			</div>
 			<TS_Icons.x.component onClick={() => {
 				ModuleFE_Toasting.toast.close(props.model.id);
 			}}/>
 		</LL_H_C>
-		{exists(props.model.body) && <p className={'toaster-item-body'}>{props.model.body}</p>}
+		{exists(props.model.body) && <p className={'toaster-item-body'}>{resolveContent(props.model.body)}</p>}
 		<div className={'toaster-item-timer'}/>
 	</div>;
 };
