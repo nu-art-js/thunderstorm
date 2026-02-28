@@ -78,6 +78,7 @@ export const DBDef_message: Database<DatabaseDef_Message> = {
 	entityName: 'Message',
 	modifiablePropsValidator: Validator_ModifiableProps_Message as DatabaseDef_Message['modifiablePropsValidator'],
 	generatedPropsValidator: Validator_GeneratedProps_Message,
+	generatedProps: ['_auditorId'],
 	versions: ['1.0.0'],
 	uniqueKeys: ['_id'],
 	frontend: {

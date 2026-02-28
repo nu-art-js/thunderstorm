@@ -1,9 +1,8 @@
-import {CreateDefaultAccessLevels, DefaultAccessLevel_Admin, DefaultDef_Group} from '@nu-art/permissions-shared';
+import {CreateDefaultAccessLevels, DefaultAccessLevel_Admin, DefaultDef_Group, toPermissionAccessLevelId, toPermissionDomainId, toPermissionGroupId} from '@nu-art/permissions-shared';
 import {ApiDef_PushMessages} from '@nu-art/push-pub-sub-shared';
-import {Domain_Developer} from '@nu-art/permissions-backend/permissions';
+import {DefaultDef_Domain, DefaultDef_Package, Domain_Developer} from '@nu-art/permissions-backend';
 import {ModuleBE_PushSubscriptionAPI} from '../modules/ModuleBE_PushSubscriptionDB.js';
 import {_values} from '@nu-art/ts-common';
-import {DefaultDef_Domain, DefaultDef_Package} from '@nu-art/permissions-backend/types';
 
 
 const Domain_PushMessages_ID = 'ce2e840bb639c34887ae19c2c7c82c11';
@@ -13,10 +12,10 @@ const DefaultAccessLevel_Tester = Object.freeze({name: 'Tester', value: 600});
 
 const accessLevels = [{...DefaultAccessLevel_Passive}, {...DefaultAccessLevel_Active}, {...DefaultAccessLevel_Tester}];
 const _PermissionsDomain_PushMessages: DefaultDef_Domain = {
-	_id: Domain_PushMessages_ID,
+	_id: toPermissionDomainId(Domain_PushMessages_ID),
 	namespace: 'Push Messages',
 	dbNames: [],
-	levels: CreateDefaultAccessLevels(Domain_PushMessages_ID, accessLevels),
+	levels: CreateDefaultAccessLevels(Domain_PushMessages_ID, accessLevels).map(level => ({...level, _id: toPermissionAccessLevelId(level._id)})),
 	customApis: [
 		..._values(ModuleBE_PushSubscriptionAPI.crudApiDef).map(api => {
 			return {
@@ -38,7 +37,7 @@ export const PermissionsDomain_PushMessages = Object.freeze(_PermissionsDomain_P
 const PermissionsGroupId_ProactivePushMessanger = '7f2c8925a6fdd2bcb9be3c1c0932deef';
 
 const _PermissionsGroup_ProactivePushMessanger: DefaultDef_Group = {
-	_id: PermissionsGroupId_ProactivePushMessanger,
+	_id: toPermissionGroupId(PermissionsGroupId_ProactivePushMessanger),
 	name: 'Push Messanger',
 	uiLabel: 'Push Messenger',
 	accessLevels: {

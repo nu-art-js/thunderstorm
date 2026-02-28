@@ -30,8 +30,8 @@ export class ModuleFE_PermissionProject_Class
 			config: baseConfig,
 			crudApiDef: CrudApiDef<DatabaseDef_PermissionProject>(DBDef_PermissionProject.dbKey),
 			dispatcher: (..._params: ApiCallerEventType<DB>) => {
-				dispatch_onPermissionProjectChanged.dispatchUI();
-				dispatch_onPermissionProjectChanged.dispatchModule();
+				dispatch_onPermissionProjectChanged.dispatchUI(..._params);
+				dispatch_onPermissionProjectChanged.dispatchModule(..._params);
 			}
 		});
 	}

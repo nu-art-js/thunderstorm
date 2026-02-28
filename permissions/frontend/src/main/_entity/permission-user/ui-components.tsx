@@ -25,6 +25,7 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionU
 	}
 };
 
+// Editable pattern: use .editable with editable+prop, .selectable for multi-select (same as EDITABLE.GenericDropDownV3).
 export const DropDown_PermissionUser = GenericDropDownV3.prepare(Props_DropDown);
 
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({

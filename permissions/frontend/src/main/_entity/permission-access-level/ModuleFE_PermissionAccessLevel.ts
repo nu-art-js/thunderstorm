@@ -30,8 +30,8 @@ export class ModuleFE_PermissionAccessLevel_Class
 			config: baseConfig,
 			crudApiDef: CrudApiDef<DatabaseDef_PermissionAccessLevel>(DBDef_PermissionAccessLevel.dbKey),
 			dispatcher: (..._params: ApiCallerEventType<DB>) => {
-				dispatch_onPermissionAccessLevelChanged.dispatchUI();
-				dispatch_onPermissionAccessLevelChanged.dispatchModule();
+				dispatch_onPermissionAccessLevelChanged.dispatchUI(..._params);
+				dispatch_onPermissionAccessLevelChanged.dispatchModule(..._params);
 			}
 		});
 	}

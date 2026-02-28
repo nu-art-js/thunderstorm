@@ -15,6 +15,7 @@ const Validator_GeneratedProps: DatabaseDef_PermissionProject['generatedPropsVal
 export const DBDef_PermissionProject: Database<DatabaseDef_PermissionProject> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
+	generatedProps: ['_auditorId'],
 	versions: ['1.0.0'],
 	dbKey: PermissionProject_DbKey,
 	entityName: 'PermissionsProject',

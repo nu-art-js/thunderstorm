@@ -1,11 +1,11 @@
-import {DBApiConfigV3, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {Storm} from '@nu-art/thunderstorm-backend';
 import {MemKey_ServerApi} from '@nu-art/http-server';
 import {DB_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions, User_Group, toPermissionGroupId} from '@nu-art/permissions-shared';
 import {PerformProjectSetup} from '@nu-art/thunderstorm-backend/modules/action-processor/Action_SetupProject';
 import {
 	_keys,
 	ApiException,
-	asOptionalArray,
 	batchAction,
 	batchActionParallel,
 	DB_BaseObject,
@@ -27,14 +27,13 @@ import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegis
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserPermissions} from '../../consts.js';
-import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm-backend/modules/_tdb/service-accounts';
 
 
-type Config = DBApiConfigV3<DatabaseDef_PermissionUser> & {}
-
 export class ModuleBE_PermissionUserDB_Class
-	extends ModuleBE_BaseDB<DatabaseDef_PermissionUser, Config>
+	extends ModuleBE_BaseDB<DatabaseDef_PermissionUser>
 	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup {
 
 	private defaultPermissionGroups?: () => Promise<User_Group[]>;
@@ -121,12 +120,12 @@ export class ModuleBE_PermissionUserDB_Class
 		//todo check for duplications in data
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionUser>, actionType: CollectionActionType) {
-		const deleted = asOptionalArray(data.deleted) ?? [];
-		const updated = asOptionalArray(data.updated) ?? [];
-		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);
-
-		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i?._id))).filter(id => beforeIds.includes(id));
+	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DatabaseDef_PermissionUser['dbType']>, actionType: CollectionActionType) {
+		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
+		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
+		const before = data.before ? (Array.isArray(data.before) ? data.before : [data.before]) : [];
+		const beforeIds = before.map(b => b._id);
+		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i._id))).filter(id => beforeIds.includes(id));
 		await this.rotateSession(accountIdToInvalidate);
 	}
 

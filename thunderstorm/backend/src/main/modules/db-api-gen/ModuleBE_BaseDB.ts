@@ -253,7 +253,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	 * @param actionType create/set/update/delete
 	 * @param transaction
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<Proto['dbType']>, actionType: CollectionActionType, transaction?: Transaction) {
 	}
 
 	manipulateQuery(query: FirestoreQuery<Proto['dbType']>): FirestoreQuery<Proto['dbType']> {

@@ -345,16 +345,6 @@ export type AuditBy = {
 };
 
 /**
- * Simplified audit information (v2).
- *
- * Only stores the auditor ID, not full audit details.
- */
-export type AuditableV2 = {
-	/** ID of the user/system that made the change */
-	_auditorId: string;
-}
-
-/**
  * Timestamp with formatted string representation.
  */
 export type Timestamp = {

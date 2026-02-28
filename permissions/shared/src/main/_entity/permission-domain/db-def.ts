@@ -16,6 +16,7 @@ const Validator_GeneratedProps: DatabaseDef_PermissionDomain['generatedPropsVali
 export const DBDef_PermissionDomain: Database<DatabaseDef_PermissionDomain> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
+	generatedProps: ['_auditorId'],
 	versions: ['1.0.0'],
 	dbKey: PermissionDomain_DbKey,
 	frontend: {

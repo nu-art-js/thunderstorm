@@ -16,3 +16,4 @@ export * from './_entity/login-attempts/types.js';
 export * from './_enum/password-assertion/types.js';
 export * from './_enum/password-assertion/validator.js';
 export * from './headers.js';
+export * from './utils.js';

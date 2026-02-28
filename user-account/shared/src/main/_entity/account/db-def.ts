@@ -23,6 +23,7 @@ export const DBDef_Accounts: Database<DatabaseDef_Account> = {
 	entityName: 'Account',
 	modifiablePropsValidator,
 	generatedPropsValidator,
+	generatedProps: ['_auditorId', '_newPasswordRequired', 'salt', 'saltedPassword'],
 	versions: ['1.0.0'],
 	uniqueKeys: ['_id'],
 	frontend: {

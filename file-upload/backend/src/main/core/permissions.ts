@@ -3,19 +3,20 @@ import {
 	DefaultAccessLevel_Delete,
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
-	DefaultDef_Group
+	DefaultDef_Group,
+	toPermissionDomainId,
+	toPermissionGroupId
 } from '@nu-art/permissions-shared';
 import {CrudApiDef} from '@nu-art/db-api-shared';
 import {ApiDef_Assets, ApiDef_AssetUploader, DBDef_Assets} from '@nu-art/file-upload-shared';
-import {Domain_Developer} from '@nu-art/permissions-backend/permissions';
-import {DefaultDef_Domain, DefaultDef_Package} from '@nu-art/permissions-backend/types';
+import {DefaultDef_Domain, DefaultDef_Package, Domain_Developer} from '@nu-art/permissions-backend';
 
 const AssetsCrudApiDef = CrudApiDef(DBDef_Assets.dbKey, 'v1');
 
 const Domain_AssetsManager_ID = '993c496c6aaad9c67723034137d26c42';
 
 const _PermissionsDomain_AssetsManager: DefaultDef_Domain = {
-	_id: Domain_AssetsManager_ID,
+	_id: toPermissionDomainId(Domain_AssetsManager_ID),
 	namespace: 'Assets',
 	dbNames: [],
 	customApis: [
@@ -42,7 +43,7 @@ const PermissionsGroupId_AssetsViewer = '0773dcf3b9fbe5e595ef6e2a596b8939';
 const PermissionsGroupId_AssetsManager = '3f5037358fba0ae1199047f2fa8add94';
 
 const _PermissionsGroup_AssetsViewer: DefaultDef_Group = {
-	_id: PermissionsGroupId_AssetsViewer,
+	_id: toPermissionGroupId(PermissionsGroupId_AssetsViewer),
 	name: 'Assets Viewer',
 	uiLabel: 'Assets Viewer',
 	accessLevels: {
@@ -51,7 +52,7 @@ const _PermissionsGroup_AssetsViewer: DefaultDef_Group = {
 };
 
 const _PermissionsGroup_AssetsManager: DefaultDef_Group = {
-	_id: PermissionsGroupId_AssetsManager,
+	_id: toPermissionGroupId(PermissionsGroupId_AssetsManager),
 	name: 'Assets Manager',
 	uiLabel: 'Assets Manager',
 	accessLevels: {

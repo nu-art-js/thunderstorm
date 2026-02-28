@@ -18,11 +18,9 @@
  */
 import {
 	ApiException,
-	asArray,
 	BadImplementationException,
 	currentTimeMillis,
 	Day,
-	exists,
 	filterInstances,
 	generateHex,
 	Hour,
@@ -115,9 +113,9 @@ export class ModuleBE_AssetsDB_Class
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
 	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DB_Asset>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
-		const deletedItems = data.deleted;
-		if (exists(deletedItems))
-			await ModuleBE_AssetsDeleted.set.all(asArray(deletedItems) as unknown as DB_AssetDeleted[], transaction);
+		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
+		if (deleted.length)
+			await ModuleBE_AssetsDeleted.set.all(deleted as unknown as DB_AssetDeleted[], transaction);
 	}
 
 	@ApiHandler(ApiDef_AssetUploader.getUploadUrl)

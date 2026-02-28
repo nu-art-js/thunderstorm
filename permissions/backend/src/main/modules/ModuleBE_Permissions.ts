@@ -56,7 +56,7 @@ import {
 	ModuleBE_PermissionProjectDB,
 	ModuleBE_PermissionUserDB
 } from '../_entity.js';
-import {trimStartingForwardSlash} from '@nu-art/thunderstorm-shared/route-tools';
+import {trimStartingForwardSlash} from '@nu-art/permissions-shared';
 import {ApiModule} from '@nu-art/thunderstorm-shared';
 import {DefaultDef_Project} from '../types.js';
 
