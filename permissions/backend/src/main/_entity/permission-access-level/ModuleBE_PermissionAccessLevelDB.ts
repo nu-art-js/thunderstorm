@@ -30,7 +30,7 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		await ModuleBE_PermissionDomainDB.query.uniqueAssert(dbInstance.domainId);
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionAccessLevel>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionAccessLevel['dbType']>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 

@@ -1,10 +1,10 @@
-import {AuditableV2} from '@nu-art/ts-common';
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
+import {AuditableV2} from '@nu-art/user-account-shared';
 
 export const PermissionProject_DbKey = 'permissions--project';
 type DBKey = typeof PermissionProject_DbKey;
 
-type VersionTypes_PermissionProject = {'1.0.0': DB_PermissionProject};
+type VersionTypes_PermissionProject = { '1.0.0': DB_PermissionProject };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PermissionProject>;
 type UniqueKeys = '_id';
 type GeneratedProps = '_auditorId';

@@ -1,4 +1,4 @@
-import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, TS_Object, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types.js';
 import {Transaction} from 'firebase-admin/firestore';
 import {assertUniqueId, CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from './FirestoreCollectionV3.js';
@@ -8,9 +8,9 @@ import admin from 'firebase-admin';
 import type { firestore as Fa } from 'firebase-admin';
 const { FieldValue } = admin.firestore;
 
-export type UpdateObject<Proto extends DBProto<any>> = {
+export type UpdateObject<DBType extends TS_Object> = {
 	_id: UniqueId;
-} & Fa.UpdateData<Proto['dbType']>;
+} & Fa.UpdateData<DBType>;
 
 
 export class DocWrapperV3<Proto extends DBProto<any>> {

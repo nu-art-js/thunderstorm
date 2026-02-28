@@ -1,5 +1,6 @@
 import {DB_BaseObject, DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
-import {AuditableV2, TypedKeyValue} from '@nu-art/ts-common';
+import {TypedKeyValue} from '@nu-art/ts-common';
+import {AuditableV2} from '../../utils.js';
 
 export const AccountType_User: AccountType = 'user';
 export const AccountType_Service: AccountType = 'service';

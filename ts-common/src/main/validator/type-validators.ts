@@ -22,13 +22,13 @@ import {BadImplementationException} from '../core/exceptions/exceptions.js';
  * @param mandatory - Whether the object itself is required (default: true)
  * @returns Validator that validates both keys and values
  */
-export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<string>, mandatory = true) => {
+export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<keyof T>, mandatory = true) => {
 	return [tsValidateExists(mandatory),
 					(input?: T) => {
 						if (!input)
 							return;
 
-						const keys = _keys(input) as string[];
+						const keys = _keys(input);
 						const _result = keys.reduce<InvalidResultObject<T>>((res, key) => {
 							const _valRes = tsValidateResult(input[key as keyof T], valuesValidator);
 							const _keyRes = tsValidateResult(key, keysValidator);

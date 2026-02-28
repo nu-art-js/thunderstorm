@@ -42,6 +42,7 @@ import {
 	Logger,
 	MUSTNeverHappenException,
 	StaticLogger,
+	TS_Object,
 	tsValidateResult,
 	tsValidateUniqueId,
 	TypedMap,
@@ -65,24 +66,24 @@ import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
 
 // {deleted: null} means that the whole collection has been deleted
-export type PostWriteProcessingData<Proto extends DBProto<any>> = {
-	before?: Proto['dbType'] | Proto['dbType'][];
-	updated?: Proto['dbType'] | Proto['dbType'][];
-	deleted?: Proto['dbType'] | Proto['dbType'][] | null;
+export type PostWriteProcessingData<DBType extends TS_Object> = {
+	before?: DBType | DBType[];
+	updated?: DBType | DBType[];
+	deleted?: DBType | DBType[] | null;
 };
 export type CollectionActionType = 'create' | 'set' | 'update' | 'delete'
-export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
-	canDeleteItems: (dbItems: Proto['dbType'][], transaction?: Transaction) => Promise<void>,
-	preWriteProcessing?: (dbInstance: Proto['dbType'], originalDbInstance?: Proto['dbType'], transaction?: Transaction) => Promise<void>,
-	manipulateQuery?: (query: FirestoreQuery<Proto['dbType']>) => FirestoreQuery<Proto['dbType']>,
-	postWriteProcessing?: (data: PostWriteProcessingData<Proto>, actionType: CollectionActionType, transaction?: Transaction) => Promise<void>,
-	upgradeInstances: (instances: Proto['dbType'][]) => Promise<any>
+export type FirestoreCollectionHooks<DBType extends TS_Object> = {
+	canDeleteItems: (dbItems: DBType[], transaction?: Transaction) => Promise<void>,
+	preWriteProcessing?: (dbInstance: DBType, originalDbInstance?: DBType, transaction?: Transaction) => Promise<void>,
+	manipulateQuery?: (query: FirestoreQuery<DBType>) => FirestoreQuery<DBType>,
+	postWriteProcessing?: (data: PostWriteProcessingData<DBType>, actionType: CollectionActionType, transaction?: Transaction) => Promise<void>,
+	upgradeInstances: (instances: DBType[]) => Promise<any>
 }
 
-export type MultiWriteItem<Op extends MultiWriteOperation, Proto extends DBProto<any>> =
+export type MultiWriteItem<Op extends MultiWriteOperation, DBType extends TS_Object> =
 	Op extends 'delete' ? undefined :
-		Op extends 'update' ? UpdateObject<Proto['dbType']> :
-			Proto;
+		Op extends 'update' ? UpdateObject<DBType> :
+			DBType;
 
 type MultiWriteType = 'bulk' | 'batch';
 const defaultMultiWriteType = 'batch';

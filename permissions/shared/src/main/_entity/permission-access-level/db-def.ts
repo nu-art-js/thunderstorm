@@ -14,9 +14,12 @@ const Validator_GeneratedProps: DatabaseDef_PermissionAccessLevel['generatedProp
 	_auditorId: tsValidateString()
 };
 
+const GeneratedProps: DatabaseDef_PermissionAccessLevel['generatedProps'] = ['_auditorId'];
+
 export const DBDef_PermissionAccessLevel: Database<DatabaseDef_PermissionAccessLevel> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
+	generatedProps: GeneratedProps,
 	versions: ['1.0.1', '1.0.0'],
 	dbKey: PermissionAccessLevel_DbKey,
 	entityName: 'PermissionAccessLevel',

@@ -1,12 +1,12 @@
 import {tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core.js';
 import {tsValidateArray, tsValidateBoolean, tsValidateRegexp, tsValidateString, tsValidateTimestamp, tsValidateValue} from './type-validators.js';
-import {AuditableV2, DBPointer} from '../utils/types.js';
+import {DBPointer} from '../utils/types.js';
 import {DBDef_V3} from '../db/types.js';
 
 
 /**
  * Validates an optional array (non-mandatory).
- * 
+ *
  * @template T - Element type
  * @param validator - Validator for array elements
  * @returns Validator for optional arrays
@@ -17,10 +17,10 @@ export const tsValidator_nonMandatoryString = tsValidateString(-1, false);
 
 /**
  * Validates an MD5 hash string.
- * 
+ *
  * **Note**: MD5 is cryptographically broken and should not be used for security.
  * This validator only checks format (32 hex characters), not cryptographic validity.
- * 
+ *
  * @param mandatory - Whether MD5 is required (default: true)
  * @returns Validator for MD5 hash strings
  */
@@ -30,7 +30,7 @@ export const tsValidateMD5 = (mandatory = true): Validator<string> => {
 
 /**
  * Validates a hex color code (with optional alpha channel).
- * 
+ *
  * Supports formats: #RGB, #RGBA, #RRGGBB, #RRGGBBAA
  */
 export const tsValidator_colorHex = tsValidateRegexp(/^#(?:[a-fA-F0-9]{8}|[a-fA-F0-9]{6}|[a-fA-F0-9]{3,4})$/);
@@ -47,7 +47,7 @@ export const dbRefIdLength = 128;
 
 /**
  * Validates a hexadecimal ID of a specific length.
- * 
+ *
  * @param length - Expected length in hex characters
  * @param mandatory - Whether ID is required (default: true)
  * @returns Validator for hex IDs
@@ -56,7 +56,7 @@ export const tsValidateId = (length: number, mandatory: boolean = true) => tsVal
 
 /**
  * Validates an email address format.
- * 
+ *
  * Uses a permissive regex pattern that accepts most valid email formats.
  * Does not validate that the domain actually exists.
  */
@@ -65,9 +65,9 @@ export const tsValidateEmail = tsValidateRegexp(
 
 /**
  * Validates a Google Cloud Storage or S3 bucket URL.
- * 
+ *
  * Supports both `gs://` (Google Cloud Storage) and `s3://` (AWS S3) URLs.
- * 
+ *
  * @param mandatory - Whether URL is required
  * @returns Validator for bucket URLs
  */
@@ -76,9 +76,9 @@ export const tsValidateBucketUrl = (mandatory?: boolean) => tsValidateRegexp(
 
 /**
  * Validates a general HTTPS URL.
- * 
+ *
  * Requires HTTPS protocol and optionally includes port numbers.
- * 
+ *
  * @param mandatory - Whether URL is required
  * @returns Validator for HTTPS URLs
  */
@@ -87,9 +87,9 @@ export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
 
 /**
  * Validates a short URL identifier.
- * 
+ *
  * Requires exactly 8 characters from a specific character set (alphanumeric and some symbols).
- * 
+ *
  * @param mandatory - Whether short URL is required (default: true)
  * @returns Validator for short URLs
  */
@@ -99,7 +99,7 @@ export const tsValidateShortUrl = (mandatory = true) => tsValidateRegexp(
 
 /**
  * Validates a semantic version string (X.Y.Z format).
- * 
+ *
  * Each component can be 1-3 digits. Examples: "1.0.0", "123.45.678"
  */
 export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
@@ -113,10 +113,10 @@ export const tsValidate_optionalArrayOfUniqueIds = tsValidate_OptionalArray(tsVa
 
 /**
  * Validates a database pointer (reference to another database object).
- * 
+ *
  * Validates that the `dbKey` exists in the provided database definitions and
  * that the `id` is a valid unique ID.
- * 
+ *
  * @param dbDefs - Array of database definitions to validate against
  * @param mandatory - Whether DB pointer is required (default: true)
  * @returns Validator for database pointers
@@ -140,8 +140,6 @@ export const tsValidator_LowerUpperStringWithSpaces = tsValidateRegexp(/^[A-Za-z
 export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateRegexp(/^[A-Za-z-_]+$/);
 export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9] ?){6,14}[0-9]$/);
 export const tsValidator_DB_RefId = tsValidateId(dbRefIdLength);
-
-export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_auditorId: tsValidateString()};
 
 export const DB_Object_validator = {
 	// this will be the way to handle app level context via proto.. need to rename this to __metadata once done

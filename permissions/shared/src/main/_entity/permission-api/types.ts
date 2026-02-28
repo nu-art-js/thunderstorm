@@ -1,8 +1,8 @@
-import {AuditableV2} from '@nu-art/ts-common';
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
 import {DatabaseDef_PermissionAccessLevel} from '../permission-access-level/types.js';
 import {DatabaseDef_PermissionDomain} from '../permission-domain/types.js';
 import {DatabaseDef_PermissionProject} from '../permission-project/types.js';
+import { AuditableV2 } from '@nu-art/user-account-shared';
 
 export const PermissionAPI_DbKey = 'permissions--api';
 type DBKey = typeof PermissionAPI_DbKey;

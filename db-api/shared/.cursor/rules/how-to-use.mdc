@@ -34,7 +34,11 @@ Add `@nu-art/db-api-shared`; it depends on `@nu-art/ts-common`, `@nu-art/http-cl
 
 ### Alternative: Database + DBDef
 
-Entities can use the **Database + DBDef** style instead of the full CrudTypes/DB_Prototype pattern. Use **`DatabaseDef_<Entity>`** for the entity prototype type and **`DBDef_<Entity>`** or **`DBDef_<Plural>`** for the runtime constant. Implement the type as `DB_Prototype<DB_ProtoSeed<...>>`. Define a `Database<DatabaseDef_<Entity>>` constant with `dbKey`, `entityName`, `modifiablePropsValidator`, `generatedPropsValidator`, `versions`, `uniqueKeys`, `frontend`/`backend`. Same shared types and backend/frontend steps apply: `DB_Object` from here, `createApisForDBModule` on backend, `ModuleBE_BaseDB<DatabaseDef_<Entity>>`, `ModuleFE_BaseApi<DatabaseDef_<Entity>>`.
+Entities can use the **Database + DBDef** style instead of the full CrudTypes/DB_Prototype pattern. Use **`DatabaseDef_<Entity>`** for the entity prototype type and **`DBDef_<Entity>`** or **`DBDef_<Plural>`** for the runtime constant. Implement the type as `DB_Prototype<DB_ProtoSeed<...>>`. Define a `Database<DatabaseDef_<Entity>>` constant with `dbKey`, `entityName`, `modifiablePropsValidator`, `generatedPropsValidator`, `versions`, `uniqueKeys`, `frontend`/`backend`.
+
+**Generated keys and generatedProps:** In `DB_ProtoSeed`, `generatedKeys` must be either `never` (no entity-specific generated props) or a union of keys of the entity type `T` that are **not** in `keyof DB_Object` — i.e. only entity-specific generated props; base DB_Object keys are a given and must not be listed. On the Database constant: when the proto has generated props (generatedKeys not `never`), include `generatedProps` (required); when generatedKeys is `never`, do not include `generatedProps`. The `Database<Proto>` type enforces this via a conditional on `Proto['generatedProps']`.
+
+Same shared types and backend/frontend steps apply: `DB_Object` from here, `createApisForDBModule` on backend, `ModuleBE_BaseDB<DatabaseDef_<Entity>>`, `ModuleFE_BaseApi<DatabaseDef_<Entity>>`.
 
 ## Convention
 

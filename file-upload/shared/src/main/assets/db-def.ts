@@ -37,9 +37,12 @@ const Validator_GeneratedProps: DBProto_Assets['generatedPropsValidator'] = {
 
 const AssetVersions: ['1.0.2', '1.0.1', '1.0.0'] = ['1.0.2', '1.0.1', '1.0.0'];
 
+const GeneratedProps: DBProto_Assets['generatedProps'] = ['signedUrl', 'timestamp', 'md5Hash', 'path', 'bucketName', 'public', 'metadata'];
+
 const BaseDef = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
+	generatedProps: GeneratedProps,
 	versions: AssetVersions,
 	frontend: { group: AssetDBGroup, name: 'asset' },
 	backend: { name: 'assets' },

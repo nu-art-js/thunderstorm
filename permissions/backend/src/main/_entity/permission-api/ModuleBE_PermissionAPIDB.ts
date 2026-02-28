@@ -6,7 +6,7 @@ import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import {ModuleBE_PermissionProjectDB} from '../permission-project/index.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {trimStartingForwardSlash} from '@nu-art/thunderstorm-shared/route-tools';
+import {trimStartingForwardSlash} from '@nu-art/permissions-shared';
 
 export class ModuleBE_PermissionAPIDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_PermissionAPI> {

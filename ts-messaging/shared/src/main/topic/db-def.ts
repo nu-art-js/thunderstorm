@@ -15,6 +15,7 @@ export const DBDef_Topic: Database<DatabaseDef_Topic> = {
 	entityName: 'Topic',
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps_Topic,
+	generatedProps: ['refId', 'type'],
 	versions: ['1.0.0'],
 	uniqueKeys: ['_id'],
 	frontend: {

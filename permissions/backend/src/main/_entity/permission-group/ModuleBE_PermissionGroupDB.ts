@@ -54,7 +54,7 @@ export class ModuleBE_PermissionGroupDB_Class
 		instance._levelsMap = reduceToMap(dbLevels, dbLevel => dbLevel.domainId, dbLevel => dbLevel.value);
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionGroup>, actionType: CollectionActionType) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionGroup['dbType']>, actionType: CollectionActionType) {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId)) as DatabaseDef_PermissionGroup['id'][];

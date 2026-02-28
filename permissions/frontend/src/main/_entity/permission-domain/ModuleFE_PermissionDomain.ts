@@ -30,8 +30,8 @@ export class ModuleFE_PermissionDomain_Class
 			config: baseConfig,
 			crudApiDef: CrudApiDef<DatabaseDef_PermissionDomain>(DBDef_PermissionDomain.dbKey),
 			dispatcher: (..._params: ApiCallerEventType<DB>) => {
-				dispatch_onPermissionDomainChanged.dispatchUI();
-				dispatch_onPermissionDomainChanged.dispatchModule();
+				dispatch_onPermissionDomainChanged.dispatchUI(..._params);
+				dispatch_onPermissionDomainChanged.dispatchModule(..._params);
 			}
 		});
 	}

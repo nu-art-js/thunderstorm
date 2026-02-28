@@ -5,7 +5,7 @@ type VersionTypes = { '1.0.0': DB_Session };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>;
 type UniqueIds = '_id' | 'accountId' | 'deviceId';
 type DBKey = 'user-account--sessions';
-type GeneratedKeys = keyof DB_Object<DBKey>;
+type GeneratedKeys = never;
 type Dependencies = {};
 
 export type DatabaseDef_Session = DB_Prototype<DB_ProtoSeed<DB_Session, DBKey, GeneratedKeys, Versions, UniqueIds, Dependencies>>;

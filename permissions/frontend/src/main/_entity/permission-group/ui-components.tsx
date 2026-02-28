@@ -12,7 +12,7 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionG
 	renderer: item => <>{item.label}</>
 };
 
-// Cast: thunderstorm GenericDropDownV3 expects DBProto/module shape; we use db-api-frontend ModuleFE_BaseApi<DatabaseDef_*>.
+// Editable pattern: use .editable with editable+prop, .selectable for multi-select (same as EDITABLE.GenericDropDownV3).
 export const DropDown_PermissionGroup = GenericDropDownV3.prepare(Props_DropDown as never);
 
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({

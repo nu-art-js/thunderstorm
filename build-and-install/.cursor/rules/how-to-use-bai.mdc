@@ -19,7 +19,7 @@ alwaysApply: true
 | **One package** only | `-up=<name>` or `--use-package=<name>` (regex) |
 | **Package** | `-up=<name> |
 | **Package + its deps ONLY IF NEEDED** | `-up=<name> --build-tree` |
-| **Resume** after failure | `-con` or `--continue` |
+| **Resume** after failure | `-con` or `--continue` — continue from where a previous run left off (e.g. after a failure). **Do not** confuse with "concurrent"; `-con` means **continue**, not concurrent. |
 | **Help** | `-h` or `--help` |
 
 **Examples**: `bash ./build-and-install.sh -i` · `bash ./build-and-install.sh -t -tt=pure` · `bash ./build-and-install.sh -up=my-pkg -bt` · `bash ./build-and-install.sh -nb -up=app-backend -l` (launch app, no build)

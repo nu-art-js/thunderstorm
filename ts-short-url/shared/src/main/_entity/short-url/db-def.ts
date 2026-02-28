@@ -17,6 +17,7 @@ export const DBDef_ShortUrl: Database<DatabaseDef_ShortUrl> = {
 	entityName: 'short-url',
 	modifiablePropsValidator,
 	generatedPropsValidator,
+	generatedProps: ['_shortUrl'],
 	versions: ['1.0.0'],
 	uniqueKeys: ['_id'],
 	frontend: {
