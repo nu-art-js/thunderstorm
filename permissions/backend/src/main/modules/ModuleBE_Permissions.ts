@@ -15,6 +15,7 @@ import {ApiHandler} from '@nu-art/http-server';
 import {MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm-backend';
 import {
 	ApiDef_Permissions,
+	DatabaseDef_PermissionUser,
 	DB_PermissionAccessLevel,
 	DB_PermissionAPI,
 	DB_PermissionDomain,
@@ -25,10 +26,14 @@ import {
 	DefaultAccessLevel_NoAccess,
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
+	DefaultDef_AccessLevel,
 	DefaultDef_Group,
 	defaultLevelsRouteLookupWords,
 	DuplicateDefaultAccessLevels,
 	SessionData_Permissions,
+	toPermissionDomainId,
+	toPermissionGroupId,
+	toPermissionProjectId,
 } from '@nu-art/permissions-shared';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {getRegisteredFunctionPermissions} from '../core/function-permission-registry.js';
@@ -65,7 +70,7 @@ const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsP
 const GroupId_SuperAdmin = '8b54efda69b385a566735cca7be031d5';
 
 export const PermissionGroup_Permissions_SuperAdmin: DefaultDef_Group = {
-	_id: GroupId_SuperAdmin,
+	_id: toPermissionGroupId(GroupId_SuperAdmin),
 	name: 'Super Admin',
 	uiLabel: 'Super Admin',
 	accessLevels: {
@@ -77,7 +82,7 @@ export const PermissionGroup_Permissions_SuperAdmin: DefaultDef_Group = {
 };
 
 export const PermissionGroup_Permissions_Viewer: DefaultDef_Group = {
-	_id: '8c38d3bd2d76bbc37b5281f481c0bc1b',
+	_id: toPermissionGroupId('8c38d3bd2d76bbc37b5281f481c0bc1b'),
 	name: 'Permissions Viewer',
 	uiLabel: 'Permissions Viewer',
 	accessLevels: {
@@ -88,7 +93,7 @@ export const PermissionGroup_Permissions_Viewer: DefaultDef_Group = {
 };
 
 export const PermissionGroup_Permissions_Editor: DefaultDef_Group = {
-	_id: '1524909cae174d0052b76a469b339218',
+	_id: toPermissionGroupId('1524909cae174d0052b76a469b339218'),
 	name: 'Permissions Editor',
 	uiLabel: 'Permissions Editor',
 	accessLevels: {
@@ -99,7 +104,7 @@ export const PermissionGroup_Permissions_Editor: DefaultDef_Group = {
 };
 
 export const PermissionGroup_Account_Manager: DefaultDef_Group = {
-	_id: '6bb5feb12d0712ecee77f7f44188ec79',
+	_id: toPermissionGroupId('6bb5feb12d0712ecee77f7f44188ec79'),
 	name: 'Accounts Manager',
 	uiLabel: 'Accounts Manager',
 	accessLevels: {
@@ -108,7 +113,7 @@ export const PermissionGroup_Account_Manager: DefaultDef_Group = {
 };
 
 export const PermissionGroup_Account_Admin: DefaultDef_Group = {
-	_id: '761a84bdde3f9be3fde9c50402a60401',
+	_id: toPermissionGroupId('761a84bdde3f9be3fde9c50402a60401'),
 	name: 'Accounts Admin',
 	uiLabel: 'Accounts Admin',
 	accessLevels: {
@@ -117,7 +122,7 @@ export const PermissionGroup_Account_Admin: DefaultDef_Group = {
 };
 
 export const PermissionGroup_Account_Viewer: DefaultDef_Group = {
-	_id: '7343853a980149ec94f967ac7ff4ccc3',
+	_id: toPermissionGroupId('7343853a980149ec94f967ac7ff4ccc3'),
 	name: 'Accounts Viewer',
 	uiLabel: 'Accounts Viewer',
 	accessLevels: {
@@ -143,7 +148,7 @@ export const PermissionGroups_Permissions = [
 ];
 
 export const PermissionProject_Permissions: DefaultDef_Project = {
-	_id: 'f60db83936835e0be33e89caa365f0c3',
+	_id: toPermissionProjectId('f60db83936835e0be33e89caa365f0c3'),
 	name: 'Permissions',
 	packages: [PermissionsPackage_Permissions, PermissionsPackage_Developer],
 	groups: PermissionGroups_Permissions
@@ -172,7 +177,8 @@ class ModuleBE_Permissions_Class
 	// }
 
 	async __collectSessionData(data: BaseSessionClaims): Promise<SessionData_Permissions> {
-		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(data.accountId);
+		const permissionUserId = data.accountId as unknown as DatabaseDef_PermissionUser['id'];
+		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(permissionUserId);
 		const userGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(permissionUser.groups.map(g => g.groupId)));
 		const permissionMap = await this.getUserPermissionMap(userGroups);
 
@@ -243,7 +249,7 @@ class ModuleBE_Permissions_Class
 	 * Creates domains and access levels from the function-permission registry (populated by @RequirePermission decorators).
 	 * New (scopeKey, value) pairs get domains/levels created; not assigned to anyone until explicitly assigned.
 	 */
-	private async createDomainsAndLevelsFromFunctionPermissionRegistry(projectId: string) {
+	private async createDomainsAndLevelsFromFunctionPermissionRegistry(projectId: import('@nu-art/permissions-shared').DatabaseDef_PermissionProject['id']) {
 		const defs = getRegisteredFunctionPermissions();
 		if (defs.length === 0)
 			return;
@@ -251,10 +257,10 @@ class ModuleBE_Permissions_Class
 		this.logInfoBold('Creating domains/levels from function-permission registry');
 		const _auditorId = MemKey_AccountId.get();
 		const uniqueScopeKeys = [...new Set(defs.map(d => d.scopeKey))];
-		const domainIdByScopeKey: TypedMap<string> = {};
+		const domainIdByScopeKey: TypedMap<import('@nu-art/permissions-shared').DatabaseDef_PermissionDomain['id']> = {};
 
 		for (const scopeKey of uniqueScopeKeys) {
-			const domainId = md5(`function-permission-domain/${scopeKey}`);
+			const domainId = toPermissionDomainId(md5(`function-permission-domain/${scopeKey}`));
 			domainIdByScopeKey[scopeKey] = domainId;
 			await ModuleBE_PermissionDomainDB.set.all([{
 				_id: domainId,
@@ -275,7 +281,7 @@ class ModuleBE_Permissions_Class
 		for (const def of defs) {
 			const domainId = domainIdByScopeKey[def.scopeKey];
 			const levelValue = levelValueByName[def.value] ?? 100;
-			const levelId = md5(`${domainId}/${def.value}`);
+			const levelId = md5(`${domainId}/${def.value}`) as import('@nu-art/permissions-shared').DatabaseDef_PermissionAccessLevel['id'];
 			await ModuleBE_PermissionAccessLevelDB.set.all([{
 				_id: levelId,
 				domainId,
@@ -348,9 +354,7 @@ class ModuleBE_Permissions_Class
 		this.logInfoBold('Creating Access Levels');
 		const _auditorId = MemKey_AccountId.get();
 		const levelsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => {
-			let levels = domain.levels;
-			if (!levels)
-				levels = DuplicateDefaultAccessLevels(domain._id);
+			let levels: DefaultDef_AccessLevel[] = domain.levels ?? DuplicateDefaultAccessLevels(domain._id) as DefaultDef_AccessLevel[];
 
 			return levels.map(level => {
 				return {
@@ -496,15 +500,17 @@ class ModuleBE_Permissions_Class
 	 */
 	private assignSuperAdmin = async () => {
 		this.logInfoBold('Assigning SuperAdmin permissions');
+		const superAdminGroupId = toPermissionGroupId(GroupId_SuperAdmin);
 		const existingSuperAdmin = (await ModuleBE_PermissionUserDB.query.custom({
-			where: {__groupIds: {$ac: GroupId_SuperAdmin}},
+			where: {__groupIds: {$ac: superAdminGroupId}},
 			limit: 1
 		}))[0];
 		if (existingSuperAdmin)
 			return;
 
-		const currentUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(MemKey_AccountId.get());
-		(currentUser.groups || (currentUser.groups = [])).push({groupId: GroupId_SuperAdmin});
+		const accountId = MemKey_AccountId.get();
+		const currentUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(accountId as unknown as DatabaseDef_PermissionUser['id']);
+		(currentUser.groups || (currentUser.groups = [])).push({groupId: superAdminGroupId});
 		await ModuleBE_PermissionUserDB.set.item(currentUser);
 		await ModuleBE_SessionDB._session.rotate.reissue.bySession();
 		this.logInfoBold('Assigned SuperAdmin permissions');

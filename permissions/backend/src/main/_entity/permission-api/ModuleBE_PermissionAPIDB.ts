@@ -1,5 +1,5 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {DB_PermissionAPI, DBDef_PermissionAPI, DatabaseDef_PermissionAPI} from '@nu-art/permissions-shared';
+import {DB_PermissionAPI, DBDef_PermissionAPI, DatabaseDef_PermissionAPI, DatabaseDef_PermissionProject} from '@nu-art/permissions-shared';
 import {dbObjectToId, filterInstances, PreDB, UniqueId} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../permission-access-level/index.js';
 import {Transaction} from 'firebase-admin/firestore';
@@ -55,12 +55,12 @@ export class ModuleBE_PermissionAPIDB_Class
 		}
 	}
 
-	registerApis(projectId: string, routes: string[]) {
+	registerApis(projectId: DatabaseDef_PermissionProject['id'], routes: string[]) {
 		return this.runTransaction(async (transaction: Transaction) => {
-			const existingProjectApis = await this.query.custom({where: {projectId: projectId}}, transaction);
+			const existingProjectApis = await this.query.custom({where: {projectId}}, transaction);
 			const apisToAdd: PreDB<DB_PermissionAPI>[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
-				.map(path => ({path, projectId: projectId, _auditorId: MemKey_AccountId.get()}));
+				.map(path => ({path, projectId, _auditorId: MemKey_AccountId.get()}));
 
 			return this.set.all(apisToAdd, transaction);
 		});

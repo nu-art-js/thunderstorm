@@ -12,6 +12,8 @@ import {
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
 	DefaultDef_Group,
+	toPermissionDomainId,
+	toPermissionGroupId,
 } from '@nu-art/permissions-shared';
 import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE.js';
 import {
@@ -36,7 +38,7 @@ const Domain_AccountManagement_ID = 'a02fd6cef8ccae193ad7357d596131e4';
 const Domain_Developer_ID = '1f62a6e2fc4e2cfaa8aa1aa1a45b8c1b';
 
 const _Domain_PermissionsDefine: DefaultDef_Domain = {
-	_id: Domain_PermissionsDefine_ID,
+	_id: toPermissionDomainId(Domain_PermissionsDefine_ID),
 	namespace: 'Permissions Define',
 	dbNames: [DBDef_PermissionProject, DBDef_PermissionDomain, DBDef_PermissionAPI, DBDef_PermissionAccessLevel].map(dbDef => dbDef.dbKey),
 	customApis: [
@@ -47,13 +49,13 @@ const _Domain_PermissionsDefine: DefaultDef_Domain = {
 };
 
 const _Domain_PermissionsAssign: DefaultDef_Domain = {
-	_id: Domain_PermissionsAssign_ID,
+	_id: toPermissionDomainId(Domain_PermissionsAssign_ID),
 	namespace: 'Permissions Assign',
 	dbNames: [DBDef_PermissionGroup.dbKey, DBDef_PermissionUser.dbKey],
 };
 
 const _Domain_AccountManagement: DefaultDef_Domain = {
-	_id: Domain_AccountManagement_ID,
+	_id: toPermissionDomainId(Domain_AccountManagement_ID),
 	namespace: 'Account Management',
 	dbNames: [DBDef_Accounts.dbKey],
 	customApis: [
@@ -68,7 +70,7 @@ export const PermissionKeyBE_DeveloperEditor = new PermissionKey_BE(PermissionKe
 export const PermissionKeyBE_DeveloperAdmin = new PermissionKey_BE(PermissionKey_DeveloperAdmin, () => defaultValueResolverV2(Domain_Developer._id, DefaultAccessLevel_Admin.name));
 
 const _Domain_Developer: DefaultDef_Domain = {
-	_id: Domain_Developer_ID,
+	_id: toPermissionDomainId(Domain_Developer_ID),
 	namespace: 'Developer',
 	permissionKeys: [
 		PermissionKeyBE_DeveloperViewer,
@@ -110,7 +112,7 @@ export const PermissionsPackage_Developer: DefaultDef_Package = {
 
 //Needed?
 export const PermissionGroup_PermissionsDefine_NoAccess: DefaultDef_Group = {
-	_id: 'cacf1da8ccca1e4dede8859f0d72c55c',
+	_id: toPermissionGroupId('cacf1da8ccca1e4dede8859f0d72c55c'),
 	name: `${Domain_PermissionsDefine.namespace}/No Access`,
 	uiLabel: `${Domain_PermissionsDefine.namespace}/No Access`,
 	accessLevels: {
@@ -119,7 +121,7 @@ export const PermissionGroup_PermissionsDefine_NoAccess: DefaultDef_Group = {
 };
 
 export const PermissionGroup_PermissionsDefine_Viewer: DefaultDef_Group = {
-	_id: '0079f39e0f50b70942b8d69bfe1741d5',
+	_id: toPermissionGroupId('0079f39e0f50b70942b8d69bfe1741d5'),
 	name: `${Domain_PermissionsDefine.namespace}/Viewer`,
 	uiLabel: `${Domain_PermissionsDefine.namespace}/Viewer`,
 	accessLevels: {
@@ -127,7 +129,7 @@ export const PermissionGroup_PermissionsDefine_Viewer: DefaultDef_Group = {
 	},
 };
 export const PermissionGroup_PermissionsDefine_Editor: DefaultDef_Group = {
-	_id: '46fb6b35f1d4d11913ce231bd4a42b4b',
+	_id: toPermissionGroupId('46fb6b35f1d4d11913ce231bd4a42b4b'),
 	name: `${Domain_PermissionsDefine.namespace}/Editor`,
 	uiLabel: `${Domain_PermissionsDefine.namespace}/Editor`,
 	accessLevels: {
@@ -136,7 +138,7 @@ export const PermissionGroup_PermissionsDefine_Editor: DefaultDef_Group = {
 };
 
 export const PermissionGroup_PermissionsDefine_Admin: DefaultDef_Group = {
-	_id: 'fa260d42ce16a69bc654bf0efd1a2287',
+	_id: toPermissionGroupId('fa260d42ce16a69bc654bf0efd1a2287'),
 	name: `${Domain_PermissionsDefine.namespace}/Admin`,
 	uiLabel: `${Domain_PermissionsDefine.namespace}/Admin`,
 	accessLevels: {
@@ -145,7 +147,7 @@ export const PermissionGroup_PermissionsDefine_Admin: DefaultDef_Group = {
 };
 
 export const PermissionGroup_PermissionsAssign_NoAccess: DefaultDef_Group = {
-	_id: 'dafebd8f706d638400e696345c400fc3',
+	_id: toPermissionGroupId('dafebd8f706d638400e696345c400fc3'),
 	name: `${Domain_PermissionsAssign.namespace}/No Access`,
 	uiLabel: `${Domain_PermissionsAssign.namespace}/No Access`,
 	accessLevels: {
@@ -154,7 +156,7 @@ export const PermissionGroup_PermissionsAssign_NoAccess: DefaultDef_Group = {
 };
 
 export const PermissionGroup_PermissionsAssign_Viewer: DefaultDef_Group = {
-	_id: '5b6d75f5644dd9501551487f9a8748b9',
+	_id: toPermissionGroupId('5b6d75f5644dd9501551487f9a8748b9'),
 	name: `${Domain_PermissionsAssign.namespace}/Viewer`,
 	uiLabel: `${Domain_PermissionsAssign.namespace}/Viewer`,
 	accessLevels: {
@@ -162,7 +164,7 @@ export const PermissionGroup_PermissionsAssign_Viewer: DefaultDef_Group = {
 	},
 };
 export const PermissionGroup_PermissionsAssign_Editor: DefaultDef_Group = {
-	_id: 'ac5050d644251fa0b95506280a2ebfb3',
+	_id: toPermissionGroupId('ac5050d644251fa0b95506280a2ebfb3'),
 	name: `${Domain_PermissionsAssign.namespace}/Editor`,
 	uiLabel: `${Domain_PermissionsAssign.namespace}/Editor`,
 	accessLevels: {
@@ -171,7 +173,7 @@ export const PermissionGroup_PermissionsAssign_Editor: DefaultDef_Group = {
 };
 
 export const PermissionGroup_PermissionsAssign_Admin: DefaultDef_Group = {
-	_id: '232a8bb28f770ac62d4fa74ed594bfeb',
+	_id: toPermissionGroupId('232a8bb28f770ac62d4fa74ed594bfeb'),
 	name: `${Domain_PermissionsAssign.namespace}/Admin`,
 	uiLabel: `${Domain_PermissionsAssign.namespace}/Admin`,
 	accessLevels: {

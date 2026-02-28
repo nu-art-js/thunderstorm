@@ -1,11 +1,11 @@
 import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm-frontend/index';
-import {DBProto_PermissionAccessLevel} from '@nu-art/permissions-shared';
+import {DatabaseDef_PermissionAccessLevel} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionAccessLevel} from './ModuleFE_PermissionAccessLevel.js';
 import {DBItemDropDownMultiSelector} from '@nu-art/thunderstorm-frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 
-const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_PermissionAccessLevel> = {
+const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionAccessLevel> = {
 	module: ModuleFE_PermissionAccessLevel,
 	modules: [ModuleFE_PermissionAccessLevel],
 	mapper: item => [item.name],
@@ -13,10 +13,11 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_PermissionAcces
 	renderer: item => <>{item.name}</>
 };
 
-export const DropDown_PermissionAccessLevel = GenericDropDownV3.prepare(Props_DropDown);
+// Cast: thunderstorm GenericDropDownV3 expects DBProto/module shape; we use db-api-frontend ModuleFE_BaseApi<DatabaseDef_*>.
+export const DropDown_PermissionAccessLevel = GenericDropDownV3.prepare(Props_DropDown as never);
 
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
-	module: ModuleFE_PermissionAccessLevel,
+	module: ModuleFE_PermissionAccessLevel as never,
 	itemRenderer: (item, onDelete) => {
 		return !item ? <>Not Found</> : <><TS_Icons.x.component onClick={onDelete} className={'ts-icon__small'}/>{item.name}</>;
 	},

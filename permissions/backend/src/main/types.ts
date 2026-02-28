@@ -1,5 +1,7 @@
 import {PermissionKey_BE} from './PermissionKey_BE.js';
 import {
+	DatabaseDef_PermissionDomain,
+	DatabaseDef_PermissionProject,
 	DB_PermissionAccessLevel,
 	DB_PermissionDomain,
 	DB_PermissionGroup,
@@ -21,7 +23,7 @@ export type PermissionTypes = {
 
 
 export type DefaultDef_Project = {
-	_id: string
+	_id: DatabaseDef_PermissionProject['id'];
 	name: string,
 	packages: DefaultDef_Package[]
 	groups?: DefaultDef_Group[]
@@ -29,7 +31,7 @@ export type DefaultDef_Project = {
 
 
 export type DefaultDef_Domain = {
-	_id: string,
+	_id: DatabaseDef_PermissionDomain['id'];
 	namespace: string,
 	levels?: DefaultDef_AccessLevel[]
 	customApis?: DefaultDef_Api[],

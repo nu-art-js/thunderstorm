@@ -77,7 +77,7 @@ export type DB_ProtoSeed<
 
 	type: T,
 	dbKey: DatabaseKey;
-	generatedKeys: GeneratedKeys | keyof DB_Object<DatabaseKey>
+	generatedKeys: GeneratedKeys
 	versions: Versions,
 	uniqueKeys: UniqueKeys
 	dependencies: keyof Dependencies extends never ? never : Dependencies
@@ -100,24 +100,27 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
  * @template ModifiableSubType The subset of P's type that is modifiable.
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
-export type DB_Prototype<ProtoSeed extends DB_ProtoSeed<any, string, any, VersionsDeclaration<VersionType[]>, any, any> = any, ModifiableSubType = Omit<ProtoSeed['type'], ProtoSeed['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<ProtoSeed['type'], ProtoSeed['generatedKeys']>> = {
+export type DB_Prototype<ProtoSeed extends DB_ProtoSeed<any, string, any, VersionsDeclaration<VersionType[]>, any, any> = any,
+	ModifiableSubType = Omit<ProtoSeed['type'], ProtoSeed['generatedKeys'] | keyof DB_Object<ProtoSeed['dbKey']>>,
+	GeneratedSubType = SubsetObjectByKeys<ProtoSeed['type'], ProtoSeed['generatedKeys'] | keyof DB_Object<ProtoSeed['dbKey']>>> = {
+
 	id: DB_UniqueId<ProtoSeed['dbKey']>
 	editableType: ModifiableSubType,
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
-	// dbType: ModifiableSubType & GeneratedSubType & DB_Object,
 	preDbType: ModifiableSubType & Partial<GeneratedSubType>,
 	dbType: ProtoSeed['type'],
 	dbKey: ProtoSeed['dbKey'],
 	generatedPropsValidator: ValidatorTypeResolver<Omit<GeneratedSubType, keyof DB_Object>>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: ProtoSeed['uniqueKeys'][],
-	generatedProps: ProtoSeed['generatedKeys'][]
+	generatedProps: ProtoSeed['generatedKeys'] extends never ? never : ProtoSeed['generatedKeys'][]
 	versions: ProtoSeed['versions']
 	indices: DBIndex<ProtoSeed['type']>[]
 	uniqueParam: DB_UniqueId<ProtoSeed['dbKey']> | { [K in ProtoSeed['uniqueKeys']]: ProtoSeed['type'][K] }
 	lockKeys?: (keyof ProtoSeed['type'])[]
 	dependencies: DependenciesImpl<ProtoSeed['type'], ProtoSeed['dependencies']>
 }
+
 
 /**
  * Represents the definition of a database entity with metadata and validation rules.
@@ -137,7 +140,6 @@ export type Database<Proto extends DB_Prototype> = {
 	TTL?: number;
 	lastUpdatedTTL?: number;
 	upgradeChunksSize?: number;
-	generatedProps?: Proto['generatedProps']
 	generatedPropsValidator: Proto['generatedPropsValidator'];
 	modifiablePropsValidator: Proto['modifiablePropsValidator'];
 	uniqueKeys?: Proto['uniqueKeys'];
@@ -145,7 +147,9 @@ export type Database<Proto extends DB_Prototype> = {
 	indices?: Proto['indices'];
 	lockKeys?: Proto['lockKeys'];
 	dependencies?: Proto['dependencies']
-}
+} & (Proto['generatedProps'] extends never
+	? object
+	: { generatedProps: Proto['generatedProps'] })
 
 
 /**

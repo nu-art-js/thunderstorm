@@ -57,7 +57,7 @@ export class ModuleBE_PermissionGroupDB_Class
 	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionGroup>, actionType: CollectionActionType) {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
-		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId));
+		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId)) as DatabaseDef_PermissionGroup['id'][];
 		const users = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionUserDB.query.custom({where: {__groupIds: {$aca: ids}}}));
 		await ModuleBE_PermissionUserDB.rotateSession(users.map(dbObjectToId));
 	}

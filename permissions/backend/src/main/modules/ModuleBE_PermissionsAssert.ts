@@ -41,7 +41,7 @@ import {
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm-backend';
 import {HttpMethod} from '@nu-art/api-types';
-import {CollectSessionData, MemKey_AccountEmail} from '@nu-art/user-account-backend';
+import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account-backend';
 import {
 	ApiDef_PermissionsAssert,
 	Base_AccessLevel,
@@ -204,7 +204,7 @@ export class ModuleBE_PermissionsAssert_Class
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {
 		await ModuleBE_PermissionsAssert.assertUserPermissions(body.projectId, body.path);
-		return {userId: MemKey_AccountEmail.get()};
+		return {userId: MemKey_AccountId.get()};
 	};
 
 	/**
@@ -314,7 +314,7 @@ export class ModuleBE_PermissionsAssert_Class
 	}
 
 	private async getAccessLevels(_accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
-		const accessLevelIds = filterDuplicates(_accessLevelIds || []);
+		const accessLevelIds = filterDuplicates(_accessLevelIds || []) as import('@nu-art/permissions-shared').DatabaseDef_PermissionAccessLevel['id'][];
 		const requestPermissions = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(accessLevelIds));
 		const idNotFound = accessLevelIds.find(lId => !requestPermissions.find(r => r._id === lId));
 		if (idNotFound)
