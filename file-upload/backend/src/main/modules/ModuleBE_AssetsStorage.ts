@@ -54,7 +54,7 @@ export class ModuleBE_AssetsStorage_Class
 
 			for (const dbAsset of assetsToSync) {
 				const base = baseUrl.replace(/\/$/, '');
-				const path = ApiDef_Assets.vv1.getReadSignedUrl.path;
+				const path = ApiDef_Assets.getReadSignedUrl.path;
 				let _signedUrl: string;
 				try {
 					const res = await fetch(`${base}/${path}`, {

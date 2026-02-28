@@ -41,8 +41,6 @@
     "@nu-art/permissions-shared": "?",
     "@nu-art/push-pub-sub-frontend": "?",
     "@nu-art/push-pub-sub-shared": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
     "@nu-art/user-account-frontend": "?",
@@ -54,7 +52,14 @@
     "firebase-functions": "?",
     "google-auth-library": "?",
     "jszip": "^3.2.2",
-    "react": "?"
+    "react": "?",
+    "@nu-art/http-client": "?",
+    "@nu-art/db-api-frontend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/thunder-core": "?",
+    "@nu-art/api-types": "?",
+    "@nu-art/thunder-ui-modules": "?",
+    "@nu-art/thunder-widgets": "?"
   },
   "devDependencies": {
     "@types/react": "?",

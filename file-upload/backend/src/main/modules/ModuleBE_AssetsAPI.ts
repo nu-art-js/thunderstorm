@@ -12,7 +12,7 @@ export class ModuleBE_AssetsAPI_Class
 		super('AssetsAPI');
 	}
 
-	@ApiHandler(ApiDef_Assets.vv1.getReadSignedUrl)
+	@ApiHandler(ApiDef_Assets.getReadSignedUrl)
 	async getReadSignedUrl(body: { _id: string }): Promise<{ signedUrl: string }> {
 		const dbAsset = await ModuleBE_AssetsDB.query.uniqueAssert(body._id as any);
 		return {

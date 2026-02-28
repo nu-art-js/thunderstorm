@@ -39,7 +39,7 @@ import {ApiHandler} from '@nu-art/http-server';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {OnAssetUploaded} from './ModuleBE_BucketListener.js';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage.js';
-import {ApiDef_AssetUploader, DB_Asset, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
+import {ApiDef_AssetUploader, DB_Asset, DB_AssetDeleted, DB_AssetTemp, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
@@ -117,15 +117,15 @@ export class ModuleBE_AssetsDB_Class
 	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DB_Asset>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
 		const deletedItems = data.deleted;
 		if (exists(deletedItems))
-			await ModuleBE_AssetsDeleted.set.all(asArray(deletedItems), transaction);
+			await ModuleBE_AssetsDeleted.set.all(asArray(deletedItems) as unknown as DB_AssetDeleted[], transaction);
 	}
 
-	@ApiHandler(ApiDef_AssetUploader.vv1.getUploadUrl)
+	@ApiHandler(ApiDef_AssetUploader.getUploadUrl)
 	async getUploadUrlHandler(body: UI_Asset[]): Promise<TempSignedUrl[]> {
 		return this.getUrl(body);
 	}
 
-	@ApiHandler(ApiDef_AssetUploader.vv1.processAssetManually)
+	@ApiHandler(ApiDef_AssetUploader.processAssetManually)
 	async processAssetManuallyHandler(params: { feId?: string }): Promise<void[]> {
 		await this.processAssetManually(params.feId);
 		return [];
@@ -161,7 +161,7 @@ export class ModuleBE_AssetsDB_Class
 	}
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
-		const assetsToSync = filterInstances(await ModuleBE_AssetsDB.query.all(assetIds));
+		const assetsToSync = filterInstances(await ModuleBE_AssetsDB.query.all(assetIds as (DB_Asset['_id'])[]));
 		const assetFiles = await Promise.all(assetsToSync.map(asset => ModuleBE_AssetsStorage.getFile(asset)));
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 
@@ -202,9 +202,9 @@ export class ModuleBE_AssetsDB_Class
 	}
 
 	private cleanup = async (interval = Hour, module = ModuleBE_AssetsTemp) => {
-		const entries: DB_Asset[] = await module.query.custom({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
+		const entries: DB_AssetTemp[] = await module.query.custom({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		await Promise.all(entries.map(async dbAsset => {
-			const file = await ModuleBE_AssetsStorage.getFile(dbAsset);
+			const file = await ModuleBE_AssetsStorage.getFile(dbAsset as unknown as DB_Asset);
 			if (!(await file.exists()))
 				return;
 
@@ -224,9 +224,9 @@ export class ModuleBE_AssetsDB_Class
 			if (!this.fileValidator[key])
 				throw new ImplementationMissingException(`Missing validator for type ${key}`);
 
-			const _id = generateHex(32);
+			const _id = generateHex(32) as DB_AssetTemp['_id'];
 			const path = `${this.config.storagePath}/${_id}`;
-			const dbAsset: DBProto_Assets['preDbType'] = {
+			const dbAsset = {
 				timestamp: currentTimeMillis(),
 				_id,
 				feId: _file.feId,
@@ -239,24 +239,24 @@ export class ModuleBE_AssetsDB_Class
 			};
 
 			if (_file.public)
-				dbAsset.public = _file.public;
+				(dbAsset as Record<string, unknown>).public = _file.public;
 
-			const dbTempMeta = await ModuleBE_AssetsTemp.set.item(dbAsset);
+			const dbTempMeta = await ModuleBE_AssetsTemp.set.item(dbAsset as unknown as DB_AssetTemp);
 			const fileWrapper = await bucket.getFile(dbTempMeta.path);
 			const url = await fileWrapper.getWriteSignedUrl(_file.mimeType, Hour);
 			return {
 				signedUrl: url.signedUrl,
-				asset: dbTempMeta
-			};
+				asset: dbTempMeta as unknown as DB_Asset
+			} as TempSignedUrl;
 		}));
 	};
 
 	processAssetManually = async (feId?: string) => {
-		let query: FirestoreQuery<DB_Asset> = {limit: 1};
+		let query: FirestoreQuery<DB_AssetTemp> = {limit: 1};
 		if (feId)
 			query = {where: {feId}};
 
-		const unprocessedFiles: DB_Asset[] = await ModuleBE_AssetsTemp.query.custom(query);
+		const unprocessedFiles: DB_AssetTemp[] = await ModuleBE_AssetsTemp.query.custom(query);
 		return Promise.all(unprocessedFiles.map(asset => this.__processAsset(asset.path)));
 	};
 
@@ -268,7 +268,7 @@ export class ModuleBE_AssetsDB_Class
 			return this.logVerbose(`File was added to storage in path: ${filePath}, NOT via file uploader`);
 
 		this.logDebug(`Looking for file with path: ${filePath}`);
-		let dbTempAsset: DB_Asset;
+		let dbTempAsset: DB_AssetTemp;
 		try {
 			dbTempAsset = await ModuleBE_AssetsTemp.query.uniqueWhere({path: filePath});
 		} catch (e) {
@@ -277,11 +277,14 @@ export class ModuleBE_AssetsDB_Class
 		if (!dbTempAsset)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
-		await this.notifyFrontend(FileStatus.Processing, dbTempAsset);
+		// Temp and main asset share shape; cast for APIs that expect DB_Asset
+		const assetForApi: DB_Asset = dbTempAsset as unknown as DB_Asset;
+
+		await this.notifyFrontend(FileStatus.Processing, assetForApi);
 		this.logDebug(`Found temp meta with _id: ${dbTempAsset._id}`, dbTempAsset);
 		const validationConfig = this.fileValidator[dbTempAsset.key];
 		if (!validationConfig)
-			return this.notifyFrontend(FileStatus.ErrorNoConfig, dbTempAsset);
+			return this.notifyFrontend(FileStatus.ErrorNoConfig, assetForApi);
 
 		let mimetypeValidator: FileValidator = DefaultMimetypeValidator;
 		if (validationConfig.validator)
@@ -291,16 +294,16 @@ export class ModuleBE_AssetsDB_Class
 			mimetypeValidator = this.mimeTypeValidator[dbTempAsset.mimeType];
 
 		if (!mimetypeValidator)
-			return this.notifyFrontend(FileStatus.ErrorNoValidator, dbTempAsset);
+			return this.notifyFrontend(FileStatus.ErrorNoValidator, assetForApi);
 
-		const file = await ModuleBE_AssetsStorage.getFile(dbTempAsset);
+		const file = await ModuleBE_AssetsStorage.getFile(assetForApi);
 		try {
 			const metadata = (await file.getMetadata());
 			if (!metadata)
-				return this.notifyFrontend(FileStatus.ErrorRetrievingMetadata, dbTempAsset);
+				return this.notifyFrontend(FileStatus.ErrorRetrievingMetadata, assetForApi);
 
 			await fileSizeValidator(file, metadata, validationConfig.minSize, validationConfig.maxSize);
-			const fileType = await mimetypeValidator(file, dbTempAsset);
+			const fileType = await mimetypeValidator(file, assetForApi);
 
 			dbTempAsset.md5Hash = metadata.md5Hash;
 			if (fileType && dbTempAsset.ext !== fileType.ext) {
@@ -310,7 +313,7 @@ export class ModuleBE_AssetsDB_Class
 		} catch (e: any) {
 			//TODO delete the file and the temp doc
 			this.logError(`Error while processing asset: ${dbTempAsset.name}`, e);
-			return this.notifyFrontend(FileStatus.ErrorWhileProcessing, dbTempAsset);
+			return this.notifyFrontend(FileStatus.ErrorWhileProcessing, assetForApi);
 		}
 
 		if (dbTempAsset.public) {
@@ -318,7 +321,7 @@ export class ModuleBE_AssetsDB_Class
 				// need to handle the response status!
 				await file.makePublic();
 			} catch (e: any) {
-				return this.notifyFrontend(FileStatus.ErrorMakingPublic, dbTempAsset);
+				return this.notifyFrontend(FileStatus.ErrorMakingPublic, assetForApi);
 			}
 		}
 
@@ -329,9 +332,10 @@ export class ModuleBE_AssetsDB_Class
 				return {...duplicatedAssets[0], feId: dbTempAsset.feId};
 			}
 
-			const doc = this.collection.doc.item(dbTempAsset);
+			const doc = this.collection.doc.item(assetForApi);
 			await ModuleBE_AssetsTemp.delete.unique(dbTempAsset._id, transaction);
-			return await doc.set(dbTempAsset, transaction);
+			const assetForMain: DB_Asset = {...dbTempAsset, _id: dbTempAsset._id as unknown as DB_Asset['_id']};
+			return await doc.set(assetForMain, transaction);
 		});
 
 		return this.notifyFrontend(FileStatus.Completed, finalDbAsset);

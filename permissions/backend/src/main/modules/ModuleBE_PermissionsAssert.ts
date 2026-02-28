@@ -57,7 +57,7 @@ import {
 	MemKey_HttpRequestMethod,
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl
-} from '@nu-art/thunderstorm-backend/modules/server/consts';
+} from '@nu-art/http-server';
 import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
 import {PermissionKey_BE} from '../PermissionKey_BE.js';
 import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity.js';

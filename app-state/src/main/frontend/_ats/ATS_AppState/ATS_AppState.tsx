@@ -1,6 +1,7 @@
-import {AppToolsScreen, Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
-import {thunderstormCapabilitiesGroup} from '@nu-art/thunderstorm-frontend/consts';
+import type {AppToolsScreen} from '@nu-art/thunder-ui-modules';
+import {Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {PageStateManager} from '../../_modules/ModuleFE_AppState.js';
+import {appStateScreenGroup} from '../../_modules/consts.js';
 import {md5} from '@nu-art/ts-common';
 
 type State = {
@@ -38,5 +39,5 @@ export const ATS_AppState: AppToolsScreen = {
 	key: 'ats-app-state',
 	name: 'App State',
 	renderer: ATS_AppState_Class,
-	group: thunderstormCapabilitiesGroup,
+	group: appStateScreenGroup,
 };

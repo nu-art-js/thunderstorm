@@ -1,5 +1,5 @@
-import {DBApiConfigV3, ModuleBE_BaseDB, ServerApi,} from '@nu-art/thunderstorm-backend';
-import {DB_PermissionAPI, DBDef_PermissionAPI, DBProto_PermissionAPI} from '@nu-art/permissions-shared';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {DB_PermissionAPI, DBDef_PermissionAPI, DatabaseDef_PermissionAPI} from '@nu-art/permissions-shared';
 import {dbObjectToId, filterInstances, PreDB, UniqueId} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../permission-access-level/index.js';
 import {Transaction} from 'firebase-admin/firestore';
@@ -8,11 +8,8 @@ import {ModuleBE_PermissionProjectDB} from '../permission-project/index.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {trimStartingForwardSlash} from '@nu-art/thunderstorm-shared/route-tools';
 
-
-type Config = DBApiConfigV3<DBProto_PermissionAPI> & {}
-
 export class ModuleBE_PermissionAPIDB_Class
-	extends ModuleBE_BaseDB<DBProto_PermissionAPI, Config> {
+	extends ModuleBE_BaseDB<DatabaseDef_PermissionAPI> {
 
 	constructor() {
 		super(DBDef_PermissionAPI);
@@ -21,7 +18,7 @@ export class ModuleBE_PermissionAPIDB_Class
 		}); // adjustment made in pre-write requires us to do this in order to upgrade the data
 	}
 
-	protected async preWriteProcessing(instance: DB_PermissionAPI, originalDbInstance: DBProto_PermissionAPI['dbType'], t?: Transaction) {
+	protected async preWriteProcessing(instance: DB_PermissionAPI, originalDbInstance: DatabaseDef_PermissionAPI['dbType'], t?: Transaction) {
 		await ModuleBE_PermissionProjectDB.query.uniqueAssert(instance.projectId);
 
 		// clean '/' from api path start
@@ -69,7 +66,7 @@ export class ModuleBE_PermissionAPIDB_Class
 		});
 	}
 
-	apiUpsert(): ServerApi<any> | undefined {
+	apiUpsert(): unknown {
 		return;
 	}
 }

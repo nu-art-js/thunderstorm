@@ -1,19 +1,18 @@
-import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {AuditableV2} from '@nu-art/ts-common';
+import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
 
-type VersionTypes_PermissionProject = {
-	'1.0.0': DB_PermissionProject
-}
+export const PermissionProject_DbKey = 'permissions--project';
+type DBKey = typeof PermissionProject_DbKey;
+
+type VersionTypes_PermissionProject = {'1.0.0': DB_PermissionProject};
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PermissionProject>;
-type Dependencies = {}
-
 type UniqueKeys = '_id';
 type GeneratedProps = '_auditorId';
-type Proto = Proto_DB_Object<DB_PermissionProject, 'permissions--project', GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Dependencies = {};
+type Proto = DB_ProtoSeed<DB_PermissionProject, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
-export type DBProto_PermissionProject = DBProto<Proto>;
-
-export type UI_PermissionProject = DBProto_PermissionProject['uiType'];
-export type DB_PermissionProject = DB_Object & AuditableV2 & {
-	name: string,
-}
-
+export type DatabaseDef_PermissionProject = DB_Prototype<Proto>;
+export type UI_PermissionProject = DatabaseDef_PermissionProject['uiType'];
+export type DB_PermissionProject = DB_Object<DBKey> & AuditableV2 & {
+	name: string;
+};

@@ -1,4 +1,4 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {Clause_Where} from '@nu-art/firebase-shared';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
 import {Transaction} from 'firebase-admin/firestore';
@@ -7,13 +7,10 @@ import {ModuleBE_PermissionAPIDB} from '../permission-api/index.js';
 import {ModuleBE_PermissionDomainDB} from '../permission-domain/index.js';
 import {ModuleBE_PermissionGroupDB} from '../permission-group/index.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
-import {DB_PermissionAccessLevel, DB_PermissionAccessLevel_1_0_0, DBDef_PermissionAccessLevel, DBProto_PermissionAccessLevel} from '@nu-art/permissions-shared';
-
-
-type Config = DBApiConfigV3<DBProto_PermissionAccessLevel> & {}
+import {DB_PermissionAccessLevel, DB_PermissionAccessLevel_1_0_0, DBDef_PermissionAccessLevel, DatabaseDef_PermissionAccessLevel} from '@nu-art/permissions-shared';
 
 export class ModuleBE_PermissionAccessLevelDB_Class
-	extends ModuleBE_BaseDB<DBProto_PermissionAccessLevel, Config> {
+	extends ModuleBE_BaseDB<DatabaseDef_PermissionAccessLevel> {
 
 	constructor() {
 		super(DBDef_PermissionAccessLevel);
@@ -25,13 +22,13 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 		return [{domainId, name}, {domainId, value}];
 	}
 
-	protected async preWriteProcessing(dbInstance: DB_PermissionAccessLevel, originalDbInstance: DBProto_PermissionAccessLevel['dbType'], transaction?: Transaction) {
+	protected async preWriteProcessing(dbInstance: DB_PermissionAccessLevel, originalDbInstance: DatabaseDef_PermissionAccessLevel['dbType'], transaction?: Transaction) {
 		await ModuleBE_PermissionDomainDB.query.uniqueAssert(dbInstance.domainId);
 
 		dbInstance._auditorId = MemKey_AccountId.get();
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_PermissionAccessLevel>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionAccessLevel>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 

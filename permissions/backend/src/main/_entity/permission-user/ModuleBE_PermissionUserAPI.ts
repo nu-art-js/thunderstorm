@@ -1,13 +1,17 @@
+import {CrudApiDef} from '@nu-art/db-api-shared';
+import {ModuleBE_BaseApi_Class} from '@nu-art/db-api-backend';
 import {ApiHandler} from '@nu-art/http-server';
-import {ModuleBE_BaseApi_Class} from '@nu-art/thunderstorm-backend';
-import {ApiDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions} from '@nu-art/permissions-shared';
+import {ApiDef_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB.js';
 
 class ModuleBE_PermissionUserAPI_Class
-	extends ModuleBE_BaseApi_Class<DBProto_PermissionUser> {
+	extends ModuleBE_BaseApi_Class<DatabaseDef_PermissionUser> {
 
 	constructor() {
-		super(ModuleBE_PermissionUserDB);
+		super({
+			dbModule: ModuleBE_PermissionUserDB,
+			crudApiDef: CrudApiDef<DatabaseDef_PermissionUser>(DBDef_PermissionUser.dbKey),
+		});
 	}
 
 	init() {

@@ -1,35 +1,31 @@
-import {AuditableV2, DB_Object, DBProto, Proto_DB_Object, TypedMap, VersionsDeclaration} from '@nu-art/ts-common';
-import {DBProto_PermissionProject} from '../permission-project/index.js';
-import {DBProto_PermissionAccessLevel} from '../permission-access-level/index.js';
+import {AuditableV2, TypedMap} from '@nu-art/ts-common';
+import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
+import {DatabaseDef_PermissionProject} from '../permission-project/types.js';
+import {DatabaseDef_PermissionAccessLevel} from '../permission-access-level/types.js';
 
-type VersionTypes_PermissionGroup = {
-	'1.0.0': DB_PermissionGroup
-	'1.0.1': DB_PermissionGroup
-}
+export const PermissionGroup_DbKey = 'permissions--group';
+type DBKey = typeof PermissionGroup_DbKey;
+
+type VersionTypes_PermissionGroup = {'1.0.0': DB_PermissionGroup; '1.0.1': DB_PermissionGroup};
 type Versions = VersionsDeclaration<['1.0.1', '1.0.0'], VersionTypes_PermissionGroup>;
-type Dependencies = {
-	projectId: DBProto_PermissionProject;
-	accessLevelIds: DBProto_PermissionAccessLevel;
-}
-
 type UniqueKeys = '_id';
 type GeneratedProps = '_levelsMap' | '_auditorId';
-type Proto = Proto_DB_Object<DB_PermissionGroup, 'permissions--group', GeneratedProps, Versions, UniqueKeys, Dependencies>;
+type Dependencies = {projectId: DatabaseDef_PermissionProject; accessLevelIds: DatabaseDef_PermissionAccessLevel};
+type Proto = DB_ProtoSeed<DB_PermissionGroup, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
-export type DBProto_PermissionGroup = DBProto<Proto>;
+export type DatabaseDef_PermissionGroup = DB_Prototype<Proto>;
+export type UI_PermissionGroup = DatabaseDef_PermissionGroup['uiType'];
+export type DB_PermissionGroup = DB_Object<DBKey> & AuditableV2 & {
+	projectId?: DatabaseDef_PermissionProject['id'];
+	label: string;
+	uiLabel: string;
+	accessLevelIds: DatabaseDef_PermissionAccessLevel['id'][];
+	_levelsMap?: TypedMap<number>;
+};
 
-export type UI_PermissionGroup = DBProto_PermissionGroup['uiType'];
-export type DB_PermissionGroup = DB_Object & AuditableV2 & {
-	projectId?: string
-	label: string, // name, refactor into 'key'
-	uiLabel: string, // name of the group to show in UI
-	accessLevelIds: string[],
-	_levelsMap?: TypedMap<number>, // [DomainId]: AccessLevel.value
-}
-
-export type DB_PermissionGroup_1_0_0 = DB_Object & AuditableV2 & {
-	projectId?: string
-	label: string, // name, refactor into 'key'
-	accessLevelIds: string[],
-	_levelsMap?: TypedMap<number>, // [DomainId]: AccessLevel.value
-}
+export type DB_PermissionGroup_1_0_0 = DB_Object<DBKey> & AuditableV2 & {
+	projectId?: DatabaseDef_PermissionProject['id'];
+	label: string;
+	accessLevelIds: DatabaseDef_PermissionAccessLevel['id'][];
+	_levelsMap?: TypedMap<number>;
+};

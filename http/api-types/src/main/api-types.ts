@@ -75,3 +75,8 @@ export type ApiStruct = { [k: string]: GeneralApi | ApiStruct };
 export type ApiDefResolver<API_Struct extends ApiStruct> = API_Struct extends GeneralApi
 	? ApiDef<API_Struct>
 	: { [P in keyof API_Struct]: ApiDefResolver<API_Struct[P]> };
+
+/** Recursive type mapping an API struct to caller functions at each leaf (e.g. (payload) => request). */
+export type ApiDefCaller<API_Struct extends ApiStruct> = API_Struct extends GeneralApi
+	? (...args: unknown[]) => unknown
+	: { [P in keyof API_Struct]: ApiDefCaller<API_Struct[P]> };

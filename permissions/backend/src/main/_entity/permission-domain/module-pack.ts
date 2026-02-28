@@ -1,5 +1,4 @@
-import {createApisForDBModuleV3} from '@nu-art/thunderstorm-backend';
+import {createApisForDBModule} from '@nu-art/db-api-backend';
 import {ModuleBE_PermissionDomainDB} from './ModuleBE_PermissionDomainDB.js';
 
-
-export const ModulePackBE_PermissionDomain = [ModuleBE_PermissionDomainDB, createApisForDBModuleV3(ModuleBE_PermissionDomainDB)];
+export const ModulePackBE_PermissionDomain = [ModuleBE_PermissionDomainDB, createApisForDBModule(ModuleBE_PermissionDomainDB)];

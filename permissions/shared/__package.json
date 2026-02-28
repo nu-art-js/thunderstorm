@@ -48,7 +48,8 @@
     "moment": "?",
     "saml2-js": "^4.0.1",
     "express": "?",
-    "@nu-art/api-types": "?"
+    "@nu-art/api-types": "?",
+    "@nu-art/db-api-shared": "?"
   },
   "devDependencies": {
     "@types/react": "?",

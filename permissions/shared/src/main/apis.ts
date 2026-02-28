@@ -19,24 +19,30 @@
 
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
 import {Minute, PreDB, StringMap} from '@nu-art/ts-common';
-import {DB_PermissionProject} from './_entity.js';
+import {DatabaseDef_Account} from '@nu-art/user-account-shared';
+import {
+	DatabaseDef_PermissionGroup,
+	DatabaseDef_PermissionProject,
+	DatabaseDef_PermissionUser,
+	DB_PermissionProject,
+} from './_entity.js';
 
 export type UserUrlsPermissions = {
 	[url: string]: boolean
 }
 
 export type Request_AssertApiForUser = {
-	projectId: string
+	projectId: DatabaseDef_PermissionProject['id'];
 	path: string
 }
 
 export type Request_UserUrlsPermissions = {
-	projectId: string
+	projectId: DatabaseDef_PermissionProject['id'];
 	urls: UserUrlsPermissions
 }
 
 export type Request_UserCFsByShareGroups = {
-	groupsIds: string[]
+	groupsIds: DatabaseDef_PermissionGroup['id'][];
 }
 
 export type Request_UsersCFsByShareGroups = Request_UserCFsByShareGroups & {
@@ -48,7 +54,7 @@ export type Response_UsersCFsByShareGroups = {
 }
 
 export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
-	projectId: string,
+	projectId: DatabaseDef_PermissionProject['id'],
 	groupsToRemove: PredefinedGroup[],
 	group: PredefinedGroup,
 	customField: T
@@ -63,11 +69,11 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 // 	dbName: string;
 // }
 
-export type AssignAppPermissions = Request_AssignAppPermissions & { granterUserId: string };
+export type AssignAppPermissions = Request_AssignAppPermissions & { granterUserId: DatabaseDef_Account['id'] };
 
-export type PredefinedGroup = { _id: string, key: string, label: string, customKeys?: string[] };
+export type PredefinedGroup = { _id: DatabaseDef_PermissionGroup['id'], key: string, label: string, customKeys?: string[] };
 
-export type PredefinedUser = { accountId: string, _id: string, groups: PredefinedGroup[] };
+export type PredefinedUser = { accountId: DatabaseDef_Account['id'], _id: DatabaseDef_PermissionUser['id'], groups: PredefinedGroup[] };
 
 export type Request_RegisterProject = {
 	project: PreDB<DB_PermissionProject>,
@@ -77,16 +83,10 @@ export type Request_RegisterProject = {
 };
 
 export type Response_User = {
-	userId: string;
+	userId: DatabaseDef_Account['id'];
 };
 
-// ModuleBE_PermissionUser (legacy apis.ts shape)
-export type API_PermissionsUser = {
-	assignAppPermissions: BodyApi<void, Request_AssignAppPermissions>;
-};
-export const _ApiDef_PermissionUser: ApiDefResolver<API_PermissionsUser> = {
-	assignAppPermissions: {method: HttpMethod.POST, path: '/v1/permissions/assign/app-permissions'}
-};
+// ModuleBE_PermissionUser: see _entity/permission-user/api-def.ts for API_PermissionUser and ApiDef_PermissionUser.
 
 // ModuleBE_PermissionsAssert
 export type API_PermissionsAssert = {

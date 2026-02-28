@@ -19,3 +19,4 @@
 export * from './types.js';
 export * from './db-def.js';
 export * from './apis.js';
+export type {PushMessage_FileUploaded} from './messages.js';

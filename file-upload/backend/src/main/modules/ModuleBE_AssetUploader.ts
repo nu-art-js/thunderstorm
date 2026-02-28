@@ -1,7 +1,12 @@
 import type {ApiDef, GeneralApi} from '@nu-art/api-types';
-import {ApiDef_AssetUploader, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
-import type {IAssetUploadRequest} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader.js';
-import {ModuleBase_AssetUploader, type UploaderConfig} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader.js';
+import {
+	ApiDef_AssetUploader,
+	ModuleBase_AssetUploader,
+	TempSignedUrl,
+	UI_Asset,
+	type IAssetUploadRequest,
+	type UploaderConfig
+} from '@nu-art/file-upload-shared';
 
 export type ServerFilesToUpload = UI_Asset & {
 	file: Buffer
@@ -58,16 +63,16 @@ export class ModuleBE_AssetUploader_Class
 		super();
 		const baseUrl = () => this.config?.baseUrl ?? '';
 		this.vv1 = {
-			getUploadUrl: (body: UI_Asset[]) => createFetchRequest(ApiDef_AssetUploader.vv1.getUploadUrl as ApiDef<GeneralApi>, baseUrl()).setBody(body),
+			getUploadUrl: (body: UI_Asset[]) => createFetchRequest(ApiDef_AssetUploader.getUploadUrl as ApiDef<GeneralApi>, baseUrl()).setBody(body),
 			processAssetManually: (params: { feId?: string }) => {
 				const query: Record<string, string> = {};
 				if (params.feId)
 					query.feId = params.feId;
 				const req = createFetchRequest(
-					{method: 'GET', path: ApiDef_AssetUploader.vv1.processAssetManually.path} as ApiDef<GeneralApi>,
+					{method: 'GET', path: ApiDef_AssetUploader.processAssetManually.path} as ApiDef<GeneralApi>,
 					baseUrl()
 				);
-				const path = ApiDef_AssetUploader.vv1.processAssetManually.path;
+				const path = ApiDef_AssetUploader.processAssetManually.path;
 				return {
 					...req,
 					setUrlParam(key: string, value: string) {
@@ -81,7 +86,7 @@ export class ModuleBE_AssetUploader_Class
 					}
 				};
 			}
-		};
+		} as ModuleBase_AssetUploader<Config>['vv1'];
 	}
 
 	createRequest<API extends GeneralApi>(uploadFile: ApiDef<API>): IAssetUploadRequest<API> {
