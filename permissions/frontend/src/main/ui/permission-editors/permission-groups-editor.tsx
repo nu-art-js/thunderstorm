@@ -10,10 +10,10 @@ import {Input_Text_Blur} from './components.js';
 import {DropDown_PermissionProject} from '../../_entity/permission-project/ui-components.js';
 import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
 import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
-import {DB_PermissionGroup, DBProto_PermissionGroup} from '@nu-art/permissions-shared';
+import {DB_PermissionGroup, DatabaseDef_PermissionGroup} from '@nu-art/permissions-shared';
 
 class Component_EditGroup
-	extends Component_BasePermissionItemEditor<DBProto_PermissionGroup> {
+	extends Component_BasePermissionItemEditor<DatabaseDef_PermissionGroup> {
 	static defaultProps = {
 		module: ModuleFE_PermissionGroup,
 		displayResolver: (item: DB_PermissionGroup) => ModuleFE_PermissionGroup.cache.unique(item._id)?.label ?? 'Not Found'
@@ -74,7 +74,7 @@ class Component_EditGroup
 }
 
 class Controller_EditGroup
-	extends TS_EditableItemControllerProto<DBProto_PermissionGroup> {
+	extends TS_EditableItemControllerProto<DatabaseDef_PermissionGroup> {
 	static defaultProps = {
 		keys: ['selected'],
 		module: ModuleFE_PermissionGroup,
@@ -85,7 +85,7 @@ class Controller_EditGroup
 }
 
 export class PermissionGroupsEditor
-	extends Page_ItemsEditor<DBProto_PermissionGroup> {
+	extends Page_ItemsEditor<DatabaseDef_PermissionGroup> {
 
 	//######################### Static #########################
 
@@ -101,7 +101,7 @@ export class PermissionGroupsEditor
 		mapper: group => [group.label ?? 'Not Found'],
 		sort: (items) => sortArray(items, 'label'),
 		itemRenderer: group => <>{group.label ?? 'Not Found'}</>,
-		EditorRenderer: Controller_EditGroup as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionGroup>>>,
+		EditorRenderer: Controller_EditGroup as React.ComponentType<Partial<Props_EditableItemControllerProto<DatabaseDef_PermissionGroup>>>,
 		route: this.Route,
 		contextMenuActions: [
 			{

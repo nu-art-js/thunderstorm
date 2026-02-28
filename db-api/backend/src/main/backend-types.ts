@@ -7,8 +7,8 @@
 import type {DB_Object} from '@nu-art/ts-common';
 
 /**
- * Shape of post-write processing data (mirrors firebase PostWriteProcessingData but for DB_Object, no DBProto).
- * Used so BE can type handlers without depending on DBProto.
+ * Shape of post-write processing data (mirrors firebase PostWriteProcessingData but for DB_Object, no DB_Prototype).
+ * Used so BE can type handlers without depending on DB_Prototype.
  */
 export type PostWriteProcessingDataShape<T extends DB_Object> = {
 	before?: T | T[];

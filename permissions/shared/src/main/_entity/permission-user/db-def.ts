@@ -1,24 +1,24 @@
-import {DBDef_V3, tsValidateArray, tsValidateString, tsValidateStringAndNumbersWithDashes} from '@nu-art/ts-common';
-import {DBProto_PermissionUser} from './types.js';
+import {tsValidateArray, tsValidateString, tsValidateStringAndNumbersWithDashes} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {DatabaseDef_PermissionUser, PermissionUser_DbKey} from './types.js';
 import {PermissionDBGroup} from '../../consts.js';
 
-
-const Validator_ModifiableProps: DBProto_PermissionUser['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_PermissionUser['modifiablePropsValidator'] = {
 	groups: tsValidateArray({
 		groupId: tsValidateStringAndNumbersWithDashes,
 	}, false),
 };
 
-const Validator_GeneratedProps: DBProto_PermissionUser['generatedPropsValidator'] = {
+const Validator_GeneratedProps: DatabaseDef_PermissionUser['generatedPropsValidator'] = {
 	__groupIds: tsValidateArray(tsValidateStringAndNumbersWithDashes, false),
 	_auditorId: tsValidateString()
 };
 
-export const DBDef_PermissionUser: DBDef_V3<DBProto_PermissionUser> = {
+export const DBDef_PermissionUser: Database<DatabaseDef_PermissionUser> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbKey: 'permissions--user',
+	dbKey: PermissionUser_DbKey,
 	entityName: 'PermissionUser',
 	frontend: {
 		group: PermissionDBGroup,

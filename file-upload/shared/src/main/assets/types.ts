@@ -44,8 +44,8 @@ export type AssetData = {
 };
 
 export type DB_Asset = DB_Object<typeof Assets_DbKey> & AssetData;
-type DB_AssetTemp = DB_Object<typeof AssetsTemp_DbKey> & AssetData;
-type DB_AssetDeleted = DB_Object<typeof AssetsDeleted_DbKey> & AssetData;
+export type DB_AssetTemp = DB_Object<typeof AssetsTemp_DbKey> & AssetData;
+export type DB_AssetDeleted = DB_Object<typeof AssetsDeleted_DbKey> & AssetData;
 
 export type DBProto_Assets = DB_Prototype<DB_ProtoSeed<DB_Asset, typeof Assets_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
 export type DBProto_AssetsTemp = DB_Prototype<DB_ProtoSeed<DB_AssetTemp, typeof AssetsTemp_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;

@@ -35,3 +35,4 @@ export function dbObjectToId<T extends DB_Object<any>>(obj: T): T['_id'] {
 export const KeysOfDB_Object: (keyof DB_Object)[] = ['_id', '__created', '__updated', '_v'];
 
 export const stringToUniqueId = <DBKey extends string>(id: string) => id as DB_UniqueId<DBKey>;
+export const asBrandedId = stringToUniqueId;

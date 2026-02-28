@@ -1,5 +1,6 @@
-import {DBApiConfigV3, ModuleBE_ActionProcessor, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
-import {DB_PermissionGroup, DB_PermissionGroup_1_0_0, DBDef_PermissionGroup, DBProto_PermissionGroup} from '@nu-art/permissions-shared';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {ModuleBE_ActionProcessor} from '@nu-art/thunderstorm-backend';
+import {DB_PermissionGroup, DB_PermissionGroup_1_0_0, DBDef_PermissionGroup, DatabaseDef_PermissionGroup} from '@nu-art/permissions-shared';
 import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../permission-access-level/index.js';
 import {Transaction} from 'firebase-admin/firestore';
@@ -8,11 +9,10 @@ import {ModuleBE_PermissionUserDB} from '../permission-user/index.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 
-
-type Config = DBApiConfigV3<DBProto_PermissionGroup> & {}
+// TODO unblock: ModuleBE_ActionProcessor has no v2 replacement; registerAction remains on thunderstorm-backend.
 
 export class ModuleBE_PermissionGroupDB_Class
-	extends ModuleBE_BaseDB<DBProto_PermissionGroup, Config> {
+	extends ModuleBE_BaseDB<DatabaseDef_PermissionGroup> {
 
 	constructor() {
 		super(DBDef_PermissionGroup);
@@ -25,7 +25,7 @@ export class ModuleBE_PermissionGroupDB_Class
 		this.registerVersionUpgradeProcessor('1.0.0', this.upgrade_100_101);
 	}
 
-	protected async preWriteProcessing(instance: DB_PermissionGroup, originalDbInstance: DBProto_PermissionGroup['dbType'], t?: Transaction) {
+	protected async preWriteProcessing(instance: DB_PermissionGroup, originalDbInstance: DatabaseDef_PermissionGroup['dbType'], t?: Transaction) {
 		instance._auditorId = MemKey_AccountId.get();
 		const dbLevels = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(instance.accessLevelIds, t));
 
@@ -54,7 +54,7 @@ export class ModuleBE_PermissionGroupDB_Class
 		instance._levelsMap = reduceToMap(dbLevels, dbLevel => dbLevel.domainId, dbLevel => dbLevel.value);
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_PermissionGroup>, actionType: CollectionActionType) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionGroup>, actionType: CollectionActionType) {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId));

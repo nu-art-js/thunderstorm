@@ -30,11 +30,11 @@ Add `@nu-art/db-api-shared`; it depends on `@nu-art/ts-common`, `@nu-art/http-cl
 ### DB and prototype types
 
 - `DB_Object`, `DB_BaseObject`, `DB_Key`, `DBPointer` from `types/db-object.js`.
-- `Database<Proto>`, `DatabasePrototype<P>`, `Proto_DB_Object`, `OmitDBObject`, `DBIndex`, `VersionsDeclaration`, `TypeOfTypeAsString`, etc.: for defining entity metadata and versioning; used by apps that define DBProtos. Backend base (ModuleBE_BaseDB) uses only the minimal `BaseDBDefBE` shape from db-api-backend, not Proto.
+- `Database<Proto>`, `DB_Prototype`, `Proto_DB_Object`, `OmitDBObject`, `DBIndex`, `VersionsDeclaration`, `TypeOfTypeAsString`, etc.: for defining entity metadata and versioning; used by apps that define DB_Prototype entity defs. Backend base (ModuleBE_BaseDB) uses only the minimal `BaseDBDefBE` shape from db-api-backend, not Proto.
 
 ### Alternative: Database + DBDef
 
-Entities can use the **Database + DBDef** style instead of the full CrudTypes/DBProto pattern: define a `DatabaseDef_*` type and a `Database<DatabaseDef_*>` constant (e.g. `DBDef_Accounts` with `dbKey`, `entityName`, `modifiablePropsValidator`, `versions`, `uniqueKeys`, `frontend`/`backend`). Same shared types and backend/frontend steps apply (e.g. `DB_Object` from here, `createApisForDBModule` on backend). See `_thunderstorm/user-account` shared for an example.
+Entities can use the **Database + DBDef** style instead of the full CrudTypes/DB_Prototype pattern. Use **`DatabaseDef_<Entity>`** for the entity prototype type and **`DBDef_<Entity>`** or **`DBDef_<Plural>`** for the runtime constant. Implement the type as `DB_Prototype<DB_ProtoSeed<...>>`. Define a `Database<DatabaseDef_<Entity>>` constant with `dbKey`, `entityName`, `modifiablePropsValidator`, `generatedPropsValidator`, `versions`, `uniqueKeys`, `frontend`/`backend`. Same shared types and backend/frontend steps apply: `DB_Object` from here, `createApisForDBModule` on backend, `ModuleBE_BaseDB<DatabaseDef_<Entity>>`, `ModuleFE_BaseApi<DatabaseDef_<Entity>>`.
 
 ## Convention
 

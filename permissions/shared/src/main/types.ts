@@ -1,4 +1,7 @@
-import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {TypedKeyValue, TypedMap} from '@nu-art/ts-common';
+import {DatabaseDef_PermissionAccessLevel} from './_entity/permission-access-level/index.js';
+import {DatabaseDef_PermissionDomain} from './_entity/permission-domain/index.js';
+import {DatabaseDef_PermissionGroup} from './_entity/permission-group/index.js';
 import {DomainToLevelValueMap} from './_entity/permission-api/index.js';
 
 export type PermissionKey = string
@@ -8,14 +11,14 @@ export type PermissionKeyType = typeof Const_PermissionKeyType;
 export type DefaultDef_Api = {
 	path: string,
 	accessLevel: string /* access level name */
-	domainId?: string
+	domainId?: DatabaseDef_PermissionDomain['id']
 };
 
 export type DefaultDef_GeneratedApi = { domain: string, collections: string[] };
 
 export type DB_PermissionKeyData = {
 	type: PermissionKeyType
-	accessLevelIds: UniqueId[];
+	accessLevelIds: DatabaseDef_PermissionAccessLevel['id'][];
 	_accessLevels: DomainToLevelValueMap
 }
 
@@ -25,7 +28,7 @@ export type PreDBAccessLevel = {
 };
 
 export type DefaultDef_AccessLevel = {
-	_id: string
+	_id: DatabaseDef_PermissionAccessLevel['id']
 	name: string
 	uiLabel: string
 	value: number
@@ -33,7 +36,7 @@ export type DefaultDef_AccessLevel = {
 
 
 export type DefaultDef_Group = {
-	_id: string
+	_id: DatabaseDef_PermissionGroup['id']
 	name: string
 	uiLabel: string
 	accessLevels: { [domainName: string]: string } // access level name

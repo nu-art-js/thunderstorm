@@ -1,5 +1,6 @@
-import {DBApiConfigV3, MemKey_ServerApi, ModuleBE_BaseDB, Storm,} from '@nu-art/thunderstorm-backend';
-import {DB_PermissionUser, DBDef_PermissionUser, DBProto_PermissionUser, Request_AssignPermissions, User_Group} from '@nu-art/permissions-shared';
+import {DBApiConfigV3, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm-backend';
+import {MemKey_ServerApi} from '@nu-art/http-server';
+import {DB_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions, User_Group} from '@nu-art/permissions-shared';
 import {PerformProjectSetup} from '@nu-art/thunderstorm-backend/modules/action-processor/Action_SetupProject';
 import {
 	_keys,
@@ -30,10 +31,10 @@ import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-ba
 import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm-backend/modules/_tdb/service-accounts';
 
 
-type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
+type Config = DBApiConfigV3<DatabaseDef_PermissionUser> & {}
 
 export class ModuleBE_PermissionUserDB_Class
-	extends ModuleBE_BaseDB<DBProto_PermissionUser, Config>
+	extends ModuleBE_BaseDB<DatabaseDef_PermissionUser, Config>
 	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup {
 
 	private defaultPermissionGroups?: () => Promise<User_Group[]>;
@@ -99,7 +100,7 @@ export class ModuleBE_PermissionUserDB_Class
 	// 		});
 	// }
 
-	protected async preWriteProcessing(instance: DB_PermissionUser, originalDbInstance: DBProto_PermissionUser['dbType'], t?: Transaction): Promise<void> {
+	protected async preWriteProcessing(instance: DB_PermissionUser, originalDbInstance: DatabaseDef_PermissionUser['dbType'], t?: Transaction): Promise<void> {
 		instance._auditorId = MemKey_AccountId.get();
 		instance.__groupIds = filterDuplicates(instance.groups.map(group => group.groupId) || []);
 
@@ -117,7 +118,7 @@ export class ModuleBE_PermissionUserDB_Class
 		//todo check for duplications in data
 	}
 
-	protected async postWriteProcessing(data: PostWriteProcessingData<DBProto_PermissionUser>, actionType: CollectionActionType) {
+	protected async postWriteProcessing(data: PostWriteProcessingData<DatabaseDef_PermissionUser>, actionType: CollectionActionType) {
 		const deleted = asOptionalArray(data.deleted) ?? [];
 		const updated = asOptionalArray(data.updated) ?? [];
 		const beforeIds = (asOptionalArray(data.before) ?? []).map(before => before?._id);

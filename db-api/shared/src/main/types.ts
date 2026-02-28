@@ -47,7 +47,7 @@ export type VersionsDeclaration<Versions extends VersionType[] = ['1.0.0'], Type
 /**
  * Type for defining dependencies between database objects.
  *
- * Maps dot-notation paths to DBProto definitions, allowing type-safe
+ * Maps dot-notation paths to DB_Prototype definitions, allowing type-safe
  * references to related database objects.
  *
  * @template T - Object type with dependencies
@@ -96,7 +96,7 @@ type DependenciesImpl<T extends object, D extends ProtoDependencies<T>> = {
 /**
  * Extends Proto_DB_Object with additional UI and validation details.
  *
- * @template P The Proto_DB_Object this DBProto is based on.
+ * @template P The Proto_DB_Object this DB_Prototype is based on.
  * @template ModifiableSubType The subset of P's type that is modifiable.
  * @template GeneratedSubType The subset of P's type that is auto-generated.
  */
@@ -122,7 +122,7 @@ export type DB_Prototype<ProtoSeed extends DB_ProtoSeed<any, string, any, Versio
 /**
  * Represents the definition of a database entity with metadata and validation rules.
  *
- * @template Proto The DBProto type that this definition is based on.
+ * @template Proto The DB_Prototype type that this definition is based on.
  */
 export type Database<Proto extends DB_Prototype> = {
 	dbKey: Proto['dbKey'];

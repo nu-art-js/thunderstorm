@@ -1,22 +1,23 @@
-import {DBDef_V3, tsValidateString} from '@nu-art/ts-common';
-import {DBProto_PermissionDomain} from './types.js';
+import {Database, stringToUniqueId} from '@nu-art/db-api-shared';
+import {tsValidateString} from '@nu-art/ts-common';
+import {DatabaseDef_PermissionDomain, PermissionDomain_DbKey} from './types.js';
 import {validateProjectId} from '../../validators.js';
 import {PermissionDBGroup} from '../../consts.js';
 
-const Validator_ModifiableProps: DBProto_PermissionDomain['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_PermissionDomain['modifiablePropsValidator'] = {
 	projectId: validateProjectId,
 	namespace: tsValidateString(50),
 };
 
-const Validator_GeneratedProps: DBProto_PermissionDomain['generatedPropsValidator'] = {
+const Validator_GeneratedProps: DatabaseDef_PermissionDomain['generatedPropsValidator'] = {
 	_auditorId: tsValidateString()
 };
 
-export const DBDef_PermissionDomain: DBDef_V3<DBProto_PermissionDomain> = {
+export const DBDef_PermissionDomain: Database<DatabaseDef_PermissionDomain> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
-	dbKey: 'permissions--domain',
+	dbKey: PermissionDomain_DbKey,
 	frontend: {
 		group: PermissionDBGroup,
 		name: 'domain',
@@ -33,3 +34,6 @@ export const DBDef_PermissionDomain: DBDef_V3<DBProto_PermissionDomain> = {
 		}
 	}
 };
+
+/** Brand a string as DatabaseDef_PermissionDomain['id']. Use for literal ids (e.g. default domains). */
+export const toPermissionDomainId = (id: string) => stringToUniqueId<typeof DBDef_PermissionDomain.dbKey>(id);

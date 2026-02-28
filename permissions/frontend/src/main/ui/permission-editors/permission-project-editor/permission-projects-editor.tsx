@@ -8,10 +8,10 @@ import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_It
 import './permission-project-editor.scss';
 import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
 import {sortArray} from '@nu-art/ts-common';
-import {DB_PermissionProject, DBProto_PermissionProject} from '@nu-art/permissions-shared';
+import {DB_PermissionProject, DatabaseDef_PermissionProject} from '@nu-art/permissions-shared';
 
 class Component_EditProject
-	extends Component_BasePermissionItemEditor<DBProto_PermissionProject> {
+	extends Component_BasePermissionItemEditor<DatabaseDef_PermissionProject> {
 
 	static defaultProps = {
 		module: ModuleFE_PermissionProject,
@@ -34,7 +34,7 @@ class Component_EditProject
 }
 
 class Controller_ProjectEditor
-	extends TS_EditableItemControllerProto<DBProto_PermissionProject> {
+	extends TS_EditableItemControllerProto<DatabaseDef_PermissionProject> {
 	static defaultProps = {
 		keys: ['selected'],
 		module: ModuleFE_PermissionProject,
@@ -45,7 +45,7 @@ class Controller_ProjectEditor
 }
 
 export class PermissionProjectsEditor
-	extends Page_ItemsEditor<DBProto_PermissionProject> {
+	extends Page_ItemsEditor<DatabaseDef_PermissionProject> {
 
 	//######################### Static #########################
 
@@ -63,7 +63,7 @@ export class PermissionProjectsEditor
 		mapper: project => [project.name ?? 'Not Found'],
 		sort: (items) => sortArray(items, 'name'),
 		itemRenderer: project => <>{project.name ?? 'Not Found'}</>,
-		EditorRenderer: Controller_ProjectEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionProject>>>,
+		EditorRenderer: Controller_ProjectEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DatabaseDef_PermissionProject>>>,
 		hideAddItem: true,
 		route: this.Route
 	};

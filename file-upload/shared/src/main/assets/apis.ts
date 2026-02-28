@@ -14,33 +14,24 @@ export type TempSignedUrl = SignedUrl & {
 	asset: DB_Asset
 }
 
-export type ApiStruct_Assets = {
-	vv1: {
-		getReadSignedUrl: BodyApi<SignedUrl, DB_BaseObject>,
-	}
-}
+export type API_Assets = {
+	getReadSignedUrl: BodyApi<SignedUrl, DB_BaseObject>;
+};
 
-export const ApiDef_Assets: ApiDefResolver<ApiStruct_Assets> = {
-	vv1: {
-		getReadSignedUrl: {method: HttpMethod.POST, path: 'v1/assets/get-read-signed-url'},
-	}
+export const ApiDef_Assets: ApiDefResolver<API_Assets> = {
+	getReadSignedUrl: {method: HttpMethod.POST, path: 'v1/assets/get-read-signed-url'},
 };
 
 export type FileUploadResult = { status: FileStatus, asset: DB_Asset };
 export type Api_UploadFile = BodyApi<FileUploadResult, any, ResponseError, HttpMethod.PUT>;
 export const ApiDef_UploadFile: ApiDef<Api_UploadFile> = {method: HttpMethod.PUT, path: ''};
 
-export type ApiStruct_AssetUploader = {
-	vv1: {
-		getUploadUrl: BodyApi<TempSignedUrl[], UI_Asset[]>,
-		processAssetManually: QueryApi<void[], { feId?: string }>,
+export type API_AssetUploader = {
+	getUploadUrl: BodyApi<TempSignedUrl[], UI_Asset[]>;
+	processAssetManually: QueryApi<void[], { feId?: string }>;
+};
 
-	}
-}
-
-export const ApiDef_AssetUploader: ApiDefResolver<ApiStruct_AssetUploader> = {
-	vv1: {
-		getUploadUrl: {method: HttpMethod.POST, path: 'v1/upload/get-url'},
-		processAssetManually: {method: HttpMethod.GET, path: 'v1/upload/process-asset-manually'},
-	}
+export const ApiDef_AssetUploader: ApiDefResolver<API_AssetUploader> = {
+	getUploadUrl: {method: HttpMethod.POST, path: 'v1/upload/get-url'},
+	processAssetManually: {method: HttpMethod.GET, path: 'v1/upload/process-asset-manually'},
 };

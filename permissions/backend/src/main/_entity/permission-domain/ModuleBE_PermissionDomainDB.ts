@@ -1,15 +1,13 @@
-import {DBApiConfigV3, ModuleBE_BaseDB,} from '@nu-art/thunderstorm-backend';
-import {DB_PermissionDomain, DBDef_PermissionDomain, DBProto_PermissionDomain} from '@nu-art/permissions-shared';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {DB_PermissionDomain, DBDef_PermissionDomain, DatabaseDef_PermissionDomain} from '@nu-art/permissions-shared';
 import {ApiException} from '@nu-art/ts-common';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import {ModuleBE_PermissionAccessLevelDB} from '../permission-access-level/index.js';
 import {ModuleBE_PermissionProjectDB} from '../permission-project/index.js';
 
-type Config = DBApiConfigV3<DBProto_PermissionDomain> & {}
-
 export class ModuleBE_PermissionDomainDB_Class
-	extends ModuleBE_BaseDB<DBProto_PermissionDomain, Config> {
+	extends ModuleBE_BaseDB<DatabaseDef_PermissionDomain> {
 
 	constructor() {
 		super(DBDef_PermissionDomain);
@@ -26,7 +24,7 @@ export class ModuleBE_PermissionDomainDB_Class
 		return [{namespace: item.namespace, projectId: item.projectId}];
 	}
 
-	protected async preWriteProcessing(dbInstance: DB_PermissionDomain, originalDbInstance: DBProto_PermissionDomain['dbType'], t?: Transaction) {
+	protected async preWriteProcessing(dbInstance: DB_PermissionDomain, originalDbInstance: DatabaseDef_PermissionDomain['dbType'], t?: Transaction) {
 		await ModuleBE_PermissionProjectDB.query.uniqueAssert(dbInstance.projectId, t);
 		dbInstance._auditorId = MemKey_AccountId.get();
 	}

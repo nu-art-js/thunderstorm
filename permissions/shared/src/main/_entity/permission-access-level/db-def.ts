@@ -1,23 +1,24 @@
-import {DBDef_V3, tsValidateIsInRange, tsValidateString, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/ts-common';
-import {DBProto_PermissionAccessLevel} from './types.js';
+import {Database} from '@nu-art/db-api-shared';
+import {tsValidateIsInRange, tsValidateString, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/ts-common';
+import {DatabaseDef_PermissionAccessLevel, PermissionAccessLevel_DbKey} from './types.js';
 import {PermissionDBGroup} from '../../consts.js';
 
-const Validator_ModifiableProps: DBProto_PermissionAccessLevel['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_PermissionAccessLevel['modifiablePropsValidator'] = {
 	domainId: tsValidateUniqueId,
 	name: tsValidateStringWithDashes,
 	uiLabel: tsValidateString(),
 	value: tsValidateIsInRange([[0, 1000]]),
 };
 
-const Validator_GeneratedProps: DBProto_PermissionAccessLevel['generatedPropsValidator'] = {
+const Validator_GeneratedProps: DatabaseDef_PermissionAccessLevel['generatedPropsValidator'] = {
 	_auditorId: tsValidateString()
 };
 
-export const DBDef_PermissionAccessLevel: DBDef_V3<DBProto_PermissionAccessLevel> = {
+export const DBDef_PermissionAccessLevel: Database<DatabaseDef_PermissionAccessLevel> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.1', '1.0.0'],
-	dbKey: 'permissions--level',
+	dbKey: PermissionAccessLevel_DbKey,
 	entityName: 'PermissionAccessLevel',
 	frontend: {
 		group: PermissionDBGroup,

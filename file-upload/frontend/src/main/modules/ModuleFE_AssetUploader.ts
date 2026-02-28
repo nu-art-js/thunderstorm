@@ -16,45 +16,100 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {apiWithBody, apiWithQuery, ModuleFE_XHR, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
-import {ApiDef_AssetUploader, ApiStruct_AssetUploader, FileStatus, OnFileStatusChanged, PushKey_FileUploaded, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
-import {ModuleBase_AssetUploader} from '@nu-art/file-upload-shared/modules/ModuleBase_AssetUploader';
+import type {ApiDef, GeneralApi} from '@nu-art/api-types';
+import {
+	ApiDef_AssetUploader,
+	FileStatus,
+	type IAssetUploadRequest,
+	OnFileStatusChanged,
+	PushKey_FileUploaded,
+	TempSignedUrl,
+	UI_Asset,
+} from '@nu-art/file-upload-shared';
+import {ModuleBase_AssetUploader} from '@nu-art/file-upload-shared';
 import {BaseSubscriptionData, PushMessage_Payload} from '@nu-art/push-pub-sub-shared';
-import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub-frontend/modules/ModuleFE_PushPubSub';
-import {ApiDef, ApiDefCaller, BaseHttpRequest, TypedApi} from '@nu-art/thunderstorm-shared';
+import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub-frontend';
 import {generateHex} from '@nu-art/ts-common';
-import {PushMessage_FileUploaded} from '@nu-art/file-upload-shared/assets/messages';
+import {PushMessage_FileUploaded} from '@nu-art/file-upload-shared';
+import {HttpClient} from '@nu-art/http-client';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
+function wrapHttpRequest<API extends GeneralApi>(req: ReturnType<HttpClient['createRequest']>): IAssetUploadRequest<API> {
+	return {
+		setUrl(url: string) {
+			req.setUrl(url);
+			return this;
+		},
+		setHeader(key: string, value: string) {
+			req.setHeader(key, value);
+			return this;
+		},
+		setTimeout(ms: number) {
+			req.setTimeout(ms);
+			return this;
+		},
+		setBody(body: unknown) {
+			if (typeof body === 'string' || body === undefined || (typeof File !== 'undefined' && body instanceof File))
+				req.setBody(body);
+			else
+				req.setBodyAsJson(body);
+			return this;
+		},
+		setOnProgressListener(cb: (ev: { loaded: number; total?: number }) => void) {
+			req.setOnProgressListener(cb);
+			return this;
+		},
+		executeSync: () => req.execute(),
+		execute(cb: (response: unknown) => void) {
+			req.execute().then(cb);
+		},
+	};
+}
 
 export class ModuleFE_AssetUploader_Class
 	extends ModuleBase_AssetUploader {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
-	readonly vv1: ApiDefCaller<ApiStruct_AssetUploader>['vv1'];
 
 	constructor() {
 		super();
-		this.vv1 = {
-			getUploadUrl: apiWithBody(ApiDef_AssetUploader.vv1.getUploadUrl),
-			processAssetManually: apiWithQuery(ApiDef_AssetUploader.vv1.processAssetManually),
+		(this as unknown as { vv1: unknown }).vv1 = {
+			getUploadUrl: (body: UI_Asset[]) => {
+				const req = HttpClient.default.createRequest(ApiDef_AssetUploader.getUploadUrl).setBodyAsJson(body);
+				return {
+					execute: (cb: (response: unknown) => void) => {
+						req.execute().then(cb);
+					},
+				};
+			},
+			processAssetManually: (params: { feId?: string }) => {
+				const query: Record<string, string> = params.feId !== undefined ? {feId: params.feId} : {};
+				const req = () => HttpClient.default.createRequest(ApiDef_AssetUploader.processAssetManually).setUrlParams(query);
+				const out = {
+					setUrlParam(key: string, value: string) {
+						query[key] = value;
+						return out;
+					},
+					execute: () => req().execute(),
+				};
+				return out;
+			},
 		};
 	}
 
 	upload(files: File[], key: string, _public: boolean = false): UI_Asset[] {
-		return this.uploadImpl(files.map((file => {
-			return {
-				feId: generateHex(32),
-				name: file.name,
-				mimeType: file.type,
-				key,
-				file,
-				ext: ''
-			};
+		return this.uploadImpl(files.map((file) => ({
+			feId: generateHex(32),
+			name: file.name,
+			mimeType: file.type,
+			key,
+			file,
+			ext: '',
 		})));
 	}
 
-	createRequest<API extends TypedApi<any, any, any, any>>(uploadFile: ApiDef<API>): BaseHttpRequest<API> {
-		return ModuleFE_XHR.createRequest(uploadFile);
+	createRequest<API extends GeneralApi>(uploadFile: ApiDef<API>): IAssetUploadRequest<API> {
+		return wrapHttpRequest<API>(HttpClient.default.createRequest(uploadFile));
 	}
 
 	protected dispatchFileStatusChange(id: string) {
@@ -62,7 +117,10 @@ export class ModuleFE_AssetUploader_Class
 	}
 
 	protected async subscribeToPush(toSubscribe: TempSignedUrl[]): Promise<void> {
-		const subscriptions: BaseSubscriptionData[] = toSubscribe.map<BaseSubscriptionData>(r => ({topic: PushKey_FileUploaded, props: {feId: r.asset.feId}}));
+		const subscriptions: BaseSubscriptionData[] = toSubscribe.map<BaseSubscriptionData>((r) => ({
+			topic: PushKey_FileUploaded,
+			props: {feId: r.asset.feId},
+		}));
 		await ModuleFE_PushPubSub.v1.registerAll(subscriptions).executeSync();
 	}
 

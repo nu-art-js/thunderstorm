@@ -1,8 +1,22 @@
 import {_keys, BadImplementationException, cloneObj, composeUrl, deepClone, exists, Logger, mergeObject, Module, TS_Object} from '@nu-art/ts-common';
-import {ModuleFE_RoutingV2, ModuleFE_Thunderstorm, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
-import {convertBase64ToObject, convertObjectToBase64} from '@nu-art/thunderstorm-shared/base64-tools';
+import {StorageKey, ThunderDispatcher} from '@nu-art/thunder-core';
+import {ModuleFE_Routing} from '@nu-art/thunder-routing';
+import {ModuleFE_Clipboard} from '@nu-art/thunder-widgets';
 import {AppState} from '../../shared/index.js';
 import {URLParam_AppState} from './consts.js';
+
+function encodeStateBase64(decoded: AppState): string {
+	return typeof window !== 'undefined' ? window.btoa(JSON.stringify(decoded)) : '';
+}
+
+function decodeStateBase64(encoded: string): AppState {
+	try {
+		const decoded = typeof window !== 'undefined' ? window.atob(encoded) : '';
+		return decoded ? (JSON.parse(decoded) as AppState) : {};
+	} catch {
+		return {};
+	}
+}
 
 
 export interface OnPageStateUpdated {
@@ -48,7 +62,7 @@ class ModuleFE_AppState_Class
 
 	
 	private deriveStateFromURLParam = () => {
-		const encoded = ModuleFE_RoutingV2.getQueryParameter(URLParam_AppState);
+		const encoded = ModuleFE_Routing.getQueryParameter(URLParam_AppState);
 		if (!exists(encoded))
 			return;
 
@@ -56,7 +70,7 @@ class ModuleFE_AppState_Class
 		_keys(decoded).forEach(key => {
 			this.appState[key] = mergeObject(this.appState[key], decoded[key]);
 		});
-		ModuleFE_RoutingV2.removeQueryParam(URLParam_AppState);
+		ModuleFE_Routing.removeQueryParam(URLParam_AppState);
 	};
 
 	public getExportStateForManager = (manager: PageStateManager<any>) => {
@@ -68,11 +82,11 @@ class ModuleFE_AppState_Class
 	};
 
 	private encodeState = (decoded: AppState): string => {
-		return convertObjectToBase64(decoded);
+		return encodeStateBase64(decoded);
 	};
 
 	private decodeState = (encoded: string): AppState => {
-		return convertBase64ToObject(encoded);
+		return decodeStateBase64(encoded);
 	};
 }
 
@@ -124,6 +138,6 @@ export class PageStateManager<PageState extends TS_Object>
 
 	public getExportURL = () => {
 		const url = ModuleFE_AppState.getExportStateForManager(this);
-		ModuleFE_Thunderstorm.copyToClipboard(url, 'Export URL copied to clipboard');
+		void ModuleFE_Clipboard.copyToClipboard(url, 'Export URL copied to clipboard');
 	};
 }

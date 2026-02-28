@@ -18,12 +18,12 @@
  */
 import {__stringify, _keys, BadImplementationException, Dispatcher, Minute, Module, Queue} from '@nu-art/ts-common';
 import {ApiDef, HeaderKey_ContentType, TypedApi} from '@nu-art/api-types';
-import type {ApiDefCaller} from '@nu-art/storm-shared';
+import type {ApiDefCaller} from '@nu-art/api-types';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub-shared';
 import {PushMessage_Payload} from '@nu-art/push-pub-sub-shared';
 import {FileStatus, PushKey_FileUploaded, PushMessage_FileUploaded} from '../assets/messages.js';
 import {DB_Asset, UI_Asset} from '../assets/types.js';
-import {ApiDef_UploadFile, ApiStruct_AssetUploader, TempSignedUrl} from '../assets/apis.js';
+import {ApiDef_UploadFile, API_AssetUploader, TempSignedUrl} from '../assets/apis.js';
 import type {ProgressableRequest, UploadProgressEvent} from '../assets/types.js';
 import {OnFileStatusChanged} from '../types.js';
 
@@ -61,7 +61,7 @@ export abstract class ModuleBase_AssetUploader<Config extends UploaderConfig = U
 	extends Module<Config>
 	implements OnPushMessageReceived<PushMessage_FileUploaded> {
 
-	protected vv1!: ApiDefCaller<ApiStruct_AssetUploader>['vv1'];
+	protected vv1!: ApiDefCaller<API_AssetUploader>;
 
 	protected files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue('File Uploader').setParallelCount(1);

@@ -14,12 +14,19 @@ import {
 	DefaultDef_Group,
 } from '@nu-art/permissions-shared';
 import {defaultValueResolverV2, PermissionKey_BE} from './PermissionKey_BE.js';
-import {ApiDef_ActionProcessing} from '@nu-art/thunderstorm-shared/action-processor/index';
-import {ApiDef_CollectionActions} from '@nu-art/thunderstorm-shared/collection-actions/api-def';
+import {
+	Path_ActionProcessor_Execute,
+	Path_ActionProcessor_List,
+	Path_CollectionActions_UpgradeAll,
+	Path_SyncEnv_CreateBackup,
+	Path_SyncEnv_FetchBackupMetadata,
+	Path_SyncEnv_SyncFirebaseFromBackup,
+	Path_SyncEnv_SyncFromEnvBackup,
+	Path_SyncEnv_SyncToEnv,
+} from './core/external-api-paths.js';
 import {DefaultDef_Domain, DefaultDef_Package} from './types.js';
 import {ApiDef_UserAccount, DBDef_Accounts} from '@nu-art/user-account-shared';
 import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '@nu-art/permissions-shared/permission-keys';
-import {ApiDef_SyncEnv} from '@nu-art/thunderstorm-shared';
 
 // export const PermissionsAccessLevel_ReadSelf = Object.freeze({name: 'Read-Self', value: 50});
 
@@ -69,16 +76,14 @@ const _Domain_Developer: DefaultDef_Domain = {
 		PermissionKeyBE_DeveloperAdmin,
 	],
 	customApis: [
-		{path: ApiDef_CollectionActions.upgrade.all.path, accessLevel: DefaultAccessLevel_Delete.name},
-		{path: ApiDef_ActionProcessing.vv1.list.path, accessLevel: DefaultAccessLevel_Read.name},
-		{path: ApiDef_ActionProcessing.vv1.execute.path, accessLevel: DefaultAccessLevel_Admin.name},
-
-		{path: ApiDef_SyncEnv.vv1.fetchBackupMetadata.path, accessLevel: DefaultAccessLevel_Read.name},
-		{path: ApiDef_SyncEnv.vv1.createBackup.path, accessLevel: DefaultAccessLevel_Write.name},
-		{path: ApiDef_SyncEnv.vv1.syncFromEnvBackup.path, accessLevel: DefaultAccessLevel_Write.name},
-		{path: ApiDef_SyncEnv.vv1.syncFirebaseFromBackup.path, accessLevel: DefaultAccessLevel_Write.name},
-		{path: ApiDef_SyncEnv.vv1.syncToEnv.path, accessLevel: DefaultAccessLevel_Admin.name},
-
+		{path: Path_CollectionActions_UpgradeAll, accessLevel: DefaultAccessLevel_Delete.name},
+		{path: Path_ActionProcessor_List, accessLevel: DefaultAccessLevel_Read.name},
+		{path: Path_ActionProcessor_Execute, accessLevel: DefaultAccessLevel_Admin.name},
+		{path: Path_SyncEnv_FetchBackupMetadata, accessLevel: DefaultAccessLevel_Read.name},
+		{path: Path_SyncEnv_CreateBackup, accessLevel: DefaultAccessLevel_Write.name},
+		{path: Path_SyncEnv_SyncFromEnvBackup, accessLevel: DefaultAccessLevel_Write.name},
+		{path: Path_SyncEnv_SyncFirebaseFromBackup, accessLevel: DefaultAccessLevel_Write.name},
+		{path: Path_SyncEnv_SyncToEnv, accessLevel: DefaultAccessLevel_Admin.name},
 	]
 };
 

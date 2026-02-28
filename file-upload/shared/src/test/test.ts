@@ -20,26 +20,16 @@
 import {__custom, __scenario} from '@nu-art/testelot';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {MyTester} from './core.js';
-import {AxiosHttpModule} from '@nu-art/thunderstorm-frontend/modules/http/AxiosHttpModule';
-import {HttpMethod} from '@nu-art/thunderstorm-shared';
 import {StaticLogger} from '@nu-art/ts-common';
 
-
-AxiosHttpModule.setDefaultConfig({origin: 'sjdfojds'});
 const mainScenario = __scenario('File Uploading Testing');
 const googleCall = __custom(async () => {
 	try {
-		await AxiosHttpModule
-			.createRequest(HttpMethod.GET, 'google call')
-			.setUrl('https://google.com/')
-			.setHeaders({'a': 'b'})
-			.setOnError(() => {
-				StaticLogger.logWarning('something is wrong');
-			})
-			.executeSync();
+		const res = await fetch('https://google.com/', {method: 'GET', headers: {'a': 'b'}});
+		if (!res.ok)
+			throw new Error(`HTTP ${res.status}`);
 		StaticLogger.logInfo('works');
-
-	} catch (e: any) {
+	} catch (e: unknown) {
 		StaticLogger.logError('breaks');
 		StaticLogger.logError(e);
 	}

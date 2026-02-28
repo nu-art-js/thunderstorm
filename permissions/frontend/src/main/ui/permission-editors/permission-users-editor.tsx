@@ -7,11 +7,11 @@ import {MultiSelect} from '../ui-props.js';
 import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {EditableRef, Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
 import {sortArray} from '@nu-art/ts-common';
-import {DB_PermissionUser, DBProto_PermissionUser} from '@nu-art/permissions-shared';
+import {DB_PermissionUser, DatabaseDef_PermissionUser} from '@nu-art/permissions-shared';
 
 
 class Component_EditAccount
-	extends Component_BasePermissionItemEditor<DBProto_PermissionUser> {
+	extends Component_BasePermissionItemEditor<DatabaseDef_PermissionUser> {
 
 	static defaultProps = {
 		module: ModuleFE_PermissionUser,
@@ -30,18 +30,18 @@ class Component_EditAccount
 }
 
 class Controller_EditAccount
-	extends TS_EditableItemControllerProto<DBProto_PermissionUser> {
-	static defaultProps: Partial<Props_EditableItemControllerProto<DBProto_PermissionUser>> = {
+	extends TS_EditableItemControllerProto<DatabaseDef_PermissionUser> {
+	static defaultProps: Partial<Props_EditableItemControllerProto<DatabaseDef_PermissionUser>> = {
 		keys: ['selected'],
 		module: ModuleFE_PermissionUser,
-		editor: Component_EditAccount as React.ComponentType<EditableRef<DBProto_PermissionUser['uiType']>>,
+		editor: Component_EditAccount as React.ComponentType<EditableRef<DatabaseDef_PermissionUser['uiType']>>,
 		createInitialInstance: () => ({}),
 		autoSave: true
 	};
 }
 
 export class PermissionUsersEditor
-	extends Page_ItemsEditor<DBProto_PermissionUser> {
+	extends Page_ItemsEditor<DatabaseDef_PermissionUser> {
 
 	//######################### Static #########################
 
@@ -61,7 +61,7 @@ export class PermissionUsersEditor
 		mapper: (user) => [ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'],
 		sort: (items) => sortArray(items, (user) => ModuleFE_Account.cache.unique(user._id)?.email),
 		itemRenderer: (user) => <>{ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'}</>,
-		EditorRenderer: Controller_EditAccount as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionUser>>>,
+		EditorRenderer: Controller_EditAccount as React.ComponentType<Partial<Props_EditableItemControllerProto<DatabaseDef_PermissionUser>>>,
 		hideAddItem: true,
 		route: this.Route
 	};

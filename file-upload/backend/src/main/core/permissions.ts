@@ -26,10 +26,10 @@ const _PermissionsDomain_AssetsManager: DefaultDef_Domain = {
 		{path: AssetsCrudApiDef.deleteUnique.path, accessLevel: DefaultAccessLevel_Delete.name},
 		{path: AssetsCrudApiDef.queryUnique.path, accessLevel: DefaultAccessLevel_Read.name},
 		{path: AssetsCrudApiDef.query.path, accessLevel: DefaultAccessLevel_Read.name},
-		{path: ApiDef_Assets.vv1.getReadSignedUrl.path, accessLevel: DefaultAccessLevel_Read.name},
-		{path: ApiDef_AssetUploader.vv1.getUploadUrl.path, accessLevel: DefaultAccessLevel_Write.name},
+		{path: ApiDef_Assets.getReadSignedUrl.path, accessLevel: DefaultAccessLevel_Read.name},
+		{path: ApiDef_AssetUploader.getUploadUrl.path, accessLevel: DefaultAccessLevel_Write.name},
 		{
-			path: ApiDef_AssetUploader.vv1.processAssetManually.path,
+			path: ApiDef_AssetUploader.processAssetManually.path,
 			domainId: Domain_Developer._id,
 			accessLevel: DefaultAccessLevel_Write.name
 		},

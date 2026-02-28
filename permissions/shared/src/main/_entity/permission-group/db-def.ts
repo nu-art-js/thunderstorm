@@ -1,5 +1,4 @@
 import {
-	DBDef_V3,
 	tsValidateArray,
 	tsValidateDynamicObject,
 	tsValidateNumber,
@@ -7,27 +6,28 @@ import {
 	tsValidateString,
 	tsValidateUniqueId
 } from '@nu-art/ts-common';
-import {DBProto_PermissionGroup} from './types.js';
+import {Database, stringToUniqueId} from '@nu-art/db-api-shared';
+import {DatabaseDef_PermissionGroup, PermissionGroup_DbKey} from './types.js';
 import {PermissionDBGroup} from '../../consts.js';
 import {validateGroupLabel} from '../../validators.js';
 
-const Validator_ModifiableProps: DBProto_PermissionGroup['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_PermissionGroup['modifiablePropsValidator'] = {
 	label: validateGroupLabel,
 	uiLabel: tsValidateString(),
 	projectId: tsValidateOptionalId,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
 };
 
-const Validator_GeneratedProps: DBProto_PermissionGroup['generatedPropsValidator'] = {
+const Validator_GeneratedProps: DatabaseDef_PermissionGroup['generatedPropsValidator'] = {
 	_levelsMap: tsValidateDynamicObject(tsValidateNumber(), tsValidateString(), false),
 	_auditorId: tsValidateString(),
 };
 
-export const DBDef_PermissionGroup: DBDef_V3<DBProto_PermissionGroup> = {
+export const DBDef_PermissionGroup: Database<DatabaseDef_PermissionGroup> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.1', '1.0.0'],
-	dbKey: 'permissions--group',
+	dbKey: PermissionGroup_DbKey,
 	entityName: 'PermissionGroup',
 	frontend: {
 		group: PermissionDBGroup,
@@ -47,3 +47,6 @@ export const DBDef_PermissionGroup: DBDef_V3<DBProto_PermissionGroup> = {
 		}
 	}
 };
+
+/** Brand a string as DatabaseDef_PermissionGroup['id']. Use for literal ids (e.g. default groups). */
+export const toPermissionGroupId = (id: string) => stringToUniqueId<typeof DBDef_PermissionGroup.dbKey>(id);
