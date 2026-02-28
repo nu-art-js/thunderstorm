@@ -1,11 +1,4 @@
-import {
-	tsValidateArray,
-	tsValidateDynamicObject,
-	tsValidateNumber,
-	tsValidateOptionalId,
-	tsValidateString,
-	tsValidateUniqueId
-} from '@nu-art/ts-common';
+import {tsValidateArray, tsValidateDynamicObject, tsValidateNumber, tsValidateOptionalId, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
 import {Database, stringToUniqueId} from '@nu-art/db-api-shared';
 import {DatabaseDef_PermissionGroup, PermissionGroup_DbKey} from './types.js';
 import {PermissionDBGroup} from '../../consts.js';
@@ -20,12 +13,12 @@ const Validator_ModifiableProps: DatabaseDef_PermissionGroup['modifiablePropsVal
 
 const Validator_GeneratedProps: DatabaseDef_PermissionGroup['generatedPropsValidator'] = {
 	_levelsMap: tsValidateDynamicObject(tsValidateNumber(), tsValidateString(), false),
-	_auditorId: tsValidateString(),
 };
 
 export const DBDef_PermissionGroup: Database<DatabaseDef_PermissionGroup> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
+	generatedProps: {},
 	versions: ['1.0.1', '1.0.0'],
 	dbKey: PermissionGroup_DbKey,
 	entityName: 'PermissionGroup',

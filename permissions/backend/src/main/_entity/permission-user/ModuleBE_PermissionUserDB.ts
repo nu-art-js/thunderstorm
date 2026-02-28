@@ -1,6 +1,6 @@
 import {DBApiConfigV3, ModuleBE_BaseDB, Storm} from '@nu-art/thunderstorm-backend';
 import {MemKey_ServerApi} from '@nu-art/http-server';
-import {DB_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions, User_Group} from '@nu-art/permissions-shared';
+import {DB_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions, User_Group, toPermissionGroupId} from '@nu-art/permissions-shared';
 import {PerformProjectSetup} from '@nu-art/thunderstorm-backend/modules/action-processor/Action_SetupProject';
 import {
 	_keys,
@@ -48,21 +48,24 @@ export class ModuleBE_PermissionUserDB_Class
 			priority: 200,
 			processor: async () => {
 				const accounts = await ModuleBE_AccountDB.query.where({});
-				const permissionsUser = await this.query.all(accounts.map(dbObjectToId));
+				// Permission user _id is 1:1 with account _id; query.all expects permission user ids.
+				const permissionUserIds = accounts.map(dbObjectToId) as DatabaseDef_PermissionUser['id'][];
+				const permissionsUser = await this.query.all(permissionUserIds);
 
 				const usersToUpsert: DB_PermissionUser[] = [];
 				const usersToDelete: DB_PermissionUser[] = [];
 				permissionsUser.forEach((user, index) => {
 					if (exists(user)) {
-						if (!exists(accounts.find(account => account._id === user._id)))
+						// Same 1:1 design: account id and permission user id are the same value.
+						if (!exists(accounts.find(account => (account._id as unknown as DatabaseDef_PermissionUser['id']) === user._id)))
 							usersToDelete.push(user);
 						return;
 					}
 
 					usersToUpsert.push({
-						_id: accounts[index]._id,
+						_id: accounts[index]._id as unknown as DatabaseDef_PermissionUser['id'],
 						groups: [] as User_Group[],
-					} as unknown as DB_PermissionUser);
+					} as DB_PermissionUser);
 				});
 
 				await this.set.all(usersToUpsert);
@@ -134,8 +137,10 @@ export class ModuleBE_PermissionUserDB_Class
 				? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId)))
 				: [];
 			this.logInfo(`Received ${defaultPermissionGroups.length} groups to assign, ${permissionGroups.length} of which exist`);
+			// Permission user _id is 1:1 with account _id (design); cast required across brands.
+			const permissionUserId = uiAccount._id as unknown as DatabaseDef_PermissionUser['id'];
 			const permissionsUserToCreate = {
-				_id: uiAccount._id,
+				_id: permissionUserId,
 				groups: permissionGroups.map(group => ({groupId: group._id})),
 				_auditorId: MemKey_AccountId.get()
 			};
@@ -143,14 +148,16 @@ export class ModuleBE_PermissionUserDB_Class
 			return ModuleBE_PermissionUserDB.create.item(permissionsUserToCreate, transaction);
 		};
 
-		return ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: uiAccount._id}, create, transaction);
+		return ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: uiAccount._id as unknown as DatabaseDef_PermissionUser['id']}, create, transaction);
 	};
 
 	async assignPermissions(body: Request_AssignPermissions) {
 		if (!body.targetAccountIds.length)
 			throw new ApiException(400, `Asked to modify permissions but provided no users to modify permissions of.`);
 
-		const usersToGiveTo = filterInstances(await this.query.all(body.targetAccountIds));
+		// Permission user id is 1:1 with account id (design); cast required across brands.
+		const permissionUserIds = body.targetAccountIds as unknown as DatabaseDef_PermissionUser['id'][];
+		const usersToGiveTo = filterInstances(await this.query.all(permissionUserIds));
 		// console.log('assignPermissions target accounts ');
 		// console.log(await this.query.custom(_EmptyQuery));
 		if (!usersToGiveTo.length || usersToGiveTo.length !== body.targetAccountIds.length) {
@@ -238,9 +245,9 @@ export class ModuleBE_PermissionUserDB_Class
 				account = await ModuleBE_AccountDB.account.create(accountsToRequest);
 			}
 
-			// Assign permissions groups to service account
-			const permissionsUser = await ModuleBE_PermissionUserDB.query.uniqueAssert({_id: account._id});
-			permissionsUser.groups = serviceAccount.groupIds?.map(groupId => ({groupId})) || [];
+			// Assign permissions groups to service account; permission user _id is 1:1 with account _id
+			const permissionsUser = await ModuleBE_PermissionUserDB.query.uniqueAssert({_id: account._id as unknown as DatabaseDef_PermissionUser['id']});
+			permissionsUser.groups = serviceAccount.groupIds?.map(gid => ({groupId: toPermissionGroupId(gid)})) || [];
 			await ModuleBE_PermissionUserDB.set.item(permissionsUser);
 
 			//Service accounts are only allowed to have one session... but this isn't the defined place to be a cop about it
