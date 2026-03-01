@@ -1,9 +1,5 @@
-import {
-	GenericDropDown,
-	TemplatingProps_TS_GenericDropDown,
-	TS_MultiSelect_V2,
-	DBItemDropDownMultiSelector,
-} from '@nu-art/editable-item';
+import * as React from 'react';
+import {DBItemDropDownMultiSelector, prepareGenericDropDown, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2,} from '@nu-art/editable-item';
 import {DatabaseDef_PermissionUser} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionUser} from './ModuleFE_PermissionUser.js';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend';
@@ -29,9 +25,6 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionU
 	}
 };
 
-// Editable pattern: use .editable with editable+prop, .selectable for multi-select (same as EDITABLE.GenericDropDownV3).
-export const DropDown_PermissionUser = GenericDropDown.prepare(Props_DropDown);
-
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 	module: ModuleFE_PermissionUser,
 	itemRenderer: (item, onDelete) => {
@@ -40,8 +33,8 @@ const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 			throw new MUSTNeverHappenException(`Could not find account connected to permission-user with id ${item?._id}`);
 		return !account ? <>Not Found</> : <><TS_Icons.x.component onClick={onDelete} className={'ts-icon__small'}/>{account.email}</>;
 	},
-	uiSelector: DropDown_PermissionUser.selectable,
+	uiSelector: prepareGenericDropDown(Props_DropDown).selectable,
 });
 
-export const MultiSelect_PermissionUser = TS_MultiSelect_V2.prepare(Props_MultiSelect);
+export const MultiSelect_PermissionUser = TS_MultiSelect_V2.prepare(Props_MultiSelect) as React.ComponentType<any>;
 

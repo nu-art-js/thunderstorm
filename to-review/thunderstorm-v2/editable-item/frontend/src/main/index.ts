@@ -43,8 +43,17 @@ export {EDITABLE} from './editables/index.js';
 export {
 	GenericDropDown,
 	type TemplatingProps_TS_GenericDropDown,
+	type AppLevelProps_TS_GenericDropDown,
 	type GenericDropDown_DBPointer_Item,
 } from './components/TS_DropDown/GenericDropDown.js';
+export {
+	prepareGenericDropDown,
+	prepareGenericDropDown_DBPointers,
+	createEditableGenericDropDown,
+	createEditableGenericDropDownPointer,
+	createSelectableGenericDropDown,
+	createSelectableGenericDropDownPointer,
+} from './editables/editable-generic-dropdown.js';
 export {
 	TS_MultiSelect_V2,
 	type StaticProps_TS_MultiSelect_V2,

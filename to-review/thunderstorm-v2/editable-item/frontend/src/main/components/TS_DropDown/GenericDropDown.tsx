@@ -1,11 +1,10 @@
-import {_values, DB_Object, Filter, ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
+import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {CSSProperties} from 'react';
 import {Adapter, ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/thunder-widgets';
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {DB_Prototype} from '@nu-art/db-api-shared';
-import type {EditableItemProps_GenericDropDown, EditableItemProps_GenericDropDown_DBPointer} from '../../editables/editable-generic-dropdown.js';
-import {ComponentProps_Error, resolveEditableError, withEditableErrorProps} from '../../editables/resolve-editable-error.js';
+import type {ComponentProps_Error} from '../../editables/resolve-editable-error.js';
 
 type Props_CanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | {
 	canUnselect?: false;
@@ -89,85 +88,6 @@ type State<T extends DB_Object> = ComponentProps_Error & {
 
 export class GenericDropDown<Database extends DB_Prototype<any>, T extends Database['dbType'] = Database['dbType']>
 	extends ComponentSync<Props_TS_GenericDropDown<Database>, State<T>> {
-	static readonly prepareEditable = <Database_ extends DB_Prototype<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Database_>>) => {
-		return (props: EditableItemProps_GenericDropDown<Database_['dbType']>) => {
-			const {editable, prop, ...restProps} = props;
-
-			const onSelected = async (item: Database_['dbType']) => {
-				await editable.updateObj({[prop]: item?._id});
-			};
-
-			return <GenericDropDown<Database_>
-				error={resolveEditableError(withEditableErrorProps(props))}
-				{...resolveContent(mandatoryProps)}
-				{...restProps}
-				onSelected={async item => {
-					if (props.onSelected)
-						return props.onSelected(item, onSelected);
-
-					return onSelected(item);
-				}}
-				selected={editable.item[prop]}/>;
-		};
-	};
-	static readonly prepareSelectable = <Database_ extends DB_Prototype<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Database_>>) => {
-		return (props: AppLevelProps_TS_GenericDropDown<Database_['dbType']>) =>
-			<GenericDropDown<Database_> {...resolveContent(mandatoryProps)} {...props}/>;
-	};
-	static readonly prepare = <Database_ extends DB_Prototype<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Database_>>) => {
-		return {
-			editable: this.prepareEditable(mandatoryProps),
-			selectable: this.prepareSelectable(mandatoryProps),
-		};
-	};
-
-	static readonly prepareSelectable_DBPointers = <Database_ extends DB_Prototype<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Database_>>) => {
-		const _mandatoryProps = resolveContent(mandatoryProps);
-		return (props: AppLevelProps_TS_GenericDropDown<GenericDropDown_DBPointer_Item<Database_>>) =>
-			<GenericDropDown
-				{..._mandatoryProps}
-				{...props}
-				itemResolver={() => {
-					const modules = _values(_mandatoryProps.pointerProps).map(val => val.module);
-					return modules.map(module => module.cache.all().map(dbItem => ({dbKey: module.config.dbKey, item: dbItem}))).flat();
-				}}
-				renderer={(item: GenericDropDown_DBPointer_Item<Database_>) => _mandatoryProps.pointerProps[item.dbKey].renderer(item)}
-				mapper={(item: GenericDropDown_DBPointer_Item<Database_>) => _mandatoryProps.pointerProps[item.dbKey].mapper(item)}
-				// @ts-ignore
-				module={undefined}
-			/>;
-	};
-	static readonly prepareEditable_DBPointers = <Proto_ extends DB_Prototype<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto_>>) => {
-		return (props: EditableItemProps_GenericDropDown_DBPointer<GenericDropDown_DBPointer_Item<Proto_>>) => {
-			const _mandatoryProps = resolveContent(mandatoryProps);
-			const {editable, prop, ...restProps} = props;
-
-			const onSelected = async (item: Proto_['dbType']) => {
-				await editable.updateObj({[prop]: item._id});
-			};
-
-			return <GenericDropDown
-				error={resolveEditableError(withEditableErrorProps(props))}
-				{..._mandatoryProps}
-				{...restProps}
-				onSelected={async item => {
-					if (props.onSelected)
-						return props.onSelected(item, onSelected);
-
-					return onSelected(item);
-				}}
-				selected={editable.item[prop]}
-				// @ts-ignore
-				module={undefined}
-			/>;
-		};
-	};
-	static readonly prepare_DBPointers = <Proto_ extends DB_Prototype<any>>(mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Proto_>>) => {
-		return {
-			editable: this.prepareEditable_DBPointers(mandatoryProps),
-			selectable: this.prepareSelectable_DBPointers(mandatoryProps),
-		};
-	};
 
 	protected deriveStateFromProps(nextProps: Props_TS_GenericDropDown<Database>): State<T> {
 		const state = {} as State<T>;
@@ -182,9 +102,11 @@ export class GenericDropDown<Database extends DB_Prototype<any>, T extends Datab
 		}
 
 		//Sort Items by sort function or object keys
-		state.items = nextProps.sortBy?.reduce((toRet, sortBy) => {
-			return sortArray(state.items, typeof sortBy === 'function' ? sortBy : item => item[sortBy]);
-		}, state.items) || state.items;
+		state.items = nextProps.sortBy?.reduce(
+			(toRet: T[], sortByKey: ((keyof T) | ((item: T) => string | number))) =>
+				sortArray(toRet, typeof sortByKey === 'function' ? sortByKey : (item: T) => item[sortByKey]),
+			state.items
+		) ?? state.items;
 
 		state.error = nextProps.error;
 		//Set selected item

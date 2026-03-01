@@ -6,7 +6,14 @@
 
 import {createEditableCheckBox} from './editable-checkbox.js';
 import {createEditableDropDown} from './editable-dropdown.js';
-import {createEditableGenericDropDown, createEditableGenericDropDownPointer} from './editable-generic-dropdown.js';
+import {
+	createEditableGenericDropDown,
+	createEditableGenericDropDownPointer,
+	createSelectableGenericDropDown,
+	createSelectableGenericDropDownPointer,
+	prepareGenericDropDown,
+	prepareGenericDropDown_DBPointers,
+} from './editable-generic-dropdown.js';
 import {EditableInput} from './editable-input.js';
 import {createEditableTextArea} from './editable-textarea.js';
 
@@ -23,4 +30,14 @@ export const EDITABLE = {
 	CheckBox: createEditableCheckBox,
 	Input: EditableInput,
 	TextArea: createEditableTextArea,
+};
+
+/** GenericDropDown factories (decoupled from component). Use these instead of GenericDropDown.prepare* static methods. */
+export {
+	createEditableGenericDropDown,
+	createEditableGenericDropDownPointer,
+	createSelectableGenericDropDown,
+	createSelectableGenericDropDownPointer,
+	prepareGenericDropDown,
+	prepareGenericDropDown_DBPointers,
 };

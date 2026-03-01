@@ -1,5 +1,6 @@
+import * as React from 'react';
 import {
-	GenericDropDown,
+	prepareGenericDropDown,
 	TemplatingProps_TS_GenericDropDown,
 	TS_MultiSelect_V2,
 	DBItemDropDownMultiSelector,
@@ -16,15 +17,13 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionG
 	renderer: item => <>{item.label}</>
 };
 
-export const DropDown_PermissionGroup = GenericDropDown.prepare(Props_DropDown);
-
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 	module: ModuleFE_PermissionGroup,
 	itemRenderer: (item, onDelete) => {
 		return !item ? <>Not Found</> : <><TS_Icons.x.component onClick={onDelete} className={'ts-icon__small'}/>{item.label}</>;
 	},
-	uiSelector: DropDown_PermissionGroup.selectable,
+	uiSelector: prepareGenericDropDown(Props_DropDown).selectable,
 });
 
-export const MultiSelect_PermissionGroup = TS_MultiSelect_V2.prepare(Props_MultiSelect);
+export const MultiSelect_PermissionGroup = TS_MultiSelect_V2.prepare(Props_MultiSelect) as React.ComponentType<any>;
 
