@@ -1,5 +1,6 @@
 import * as React from 'react';
-import {InferProps, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm-frontend/index';
+import {InferProps, TS_PropRenderer} from '@nu-art/thunder-widgets';
+import {TS_Route} from '@nu-art/thunder-routing';
 import {ModuleFE_PermissionProject} from '../../../_entity.js';
 import {Component_BasePermissionItemEditor} from '../editor-base.js';
 import {Input_Text_Blur} from '../components.js';

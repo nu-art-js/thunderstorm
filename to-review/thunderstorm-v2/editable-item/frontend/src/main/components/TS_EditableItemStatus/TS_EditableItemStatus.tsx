@@ -1,4 +1,5 @@
 import {TS_EditableContent} from '../TS_EditableContent/TS_EditableContent.js';
+import type {EditableItem} from '../../core/EditableItem.js';
 import {
 	EditableItem_Status,
 	EditableItemStatus_Creating,
@@ -52,7 +53,7 @@ export class TS_EditableItemStatus
 		this.props.editable.removeStatusListener(this);
 	}
 
-	onEditableItemStatusChanged(newStatus: EditableItem_Status): any {
+	onEditableItemStatusChanged(newStatus: EditableItem_Status, _prevStatus: EditableItem_Status, _editableItem: EditableItem<any>): any {
 		this.reDeriveState({});
 	}
 

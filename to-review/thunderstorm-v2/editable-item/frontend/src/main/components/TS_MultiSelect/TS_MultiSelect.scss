@@ -1,0 +1,14 @@
+.ts-multi-select__list {
+	gap: 12px;
+	width: 100%;
+
+	&.ll_h_c {
+		flex-wrap: wrap;
+	}
+
+	.ts-multi-select__value {
+		.ts-icon__small {
+			margin-right: 4px;
+		}
+	}
+}

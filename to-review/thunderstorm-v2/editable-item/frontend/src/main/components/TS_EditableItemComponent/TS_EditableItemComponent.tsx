@@ -1,6 +1,6 @@
 import {ReactNode} from 'react';
 import {ComponentSync, InferProps, InferState, TS_PropRenderer} from '@nu-art/thunder-widgets';
-import {DBProto} from '@nu-art/ts-common';
+import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {EditableRef} from '../TS_EditableContent/types.js';
 
 type Props_Controller = {};
@@ -40,7 +40,7 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {}, Props e
 	item = (): Partial<ItemType> => this.state.editable.item;
 }
 
-export abstract class TS_EditableItemComponentProto<Proto extends DBProto<any>, P = {}, S = {}, UI_Type extends Proto['uiType'] = Proto['uiType'], Props extends P & EditableRef<UI_Type> & Props_Controller = P & EditableRef<UI_Type> & Props_Controller, State extends S & _State<UI_Type> = S & _State<UI_Type>>
+export abstract class TS_EditableItemComponentProto<Proto extends DB_Prototype<any>, P = {}, S = {}, UI_Type extends Proto['uiType'] = Proto['uiType'], Props extends P & EditableRef<UI_Type> & Props_Controller = P & EditableRef<UI_Type> & Props_Controller, State extends S & _State<UI_Type> = S & _State<UI_Type>>
 	extends ComponentSync<Props, State> {
 	shouldReDeriveState(nextProps: Readonly<InferProps<this>>): boolean {
 		if (this.state.tag !== nextProps.editable.tag)

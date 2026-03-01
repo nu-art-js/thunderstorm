@@ -32,7 +32,7 @@ import type {DB_Prototype} from '@nu-art/db-api-shared';
 /** @nu-art/db-api-frontend. Transformation: use ModuleForEditableItem below — db-api has config.dbKey, module.upsert/delete (no v1.executeSync); optional generatedPropKeys replaces dbDef.generatedProps. */
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 
-/** Module shape required by EditableDBItemV3 / editRefV3. Optional generatedPropKeys for stripping server-generated keys when merging. */
+/** Module shape required by EditableDBItem / editRef. Optional generatedPropKeys for stripping server-generated keys when merging. */
 export type ModuleForEditableItem<Types extends DB_Prototype> = ModuleFE_BaseApi<Types> & {
 	generatedPropKeys?: (keyof Types['dbType'])[];
 };
@@ -482,11 +482,11 @@ export class EditableItem<T>
 	 * @param initialValue An initial value to use in case there is no reference id.
 	 * @returns The new EditableItem.
 	 */
-	editRefV3<RefTypes extends DB_Prototype, K extends SubsetKeys<keyof T, T, string>>(
+	editRef<RefTypes extends DB_Prototype, K extends SubsetKeys<keyof T, T, string>>(
 		key: K,
 		module: ModuleForEditableItem<RefTypes>,
 		initialValue: Partial<RefTypes['uiType']>
-	): EditableDBItemV3<RefTypes> {
+	): EditableDBItem<RefTypes> {
 		const itemId = this.item[key] as string;
 		let editingItem: Partial<RefTypes['uiType']>;
 		if (!exists(itemId))
@@ -497,7 +497,7 @@ export class EditableItem<T>
 				throw new MUSTNeverHappenException(`Could not find db item for id: ${itemId} in collection: ${module.config.dbKey}`);
 			editingItem = cached as RefTypes['uiType'];
 		}
-		return new EditableDBItemV3<RefTypes>(editingItem, module);
+		return new EditableDBItem<RefTypes>(editingItem, module);
 	}
 
 	/**
@@ -535,14 +535,14 @@ export class EditableItem<T>
  *
  * @template Types DB_Prototype that define the entity (dbItem, uiItem, etc.).
  */
-export class EditableDBItemV3<Types extends DB_Prototype>
+export class EditableDBItem<Types extends DB_Prototype>
 	extends EditableItem<Types['uiType']> {
 	private readonly module: ModuleForEditableItem<Types>;
 	private debounceInstance: ReturnType<typeof queuedDebounce>;
 	private debounceTimeout: number = 2 * Second;
 
 	/**
-	 * Constructs an EditableDBItemV3 instance.
+	 * Constructs an EditableDBItem instance.
 	 *
 	 * @param item The item to be edited.
 	 * @param module The module for database operations (ModuleFE_BaseApi / ModuleForEditableItem).
@@ -603,7 +603,7 @@ export class EditableDBItemV3<Types extends DB_Prototype>
 		this.callOnChange();
 	}
 
-	setDebounceTimeout = (timeout: number): EditableDBItemV3<Types> => {
+	setDebounceTimeout = (timeout: number): EditableDBItem<Types> => {
 		this.debounceTimeout = timeout;
 		return this;
 	};

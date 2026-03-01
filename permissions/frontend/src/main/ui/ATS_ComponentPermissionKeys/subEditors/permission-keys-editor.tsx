@@ -1,4 +1,5 @@
-import {_className, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunderstorm-frontend/index';
+import {_className} from '@nu-art/thunder-core';
+import {ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
 import {_values} from '@nu-art/ts-common';
 import '../permission-keys-editor.scss';
 import {Component_AccessLevelsEditor} from './Component_AccessLevelsEditor.js';

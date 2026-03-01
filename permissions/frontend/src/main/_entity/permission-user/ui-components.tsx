@@ -1,7 +1,11 @@
-import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm-frontend/index';
+import {
+	GenericDropDown,
+	TemplatingProps_TS_GenericDropDown,
+	TS_MultiSelect_V2,
+	DBItemDropDownMultiSelector,
+} from '@nu-art/editable-item';
 import {DatabaseDef_PermissionUser} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionUser} from './ModuleFE_PermissionUser.js';
-import {DBItemDropDownMultiSelector} from '@nu-art/thunderstorm-frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
@@ -26,7 +30,7 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionU
 };
 
 // Editable pattern: use .editable with editable+prop, .selectable for multi-select (same as EDITABLE.GenericDropDownV3).
-export const DropDown_PermissionUser = GenericDropDownV3.prepare(Props_DropDown);
+export const DropDown_PermissionUser = GenericDropDown.prepare(Props_DropDown);
 
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 	module: ModuleFE_PermissionUser,
