@@ -17,7 +17,7 @@ export class Component_AccessLevelsEditor
 	extends ComponentSync<Props, State> {
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
-		const levelIds = nextProps.permissionKey.get().accessLevelIds ?? [];
+		const levelIds = nextProps.permissionKey.get()?.accessLevelIds ?? [];
 		state.levels = ModuleFE_PermissionAccessLevel.cache.filter(i => levelIds.includes(i._id));
 		return state;
 	}

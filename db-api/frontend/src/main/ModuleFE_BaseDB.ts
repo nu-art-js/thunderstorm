@@ -85,7 +85,7 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 	readonly IDB: IDB_Store<Database['dbType']>;
 
 	private dataStatus: DataStatus = DataStatus.NoData;
-	private dispatcher: EventDispatcher<Database['dbType']>;
+	public readonly dispatcher: EventDispatcher<Database['dbType']>;
 
 	// Version upgrade processors - maps version string to upgrade function
 	private versionUpgrades: Record<string, (items: Database['dbType'][]) => Promise<void>> = {};

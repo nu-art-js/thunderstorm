@@ -1,8 +1,8 @@
 import {_className} from '@nu-art/thunder-core';
 import {Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
-import {ModuleFE_RoutingV2, TS_NavLink} from '@nu-art/thunder-routing';
+import {ModuleFE_Routing, TS_NavLink} from '@nu-art/thunder-routing';
 import {AppToolsScreen, TS_AppTools} from '@nu-art/thunder-ui-modules';
-import {genericNotificationAction} from '@nu-art/thunder-notifications';
+import {genericNotificationAction} from '../../stubs/thunder-notifications-stub.js';
 import './ATS_Permissions.scss';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert.js';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';
@@ -51,7 +51,7 @@ export class ATS_Permissions
 											 PermissionUsersEditor.Route.key,
 		];
 		if (!arrayIncludesAny(window.location.pathname.split('/'), routeKeys))
-			ModuleFE_RoutingV2.goToRoute(PermissionProjectsEditor.Route);
+			ModuleFE_Routing.goToRoute(PermissionProjectsEditor.Route);
 	}
 
 	//######################### Logic #########################

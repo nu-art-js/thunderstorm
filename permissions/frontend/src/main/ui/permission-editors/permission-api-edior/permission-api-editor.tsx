@@ -6,10 +6,9 @@ import {InferProps, InferState, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_Route} from '@nu-art/thunder-routing';
 import {MultiSelect} from '../../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {Page_ItemsEditor, ProtoDef_Selection} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
 import './permission-api-editor.scss';
-import {TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
-import {DB_PermissionAPI, DBProto_PermissionAPI} from '@nu-art/permissions-shared';
+import {TS_EditableItemControllerProto} from '@nu-art/editable-item';
+import {DatabaseDef_PermissionAPI, DB_PermissionAPI} from '@nu-art/permissions-shared';
 
 
 type Props = {
@@ -17,7 +16,7 @@ type Props = {
 };
 
 class Component_APIEditor
-	extends Component_BasePermissionItemEditor<DBProto_PermissionAPI> {
+	extends Component_BasePermissionItemEditor<DatabaseDef_PermissionAPI> {
 	static defaultProps = {
 		module: ModuleFE_PermissionAPI,
 		displayResolver: (item: DB_PermissionAPI) => item.path
@@ -63,7 +62,7 @@ class Controller_ApiEditor
 }
 
 export class PermissionAPIEditor
-	extends Page_ItemsEditor<DBProto_PermissionAPI, ProtoDef_Selection, Props> {
+	extends Page_ItemsEditor<DatabaseDef_PermissionAPI, ProtoDef_Selection, Props> {
 
 	//######################### Static #########################
 

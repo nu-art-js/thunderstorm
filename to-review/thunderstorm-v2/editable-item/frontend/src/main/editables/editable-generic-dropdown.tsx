@@ -7,7 +7,7 @@
  */
 
 import type {DBPointer} from '@nu-art/ts-common';
-import {type ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {_values, type ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import type {UIProps_EditableItem} from '../core/EditableItem.js';
 import type {EditableBaseProps} from './resolve-editable-error.js';
 import {resolveEditableError, withEditableErrorProps} from './resolve-editable-error.js';
@@ -15,7 +15,8 @@ import {
 	GenericDropDown_DBPointer_Item,
 	GenericDropDown,
 	TemplatingProps_TS_GenericDropDown,
-	TemplatingProps_TS_GenericDropDown_DBPointer
+	TemplatingProps_TS_GenericDropDown_DBPointer,
+	type AppLevelProps_TS_GenericDropDown,
 } from '../components/TS_DropDown/GenericDropDown.js';
 import {DB_Prototype} from '@nu-art/db-api-shared';
 
@@ -83,5 +84,49 @@ export function createEditableGenericDropDownPointer<Database extends DB_Prototy
 			// @ts-ignore
 			module={undefined}
 		/>;
+	};
+}
+
+export function createSelectableGenericDropDown<Database extends DB_Prototype<any>>(
+	mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Database>>
+) {
+	return (props: AppLevelProps_TS_GenericDropDown<Database['dbType']>) =>
+		<GenericDropDown<Database> {...resolveContent(mandatoryProps)} {...props}/>;
+}
+
+export function createSelectableGenericDropDownPointer<Database extends DB_Prototype<any>>(
+	mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Database>>
+) {
+	const _mandatoryProps = resolveContent(mandatoryProps);
+	return (props: AppLevelProps_TS_GenericDropDown<GenericDropDown_DBPointer_Item<Database>>) =>
+		<GenericDropDown
+			{..._mandatoryProps}
+			{...props}
+			itemResolver={() => {
+				const modules = _values(_mandatoryProps.pointerProps).map(val => val.module);
+				return modules.map(module => module.cache.all().map(dbItem => ({dbKey: module.config.dbKey, item: dbItem}))).flat();
+			}}
+			renderer={(item: GenericDropDown_DBPointer_Item<Database>) => _mandatoryProps.pointerProps[item.dbKey].renderer(item)}
+			mapper={(item: GenericDropDown_DBPointer_Item<Database>) => _mandatoryProps.pointerProps[item.dbKey].mapper(item)}
+			// @ts-ignore
+			module={undefined}
+		/>;
+}
+
+export function prepareGenericDropDown<Database extends DB_Prototype<any>>(
+	mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown<Database>>
+) {
+	return {
+		editable: createEditableGenericDropDown(mandatoryProps),
+		selectable: createSelectableGenericDropDown(mandatoryProps),
+	};
+}
+
+export function prepareGenericDropDown_DBPointers<Database extends DB_Prototype<any>>(
+	mandatoryProps: ResolvableContent<TemplatingProps_TS_GenericDropDown_DBPointer<Database>>
+) {
+	return {
+		editable: createEditableGenericDropDownPointer(mandatoryProps),
+		selectable: createSelectableGenericDropDownPointer(mandatoryProps),
 	};
 }

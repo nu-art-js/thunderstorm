@@ -1,4 +1,6 @@
-import {ComponentSync, LL_V_L, MultiSelect_Selector, StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/editable-item';
+import * as React from 'react';
+import {ComponentSync, LL_V_L} from '@nu-art/thunder-widgets';
+import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/editable-item';
 import {dbObjectToId, sortArray, UniqueId} from '@nu-art/ts-common';
 import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_PermissionGroup} from '../_entity.js';
 import {DropDown_PermissionAccessLevel} from '../_entity/permission-access-level/ui-components.js';
@@ -111,7 +113,7 @@ const MultiSelect_PermissionsGroup: StaticProps_TS_MultiSelect_V2<{ groupId: str
 	sort: items => sortArray(items, item => ModuleFE_PermissionGroup.cache.unique(item?.groupId)?.label || 'not found')
 };
 
-export const MultiSelect = {
+export const MultiSelect: Record<string, React.ComponentType<any>> = {
 	AccessLevel_StamTest: TS_MultiSelect_V2.prepare(MultiSelect_PermissionsAccessLevelStam),
 	AccessLevel: TS_MultiSelect_V2.prepare(MultiSelect_PermissionsAccessLevel),
 	Group: TS_MultiSelect_V2.prepare(MultiSelect_PermissionsGroup),

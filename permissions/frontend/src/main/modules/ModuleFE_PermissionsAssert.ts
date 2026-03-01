@@ -83,9 +83,10 @@ export class ModuleFE_PermissionsAssert_Class
 			return AccessLevel.NoAccessLevelsDefined;
 
 		const userAccessLevels = SessionKey_Permissions_FE.get().domainToValueMap;
+		const accessLevels = keyData._accessLevels ?? {};
 		try {
-			const canAccess = _keys(keyData._accessLevels).reduce((hasAccess, domainId) => {
-				return hasAccess && userAccessLevels[domainId] >= keyData._accessLevels[domainId];
+			const canAccess = (Object.keys(accessLevels) as (keyof typeof accessLevels)[]).reduce((hasAccess, domainId) => {
+				return hasAccess && userAccessLevels[domainId] >= accessLevels[domainId];
 			}, true);
 			return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
 		} catch (e) {

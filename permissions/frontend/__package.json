@@ -44,6 +44,7 @@
     "@nu-art/thunder-routing": "?",
     "@nu-art/thunder-ui-modules": "?",
     "@nu-art/thunder-notifications": "?",
+    "@nu-art/thunder-notifications": "?",
     "@nu-art/thunder-widgets": "?",
     "@nu-art/editable-item": "?",
     "@nu-art/ts-common": "?",

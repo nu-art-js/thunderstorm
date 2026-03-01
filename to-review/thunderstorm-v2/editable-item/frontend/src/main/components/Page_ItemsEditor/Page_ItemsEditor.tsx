@@ -1,84 +1,58 @@
 import * as React from 'react';
-import {asArray, dbObjectToId, DBProto, exists, UniqueId} from '@nu-art/ts-common';
+import {asArray, dbObjectToId, exists, UniqueId} from '@nu-art/ts-common';
 import './Page_ItemsEditor.scss';
 import {ItemEditor_DefaultList, Props_ListRenderer} from './defaults/ItemEditor_ListRenderer/index.js';
 import {ItemEditor_CustomSort, ItemEditor_FilterType, ItemEditor_MapperType} from './types.js';
 import {ItemEditor_DefaultFilter, Props_Filter} from './defaults/ItemEditor_DefaultFilter/index.js';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {EditableDBItemV3, EditableItem} from '../../core/EditableItem.js';
+import {EditableDBItem, EditableItem} from '../../core/EditableItem.js';
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {_className} from '@nu-art/thunder-core';
-import {InferProps, InferState} from '@nu-art/thunder-widgets';
-import {
-	FrameLayout,
-	LL_H_C,
-	LL_H_T,
-	LL_V_L,
-	ModuleFE_MouseInteractivity,
-	mouseInteractivity_PopUp,
-	openContent,
-	TS_ButtonLoader
-} from '@nu-art/thunder-widgets';
+import {BaseComponent, InferProps, InferState, LL_H_C, LL_H_T, LL_V_L, TS_ButtonLoader} from '@nu-art/thunder-widgets';
 import {TS_Route} from '@nu-art/thunder-routing';
-import {
-	ModuleFE_BrowserHistoryV2,
-	ProtoComponent,
-	ProtoComponentDef,
-	SuperProto
-} from '@nu-art/web-client';
-import {Props_EditableItemControllerProto} from '../../controllers/TS_EditableItemControllerProto/index.js';
-import {ApiCallerEventType} from '@nu-art/storm-shared';
+import {ApiCallerEventType, DB_Prototype} from '@nu-art/db-api-shared';
+import {Props_EditableItemController} from '../TS_EditableItemController/index.js';
+import {URL_TOOLS} from '@nu-art/thunder-core';
 
-export type MenuAction<Proto extends DBProto<any>> = {
+export type MenuAction<Proto extends DB_Prototype<any>> = {
 	label: string;
 	action: (state: State_ItemsEditor<Proto>) => Promise<any>;
 };
-export type State_ItemsEditor<Proto extends DBProto<any>> = {
-	editable: EditableItem<Proto['uiType']>;
-	filter: ItemEditor_FilterType<Proto>;
+export type State_ItemsEditor<Database extends DB_Prototype<any>> = {
+	editable: EditableItem<Database['uiType']>;
+	filter: ItemEditor_FilterType<Database>;
 	actionInProgress?: number;
 };
-export type Props_ItemsEditor<Proto extends DBProto<any>> = {
-	ListRenderer?: React.ComponentType<Props_ListRenderer<Proto>>;
-	EditorRenderer: React.ComponentType<Partial<Props_EditableItemControllerProto<Proto>>>;
-	Filter?: React.ComponentType<Props_Filter<Proto>>;
-	module: ModuleFE_BaseApi<Proto>;
+export type Props_ItemsEditor<Database extends DB_Prototype<any>> = {
+	ListRenderer?: React.ComponentType<Props_ListRenderer<Database>>;
+	EditorRenderer: React.ComponentType<Partial<Props_EditableItemController<Database>>>;
+	Filter?: React.ComponentType<Props_Filter<Database>>;
+	module: ModuleFE_BaseApi<Database>;
 	route?: TS_Route<{
 		_id: string;
 	}>;
-	sort: ItemEditor_CustomSort<Proto>;
-	mapper: ItemEditor_MapperType<Proto>;
-	itemRenderer: (item: Proto['uiType']) => JSX.Element;
-	actions: MenuAction<Proto>[];
+	sort: ItemEditor_CustomSort<Database>;
+	mapper: ItemEditor_MapperType<Database>;
+	itemRenderer: (item: Database['uiType']) => JSX.Element;
+	actions: MenuAction<Database>[];
 	id?: string;
-	onSelectedItemChanged?: (editable?: EditableItem<Proto['uiType']>) => void;
-	contextMenuActions: MenuAction<Proto>[];
+	onSelectedItemChanged?: (editable?: EditableItem<Database['uiType']>) => void;
+	contextMenuActions: MenuAction<Database>[];
 	hideAddItem: boolean;
 	className?: string;
 };
-/**
- * Manages a list of items on the left with a selected item, and an editor on the right
- */
-export type ProtoDef_Selection = ProtoComponentDef<'selected', {
-	selected: {
-		[dbKey: string]: UniqueId;
-	};
-}>;
 
-export abstract class Page_ItemsEditor<Proto extends DBProto<any>, CProto extends SuperProto<ProtoDef_Selection, ProtoComponentDef<string, any>> = ProtoDef_Selection, P = {}, S = {}>
-	extends ProtoComponent<CProto, Props_ItemsEditor<Proto> & P, State_ItemsEditor<Proto> & S> {
-	static _defaultProps: ProtoDef_Selection['props'] = {
-		keys: ['selected'],
-	};
+export abstract class Page_ItemsEditor<Database extends DB_Prototype<any>, P = {}, S = {}>
+	extends BaseComponent<Props_ItemsEditor<Database> & P, State_ItemsEditor<Database> & S> {
 
-	constructor(p: InferProps<Page_ItemsEditor<Proto, CProto, P, S>>) {
+	constructor(p: Props_ItemsEditor<Database> & P) {
 		super(p);
 	}
 
 	componentDidMount() {
-		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected'])[this.props.module.dbDef.dbKey];
-		if (!selectedId)
-			this.onSelected(this.props.sort(this.props.module.cache.allMutable())[0]);
+		// const selectedId = this.getQueryParam('selected', {} as Database['queryParamDef']['selected'])[this.props.module.dbDef.dbKey];
+		// if (!selectedId)
+		// 	this.onSelected(this.props.sort(this.props.module.cache.allMutable())[0]);
 	}
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
@@ -88,15 +62,16 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>, CProto extend
 			// @ts-ignore
 			this[nextProps.module.defaultDispatcher.method] = (...args: any[]) => this.__onItemUpdated(...args);
 		}
-		const selectedId = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected'])[this.props.module.dbDef.dbKey];
+
+		const selectedId = undefined;
 		if (!exists(selectedId)) {
-			state.editable = this.createEditableItem({} as Proto['uiType']);
+			state.editable = this.createEditableItem({} as Database['uiType']);
 			this.props.onSelectedItemChanged?.(state.editable);
 			return state;
 		}
-		const item = this.props.module.cache.unique(selectedId as string);
+		const item = this.props.module.cache.unique(selectedId);
 		if (!exists(item)) {
-			this.logError(`Could not find item ${this.props.module.dbDef.dbKey} with id ${selectedId}`);
+			this.logError(`Could not find item ${this.props.module.config.dbKey} with id ${selectedId}`);
 			this.onSelected();
 			this.props.onSelectedItemChanged?.();
 			return state;
@@ -107,7 +82,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>, CProto extend
 		return state;
 	}
 
-	private __onItemUpdated = (...params: ApiCallerEventType<Proto>): void => {
+	private __onItemUpdated = (...params: ApiCallerEventType<Database['dbKey']>): void => {
 		const items = asArray(params[1]);
 		if (!items.map(dbObjectToId).includes(this.state.editable.get('_id') as string))
 			return this.onSelected(items[0]);
@@ -116,19 +91,19 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>, CProto extend
 		return this.reDeriveState();
 	};
 
-	private createEditableItem(item: Partial<Proto['uiType']>) {
-		return new EditableDBItemV3<Proto>({...item}, this.props.module)
+	private createEditableItem(item: Partial<Database['uiType']>) {
+		return new EditableDBItem<Database>({...item}, this.props.module)
 			.setOnSaveCompleted(this.onSelected.bind(this))
 			.setAutoSave(true);
 	}
 
 	render() {
 		const List = this.props.ListRenderer || ItemEditor_DefaultList;
-		const Filter: Props_ItemsEditor<Proto>['Filter'] = this.props.Filter || ItemEditor_DefaultFilter;
-		const Editor: Props_ItemsEditor<Proto>['EditorRenderer'] = this.props.EditorRenderer;
+		const Filter: Props_ItemsEditor<Database>['Filter'] = this.props.Filter || ItemEditor_DefaultFilter;
+		const Editor: Props_ItemsEditor<Database>['EditorRenderer'] = this.props.EditorRenderer;
 		const sort = this.props.sort;
 		const selectedItem = this.state.editable?.item;
-		return <FrameLayout id={this.props.id} className="editor-page">
+		return <div id={this.props.id} className="editor-page">
 			<LL_H_T className={_className(this.props.className ?? 'editor-content', 'match_parent')}>
 				<LL_V_L className="items-editor__list">
 					<LL_V_L className={'items-editor__list-header-content'}>
@@ -146,7 +121,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>, CProto extend
 					<Editor item={selectedItem}/>
 				</div>
 			</LL_H_T>
-		</FrameLayout>;
+		</div>;
 	}
 
 	protected renderHeader(): React.ReactNode {
@@ -156,22 +131,23 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>, CProto extend
 	protected renderAddNewItem() {
 		if (this.props.hideAddItem)
 			return '';
-		return <Component_AddNewItem entity={this.renderHeader()} onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
+		return <Component_AddNewItem entity={this.renderHeader()} onCreateNewItem={async () => this.onSelected({} as Partial<Database['uiType']>)}/>;
 	}
 
-	static refactoring_setSelected<Proto extends DBProto<any>>(module: ModuleFE_BaseApi<Proto>, id?: string) {
-		const selected = (ModuleFE_BrowserHistoryV2.get('selected') ?? {}) as {
+	static refactoring_setSelected<Proto extends DB_Prototype<any>>(module: ModuleFE_BaseApi<Proto>, id?: string) {
+		const raw = URL_TOOLS.getQueryParameter('selected');
+		const selected = (raw ? JSON.parse(raw) : {}) as {
 			[dbKey: string]: UniqueId;
 		};
 		const selectedId = id;
 		if (!selectedId)
-			delete selected[module.dbDef.dbKey];
+			delete selected[module.config.dbKey];
 		else
-			selected[module.dbDef.dbKey] = selectedId;
-		ModuleFE_BrowserHistoryV2.set('selected', selected);
+			selected[module.config.dbKey] = selectedId;
+		URL_TOOLS.setQueryParam('selected', JSON.stringify(selected));
 	}
 
-	private onSelected(item?: Partial<Proto['uiType']>) {
+	private onSelected(item?: Partial<Database['uiType']>) {
 		Page_ItemsEditor.refactoring_setSelected(this.props.module, item?._id);
 		// const selected = this.getQueryParam('selected', {} as CProto['queryParamDef']['selected']);
 		//
