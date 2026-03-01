@@ -1,15 +1,8 @@
-import {
-	_className,
-	AppToolsScreen,
-	Button,
-	ComponentSync,
-	genericNotificationAction,
-	LL_H_C,
-	LL_V_L,
-	ModuleFE_RoutingV2,
-	TS_AppTools,
-	TS_NavLink
-} from '@nu-art/thunderstorm-frontend/index';
+import {_className} from '@nu-art/thunder-core';
+import {Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
+import {ModuleFE_RoutingV2, TS_NavLink} from '@nu-art/thunder-routing';
+import {AppToolsScreen, TS_AppTools} from '@nu-art/thunder-ui-modules';
+import {genericNotificationAction} from '@nu-art/thunder-notifications';
 import './ATS_Permissions.scss';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert.js';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';

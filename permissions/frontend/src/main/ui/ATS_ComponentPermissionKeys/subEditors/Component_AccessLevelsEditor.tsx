@@ -1,4 +1,4 @@
-import {Button, ComponentSync, LL_V_L} from '@nu-art/thunderstorm-frontend/index';
+import {Button, ComponentSync, LL_V_L} from '@nu-art/thunder-widgets';
 import {dbObjectToId} from '@nu-art/ts-common';
 import {Permissions_DropDown} from '../../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';

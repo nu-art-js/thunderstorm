@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {Fragment} from 'react';
-import {InferProps, ModuleFE_Toaster, TS_ErrorBoundary, TS_PropRenderer, TS_Route} from '@nu-art/thunderstorm-frontend/index';
+import {InferProps, ModuleFE_Toaster, TS_ErrorBoundary, TS_PropRenderer} from '@nu-art/thunder-widgets';
+import {TS_Route} from '@nu-art/thunder-routing';
 import {MUSTNeverHappenException, sortArray, StaticLogger} from '@nu-art/ts-common';
 import {MultiSelect} from '../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';

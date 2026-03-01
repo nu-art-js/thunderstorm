@@ -1,15 +1,15 @@
 import {ReactNode} from 'react';
 import {InferState, TS_PropRenderer} from '@nu-art/thunder-widgets';
-import {DBProto} from '@nu-art/ts-common';
 import {ComponentSync} from '@nu-art/thunder-widgets';
 import {EditableRef} from './types.js';
+import {DB_Prototype} from '@nu-art/db-api-shared';
 
 type Props_Controller = {};
 
 type _State<Item> = EditableRef<Item> & {
 	tag?: string;
 };
-export type EditableContentType<Opt> = Opt extends DBProto<any> ? Opt['uiType'] : Opt;
+export type EditableContentType<Opt> = Opt extends DB_Prototype<any> ? Opt['uiType'] : Opt;
 
 export abstract class TS_EditableContent<Opt, P = {}, S = {}, ItemType extends EditableContentType<Opt> = EditableContentType<Opt>, Props extends P & EditableRef<ItemType> & Props_Controller = P & EditableRef<ItemType> & Props_Controller, State extends S & _State<ItemType> = S & _State<ItemType>>
 	extends ComponentSync<Props, State> {

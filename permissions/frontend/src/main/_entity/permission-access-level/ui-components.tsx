@@ -1,10 +1,12 @@
-import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2} from '@nu-art/thunderstorm-frontend/index';
+import {
+	GenericDropDown,
+	TemplatingProps_TS_GenericDropDown,
+	TS_MultiSelect_V2,
+	DBItemDropDownMultiSelector,
+} from '@nu-art/editable-item';
 import {DatabaseDef_PermissionAccessLevel} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionAccessLevel} from './ModuleFE_PermissionAccessLevel.js';
-import {DBItemDropDownMultiSelector} from '@nu-art/thunderstorm-frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {EDITABLE} from '@nu-art/editable-item';
-
 
 const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionAccessLevel> = {
 	module: ModuleFE_PermissionAccessLevel,
@@ -14,11 +16,10 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionA
 	renderer: item => <>{item.name}</>
 };
 
-// Editable pattern: use .editable with editable+prop, .selectable for multi-select (same as EDITABLE.GenericDropDownV3).
-export const DropDown_PermissionAccessLevel = GenericDropDownV3.prepare(Props_DropDown as never);
+export const DropDown_PermissionAccessLevel = GenericDropDown.prepare(Props_DropDown);
 
-const Props_MultiSelect = EDITABLE..propsV3({
-	module: ModuleFE_PermissionAccessLevel as never,
+const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
+	module: ModuleFE_PermissionAccessLevel,
 	itemRenderer: (item, onDelete) => {
 		return !item ? <>Not Found</> : <><TS_Icons.x.component onClick={onDelete} className={'ts-icon__small'}/>{item.name}</>;
 	},
@@ -26,4 +27,3 @@ const Props_MultiSelect = EDITABLE..propsV3({
 });
 
 export const MultiSelect_PermissionAccessLevel = TS_MultiSelect_V2.prepare(Props_MultiSelect);
-

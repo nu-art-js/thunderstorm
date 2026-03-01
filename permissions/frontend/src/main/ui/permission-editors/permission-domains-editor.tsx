@@ -1,5 +1,7 @@
 import * as React from 'react';
-import {Button, EditableDBItemV3, InferProps, ModuleFE_Toaster, TS_PropRenderer, TS_Route, TS_Table} from '@nu-art/thunderstorm-frontend/index';
+import {EditableDBItem} from '@nu-art/editable-item';
+import {Button, InferProps, ModuleFE_Toaster, TS_PropRenderer, TS_Table} from '@nu-art/thunder-widgets';
+import {TS_Route} from '@nu-art/thunder-routing';
 import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray, StaticLogger} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_PermissionProject} from '../../_entity.js';
@@ -21,7 +23,7 @@ class Component_EditDomain
 
 	//######################### logic #########################
 
-	private deleteLevel = async (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
+	private deleteLevel = async (editable: EditableDBItem<DBProto_PermissionAccessLevel>) => {
 		try {
 			await editable.delete();
 			this.forceUpdate();
@@ -31,7 +33,7 @@ class Component_EditDomain
 		}
 	};
 
-	private updateLevel = async <K extends keyof DBProto_PermissionAccessLevel['dbType']>(editable: EditableDBItemV3<DBProto_PermissionAccessLevel>, prop: K, value: DBProto_PermissionAccessLevel['dbType'][K]) => {
+	private updateLevel = async <K extends keyof DBProto_PermissionAccessLevel['dbType']>(editable: EditableDBItem<DBProto_PermissionAccessLevel>, prop: K, value: DBProto_PermissionAccessLevel['dbType'][K]) => {
 		if (editable.item._id) {
 			try {
 				await editable.updateObj({[prop]: value});
@@ -100,7 +102,7 @@ class Component_EditDomain
 	};
 
 	private levelsCellRenderer = (prop: keyof DB_PermissionAccessLevel | 'action', item: PreDB<DB_PermissionAccessLevel>, index: number) => {
-		const editable = new EditableDBItemV3(item, ModuleFE_PermissionAccessLevel)
+		const editable = new EditableDBItem(item, ModuleFE_PermissionAccessLevel)
 			.setAutoSave(true)
 			.setDebounceTimeout(0);
 		switch (prop) {
@@ -117,7 +119,7 @@ class Component_EditDomain
 		}
 	};
 
-	private renderLevelName = (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
+	private renderLevelName = (editable: EditableDBItem<DBProto_PermissionAccessLevel>) => {
 		return <Input_Text_Blur
 			editable={editable}
 			prop={'name'}
@@ -127,7 +129,7 @@ class Component_EditDomain
 		/>;
 	};
 
-	private renderLevelValue = (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
+	private renderLevelValue = (editable: EditableDBItem<DBProto_PermissionAccessLevel>) => {
 		return <Input_Number_Blur
 			// @ts-ignore
 			editable={editable}
@@ -138,7 +140,7 @@ class Component_EditDomain
 		/>;
 	};
 
-	private renderLevelAction = (editable: EditableDBItemV3<DBProto_PermissionAccessLevel>) => {
+	private renderLevelAction = (editable: EditableDBItem<DBProto_PermissionAccessLevel>) => {
 		if (!editable.item._id)
 			return;
 

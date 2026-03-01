@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AwaitModules, ComponentSync, ModuleFE_AppConfig, ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend/index';
+import {ComponentSync} from '@nu-art/thunder-widgets';
 import {PermissionKey_FE} from '../PermissionKey_FE.js';
 import {AccessLevel} from '../modules/ModuleFE_PermissionsAssert.js';
 
@@ -11,23 +11,13 @@ export type Props_PermissionComponent = React.PropsWithChildren<{
 	fallback?: React.ComponentType
 }>;
 
+/** Await-modules is up-level; render content directly. */
 export class PermissionsComponent<P extends Props_PermissionComponent = Props_PermissionComponent, S extends {} = {}>
 	extends ComponentSync<P, S> {
 
-	
-	static defaultProps = {
-		modules: [ModuleFE_AppConfig]
-	};
-
-	
-	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
+	shouldComponentUpdate(_nextProps: Readonly<P>, _nextState: Readonly<S>, _nextContext: unknown): boolean {
 		return true;
 	}
-
-	
-	protected renderLoader = () => {
-		return <></>;
-	};
 
 	protected renderWaitingOnPermissions = () => {
 		const Loader = this.props.loadingComponent as React.ComponentType;
@@ -40,27 +30,16 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 
 	protected renderFallback = () => {
 		const Fallback = this.props.fallback as React.ComponentType;
-		if (Fallback)
-			return <Fallback/>;
-
-		return null;
-	};
-
-	private renderImpl = () => {
-		const permitted = this.props.permissionKey.getAccessLevel();
-		if (permitted === AccessLevel.Undefined)
-			return this.renderWaitingOnPermissions();
-
-		if (permitted === AccessLevel.HasAccess)
-			return this.renderPermitted();
-
-		return this.renderFallback();
+		return Fallback ? <Fallback/> : null;
 	};
 
 	render() {
-		return <AwaitModules modules={[ModuleFE_AppConfig] as ModuleFE_BaseDB<any>[]}>
-			{this.renderImpl()}
-		</AwaitModules>;
+		const permitted = this.props.permissionKey.getAccessLevel();
+		if (permitted === AccessLevel.Undefined)
+			return this.renderWaitingOnPermissions();
+		if (permitted === AccessLevel.HasAccess)
+			return this.renderPermitted();
+		return this.renderFallback();
 	}
 }
 
