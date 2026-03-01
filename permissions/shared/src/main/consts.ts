@@ -1,7 +1,7 @@
 import {md5} from '@nu-art/ts-common';
 import {PermissionKey, PreDBAccessLevel} from './types.js';
 import {asBrandedId} from '@nu-art/db-api-shared';
-import {DatabaseDef_PermissionAccessLevel} from './_entity/permission-access-level/index.js';
+import {DatabaseDef_PermissionAccessLevel} from './_entity/permission-access-level/types.js';
 
 export const PermissionDBGroup = 'permission';
 

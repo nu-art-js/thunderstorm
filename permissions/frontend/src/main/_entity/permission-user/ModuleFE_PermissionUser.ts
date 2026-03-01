@@ -1,12 +1,15 @@
 import {ApiCaller} from '@nu-art/http-client';
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import type {EventDispatcher} from '@nu-art/db-api-frontend';
 import {ApiCallerEventType, CrudApiDef} from '@nu-art/db-api-shared';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 import {ApiDef_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions} from '@nu-art/permissions-shared';
 
-export type DispatcherType_PermissionUser = DispatcherDef<DatabaseDef_PermissionUser, `__onPermissionUserUpdated`>;
+export interface OnPermissionUserUpdated {
+	__onPermissionUserUpdated: (...params: ApiCallerEventType<DatabaseDef_PermissionUser['dbType']>) => void;
+}
 
-export const dispatch_onPermissionUserChanged = new ThunderDispatcherV3<DispatcherType_PermissionUser>('__onPermissionUserUpdated');
+export const dispatch_onPermissionUserChanged = new ThunderDispatcher<OnPermissionUserUpdated, '__onPermissionUserUpdated'>('__onPermissionUserUpdated');
 
 type DB = DatabaseDef_PermissionUser['dbType'];
 const uniqueKeys = (DBDef_PermissionUser.uniqueKeys ?? ['_id']) as DatabaseDef_PermissionUser['uniqueKeys'];
@@ -27,13 +30,14 @@ export class ModuleFE_PermissionUser_Class
 	extends ModuleFE_BaseApi<DatabaseDef_PermissionUser> {
 
 	constructor() {
+		const dispatcher: EventDispatcher<DB> = (...args) => {
+			dispatch_onPermissionUserChanged.dispatchUI(...args);
+			dispatch_onPermissionUserChanged.dispatchModule(...args);
+		};
 		super({
 			config: baseConfig,
 			crudApiDef: CrudApiDef<DatabaseDef_PermissionUser>(DBDef_PermissionUser.dbKey),
-			dispatcher: (..._params: ApiCallerEventType<DB>) => {
-				dispatch_onPermissionUserChanged.dispatchUI(..._params);
-				dispatch_onPermissionUserChanged.dispatchModule(..._params);
-			}
+			dispatcher
 		});
 	}
 

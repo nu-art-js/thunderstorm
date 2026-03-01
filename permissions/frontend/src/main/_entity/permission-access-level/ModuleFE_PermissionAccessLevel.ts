@@ -1,11 +1,14 @@
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import type {EventDispatcher} from '@nu-art/db-api-frontend';
 import {ApiCallerEventType, CrudApiDef} from '@nu-art/db-api-shared';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 import {DBDef_PermissionAccessLevel, DatabaseDef_PermissionAccessLevel} from '@nu-art/permissions-shared';
 
-export type DispatcherType_PermissionAccessLevel = DispatcherDef<DatabaseDef_PermissionAccessLevel, `__onPermissionAccessLevelUpdated`>;
+export interface OnPermissionAccessLevelUpdated {
+	__onPermissionAccessLevelUpdated: (...params: ApiCallerEventType<DatabaseDef_PermissionAccessLevel['dbType']>) => void;
+}
 
-export const dispatch_onPermissionAccessLevelChanged = new ThunderDispatcherV3<DispatcherType_PermissionAccessLevel>('__onPermissionAccessLevelUpdated');
+export const dispatch_onPermissionAccessLevelChanged = new ThunderDispatcher<OnPermissionAccessLevelUpdated, '__onPermissionAccessLevelUpdated'>('__onPermissionAccessLevelUpdated');
 
 type DB = DatabaseDef_PermissionAccessLevel['dbType'];
 const uniqueKeys = (DBDef_PermissionAccessLevel.uniqueKeys ?? ['_id']) as DatabaseDef_PermissionAccessLevel['uniqueKeys'];
@@ -26,13 +29,14 @@ export class ModuleFE_PermissionAccessLevel_Class
 	extends ModuleFE_BaseApi<DatabaseDef_PermissionAccessLevel> {
 
 	constructor() {
+		const dispatcher: EventDispatcher<DB> = (...args) => {
+			dispatch_onPermissionAccessLevelChanged.dispatchUI(...args);
+			dispatch_onPermissionAccessLevelChanged.dispatchModule(...args);
+		};
 		super({
 			config: baseConfig,
 			crudApiDef: CrudApiDef<DatabaseDef_PermissionAccessLevel>(DBDef_PermissionAccessLevel.dbKey),
-			dispatcher: (..._params: ApiCallerEventType<DB>) => {
-				dispatch_onPermissionAccessLevelChanged.dispatchUI(..._params);
-				dispatch_onPermissionAccessLevelChanged.dispatchModule(..._params);
-			}
+			dispatcher
 		});
 	}
 }

@@ -20,6 +20,6 @@
 
 export type {BaseDBDefBE, BaseDBDefBE_Dependency, DBApiBEConfigShape, PostWriteProcessingDataShape} from './backend-types.js';
 export {ModuleBE_BaseDB, BaseDBApiConfig, DBApiConfig} from './ModuleBE_BaseDB.js';
-export {ModuleBE_BaseApi_Class, createApisForDBModule} from './ModuleBE_BaseApi.js';
+export {ModuleBE_BaseApi_Class, createApisForDBModule, RuntimeBE_Modules} from './ModuleBE_BaseApi.js';
 export type {DBApiBEConfig, DBEntityDependencies, DBEntityDependencyError, EntityDependencyCollection} from './storm-stubs.js';
 export {getModuleBEConfig, dispatch_CollectEntityDependencies} from './storm-stubs.js';

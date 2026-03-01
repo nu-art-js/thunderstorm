@@ -1,6 +1,6 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {ModuleBE_ActionProcessor} from '@nu-art/thunderstorm-backend';
 import {DB_PermissionGroup, DB_PermissionGroup_1_0_0, DBDef_PermissionGroup, DatabaseDef_PermissionGroup} from '@nu-art/permissions-shared';
+import {getActionProcessor} from '../../permissions-wire.js';
 import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionAccessLevelDB} from '../permission-access-level/index.js';
 import {Transaction} from 'firebase-admin/firestore';
@@ -9,19 +9,19 @@ import {ModuleBE_PermissionUserDB} from '../permission-user/index.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 
-// TODO unblock: ModuleBE_ActionProcessor has no v2 replacement; registerAction remains on thunderstorm-backend.
-
 export class ModuleBE_PermissionGroupDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_PermissionGroup> {
 
 	constructor() {
 		super(DBDef_PermissionGroup);
-		ModuleBE_ActionProcessor.registerAction({
-			key: 'clear-unused-permission-groups',
-			group: 'Permissions',
-			description: 'Clears all permission groups that aren\'t in use',
-			processor: this.clearUnused
-		}, this);
+		const processor = getActionProcessor();
+		if (processor)
+			processor.registerAction({
+				key: 'clear-unused-permission-groups',
+				group: 'Permissions',
+				description: 'Clears all permission groups that aren\'t in use',
+				processor: this.clearUnused
+			}, this);
 		this.registerVersionUpgradeProcessor('1.0.0', this.upgrade_100_101);
 	}
 

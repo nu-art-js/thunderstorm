@@ -1,11 +1,14 @@
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import type {EventDispatcher} from '@nu-art/db-api-frontend';
 import {ApiCallerEventType, CrudApiDef} from '@nu-art/db-api-shared';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 import {DBDef_PermissionProject, DatabaseDef_PermissionProject} from '@nu-art/permissions-shared';
 
-export type DispatcherType_PermissionProject = DispatcherDef<DatabaseDef_PermissionProject, `__onPermissionProjectUpdated`>;
+export interface OnPermissionProjectUpdated {
+	__onPermissionProjectUpdated: (...params: ApiCallerEventType<DatabaseDef_PermissionProject['dbType']>) => void;
+}
 
-export const dispatch_onPermissionProjectChanged = new ThunderDispatcherV3<DispatcherType_PermissionProject>('__onPermissionProjectUpdated');
+export const dispatch_onPermissionProjectChanged = new ThunderDispatcher<OnPermissionProjectUpdated, '__onPermissionProjectUpdated'>('__onPermissionProjectUpdated');
 
 type DB = DatabaseDef_PermissionProject['dbType'];
 const uniqueKeys = (DBDef_PermissionProject.uniqueKeys ?? ['_id']) as DatabaseDef_PermissionProject['uniqueKeys'];
@@ -26,13 +29,14 @@ export class ModuleFE_PermissionProject_Class
 	extends ModuleFE_BaseApi<DatabaseDef_PermissionProject> {
 
 	constructor() {
+		const dispatcher: EventDispatcher<DB> = (...args) => {
+			dispatch_onPermissionProjectChanged.dispatchUI(...args);
+			dispatch_onPermissionProjectChanged.dispatchModule(...args);
+		};
 		super({
 			config: baseConfig,
 			crudApiDef: CrudApiDef<DatabaseDef_PermissionProject>(DBDef_PermissionProject.dbKey),
-			dispatcher: (..._params: ApiCallerEventType<DB>) => {
-				dispatch_onPermissionProjectChanged.dispatchUI(..._params);
-				dispatch_onPermissionProjectChanged.dispatchModule(..._params);
-			}
+			dispatcher
 		});
 	}
 }

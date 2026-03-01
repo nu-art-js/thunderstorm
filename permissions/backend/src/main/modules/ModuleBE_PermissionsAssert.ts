@@ -28,18 +28,13 @@ import {
 	filterInstances,
 	ImplementationMissingException,
 	Module,
-	RuntimeModules,
 	StringMap,
 	TypedMap
 } from '@nu-art/ts-common';
 import {ApiHandler} from '@nu-art/http-server';
-import {ApiModule} from '@nu-art/thunderstorm-shared';
-import {
-	ModuleBE_BaseApi_Class,
-	ModuleBE_BaseDB,
-	ModuleBE_SyncManager,
-	ServerApi_Middleware
-} from '@nu-art/thunderstorm-backend';
+import type {ServerApi_Middleware} from '@nu-art/http-server';
+import type {DB_Prototype} from '@nu-art/db-api-shared';
+import {ModuleBE_BaseApi_Class, ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {HttpMethod} from '@nu-art/api-types';
 import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account-backend';
 import {
@@ -62,6 +57,7 @@ import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
 import {PermissionKey_BE} from '../PermissionKey_BE.js';
 import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity.js';
 import type {FunctionPermissionDef} from '../core/function-permission-registry.js';
+import {RuntimeBE_Modules} from '@nu-art/db-api-backend';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -145,56 +141,51 @@ export class ModuleBE_PermissionsAssert_Class
 	init() {
 		super.init();
 		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
-		/** @deprecated Path-based sync filter; use function-based permissions instead. API collection deprecated. */
-		ModuleBE_SyncManager.setModuleFilter(async (dbModules: (ModuleBE_BaseDB<any>)[]) => {
-			const userPermissions = MemKey_UserPermissions.get();
+	}
 
-			const mapDbNameToApiModules = arrayToMap(RuntimeModules()
-				.filter<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule.dbDef.dbKey);
+	/**
+	 * @deprecated Path-based sync filter; use function-based permissions instead. API collection deprecated.
+	 * Returns a filter for sync manager. The app must call SyncManager.setModuleFilter(ModuleBE_PermissionsAssert.getPermissionsAssertSyncFilter()) when using a sync manager.
+	 */
+	getPermissionsAssertSyncFilter(): (dbModules: (ModuleBE_BaseDB<any>)[]) => Promise<(ModuleBE_BaseDB<any>)[]> {
+		const assert = this;
+		return async (dbModules: (ModuleBE_BaseDB<any>)[]) => {
+			const userPermissions = MemKey_UserPermissions.get();
+			const mapDbNameToApiModules = arrayToMap(RuntimeBE_Modules(), (item: ModuleBE_BaseApi_Class<DB_Prototype>) => item.dbModule.dbDef.dbKey);
 
 			const paths = dbModules.map(module => {
-				const mapDbNameToApiModule = mapDbNameToApiModules[module.dbDef.dbKey];
-				if (!mapDbNameToApiModule) {
+				const apiModule = mapDbNameToApiModules[module.dbDef.dbKey] as ModuleBE_BaseApi_Class<DB_Prototype> | undefined;
+				if (!apiModule)
 					return undefined;
-				}
-
-				return mapDbNameToApiModule.apiDef?.['v1']?.['query'].path;
+				return apiModule.crudApiDef?.query?.path;
 			});
 			const _allApis = await ModuleBE_PermissionAPIDB.query.where({});
-
 			const apis = _allApis.filter(_api => paths.includes(_api.path));
 			const mapPathToDBApi: TypedMap<DB_PermissionAPI> = arrayToMap(apis, api => api.path);
 
 			return dbModules.filter((dbModule, index) => {
 				const path = paths[index];
-				if (!path) {
+				if (!path)
 					return false;
-				}
-
 				const dbApi = mapPathToDBApi[path];
-				if (!dbApi) {
+				if (!dbApi)
 					return !ModuleBE_PermissionsAssert.isStrictMode();
-				}
-
 				const accessLevels = dbApi._accessLevels;
 				return _keys(accessLevels!).reduce((hasAccess, domainId) => {
 					if (!hasAccess)
 						return false;
-
 					const userDomainAccessValue = userPermissions[domainId];
 					const apiRequiredAccessValue = accessLevels![domainId];
 					if (!userDomainAccessValue)
 						return false;
-
 					if (!exists(userDomainAccessValue) || userDomainAccessValue < apiRequiredAccessValue) {
-						this.logErrorBold(`${(userDomainAccessValue ?? 0)} < ${apiRequiredAccessValue} === ${(userDomainAccessValue ?? 0) < apiRequiredAccessValue}`);
+						assert.logErrorBold(`${(userDomainAccessValue ?? 0)} < ${apiRequiredAccessValue} === ${(userDomainAccessValue ?? 0) < apiRequiredAccessValue}`);
 						return false;
 					}
-
 					return hasAccess;
 				}, true);
 			});
-		});
+		};
 	}
 
 	@ApiHandler(ApiDef_PermissionsAssert.assertUserPermissions)

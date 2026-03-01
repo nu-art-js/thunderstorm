@@ -4,15 +4,16 @@ import {
 	Dispatcher,
 	filterInstances,
 	flatArray,
+	md5,
 	Module,
 	MUSTNeverHappenException,
 	PreDB,
 	reduceToMap,
-	RuntimeModules,
 	TypedMap,
 } from '@nu-art/ts-common';
-import {ApiHandler} from '@nu-art/http-server';
-import {MemKey_ServerApi, ModuleBE_AppConfigDB, ModuleBE_BaseApi_Class, Storm} from '@nu-art/thunderstorm-backend';
+import {ApiHandler, MemKey_ServerApi} from '@nu-art/http-server';
+import {RuntimeBE_Modules} from '@nu-art/db-api-backend';
+import type {PerformProjectSetup} from '@nu-art/permissions-shared';
 import {
 	ApiDef_Permissions,
 	DatabaseDef_PermissionUser,
@@ -34,10 +35,10 @@ import {
 	toPermissionDomainId,
 	toPermissionGroupId,
 	toPermissionProjectId,
+	trimStartingForwardSlash,
 } from '@nu-art/permissions-shared';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {getRegisteredFunctionPermissions} from '../core/function-permission-registry.js';
-import {md5} from '@nu-art/ts-common';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -47,7 +48,7 @@ import {
 	PermissionsPackage_Permissions
 } from '../permissions.js';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert.js';
-import {PerformProjectSetup} from '@nu-art/thunderstorm-backend/modules/action-processor/Action_SetupProject';
+import {getCreatePermissionKeyDefaults, getEnvConfigRef} from '../permissions-wire.js';
 import {
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,
@@ -56,8 +57,6 @@ import {
 	ModuleBE_PermissionProjectDB,
 	ModuleBE_PermissionUserDB
 } from '../_entity.js';
-import {trimStartingForwardSlash} from '@nu-art/permissions-shared';
-import {ApiModule} from '@nu-art/thunderstorm-shared';
 import {DefaultDef_Project} from '../types.js';
 
 
@@ -213,9 +212,11 @@ class ModuleBE_Permissions_Class
 	};
 
 	toggleStrictMode = async () => {
+		const envConfigRef = getEnvConfigRef(ModuleBE_PermissionsAssert);
+		if (!envConfigRef)
+			return;
 		MemKey_ServerApi.get().addPostCallAction(async () => {
-			const envConfigRef = Storm.getInstance().getEnvConfigRef(ModuleBE_PermissionsAssert);
-			const currentConfig = await envConfigRef.get({});
+			const currentConfig = await envConfigRef.get({}) as { strictMode?: boolean };
 			currentConfig.strictMode = !currentConfig.strictMode;
 			await envConfigRef.set(currentConfig);
 		});
@@ -434,36 +435,34 @@ class ModuleBE_Permissions_Class
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
-				const apiModules = arrayToMap(RuntimeModules()
-					.filter<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => !!module.apiDef && !!module.dbModule?.dbDef?.dbKey), item => item.dbModule!.dbDef!.dbKey);
+				const apiModules = RuntimeBE_Modules();
 
-				this.logDebug(_keys(apiModules));
+				const apiModulesMap = arrayToMap(apiModules, m => m.dbModule.dbDef.dbKey);
 
-				// / I think there is a bug here... comment it and see what happens
+				this.logDebug(_keys(apiModulesMap));
+
+				const crudEndpoints = ['query', 'queryUnique', 'upsert', 'upsertAll', 'deleteUnique', 'deleteQuery', 'deleteAll'] as const;
 				const _apis = (domain.dbNames || []).map(dbName => {
-					const apiModule = apiModules[dbName];
+					const apiModule = apiModulesMap[dbName];
 					if (!apiModule)
 						throw new MUSTNeverHappenException(`Could not find api module with dbName: ${dbName}`);
 
-					const _apiDefs = apiModule.apiDef!;
-					return _keys(_apiDefs).map(_apiDefKey => {
-						const apiDefs = _apiDefs[_apiDefKey];
-						return filterInstances(_keys(apiDefs).map(apiDefKey => {
-							const apiDef = apiDefs[apiDefKey];
-							const accessLevelNameToAssign = defaultLevelsRouteLookupWords[apiDef.path.substring(apiDef.path.lastIndexOf('/') + 1)];
-							const accessLevel = domainNameToLevelNameToDBAccessLevel[domain._id][accessLevelNameToAssign];
-							if (!accessLevel)
-								return;
-
-							const accessId = accessLevel._id;
-							return {
-								projectId: project._id,
-								path: apiDef.path,
-								_auditorId,
-								accessLevelIds: [accessId]
-							};
-						}));
-					});
+					const def = apiModule.crudApiDef;
+					return filterInstances(crudEndpoints.map(key => {
+						const endpoint = def[key];
+						if (!endpoint?.path)
+							return undefined;
+						const accessLevelNameToAssign = defaultLevelsRouteLookupWords[endpoint.path.substring(endpoint.path.lastIndexOf('/') + 1)];
+						const accessLevel = domainNameToLevelNameToDBAccessLevel[domain._id][accessLevelNameToAssign];
+						if (!accessLevel)
+							return undefined;
+						return {
+							projectId: project._id,
+							path: endpoint.path,
+							_auditorId,
+							accessLevelIds: [accessLevel._id]
+						};
+					}));
 				});
 				apis.push(...flatArray(_apis));
 
@@ -480,14 +479,16 @@ class ModuleBE_Permissions_Class
 	 *
 	 * @param projects - An array of projects.
 	 */
-	private async createPermissionsKeys(projects: DefaultDef_Project[]) {
+	private async createPermissionsKeys(_projects: DefaultDef_Project[]) {
 		this.logInfoBold('Creating App Config');
-		// const permissionKeysToCreate: PermissionKey_BE<any>[] = filterInstances(flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.permissionKeys)))));
-		try {
-			await ModuleBE_AppConfigDB.createDefaults(this);
-			this.logInfoBold('Created Permission Key defaults.');
-		} catch (e: any) {
-			this.logErrorBold('Failed creating Permission Key defaults.', e);
+		const createDefaults = getCreatePermissionKeyDefaults();
+		if (createDefaults) {
+			try {
+				await createDefaults(this);
+				this.logInfoBold('Created Permission Key defaults.');
+			} catch (e: unknown) {
+				this.logErrorBold('Failed creating Permission Key defaults.', e as Error);
+			}
 		}
 		this.logInfoBold('Created App Config');
 	}
