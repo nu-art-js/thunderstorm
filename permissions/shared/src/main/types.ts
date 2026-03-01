@@ -1,8 +1,8 @@
 import {TypedKeyValue, TypedMap} from '@nu-art/ts-common';
-import {DatabaseDef_PermissionAccessLevel} from './_entity/permission-access-level/index.js';
-import {DatabaseDef_PermissionDomain} from './_entity/permission-domain/index.js';
-import {DatabaseDef_PermissionGroup} from './_entity/permission-group/index.js';
-import {DomainToLevelValueMap} from './_entity/permission-api/index.js';
+import {DatabaseDef_PermissionAccessLevel} from './_entity/permission-access-level/types.js';
+import {DatabaseDef_PermissionDomain} from './_entity/permission-domain/types.js';
+import {DatabaseDef_PermissionGroup} from './_entity/permission-group/types.js';
+import {DomainToLevelValueMap} from './_entity/permission-api/types.js';
 
 export type PermissionKey = string
 export const Const_PermissionKeyType = 'permission-key';

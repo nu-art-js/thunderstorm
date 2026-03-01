@@ -19,12 +19,12 @@
 
 import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiCaller} from '@nu-art/http-client';
-import {ModuleFE_Utils} from '@nu-art/thunderstorm-frontend/index';
 import {PermissionKey_FE} from '../PermissionKey_FE.js';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts.js';
 import {RendererKey_AccountMenu_SubHeader} from '@nu-art/user-account-frontend/consts';
 import {Renderer_RoleNames} from '../ui/Renderer_RoleNames.js';
 import {ApiDef_Permissions} from '@nu-art/permissions-shared';
+import {getRendererRegistry} from '../permissions-wire.js';
 
 
 export type PermissionsModuleFEConfig = {
@@ -67,7 +67,7 @@ export class ModuleFE_PermissionsAssert_Class
 	protected init() {
 		super.init();
 
-		ModuleFE_Utils.registerRenderer(RendererKey_AccountMenu_SubHeader, Renderer_RoleNames);
+		getRendererRegistry()?.registerRenderer(RendererKey_AccountMenu_SubHeader, Renderer_RoleNames);
 	}
 
 	getAccessLevelByKeyString(key: string) {

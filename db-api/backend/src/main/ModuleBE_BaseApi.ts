@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, Module, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {__stringify, _values, ApiException, Module, ResolvableContent, resolveContent, RuntimeModules} from '@nu-art/ts-common';
 import type {CrudApiTypes, DB_BaseObject, DB_Prototype} from '@nu-art/db-api-shared';
 import {CrudApiDef, CrudApiDef_Type, CrudEmptyQuery} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
@@ -135,3 +135,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype>
 export const createApisForDBModule = <Database extends DB_Prototype>(dbModule: ModuleBE_BaseDB<Database, any>, version?: string) => {
 	return new ModuleBE_BaseApi_Class<Database>({dbModule, crudApiDef: CrudApiDef<Database>(dbModule.dbDef.dbKey, version)});
 };
+
+export const RuntimeBE_Modules = () => RuntimeModules().all
+	.filter((m) => m.isInstanceOf(ModuleBE_BaseApi_Class))
+	.map(m => m as unknown as ModuleBE_BaseApi_Class<any>);

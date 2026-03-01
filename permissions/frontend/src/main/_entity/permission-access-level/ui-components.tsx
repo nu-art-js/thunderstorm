@@ -3,6 +3,7 @@ import {DatabaseDef_PermissionAccessLevel} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionAccessLevel} from './ModuleFE_PermissionAccessLevel.js';
 import {DBItemDropDownMultiSelector} from '@nu-art/thunderstorm-frontend/components/_TS_MultiSelect/DBItemDropDownMultiSelector';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {EDITABLE} from '@nu-art/editable-item';
 
 
 const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionAccessLevel> = {
@@ -16,7 +17,7 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionA
 // Editable pattern: use .editable with editable+prop, .selectable for multi-select (same as EDITABLE.GenericDropDownV3).
 export const DropDown_PermissionAccessLevel = GenericDropDownV3.prepare(Props_DropDown as never);
 
-const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
+const Props_MultiSelect = EDITABLE..propsV3({
 	module: ModuleFE_PermissionAccessLevel as never,
 	itemRenderer: (item, onDelete) => {
 		return !item ? <>Not Found</> : <><TS_Icons.x.component onClick={onDelete} className={'ts-icon__small'}/>{item.name}</>;

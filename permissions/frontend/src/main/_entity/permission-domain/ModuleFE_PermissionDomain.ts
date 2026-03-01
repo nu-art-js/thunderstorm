@@ -1,11 +1,14 @@
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import type {EventDispatcher} from '@nu-art/db-api-frontend';
 import {ApiCallerEventType, CrudApiDef} from '@nu-art/db-api-shared';
-import {DispatcherDef, ThunderDispatcherV3} from '@nu-art/thunderstorm-frontend/core/db-api-gen/types';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 import {DBDef_PermissionDomain, DatabaseDef_PermissionDomain} from '@nu-art/permissions-shared';
 
-export type DispatcherType_PermissionDomain = DispatcherDef<DatabaseDef_PermissionDomain, `__onPermissionDomainUpdated`>;
+export interface OnPermissionDomainUpdated {
+	__onPermissionDomainUpdated: (...params: ApiCallerEventType<DatabaseDef_PermissionDomain['dbType']>) => void;
+}
 
-export const dispatch_onPermissionDomainChanged = new ThunderDispatcherV3<DispatcherType_PermissionDomain>('__onPermissionDomainUpdated');
+export const dispatch_onPermissionDomainChanged = new ThunderDispatcher<OnPermissionDomainUpdated, '__onPermissionDomainUpdated'>('__onPermissionDomainUpdated');
 
 type DB = DatabaseDef_PermissionDomain['dbType'];
 const uniqueKeys = (DBDef_PermissionDomain.uniqueKeys ?? ['_id']) as DatabaseDef_PermissionDomain['uniqueKeys'];
@@ -26,13 +29,14 @@ export class ModuleFE_PermissionDomain_Class
 	extends ModuleFE_BaseApi<DatabaseDef_PermissionDomain> {
 
 	constructor() {
+		const dispatcher: EventDispatcher<DB> = (...args) => {
+			dispatch_onPermissionDomainChanged.dispatchUI(...args);
+			dispatch_onPermissionDomainChanged.dispatchModule(...args);
+		};
 		super({
 			config: baseConfig,
 			crudApiDef: CrudApiDef<DatabaseDef_PermissionDomain>(DBDef_PermissionDomain.dbKey),
-			dispatcher: (..._params: ApiCallerEventType<DB>) => {
-				dispatch_onPermissionDomainChanged.dispatchUI(..._params);
-				dispatch_onPermissionDomainChanged.dispatchModule(..._params);
-			}
+			dispatcher
 		});
 	}
 }

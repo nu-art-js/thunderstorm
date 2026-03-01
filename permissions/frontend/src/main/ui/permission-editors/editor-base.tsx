@@ -1,23 +1,21 @@
-
 import * as React from 'react';
-import {LL_V_L, ModuleFE_BaseApi} from '@nu-art/thunderstorm-frontend/index';
-import {DBProto} from '@nu-art/ts-common';
+import {InferProps, InferState, LL_V_L} from '@nu-art/thunder-widgets';
+import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {type EditableRef, TS_EditableContent} from '@nu-art/editable-item';
 import './editor-base.scss';
-import {TS_EditableContent} from '@nu-art/thunderstorm-frontend/components/TS_EditableContent/TS_EditableContent';
-import {InferProps, InferState} from '@nu-art/thunderstorm-frontend';
-import {EditableRef} from '@nu-art/thunderstorm-frontend/editable-item';
+import {DB_Prototype} from '@nu-art/db-api-shared';
 
 //Editors refactor WIP
 
-type ItemEditor_Props<T extends DBProto<any>> = EditableRef<T['uiType']> & {
+type ItemEditor_Props<T extends DB_Prototype<any>> = EditableRef<T['uiType']> & {
 	displayResolver?: (item: T['dbType']) => string
 	module?: ModuleFE_BaseApi<T>
 }
 
-type ItemEditor_State<T extends DBProto<any>> = EditableRef<T['uiType']> & {}
+type ItemEditor_State<T extends DB_Prototype<any>> = EditableRef<T['uiType']> & {}
 
 export abstract class Component_BasePermissionItemEditor<
-	Proto extends DBProto<any>,
+	Proto extends DB_Prototype<any>,
 	Props extends ItemEditor_Props<Proto> = ItemEditor_Props<Proto>,
 	State extends ItemEditor_State<Proto> = ItemEditor_State<Proto>>
 	extends TS_EditableContent<Proto, Props, State> {

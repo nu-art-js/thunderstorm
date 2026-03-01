@@ -17,15 +17,24 @@
  * limitations under the License.
  */
 
-export * from './_entity/permission-access-level/index.js';
-export * from './_entity/permission-api/index.js';
-export * from './_entity/permission-domain/index.js';
-export * from './_entity/permission-group/index.js';
-export * from './_entity/permission-project/index.js';
-export * from './_entity/permission-user/index.js';
+export * from './_entity/permission-access-level/types.js';
+export * from './_entity/permission-access-level/db-def.js';
+export * from './_entity/permission-api/types.js';
+export * from './_entity/permission-api/db-def.js';
+export * from './_entity/permission-domain/types.js';
+export * from './_entity/permission-domain/db-def.js';
+export * from './_entity/permission-group/types.js';
+export * from './_entity/permission-group/db-def.js';
+export * from './_entity/permission-project/types.js';
+export * from './_entity/permission-project/db-def.js';
+export * from './_entity/permission-user/types.js';
+export * from './_entity/permission-user/db-def.js';
+export * from './_entity/permission-user/api-def.js';
 export * from './apis.js';
 export * from './consts.js';
 export * from './types.js';
 export * from './permission-keys.js';
 export * from './permission-scope.js';
 export * from './path-utils.js';
+export * from './project-setup.js';
+export * from './service-account-def.js';

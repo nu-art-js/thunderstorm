@@ -104,11 +104,11 @@ export abstract class Module<Config = any,
 		this.classStack.push(cls.name);
 	};
 
-	public isInstanceOf = (cls: Function) => {
+	public isInstanceOf = <T extends Function>(cls: T): this is T => {
 		return this.classStack.includes(cls.name);
 	};
 
-	public isInstanceType = (cls: Function) => {
+	public isInstanceType = <T extends Function>(cls: T): this is T => {
 		return lastElement(this.classStack) === cls.name;
 	};
 

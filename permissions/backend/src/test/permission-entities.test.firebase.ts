@@ -7,7 +7,8 @@
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
-import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
+import {DefaultStormTestConfig_Permissions, type PermissionsTestConfig} from './utils/helpers.js';
+import {stormTester} from './utils/storm-tester-stub.js';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import {
 	permissionTestCleanup,
@@ -16,7 +17,6 @@ import {
 	Test_Domain1,
 	Test_Setup2
 } from './_core/consts.js';
-import {DefaultStormTestConfig_Permissions} from './utils/helpers.js';
 import {
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,
@@ -64,7 +64,7 @@ const runTestCase = (testCase: TestCase_Entities) => async () =>
 		await runSingleTestCase(test, testCase);
 	});
 
-const DefaultStormTest: StormTestInput = {
+const DefaultStormTest: PermissionsTestConfig = {
 	...DefaultStormTestConfig_Permissions
 };
 

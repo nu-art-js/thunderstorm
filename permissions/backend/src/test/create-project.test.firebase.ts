@@ -8,7 +8,8 @@ import {AssertionException, reduceToMap, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
-import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
+import {DefaultStormTestConfig_Permissions, type PermissionsTestConfig} from './utils/helpers.js';
+import {stormTester} from './utils/storm-tester-stub.js';
 import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../main/index.js';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import {
@@ -27,8 +28,6 @@ import {
 	Test_Setup3
 } from './_core/consts.js';
 import type {Test_Setup} from './_core/types.js';
-import {DefaultStormTestConfig_Permissions} from './utils/helpers.js';
-
 type CreatePermissionsSetup = {
 	setup: Test_Setup;
 	users: { accessLevels: { domain: string; levelName: string }[]; result: boolean }[];
@@ -69,7 +68,7 @@ const runTestCase = (testCase: TestCase_CreateProject) => async () =>
 		await runSingleTestCase(test, testCase);
 	});
 
-const DefaultStormTest: StormTestInput = {
+const DefaultStormTest: PermissionsTestConfig = {
 	...DefaultStormTestConfig_Permissions
 };
 

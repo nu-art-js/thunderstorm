@@ -1,8 +1,7 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {Storm} from '@nu-art/thunderstorm-backend';
 import {MemKey_ServerApi} from '@nu-art/http-server';
-import {DB_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions, User_Group, toPermissionGroupId} from '@nu-art/permissions-shared';
-import {PerformProjectSetup} from '@nu-art/thunderstorm-backend/modules/action-processor/Action_SetupProject';
+import {DB_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions, User_Group, toPermissionGroupId, type PerformProjectSetup, type ServiceAccountDef} from '@nu-art/permissions-shared';
+import {getGlobalEnvConfigRef, getServiceAccountsProvider} from '../../permissions-wire.js';
 import {
 	_keys,
 	ApiException,
@@ -14,7 +13,6 @@ import {
 	filterDuplicates,
 	filterInstances,
 	filterKeys,
-	flatArray,
 	JwtTools,
 	merge,
 	TS_Object,
@@ -29,7 +27,6 @@ import {UI_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserPermissions} from '../../consts.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
-import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm-backend/modules/_tdb/service-accounts';
 
 
 export class ModuleBE_PermissionUserDB_Class
@@ -71,7 +68,8 @@ export class ModuleBE_PermissionUserDB_Class
 				await this.delete.all(usersToDelete);
 
 				// This stage updates the rtdb's config- which is why it's last. Changing the rtdb's config kills the server.
-				const serviceAccounts = flatArray(dispatcher_collectServiceAccounts.dispatchModule());
+				const provider = getServiceAccountsProvider();
+				const serviceAccounts: ServiceAccountDef[] = provider ? await provider() : [];
 				await this.createSystemServiceAccount(serviceAccounts);
 			}
 		};
@@ -219,12 +217,12 @@ export class ModuleBE_PermissionUserDB_Class
 	 * @param serviceAccounts - List of Accounts to create
 	 * @private
 	 */
-	private async createSystemServiceAccount(serviceAccounts: DefaultDef_ServiceAccount[]) {
+	private async createSystemServiceAccount(serviceAccounts: ServiceAccountDef[]) {
 		this.logInfoBold('Creating Service Accounts: ', serviceAccounts);
 
 		// @ts-ignore
 		const tokenCreator = ModuleBE_AccountDB.token.create;
-		const envConfigRef = Storm.getInstance().getGlobalEnvConfigRef();
+		const envConfigRef = getGlobalEnvConfigRef();
 		const updatedConfig: TS_Object = {};
 
 		//Run over all service accounts
@@ -276,7 +274,7 @@ export class ModuleBE_PermissionUserDB_Class
 			};
 		}
 
-		if (_keys(updatedConfig).length > 0)
+		if (_keys(updatedConfig).length > 0 && envConfigRef)
 			MemKey_ServerApi.get().addPostCallAction(async () => {
 				const currentConfig = await envConfigRef.get({});
 				await envConfigRef.set(merge(currentConfig, updatedConfig));
