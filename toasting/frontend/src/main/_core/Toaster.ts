@@ -7,6 +7,7 @@ export class Toaster<CustomVariant extends string>
 
 	private readonly toastingKey: string;
 	private readonly fallbackToastDuration: number = 4 * Second;
+	private muted: boolean = false;
 
 	constructor(key: string, defaultDuration?: number) {
 		super('Toaster');
@@ -16,7 +17,18 @@ export class Toaster<CustomVariant extends string>
 		this.toastingKey = key;
 	}
 
+	//######################### Mute Logic #########################
+
+	public setMute(mute: boolean) {
+		this.muted = mute;
+	}
+
+	//######################### Toast Logic #########################
+
 	public toast(variant: BaseToastVariant | CustomVariant, properties: ToastProperties) {
+		if (this.muted)
+			return;
+
 		const model: Model_Toast = {
 			id: properties.id ?? generateHex(8),
 			key: this.toastingKey,
