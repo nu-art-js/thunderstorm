@@ -109,7 +109,8 @@ export class SearchContext
 	private getInitialSearchResults = (): SearchResult[] => {
 		const results: SearchResult[] = [];
 		this.activeSearchItems.forEach(searchItem => {
-			const pointers: SearchResult[] = searchItem.module.cache.all().map(i => ({dbKey: searchItem.module.dbDef.dbKey, id: i._id, filterResults: {}}));
+			const items = exists(searchItem.globalFilter) ? searchItem.module.cache.filter(searchItem.globalFilter) : searchItem.module.cache.all();
+			const pointers: SearchResult[] = items.map(i => ({dbKey: searchItem.module.dbDef.dbKey, id: i._id, filterResults: {}}));
 			results.push(...pointers);
 		});
 		return results;
@@ -136,7 +137,7 @@ export class SearchContext
 		//Cycle filter the results by active add-ons
 		this.activeAddOns.forEach(addOn => {
 			let filterValue = this.filterDictionary[addOn.key];
-			if(exists(addOn.valueTransform))
+			if (exists(addOn.valueTransform))
 				filterValue = addOn.valueTransform(filterValue);
 
 			searchResults = searchResults.filter(result => {
