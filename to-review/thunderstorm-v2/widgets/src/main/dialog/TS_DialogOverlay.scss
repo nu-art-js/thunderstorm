@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-@use "../../layouts/_Layouts_" as *;
-@use "../../styles/declaration/basic" as *;
+@use "../layouts/_Layouts_" as *;
+@use "../styles/declaration/basic" as *;
 
 .ts-dialog__overlay {
   .ts-overlay {
