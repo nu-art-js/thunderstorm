@@ -7,6 +7,7 @@ export * from '../main/phases/PhaseManager.js';
 export * from '../main/units/discovery/UnitsMapper.js';
 export * from '../main/units/implementations/firebase/Unit_FirebaseFunctionsApp.js';
 export * from '../main/units/implementations/firebase/Unit_FirebaseHostingApp.js';
+export * from '../main/units/implementations/firebase/Unit_ViteHostingApp.js';
 
 export * from '../main/units/discovery/resolvers/UnitMapper_Base.js';
 export * from '../main/units/discovery/resolvers/UnitMapper_Node.js';
