@@ -1,56 +1,61 @@
 import express from 'express';
-import request from 'request';
 import * as fs from 'fs';
+import {Readable} from 'node:stream';
+import {createServer} from 'node:https';
 
 
 const _express: express.Express = express();
 let _counter = 0;
-_express.all('*', (req, res) => {
+_express.all('*', async (req, res) => {
 	const counter = ++_counter;
 	const qMark = req.originalUrl.indexOf('?');
 	const query = qMark > 1 ? req.originalUrl.substring(qMark) : '';
 	const path = req.path;
-	let url = `http://127.0.0.1:SERVER_PORT/PROJECT_ID/us-central1/api${path}${query}`;
-	if (path.startsWith('/emulatorDownload') || path.startsWith('/emulatorUpload'))
-		url = `http://127.0.0.1:SERVER_PORT/PROJECT_ID/us-central1${path}${query}`;
-
+	let url = `http://127.0.0.1:{{SERVER_PORT}}/{{PROJECT_ID}}/us-central1/api${path}${query}`;
 	console.log(`PROXY ${counter} - [${req.method}] ${url}`);
 
-	const handleError = (error: any) => {
-	    if(!error)
-	        return;
-
-		console.log(`ERROR calling: ${url}`, error);
-        res.status(503).end();
-	};
-
 	try {
-		let reqContent;
-		if (req.method === 'POST') {
-			reqContent = request.post({uri: url, body: req.body}, handleError);
-		} else if (req.method === 'PUT') {
-			reqContent = request.put({uri: url, body: req.body}, handleError);
-		} else if (req.method === 'GET') {
-			reqContent = request.get(url, handleError);
-		} else if (req.method === 'DELETE') {
-			reqContent = request.delete(url, handleError);
-		} else if (req.method === 'HEAD') {
-			reqContent = request.head(url, handleError);
-		} else {
-			reqContent = request(url, handleError);
+		const headers: Record<string, string | string[] | undefined> = {...req.headers};
+		delete headers['host'];
+		delete headers['content-length'];
+
+		const fetchOptions: RequestInit = {
+			method: req.method,
+			headers: headers as HeadersInit
+		};
+
+		// Stream request body for methods that can have a body (fetch forbids body on GET/HEAD)
+		if (req.method !== 'GET' && req.method !== 'HEAD') {
+			fetchOptions.body = Readable.toWeb(req) as any;
+			(fetchOptions as RequestInit & { duplex: 'half' }).duplex = 'half';
 		}
 
-		req.pipe(reqContent).pipe(res, {end: true});
+		const response = await fetch(url, fetchOptions);
+
+		res.status(response.status);
+		// Don't forward content-encoding/content-length: fetch already decompressed the body
+		response.headers.forEach((value, key) => {
+			const k = key.toLowerCase();
+			if (k === 'content-encoding' || k === 'content-length') return;
+			res.setHeader(key, value);
+		});
+
+		if (response.body) {
+			Readable.fromWeb(response.body as Parameters<typeof Readable.fromWeb>[0]).pipe(res, {end: true});
+		} else {
+			res.end();
+		}
+
 		console.log(`PROXY ${counter} - END`);
 	} catch (e) {
 		console.log(`ERROR calling: ${url}`, e);
-		res.status(500).end();
+		res.status(503).end();
 	}
 });
 
 const ssl = {
-	key: 'PATH_TO_SSL_KEY',
-	cert: 'PATH_TO_SSL_CERTIFICATE'
+	key: '{{PATH_TO_SSL_KEY}}',
+	cert: '{{PATH_TO_SSL_CERTIFICATE}}'
 };
 
 let key = ssl.key;
@@ -68,5 +73,5 @@ const options = {
 	requestCert: false,
 };
 
-require('https').createServer(options, _express).listen(PROXY_PORT);
-console.log('SSL proxy started!!!');
+createServer(options, _express).listen(+'{{PROXY_PORT}}');
+console.log(`SSL proxy started at port: {{PROXY_PORT}}`);
