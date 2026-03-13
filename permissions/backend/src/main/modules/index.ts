@@ -18,3 +18,4 @@
  */
 
 export * from './consts.js';
+export {CollectPermissionsProjects, PermissionProject_Permissions} from './ModuleBE_Permissions.js';
