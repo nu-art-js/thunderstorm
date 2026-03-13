@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {DBItemDropDownMultiSelector, prepareGenericDropDown, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2,} from '@nu-art/editable-item';
 import {DatabaseDef_PermissionDomain} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionDomain} from './ModuleFE_PermissionDomain.js';
@@ -13,13 +12,15 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionD
 	renderer: item => <>{item.namespace}</>
 };
 
+export const DropDown_PermissionDomain = prepareGenericDropDown(Props_DropDown);
+
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 	module: ModuleFE_PermissionDomain,
 	itemRenderer: (item, onDelete) => {
 		return !item ? <>Not Found</> : <><TS_Icons.x.component onClick={onDelete} className={'ts-icon__small'}/>{item.namespace}</>;
 	},
-	uiSelector: prepareGenericDropDown(Props_DropDown).selectable,
+	uiSelector: DropDown_PermissionDomain.selectable,
 });
 
-export const MultiSelect_PermissionDomain = TS_MultiSelect_V2.prepare(Props_MultiSelect) as React.ComponentType<any>;
+export const MultiSelect_PermissionDomain = TS_MultiSelect_V2.prepare(Props_MultiSelect);
 

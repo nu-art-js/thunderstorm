@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {DBItemDropDownMultiSelector, prepareGenericDropDown, TemplatingProps_TS_GenericDropDown, TS_MultiSelect_V2,} from '@nu-art/editable-item';
 import {DatabaseDef_PermissionUser} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionUser} from './ModuleFE_PermissionUser.js';
@@ -25,6 +24,8 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionU
 	}
 };
 
+export const DropDown_PermissionUser = prepareGenericDropDown(Props_DropDown);
+
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 	module: ModuleFE_PermissionUser,
 	itemRenderer: (item, onDelete) => {
@@ -33,8 +34,8 @@ const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 			throw new MUSTNeverHappenException(`Could not find account connected to permission-user with id ${item?._id}`);
 		return !account ? <>Not Found</> : <><TS_Icons.x.component onClick={onDelete} className={'ts-icon__small'}/>{account.email}</>;
 	},
-	uiSelector: prepareGenericDropDown(Props_DropDown).selectable,
+	uiSelector: DropDown_PermissionUser.selectable,
 });
 
-export const MultiSelect_PermissionUser = TS_MultiSelect_V2.prepare(Props_MultiSelect) as React.ComponentType<any>;
+export const MultiSelect_PermissionUser = TS_MultiSelect_V2.prepare(Props_MultiSelect);
 

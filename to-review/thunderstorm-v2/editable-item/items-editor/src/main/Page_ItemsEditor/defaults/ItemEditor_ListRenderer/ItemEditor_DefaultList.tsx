@@ -1,34 +1,16 @@
 import * as React from 'react';
-import {DBProto, sortArray} from '@nu-art/ts-common';
-import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {sortArray} from '@nu-art/ts-common';
 import {_className} from '@nu-art/thunder-core';
-import {
-	Button,
-	ComponentSync,
-	Model_PopUp,
-	ModuleFE_MouseInteractivity,
-	mouseInteractivity_PopUp,
-	VirtualizedList
-} from '@nu-art/thunder-widgets';
+import {Button, ComponentSync, InferProps, InferState, VirtualizedList} from '@nu-art/thunder-widgets';
 import './ItemEditor_DefaultList.scss';
-import {ItemEditor_CustomSort, ItemEditor_FilterType} from '../../types.js';
-import {ApiCallerEventType} from '@nu-art/storm-shared';
-import {MenuAction} from '../../Page_ItemsEditor.js';
-import {InferProps, InferState} from '@nu-art/thunder-widgets';
+import type {Props_ListRenderer} from '@nu-art/editable-item';
+import {ApiCallerEventType, DB_Prototype} from '@nu-art/db-api-shared';
+import {Model_PopUp, ModuleFE_MouseInteractivity, mouseInteractivity_PopUp} from '@nu-art/thunder-mouse-interactivity-frontend';
 
-export type Props_ListRenderer<Proto extends DBProto<any>> = {
-	module: ModuleFE_BaseApi<Proto>;
-	selected?: Partial<Proto['uiType']>;
-	filter: ItemEditor_FilterType<Proto>;
-	onSelected: (item: Proto['uiType']) => void;
-	sort: ItemEditor_CustomSort<Proto>;
-	itemRenderer: (item: Proto['uiType']) => JSX.Element;
-	contextMenuItems: MenuAction<Proto>[];
-};
 type State = {};
 
-export class ItemEditor_DefaultList<Proto extends DBProto<any>>
-	extends ComponentSync<Props_ListRenderer<Proto>, State> {
+export class ItemEditor_DefaultList<Database extends DB_Prototype<any>>
+	extends ComponentSync<Props_ListRenderer<Database>, State> {
 	private listContainerRef?: HTMLDivElement;
 
 	protected deriveStateFromProps(nextProps: InferProps<this>, state: InferState<this>) {
@@ -46,10 +28,10 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 		return true;
 	}
 
-	private __onItemUpdated = (...params: ApiCallerEventType<Proto>): void => {
+	private __onItemUpdated = (...params: ApiCallerEventType<Database['dbType']>): void => {
 		return this.forceUpdate();
 	};
-	private openItemMenu = (e: React.MouseEvent<HTMLDivElement>, item: Proto['dbType']) => {
+	private openItemMenu = (e: React.MouseEvent<HTMLDivElement>, item: Database['dbType']) => {
 		const menuActions = this.props.contextMenuItems;
 		if (!menuActions?.length)
 			return;
@@ -60,7 +42,7 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 			content: () => <>
 				{menuActions.map((action, index) => {
 					return <Button key={index} onClick={async () => {
-						const shouldClose = await action.action(item) ?? false;
+						const shouldClose = await action.action(item as any) ?? false;
 						if (shouldClose)
 							ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
 					}}>{action.label}</Button>;
@@ -72,7 +54,7 @@ export class ItemEditor_DefaultList<Proto extends DBProto<any>>
 
 	render() {
 		const filteredItems = this.props.module.cache.filter(this.props.filter ?? (() => true));
-		const sort = this.props.sort || ((items) => sortArray(items, i => i.__createdAt));
+		const sort = this.props.sort || ((items: Database['uiType'][]) => sortArray(items, (i: Database['uiType']) => (i as { __createdAt?: number }).__createdAt));
 		const items = sort(filteredItems);
 		const itemsToRender = items.map(item => {
 			return <div key={item._id} onContextMenu={(e) => this.openItemMenu(e, item)}

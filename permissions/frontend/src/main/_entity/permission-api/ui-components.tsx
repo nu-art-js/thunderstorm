@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
 	prepareGenericDropDown,
 	TemplatingProps_TS_GenericDropDown,
@@ -19,7 +18,7 @@ const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_PermissionA
 };
 
 // Editable pattern: use .editable with editable+prop, .selectable for multi-select (same as EDITABLE.GenericDropDownV3).
-export const DropDown_PermissionAPI = prepareGenericDropDown(Props_DropDown) as { editable: React.ComponentType<any>; selectable: React.ComponentType<any> };
+export const DropDown_PermissionAPI = prepareGenericDropDown(Props_DropDown);
 
 const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 	module: ModuleFE_PermissionAPI,
@@ -29,5 +28,5 @@ const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 	uiSelector: DropDown_PermissionAPI.selectable,
 });
 
-export const MultiSelect_PermissionAPI = TS_MultiSelect_V2.prepare(Props_MultiSelect) as React.ComponentType<any>;
+export const MultiSelect_PermissionAPI = TS_MultiSelect_V2.prepare(Props_MultiSelect);
 
