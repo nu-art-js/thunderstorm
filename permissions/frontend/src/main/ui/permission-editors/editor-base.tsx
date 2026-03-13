@@ -36,7 +36,7 @@ export abstract class Component_BasePermissionItemEditor<
 
 		return <>
 			<div
-				className={'item-editor__header'}>{editable.item._id ? this.props.displayResolver?.(editable.item) : `New ${this.props.module!.dbDef.entityName}`}</div>
+				className={'item-editor__header'}>{editable.item._id ? this.props.displayResolver?.(editable.item) : `New ${this.props.module!.config.dbKey}`}</div>
 			<LL_V_L className={'item-editor__main'}>
 				{this.editorContent()}
 			</LL_V_L>

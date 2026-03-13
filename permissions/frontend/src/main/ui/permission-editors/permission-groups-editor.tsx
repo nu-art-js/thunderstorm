@@ -9,9 +9,9 @@ import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_Perm
 import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {Input_Text_Blur} from './components.js';
 import {DropDown_PermissionProject} from '../../_entity/permission-project/ui-components.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
-import {DB_PermissionGroup, DatabaseDef_PermissionGroup} from '@nu-art/permissions-shared';
+import {Page_ItemsEditor, State_ItemsEditor} from '@nu-art/db-item-editor';
+import {Props_EditableItemController, TS_EditableItemController} from '@nu-art/editable-item';
+import {DB_PermissionGroup, DatabaseDef_PermissionGroup, DatabaseDef_PermissionAccessLevel} from '@nu-art/permissions-shared';
 
 class Component_EditGroup
 	extends Component_BasePermissionItemEditor<DatabaseDef_PermissionGroup> {
@@ -31,7 +31,7 @@ class Component_EditGroup
 					editable={group}
 					prop={'accessLevelIds'}
 					className={'domain-level-list'}
-					itemRenderer={(levelId, onDelete) => {
+					itemRenderer={(levelId: DatabaseDef_PermissionAccessLevel['id'], onDelete: () => void) => {
 						const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId);
 						if (!level)
 							throw new MUSTNeverHappenException(`Could not find access level with id ${levelId}`);
@@ -75,9 +75,8 @@ class Component_EditGroup
 }
 
 class Controller_EditGroup
-	extends TS_EditableItemControllerProto<DatabaseDef_PermissionGroup> {
+	extends TS_EditableItemController<DatabaseDef_PermissionGroup> {
 	static defaultProps = {
-		keys: ['selected'],
 		module: ModuleFE_PermissionGroup,
 		editor: Component_EditGroup,
 		createInitialInstance: () => ({}),
@@ -97,19 +96,18 @@ export class PermissionGroupsEditor
 	};
 
 	static defaultProps: Partial<InferProps<PermissionGroupsEditor>> = {
-		keys: ['selected'],
 		module: ModuleFE_PermissionGroup,
 		mapper: group => [group.label ?? 'Not Found'],
 		sort: (items) => sortArray(items, 'label'),
 		itemRenderer: group => <>{group.label ?? 'Not Found'}</>,
-		EditorRenderer: Controller_EditGroup as React.ComponentType<Partial<Props_EditableItemControllerProto<DatabaseDef_PermissionGroup>>>,
-		route: this.Route,
+		EditorRenderer: Controller_EditGroup as React.ComponentType<Partial<Props_EditableItemController<DatabaseDef_PermissionGroup>>>,
+		route: PermissionGroupsEditor.Route,
 		contextMenuActions: [
 			{
 				label: 'Delete Group',
-				action: async (item) => {
+				action: async (state: State_ItemsEditor<DatabaseDef_PermissionGroup>) => {
 					try {
-						await ModuleFE_PermissionGroup.v1.delete(item as unknown as DB_PermissionGroup).executeSync();
+						await ModuleFE_PermissionGroup.delete({_id: state.editable.item._id!});
 						return true;
 					} catch (err: any) {
 						StaticLogger.logError({...err});

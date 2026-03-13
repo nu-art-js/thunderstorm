@@ -1,13 +1,12 @@
 import * as React from 'react';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';
 import {ModuleFE_PermissionUser} from '../../_entity.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
+import {Page_ItemsEditor} from '@nu-art/db-item-editor';
 import {InferProps, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_Route} from '@nu-art/thunder-routing';
 import {MultiSelect} from '../ui-props.js';
 import {Component_BasePermissionItemEditor} from './editor-base.js';
-import {EditableRef} from '@nu-art/editable-item';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/editable-item';
+import {EditableRef, Props_EditableItemController, TS_EditableItemController} from '@nu-art/editable-item';
 import {sortArray} from '@nu-art/ts-common';
 import {DB_PermissionUser, DatabaseDef_PermissionUser} from '@nu-art/permissions-shared';
 
@@ -32,9 +31,8 @@ class Component_EditAccount
 }
 
 class Controller_EditAccount
-	extends TS_EditableItemControllerProto<DatabaseDef_PermissionUser> {
-	static defaultProps: Partial<Props_EditableItemControllerProto<DatabaseDef_PermissionUser>> = {
-		keys: ['selected'],
+	extends TS_EditableItemController<DatabaseDef_PermissionUser> {
+	static defaultProps = {
 		module: ModuleFE_PermissionUser,
 		editor: Component_EditAccount as React.ComponentType<EditableRef<DatabaseDef_PermissionUser['uiType']>>,
 		createInitialInstance: () => ({}),
@@ -58,13 +56,12 @@ export class PermissionUsersEditor
 	}
 
 	static defaultProps: Partial<InferProps<PermissionUsersEditor>> = {
-		keys: ['selected'],
 		module: ModuleFE_PermissionUser,
 		mapper: (user) => [ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'],
 		sort: (items) => sortArray(items, (user) => ModuleFE_Account.cache.unique(user._id)?.email),
 		itemRenderer: (user) => <>{ModuleFE_Account.cache.unique(user._id)?.email ?? 'Not Found'}</>,
-		EditorRenderer: Controller_EditAccount as React.ComponentType<Partial<Props_EditableItemControllerProto<DatabaseDef_PermissionUser>>>,
+		EditorRenderer: Controller_EditAccount as React.ComponentType<Partial<Props_EditableItemController<DatabaseDef_PermissionUser>>>,
 		hideAddItem: true,
-		route: this.Route
+		route: PermissionUsersEditor.Route
 	};
 }

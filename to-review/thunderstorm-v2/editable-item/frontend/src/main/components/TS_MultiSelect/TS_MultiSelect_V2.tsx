@@ -23,17 +23,20 @@ export type DynamicProps_TS_MultiSelect_V2<EnclosingItem, Prop extends keyof Enc
 	disabled?: boolean;
 };
 export type StaticProps_TS_MultiSelect_V2<ItemType> = {
-	className?: string;
+	className?: string
 	itemsDirection?: 'vertical' | 'horizontal';
-	selectionFilter?: (item: ItemType) => boolean;
-	itemFilter?: (item: ItemType) => boolean;
+	selectionFilter?: (item: ItemType) => boolean; // for the shown list
+	itemFilter?: (item: ItemType) => boolean; // for the selection dropdown
 	sort?: (items: ItemType[]) => ItemType[];
+	// mandatory
 	itemRenderer: (item?: ItemType, onDelete?: () => Promise<void>, disabled?: boolean) => ReactNode;
 	selectionRenderer: React.ComponentType<MultiSelect_Selector<ItemType>>;
 };
+
 export type Props_TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>> =
 	StaticProps_TS_MultiSelect_V2<Binder['InnerType']>
 	& DynamicProps_TS_MultiSelect_V2<Binder['EnclosingItem'], Binder['Prop']>;
+
 export type MultiSelect_Selector<ItemType> = {
 	className: string;
 	existingItems: ItemType[];

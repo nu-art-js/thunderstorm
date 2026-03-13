@@ -1,16 +1,12 @@
 import * as React from 'react';
 import './ItemEditor_DefaultFilter.scss';
-import {DBProto, Filter} from '@nu-art/ts-common';
-import {ItemEditor_FilterType, ItemEditor_MapperType} from '../../types.js';
+import {Filter} from '@nu-art/ts-common';
+import type {Props_Filter} from '@nu-art/editable-item';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {LL_H_C, TS_Input} from '@nu-art/thunder-routing';
+import {LL_H_C, TS_Input} from '@nu-art/thunder-widgets/v3';
+import type {DB_Prototype} from '@nu-art/db-api-shared';
 
-export type Props_Filter<Proto extends DBProto<any>> = {
-	onFilterChanged: (filter: ItemEditor_FilterType<Proto>) => void;
-	mapper: ItemEditor_MapperType<Proto>;
-};
-
-export class ItemEditor_DefaultFilter<Proto extends DBProto<any>>
+export class ItemEditor_DefaultFilter<Proto extends DB_Prototype<any>>
 	extends React.Component<Props_Filter<Proto>, {
 		filter: Filter<Proto['uiType']>;
 	}> {

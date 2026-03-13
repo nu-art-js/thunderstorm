@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {EditableDBItem} from '@nu-art/editable-item';
+import {EditableDBItem, Props_EditableItemController, TS_EditableItemController} from '@nu-art/editable-item';
 import {Button, InferProps, ModuleFE_Toaster, TS_PropRenderer, TS_Table} from '@nu-art/thunder-widgets';
 import {TS_Route} from '@nu-art/thunder-routing';
 import {BadImplementationException, capitalizeFirstLetter, exists, PreDB, sortArray, StaticLogger} from '@nu-art/ts-common';
@@ -8,13 +8,12 @@ import {ModuleFE_PermissionAccessLevel, ModuleFE_PermissionDomain, ModuleFE_Perm
 import {Component_BasePermissionItemEditor} from './editor-base.js';
 import {DropDownCaret, Input_Number_Blur, Input_Text_Blur} from './components.js';
 import {DropDown_PermissionProject} from '../../_entity/permission-project/ui-components.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DBProto_PermissionAccessLevel, DBProto_PermissionDomain} from '@nu-art/permissions-shared';
+import {Page_ItemsEditor, State_ItemsEditor} from '@nu-art/db-item-editor';
+import {DB_PermissionAccessLevel, DB_PermissionDomain, DatabaseDef_PermissionAccessLevel, DatabaseDef_PermissionDomain} from '@nu-art/permissions-shared';
 
 
 class Component_EditDomain
-	extends Component_BasePermissionItemEditor<DBProto_PermissionDomain> {
+	extends Component_BasePermissionItemEditor<DatabaseDef_PermissionDomain> {
 	static defaultProps = {
 		module: ModuleFE_PermissionDomain,
 		displayResolver: (item: DB_PermissionDomain) => `${ModuleFE_PermissionProject.cache.unique(item.projectId)!.name}/${item.namespace}`
@@ -23,7 +22,7 @@ class Component_EditDomain
 
 	//######################### logic #########################
 
-	private deleteLevel = async (editable: EditableDBItem<DBProto_PermissionAccessLevel>) => {
+	private deleteLevel = async (editable: EditableDBItem<DatabaseDef_PermissionAccessLevel>) => {
 		try {
 			await editable.delete();
 			this.forceUpdate();
@@ -33,7 +32,7 @@ class Component_EditDomain
 		}
 	};
 
-	private updateLevel = async <K extends keyof DBProto_PermissionAccessLevel['dbType']>(editable: EditableDBItem<DBProto_PermissionAccessLevel>, prop: K, value: DBProto_PermissionAccessLevel['dbType'][K]) => {
+	private updateLevel = async <K extends keyof DatabaseDef_PermissionAccessLevel['dbType']>(editable: EditableDBItem<DatabaseDef_PermissionAccessLevel>, prop: K, value: DatabaseDef_PermissionAccessLevel['dbType'][K]) => {
 		if (editable.item._id) {
 			try {
 				await editable.updateObj({[prop]: value});
@@ -101,7 +100,7 @@ class Component_EditDomain
 		/>;
 	};
 
-	private levelsCellRenderer = (prop: keyof DB_PermissionAccessLevel | 'action', item: PreDB<DB_PermissionAccessLevel>, index: number) => {
+	private levelsCellRenderer = (prop: string, item: PreDB<DB_PermissionAccessLevel>, index: number) => {
 		const editable = new EditableDBItem(item, ModuleFE_PermissionAccessLevel)
 			.setAutoSave(true)
 			.setDebounceTimeout(0);
@@ -119,7 +118,7 @@ class Component_EditDomain
 		}
 	};
 
-	private renderLevelName = (editable: EditableDBItem<DBProto_PermissionAccessLevel>) => {
+	private renderLevelName = (editable: EditableDBItem<DatabaseDef_PermissionAccessLevel>) => {
 		return <Input_Text_Blur
 			editable={editable}
 			prop={'name'}
@@ -129,7 +128,7 @@ class Component_EditDomain
 		/>;
 	};
 
-	private renderLevelValue = (editable: EditableDBItem<DBProto_PermissionAccessLevel>) => {
+	private renderLevelValue = (editable: EditableDBItem<DatabaseDef_PermissionAccessLevel>) => {
 		return <Input_Number_Blur
 			// @ts-ignore
 			editable={editable}
@@ -140,7 +139,7 @@ class Component_EditDomain
 		/>;
 	};
 
-	private renderLevelAction = (editable: EditableDBItem<DBProto_PermissionAccessLevel>) => {
+	private renderLevelAction = (editable: EditableDBItem<DatabaseDef_PermissionAccessLevel>) => {
 		if (!editable.item._id)
 			return;
 
@@ -155,9 +154,8 @@ class Component_EditDomain
 }
 
 class Controller_DomainsEditor
-	extends TS_EditableItemControllerProto<DBProto_PermissionDomain> {
+	extends TS_EditableItemController<DatabaseDef_PermissionDomain> {
 	static defaultProps = {
-		keys: ['selected'],
 		module: ModuleFE_PermissionDomain,
 		editor: Component_EditDomain,
 		createInitialInstance: () => ({}),
@@ -166,7 +164,7 @@ class Controller_DomainsEditor
 }
 
 export class PermissionDomainsEditor
-	extends Page_ItemsEditor<DBProto_PermissionDomain> {
+	extends Page_ItemsEditor<DatabaseDef_PermissionDomain> {
 
 	//######################### Static #########################
 
@@ -177,19 +175,18 @@ export class PermissionDomainsEditor
 	};
 
 	static defaultProps: Partial<InferProps<PermissionDomainsEditor>> = {
-		keys: ['selected'],
 		module: ModuleFE_PermissionDomain,
 		mapper: domain => [`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`],
 		sort: (items) => sortArray(items, domain => `${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`),
 		itemRenderer: domain => <>{`${ModuleFE_PermissionProject.cache.unique(domain.projectId)!.name}/${domain.namespace}`}</>,
-		EditorRenderer: Controller_DomainsEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DBProto_PermissionDomain>>>,
-		route: this.Route,
+		EditorRenderer: Controller_DomainsEditor as React.ComponentType<Partial<Props_EditableItemController<DatabaseDef_PermissionDomain>>>,
+		route: PermissionDomainsEditor.Route,
 		contextMenuActions: [
 			{
 				label: 'Delete Domain',
-				action: async (item) => {
+				action: async (state: State_ItemsEditor<DatabaseDef_PermissionDomain>) => {
 					try {
-						await ModuleFE_PermissionDomain.v1.delete(item as unknown as DB_PermissionDomain).executeSync();
+						await ModuleFE_PermissionDomain.delete({_id: state.editable.item._id!});
 						return true;
 					} catch (err: any) {
 						StaticLogger.logError(err);

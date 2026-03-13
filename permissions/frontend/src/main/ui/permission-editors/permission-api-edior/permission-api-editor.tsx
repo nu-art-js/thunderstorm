@@ -7,8 +7,9 @@ import {TS_Route} from '@nu-art/thunder-routing';
 import {MultiSelect} from '../../ui-props.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './permission-api-editor.scss';
-import {TS_EditableItemControllerProto} from '@nu-art/editable-item';
-import {DatabaseDef_PermissionAPI, DB_PermissionAPI} from '@nu-art/permissions-shared';
+import {TS_EditableItemController} from '@nu-art/editable-item';
+import {DatabaseDef_PermissionAPI, DatabaseDef_PermissionAccessLevel, DB_PermissionAPI} from '@nu-art/permissions-shared';
+import {Page_ItemsEditor} from '@nu-art/db-item-editor';
 
 
 type Props = {
@@ -36,7 +37,7 @@ class Component_APIEditor
 					editable={api}
 					prop={'accessLevelIds'}
 					className={'domain-level-list'}
-					itemRenderer={(levelId, onDelete) => {
+					itemRenderer={(levelId: DatabaseDef_PermissionAccessLevel['id'], onDelete: () => void) => {
 						const level = ModuleFE_PermissionAccessLevel.cache.unique(levelId)!;
 						const domain = ModuleFE_PermissionDomain.cache.unique(level.domainId)!;
 						return <div key={levelId} className={'domain-level-list__item'}>
@@ -50,19 +51,18 @@ class Component_APIEditor
 }
 
 class Controller_ApiEditor
-	extends TS_EditableItemControllerProto<DBProto_PermissionAPI> {
+	extends TS_EditableItemController<DatabaseDef_PermissionAPI> {
 
 	static defaultProps = {
 		module: ModuleFE_PermissionAPI,
 		editor: Component_APIEditor,
-		keys: ['selected'],
 		createInitialInstance: () => ({}),
 		autoSave: true
 	};
 }
 
 export class PermissionAPIEditor
-	extends Page_ItemsEditor<DatabaseDef_PermissionAPI, ProtoDef_Selection, Props> {
+	extends Page_ItemsEditor<DatabaseDef_PermissionAPI, Props> {
 
 	//######################### Static #########################
 
@@ -73,7 +73,6 @@ export class PermissionAPIEditor
 	};
 
 	static defaultProps: Partial<InferProps<PermissionAPIEditor>> = {
-		keys: ['selected'],
 		module: ModuleFE_PermissionAPI,
 		mapper: api => [api.path],
 		sort: (items) => sortArray(items, 'path'),
@@ -81,7 +80,7 @@ export class PermissionAPIEditor
 		itemRenderer: api => <>{api.path}</>,
 		EditorRenderer: (props) => <Controller_ApiEditor {...props}/>,
 		hideAddItem: true,
-		route: this.Route,
+		route: PermissionAPIEditor.Route,
 	};
 
 	//######################### Lifecycle #########################

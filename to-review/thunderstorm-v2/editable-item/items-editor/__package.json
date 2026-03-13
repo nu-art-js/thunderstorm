@@ -1,7 +1,7 @@
 {
-  "name": "@nu-art/editable-item",
+  "name": "@nu-art/db-item-editor",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "Editable Item - DB Entity Editor",
+  "description": "Generic DB items editor page (list + editor pane) for editable-item",
   "keywords": [
     "TacB0sS",
     "express",
@@ -37,6 +37,7 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/editable-item": "?",
     "@nu-art/thunder-mouse-interactivity-frontend": "?",
     "@nu-art/thunder-core": "?",
     "@nu-art/db-api-frontend": "?",

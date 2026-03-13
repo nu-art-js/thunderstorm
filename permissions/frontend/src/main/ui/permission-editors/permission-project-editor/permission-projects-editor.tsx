@@ -5,9 +5,9 @@ import {ModuleFE_PermissionProject} from '../../../_entity.js';
 import {Component_BasePermissionItemEditor} from '../editor-base.js';
 import {Input_Text_Blur} from '../components.js';
 import {PermissionAPIEditor} from '../permission-api-edior/permission-api-editor.js';
-import {Page_ItemsEditor} from '@nu-art/thunderstorm-frontend/components/Page_ItemsEditor/index';
+import {Page_ItemsEditor} from '@nu-art/db-item-editor';
 import './permission-project-editor.scss';
-import {Props_EditableItemControllerProto, TS_EditableItemControllerProto} from '@nu-art/thunderstorm-frontend/components/TS_EditableItemControllerProto/index';
+import {Props_EditableItemController, TS_EditableItemController} from '@nu-art/editable-item';
 import {sortArray} from '@nu-art/ts-common';
 import {DB_PermissionProject, DatabaseDef_PermissionProject} from '@nu-art/permissions-shared';
 
@@ -35,9 +35,8 @@ class Component_EditProject
 }
 
 class Controller_ProjectEditor
-	extends TS_EditableItemControllerProto<DatabaseDef_PermissionProject> {
+	extends TS_EditableItemController<DatabaseDef_PermissionProject> {
 	static defaultProps = {
-		keys: ['selected'],
 		module: ModuleFE_PermissionProject,
 		editor: Component_EditProject,
 		createInitialInstance: () => ({}),
@@ -58,15 +57,14 @@ export class PermissionProjectsEditor
 	};
 
 	static defaultProps: Partial<InferProps<PermissionProjectsEditor>> = {
-		keys: ['selected'],
 		id: 'permission-projects-editor',
 		module: ModuleFE_PermissionProject,
 		mapper: project => [project.name ?? 'Not Found'],
 		sort: (items) => sortArray(items, 'name'),
 		itemRenderer: project => <>{project.name ?? 'Not Found'}</>,
-		EditorRenderer: Controller_ProjectEditor as React.ComponentType<Partial<Props_EditableItemControllerProto<DatabaseDef_PermissionProject>>>,
+		EditorRenderer: Controller_ProjectEditor as React.ComponentType<Partial<Props_EditableItemController<DatabaseDef_PermissionProject>>>,
 		hideAddItem: true,
-		route: this.Route
+		route: PermissionProjectsEditor.Route
 	};
 
 	protected renderHeader(): React.ReactNode {

@@ -2,9 +2,7 @@
  * @nu-art/editable-item — public API.
  *
  * Core + UI components that compile against @nu-art/db-api-frontend, @nu-art/thunder-widgets,
- * and @nu-art/ts-common. Controllers and Page_ItemsEditor that depend on
- * @nu-art/storm-shared or legacy APIs remain in _excluded-from-build until migrated.
- * See _thunderstorm/editable-item-imports-dictionary.md and ISSUES.md.
+ * and @nu-art/ts-common. Page_ItemsEditor lives in @nu-art/editable-item-items-editor.
  */
 export {
 	EditableItem,
@@ -38,6 +36,11 @@ export {
 	TS_EditableItemComponentProto,
 } from './components/TS_EditableItemComponent/TS_EditableItemComponent.js';
 export {TS_EditableItemStatus} from './components/TS_EditableItemStatus/TS_EditableItemStatus.js';
+export {
+	TS_EditableItemController,
+	type TemplatingProps_EditableItemController,
+	type Props_EditableItemController,
+} from './components/TS_EditableItemController/TS_EditableItemController.js';
 
 export {EDITABLE} from './editables/index.js';
 export {
@@ -57,6 +60,7 @@ export {
 export {
 	TS_MultiSelect_V2,
 	type StaticProps_TS_MultiSelect_V2,
+	type DynamicProps_TS_MultiSelect_V2,
 	type MultiSelect_Selector,
 } from './components/TS_MultiSelect/index.js';
 export {
@@ -72,3 +76,15 @@ export type {
 	EditableItemProps_TS_InputV2,
 	EditableItemProps_TS_TextAreaV2,
 } from './editables/index.js';
+
+export type {
+	Props_ItemsEditor,
+	State_ItemsEditor,
+	MenuAction,
+	ItemEditor_FilterType,
+	ItemEditor_CustomSort,
+	ItemEditor_MapperType,
+	ItemEditor_EditorProps,
+	Props_ListRenderer,
+	Props_Filter,
+} from './items-editor-contract.js';

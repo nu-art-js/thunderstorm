@@ -6,7 +6,7 @@ import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {ComponentSync} from '@nu-art/thunder-widgets';
 import {EditableRef} from '../TS_EditableContent/types.js';
 import {ApiCallerEventType, DB_Prototype} from '@nu-art/db-api-shared';
-import {Props_ItemsEditor} from '../Page_ItemsEditor/index.js';
+import type {Props_ItemsEditor} from '../../items-editor-contract.js';
 
 export type TemplatingProps_EditableItemController<Database extends DB_Prototype<any>, EditorProps extends object = object> = {
 	module: ModuleFE_BaseApi<Database>;
@@ -49,7 +49,7 @@ export class TS_EditableItemController<Database extends DB_Prototype<any>, Edito
 	}
 
 	// @ts-ignore
-	private __onItemUpdated = (...params: ApiCallerEventType<Database['dbKey']>): void => {
+	private __onItemUpdated = (...params: ApiCallerEventType<Database['dbType']>): void => {
 		const itemId = this.state.editable.get('_id');
 		if (!itemId)
 			return;
