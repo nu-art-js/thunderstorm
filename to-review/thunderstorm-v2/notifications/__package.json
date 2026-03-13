@@ -1,60 +1,59 @@
 {
-	"name": "@nu-art/thunder-notifications",
-	"version": "{{THUNDERSTORM_VERSION}}",
-	"description": "Thunder notifications module and UI component",
-	"keywords": [
-		"TacB0sS",
-		"infra",
-		"nu-art",
-		"thunderstorm",
-		"typescript",
-		"notifications"
-	],
-	"homepage": "https://github.com/nu-art-js/thunderstorm",
-	"bugs": {
-		"url": "https://github.com/nu-art-js/thunderstorm/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
-	},
-	"license": "Apache-2.0",
-	"author": "TacB0sS",
-	"scripts": {
-		"build": "tsc"
-	},
-	"contributors": [
-		{
-			"name": "TacB0sS"
-		},
-		{
-			"name": "Cipher",
-			"url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
-		}
-	],
-	"publishConfig": {
-		"directory": "dist",
-		"linkDirectory": true
-	},
-	"dependencies": {
-		"@nu-art/thunder-core": "?",
-		"@nu-art/ts-common": "?",
-		"react": "?",
-		"react-dom": "?"
-	},
-	"devDependencies": {
-		"@types/react": "?",
-		"@types/react-dom": "?"
-	},
-	"unitConfig": {
-		"type": "typescript-lib",
-		"customTSConfig": true
-	},
-	"type": "module",
-	"exports": {
-		".": {
-			"types": "./index.d.ts",
-			"import": "./index.js"
-		}
-	}
+  "name": "@nu-art/thunder-notifications",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Thunder notifications module and UI component",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "notifications"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "contributors": [
+    {
+      "name": "TacB0sS"
+    },
+    {
+      "name": "Cipher",
+      "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
+    }
+  ],
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/thunder-core": "?",
+    "@nu-art/ts-common": "?",
+    "react": "?",
+    "react-dom": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/react-dom": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
 }
