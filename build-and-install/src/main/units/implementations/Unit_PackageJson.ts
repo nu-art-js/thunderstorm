@@ -3,6 +3,7 @@ import {__stringify, StringMap} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {resolve} from 'path';
+import {existsSync} from 'fs';
 import {TS_PackageJSON} from '../discovery/types.js';
 import {Phase_Prepare, Phase_PrepareWatch, Phase_Purge} from '../../phases/definitions/index.js';
 import {Commando_NVM} from '@nu-art/commando';
@@ -49,6 +50,10 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	//######################### Internal Logic #########################
 
 	protected npmCommand(command: string) {
+		const packageBin = resolve(this.config.fullPath, './node_modules/.bin', command);
+		if (existsSync(packageBin))
+			return packageBin;
+
 		return resolve(this.runtimeContext.parentUnit.config.fullPath, './node_modules/.bin', command);
 	}
 

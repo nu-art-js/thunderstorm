@@ -1,34 +1,19 @@
-import {
-	ApiException,
-	arrayToMap,
-	BadImplementationException,
-	Dispatcher,
-	Minute,
-	Module,
-	MUSTNeverHappenException,
-	RuntimeModules,
-	TypedMap
-} from '@nu-art/ts-common';
+import {ApiException, arrayToMap, BadImplementationException, Dispatcher, Module, MUSTNeverHappenException, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {addRoutes} from '../ModuleBE_APIs.js';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js';
 import {
 	ApiDef,
 	ApiDef_SyncEnv,
-	ApiModule,
 	DBModuleType,
-	HeaderKey_Authorization,
 	HttpMethod,
 	QueryApi,
 	Request_FetchFirebaseBackup,
 	Request_FetchFromEnv,
 	Request_GetMetadata,
-	Response_BackupDocs,
 	Response_FetchBackupMetadata
 } from '@nu-art/thunderstorm-shared';
 import {AxiosHttpModule} from '../http/AxiosHttpModule.js';
-import {MemKey_HttpRequest} from '../server/consts.js';
-import {ModuleBE_BaseApi_Class} from '../db-api-gen/ModuleBE_BaseApi.js';
 import {Storm} from '../../core/Storm.js';
 import {ModuleBE_BackupDocDB} from '../../_entity/backup-doc/index.js';
 import {ModuleBE_BaseDB} from '../db-api-gen/ModuleBE_BaseDB.js';
@@ -65,7 +50,6 @@ class ModuleBE_SyncEnv_Class
 	init() {
 		super.init();
 		addRoutes([
-			createBodyServerApi(ApiDef_SyncEnv.vv1.syncToEnv, this.pushToEnv),
 			createBodyServerApi(ApiDef_SyncEnv.vv1.syncFromEnvBackup, this.syncFromEnvBackup),
 			createQueryServerApi(ApiDef_SyncEnv.vv1.getLatestBackup, this.getLatestBackupId),
 			createQueryServerApi(ApiDef_SyncEnv.vv1.createBackup, this.createBackup),
@@ -89,32 +73,6 @@ class ModuleBE_SyncEnv_Class
 				.filter<ModuleBE_BaseDB<any>>((module: DBModuleType) => !!module.dbDef?.dbKey)).map(_module => _module.dbDef.dbKey)
 		};
 	};
-
-	async pushToEnv(body: {
-		env: 'dev' | 'prod',
-		moduleName: string,
-		items: any[]
-	}) {
-		const remoteUrls = {
-			dev: 'https://us-central1-shopify-manager-tool-dev.cloudfunctions.net/api',
-			prod: 'https://mng.be.petitfawn.com'
-		};
-
-		const url = remoteUrls[body.env];
-		const sessionId = MemKey_HttpRequest.get().headers[HeaderKey_Authorization];
-
-		const module = RuntimeModules().find<ModuleBE_BaseApi_Class<any>>((module: ApiModule) => module.dbModule?.dbDef?.dbKey === body.moduleName);
-
-		const upsertAll = module.apiDef.v1.upsertAll;
-		const response: Response_BackupDocs = await AxiosHttpModule
-			.createRequest({...upsertAll, fullUrl: url + '/' + upsertAll.path, timeout: 5 * Minute})
-			.setBody(body.items)
-			.setUrlParams(body.items)
-			.addHeader(HeaderKey_Authorization, sessionId!)
-			.executeSync(true);
-
-		console.log(response);
-	}
 
 	createBackup = async () => {
 		return ModuleBE_BackupDocDB.initiateBackup(true);
