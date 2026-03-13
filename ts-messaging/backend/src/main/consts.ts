@@ -2,6 +2,8 @@ import {filterInstances} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {ModulePackBE_Messaging} from './module-pack.js';
 import {
+	DatabaseDef_PermissionDomain,
+	DatabaseDef_PermissionGroup,
 	DefaultAccessLevel_Admin,
 	DefaultAccessLevel_Delete,
 	DefaultAccessLevel_Read,
@@ -10,10 +12,11 @@ import {
 	DuplicateDefaultAccessLevels
 } from '@nu-art/permissions-shared';
 import {DefaultDef_Package} from '@nu-art/permissions-backend';
+import {asBrandedId} from '@nu-art/db-api-shared';
 
 export const DomainNamespace_Messaging = 'Messaging';
 export const Domain_Messaging = Object.freeze({
-	_id: '2de76d8ea55ba2fc8a7833520ab11339',
+	_id: asBrandedId<DatabaseDef_PermissionDomain['dbKey']>('2de76d8ea55ba2fc8a7833520ab11339'),
 	namespace: DomainNamespace_Messaging
 });
 
@@ -33,7 +36,7 @@ export const Permissions_Messaging: DefaultDef_Package = {
 };
 
 export const PermissionGroups_Messaging_Viewer: DefaultDef_Group = {
-	_id: 'e6bfc302f7ac81b8c61c97c4e0983b0f',
+	_id: asBrandedId<DatabaseDef_PermissionGroup['dbKey']>('e6bfc302f7ac81b8c61c97c4e0983b0f'),
 	name: `${Domain_Messaging.namespace}/Read`,
 	uiLabel: `${Domain_Messaging.namespace}/Read`,
 	accessLevels: {
@@ -42,7 +45,7 @@ export const PermissionGroups_Messaging_Viewer: DefaultDef_Group = {
 };
 
 export const PermissionGroups_Messaging_Editor: DefaultDef_Group = {
-	_id: 'd9505032de4ae9f1036525676d689e1f',
+	_id: asBrandedId<DatabaseDef_PermissionGroup['dbKey']>('d9505032de4ae9f1036525676d689e1f'),
 	name: `${Domain_Messaging.namespace}/Editor`,
 	uiLabel: `${Domain_Messaging.namespace}/Editor`,
 	accessLevels: {
@@ -51,7 +54,7 @@ export const PermissionGroups_Messaging_Editor: DefaultDef_Group = {
 };
 
 export const PermissionGroups_Messaging_Delete: DefaultDef_Group = {
-	_id: 'e0550d1113874a31e2e3223f258e1340',
+	_id: asBrandedId<DatabaseDef_PermissionGroup['dbKey']>('e0550d1113874a31e2e3223f258e1340'),
 	name: `${Domain_Messaging.namespace}/Delete`,
 	uiLabel: `${Domain_Messaging.namespace}/Delete`,
 	accessLevels: {
@@ -60,7 +63,7 @@ export const PermissionGroups_Messaging_Delete: DefaultDef_Group = {
 };
 
 export const PermissionGroups_Messaging_Admin: DefaultDef_Group = {
-	_id: '89ebc208e794028ebbbf9ea91c508603',
+	_id: asBrandedId<DatabaseDef_PermissionGroup['dbKey']>('89ebc208e794028ebbbf9ea91c508603'),
 	name: `${Domain_Messaging.namespace}/Admin`,
 	uiLabel: `${Domain_Messaging.namespace}/Admin`,
 	accessLevels: {
