@@ -121,6 +121,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 
 	protected async releasePorts(allPorts: string[]) {
 		const commando = this.allocateCommando(Commando_NVM).applyNVM();
+		this.logInfo('Releasing ports: ', allPorts);
 
 		await commando.setUID(this.config.key)
 			.append(`array=($(lsof -ti:${allPorts.join(',')}))`)

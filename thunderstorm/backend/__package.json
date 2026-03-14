@@ -42,6 +42,7 @@
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/google-services-backend": "?",
+    "@nu-art/logger": "?",
     "@nu-art/ts-common": "?",
     "abort-controller": "^3.0.0",
     "axios": "^1.13.1",

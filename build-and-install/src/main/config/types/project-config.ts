@@ -56,7 +56,7 @@ export type BAI_Config = {
 			eslintConfig?: string
 		}
 		backend: {
-			proxy: string
+			proxy: string | null
 		}
 	}
 }
