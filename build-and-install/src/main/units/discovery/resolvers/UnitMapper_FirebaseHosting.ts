@@ -11,7 +11,7 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
-import {FirebaseHosting_EnvConfig, Unit_FirebaseHostingApp, UnitConfigJSON_FirebaseHosting} from '../../implementations/firebase/Unit_FirebaseHostingApp.js';
+import {Unit_FirebaseHostingApp, UnitConfigJSON_FirebaseHosting, WebpackHosting_EnvConfig} from '../../implementations/firebase/Unit_FirebaseHostingApp.js';
 import {resolve} from 'path';
 import {BaiParam_SetEnv} from '../../../core/params.js';
 
@@ -19,6 +19,7 @@ const valuesValidator = {
 	config: tsValidateMustExist,
 	projectId: tsValidateAnyString,
 	isLocal: tsValidateBoolean(false),
+	webpackConfig: tsValidateOptional
 };
 
 // Artifact Registry generic package name validation: lowercase, alphanumeric with dots, underscores, hyphens
@@ -42,7 +43,7 @@ export class UnitMapper_FirebaseHosting_Class
 	static tsValidator_FirebaseHosting = {
 		type: tsValidateValue(['firebase-hosting']),
 		servingPort: tsValidateOptionalAnyNumber,
-		envs: tsValidateDynamicObject<TypedMap<FirebaseHosting_EnvConfig>>(valuesValidator, tsValidateAnyString),
+		envs: tsValidateDynamicObject<TypedMap<WebpackHosting_EnvConfig>>(valuesValidator, tsValidateAnyString),
 		hostingConfig: tsValidateOptional,
 		hostingDeployment: tsValidateOptionalObject(hostingDeploymentValidator),
 		...UnitMapper_Node.tsValidator_Node,
@@ -59,10 +60,11 @@ export class UnitMapper_FirebaseHosting_Class
 		if (!envUnitConfig)
 			this.logWarning('Package Json config:', context.packageJson.unitConfig);
 
-		const envConfig = {
+		const envConfig: WebpackHosting_EnvConfig = {
 			config: envUnitConfig?.config,
 			projectId: envUnitConfig?.projectId,
-			isLocal: envUnitConfig?.isLocal ?? env === 'local'
+			isLocal: envUnitConfig?.isLocal ?? env === 'local',
+			webpackConfig: envUnitConfig?.webpackConfig,
 		};
 
 

@@ -1,5 +1,5 @@
 import {CONST_NodeModules, CONST_PackageJSON} from '../../config/consts.js';
-import {__stringify, StringMap} from '@nu-art/ts-common';
+import {__stringify, InvalidResult, StringMap, ValidationException} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {resolve} from 'path';
@@ -41,6 +41,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	extends ProjectUnit<C>
 	implements UnitPhaseImplementor<[Phase_Purge, Phase_Prepare, Phase_PrepareWatch]> {
 
+	configValidationResult?: InvalidResult<any>;
 
 	constructor(config: C) {
 		super(config);
@@ -91,6 +92,9 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	 * **Template Params**: Includes THUNDERSTORM_VERSION, __ENV__, and child unit versions.
 	 */
 	async prepare(): Promise<void> {
+		if (this.configValidationResult)
+			throw new ValidationException(`Invalid unit config for '${this.config.key}'`, undefined, this.configValidationResult);
+
 		await this._sharedPrepare();
 	}
 

@@ -5,7 +5,6 @@ import {
 	deepClone,
 	RelativePath,
 	StringMap,
-	tsValidate,
 	tsValidateBoolean,
 	tsValidateOptionalAnyString,
 	tsValidateResult,
@@ -16,6 +15,7 @@ import {BaseUnit} from '../../index.js';
 import {FilesCache} from '../../../core/FilesCache.js';
 import {BaseUnitConfig, UnitConfigJSON_Base, UnitMapper_Base} from './UnitMapper_Base.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {Unit_PackageJson} from '../../implementations/Unit_PackageJson.js';
 
 
 export type UnitConfigJSON_Node = UnitConfigJSON_Base & {
@@ -77,7 +77,7 @@ export abstract class UnitMapper_Node<
 				return; // not the expected type for this mapper
 
 			packageJson = deepClone(packageJson);
-			tsValidate(packageJson.unitConfig, this.validator as ValidatorTypeResolver<ConfigJSON>);
+			const configValidationResult = tsValidateResult(packageJson.unitConfig, this.validator as ValidatorTypeResolver<ConfigJSON>, undefined, false);
 			const dependencies = packageJson.dependencies;
 			if (dependencies)
 				packageJson.dependencies = _keys(dependencies).reduce<StringMap>((acc, key) => {
@@ -104,7 +104,11 @@ export abstract class UnitMapper_Node<
 
 			const customESLintConfig = packageJson.unitConfig.customESLintConfig ?? false;
 			const customTSConfig = packageJson.unitConfig.customTSConfig ?? false;
-			return this.resolveNodeUnit({path, root, packageJson, baseConfig, customESLintConfig, customTSConfig});
+			const unit = await this.resolveNodeUnit({path, root, packageJson, baseConfig, customESLintConfig, customTSConfig});
+			if (unit instanceof Unit_PackageJson)
+				unit.configValidationResult = configValidationResult;
+
+			return unit;
 		} catch (e: any) {
 			this.logError(`Failed to load package.json at: ${pathToFile}`, e);
 			throw e;
