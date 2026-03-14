@@ -28,7 +28,8 @@ export class Unit_ViteHostingApp<C extends Unit_HostingApp_Config = Unit_Hosting
 			.setUID(this.config.key)
 			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, `${this.npmCommand('vite')}`);
+		const port = this.config.servingPort;
+		await this.executeAsyncCommando(commando, `PORT=${port} ${this.npmCommand('vite')}`);
 		this.logWarning('HOSTING TERMINATED');
 	}
 }

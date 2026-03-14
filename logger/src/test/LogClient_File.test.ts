@@ -5,7 +5,8 @@
  */
 
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
-import {BeLogged, LogClient_File, Logger} from '../main/index.js';
+import {BeLogged, Logger} from '../main/index.js';
+import {LogClient_File} from '../main/node.js';
 import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {mkdir, rm} from 'fs/promises';

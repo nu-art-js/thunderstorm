@@ -4,7 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {BeLogged, LogClient_BrowserGroups, Logger} from '../main/index.js';
+import {BeLogged, Logger} from '../main/index.js';
+import {LogClient_BrowserGroups} from '../main/browser.js';
 import {createTestBuffer} from './helpers.js';
 import {expect} from 'chai';
 

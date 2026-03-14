@@ -41,6 +41,14 @@
     ".": {
       "types": "./index.d.ts",
       "import": "./index.js"
+    },
+    "./node": {
+      "types": "./node.d.ts",
+      "import": "./node.js"
+    },
+    "./browser": {
+      "types": "./browser.d.ts",
+      "import": "./browser.js"
     }
   }
 }

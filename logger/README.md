@@ -14,6 +14,12 @@ Add the package as a dependency in your `__package.json`:
 }
 ```
 
+### Entry points
+
+- **`@nu-art/logger`** (default) – Shared API: works in Node and browser. Exposes `Logger`, `BeLogged`, `LogClient_Terminal`, `LogClient_MemBuffer`, `LogClient_Function`, `LogClient_ConsoleProxy`, `LogClient_BaseRotate`, types, debug-flags, utils.
+- **`@nu-art/logger/node`** – Default API plus Node-only clients (e.g. `LogClient_File`). Use in backend/Node apps.
+- **`@nu-art/logger/browser`** – Default API plus browser-only clients (`LogClient_Browser`, `LogClient_BrowserGroups`). Use in frontend apps that need styled/grouped console output.
+
 Import and use the logger in your code:
 
 ```typescript
@@ -49,11 +55,11 @@ BeLogged.addClient(terminalClient);
 
 Multiple built-in log clients for different output destinations:
 
-- **`LogClient_Terminal`** - Outputs logs to terminal/console with color formatting
-- **`LogClient_Browser`** - Outputs logs to browser console with grouping support
-- **`LogClient_BrowserGroups`** - Browser console with automatic grouping by log level
-- **`LogClient_File`** - Writes logs to files on disk
-- **`LogClient_MemBuffer`** - Stores logs in memory buffers (useful for testing)
+- **`LogClient_Terminal`** - Outputs logs to terminal/console with ANSI color formatting (default entry)
+- **`LogClient_Browser`** - Outputs logs to browser console with CSS styling (`@nu-art/logger/browser`)
+- **`LogClient_BrowserGroups`** - Browser console with automatic grouping by log level (`@nu-art/logger/browser`)
+- **`LogClient_File`** - Writes logs to files on disk (`@nu-art/logger/node` only)
+- **`LogClient_MemBuffer`** - Stores logs in memory buffers (useful for testing) (default entry)
 - **`LogClient_Function`** - Routes logs to a custom function callback
 - **`LogClient_ConsoleProxy`** - Proxies logs to native console methods
 - **`LogClient_BaseRotate`** - Base class for log rotation support
@@ -144,14 +150,14 @@ class UserService extends Logger {
 ### Multiple Log Clients
 
 ```typescript
-import {BeLogged, LogClient_Terminal, LogClient_File} from '@nu-art/logger';
+import {BeLogged, LogClient_Terminal, LogClient_File} from '@nu-art/logger/node';
 
 // Add terminal output
 const terminal = new LogClient_Terminal();
 BeLogged.addClient(terminal);
 
-// Add file output
-const fileClient = new LogClient_File('/var/log/app.log');
+// Add file output (Node only)
+const fileClient = new LogClient_File('app', '/var/log/app', 10, 1024);
 BeLogged.addClient(fileClient);
 
 // Now all logs go to both terminal and file

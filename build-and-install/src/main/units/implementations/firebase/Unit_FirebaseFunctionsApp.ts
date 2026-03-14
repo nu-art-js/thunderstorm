@@ -1,14 +1,21 @@
 import {UnitPhaseImplementor} from '../../../core/types.js';
-import {CONST_BuildImageDir, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_LatestTag, CONST_PackageJSON, CONST_TrashDir, CONST_VersionApp} from '../../../config/consts.js';
+import {
+	CONST_BuildImageDir,
+	CONST_FirebaseJSON,
+	CONST_FirebaseRC,
+	CONST_LatestTag,
+	CONST_PackageJSON,
+	CONST_TrashDir,
+	CONST_VersionApp
+} from '../../../config/consts.js';
 import {FirebasePackageConfig} from '../../../config/types/index.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
-import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
-import {Commando_NVM} from '@nu-art/commando';
+import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, Default_Files, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
+import {Commando_NVM, CommandoException} from '@nu-art/commando';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/index.js';
 import {resolve} from 'path';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
-import {CommandoException} from '@nu-art/commando';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
@@ -187,14 +194,21 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	async launch() {
 		await sleep(2 * Second * Unit_FirebaseFunctionsApp.staggerCount++);
 		await this.releaseEmulatorPorts();
-		await Promise.all([
-			this.runProxy(),
-			this.runEmulator(),
-		]);
+
+		let emulatorPromise: Promise<void> | undefined;
+
+		const proxyPromise = this.runProxy(() => {
+			emulatorPromise = this.runEmulator();
+		});
+
+		await proxyPromise;
+
+		if (emulatorPromise)
+			await emulatorPromise;
 	}
 
 	async releaseEmulatorPorts() {
-		const allPorts = Array.from({length: 10}, (_, i) => `${this.config.basePort + i}`);
+		const allPorts = Array.from({length: 11}, (_, i) => `${this.config.basePort + i}`);
 		return this.releasePorts(allPorts);
 	}
 
@@ -689,7 +703,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 			// Build Cloud Run service YAML definition using template
 			const resources = functionConfig.resources;
-			
+
 			// Generate environment variables as YAML array
 			// Indentation: 8 spaces for list item, 10 spaces for value (under env: which is at 8 spaces)
 			const envVarsYaml = Object.entries(envVars)
@@ -710,10 +724,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 			// Build template parameters
 			// Convert cpu to string if it's a number
-			const cpuValue = resources?.cpu !== undefined 
+			const cpuValue = resources?.cpu !== undefined
 				? (typeof resources.cpu === 'number' ? resources.cpu.toString() : resources.cpu)
 				: '1';
-			
+
 			const serviceYamlParams = {
 				SERVICE_NAME: serviceName,
 				FUNCTION_NAME: functionName,
@@ -806,9 +820,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	private async resolveProxyFile() {
 		const envConfig = this.getEnvConfig();
 		const targetPath = this.pathToProxy();
-		const path = this.runtimeContext.baiConfig.files?.backend?.proxy;
-		if (!path)
-			return;
+		const templatePath = this.runtimeContext.baiConfig.files?.backend?.proxy ?? Default_Files.backend!.proxy!;
+
+		await FileSystemUtils.folder.create(resolve(this.config.fullPath, '.trash/proxy'));
 
 		const params = {
 			PROJECT_ID: `${envConfig.projectId}`,
@@ -817,11 +831,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			PATH_TO_SSL_KEY: `${this.config.sslKey}`,
 			PATH_TO_SSL_CERTIFICATE: `${this.config.sslCert}`,
 		};
-		await FileSystemUtils.file.template.copy(path, targetPath, params);
+		await FileSystemUtils.file.template.copy(templatePath, targetPath, params);
 	}
 
 	private pathToProxy() {
-		return resolve(this.config.fullPath, 'src/main/proxy.ts');
+		return resolve(this.config.fullPath, '.trash/proxy/proxy.ts');
 	}
 
 	private async resolveConfigDir() {
@@ -968,13 +982,22 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	//######################### Launch Logic #########################
 
-	private async runProxy() {
+	private async runProxy(onReady?: () => void) {
 		await this.resolveProxyFile();
 
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, `${this.npmCommand('tsx')} src/main/proxy.ts`);
+		let readyFired = false;
+		commando.addLogProcessor((log) => {
+			if (!readyFired && log.includes('SSL proxy started at port')) {
+				readyFired = true;
+				onReady?.();
+			}
+			return true;
+		});
+
+		await this.executeAsyncCommando(commando, `${this.npmCommand('tsx')} .trash/proxy/proxy.ts`);
 		this.logWarning('PROXY TERMINATED');
 	}
 
