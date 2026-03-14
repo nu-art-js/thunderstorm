@@ -29,7 +29,7 @@ export type FirebaseHostingConfig = {
 export type FirebaseHosting_EnvConfig = {
 	config: TS_Object,
 	projectId: string,
-	isLocal?: boolean
+	isLocal?: boolean,
 };
 
 export type Unit_HostingApp_Config = Unit_TypescriptLib_Config & {
