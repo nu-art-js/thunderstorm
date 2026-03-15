@@ -1,7 +1,7 @@
-import {Const_UniqueKeys, Day, DBDef_V3, DBProto, Hour} from '@nu-art/ts-common';
+import {Database, DB_Prototype} from '@nu-art/db-api-shared';
+import {Const_UniqueKeys, Day, Hour} from '@nu-art/ts-common';
 
-
-export type DBApiBEConfig<Proto extends DBProto<any>> = {
+export type DBApiBEConfig<Proto extends DB_Prototype> = {
 	uniqueKeys: Proto['uniqueKeys']
 	itemName: string;
 	versions: Proto['versions'];
@@ -10,7 +10,7 @@ export type DBApiBEConfig<Proto extends DBProto<any>> = {
 	lockKeys?: Proto['lockKeys']
 }
 
-export const getModuleBEConfig = <Proto extends DBProto<any, any, any>>(dbDef: DBDef_V3<Proto>): DBApiBEConfig<Proto> => {
+export const getModuleBEConfig = <Proto extends DB_Prototype>(dbDef: Database<Proto>): DBApiBEConfig<Proto> => {
 	return {
 		versions: dbDef.versions,
 		lockKeys: dbDef.lockKeys,

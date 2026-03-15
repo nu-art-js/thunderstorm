@@ -2,9 +2,10 @@ import * as chai from 'chai';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, firestore, testInstance1, testInstance2, testInstance3, validateDBObject} from '../_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {asArray, compare, DB_Object, DBDef_V3, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {asArray, compare, DB_Object, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery} from '../../../main/index.js';
-import {DB_Type, DBProto_Type} from '../_entity.js';
+import {DB_Type, DatabaseDef_Type} from '../_entity.js';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 
 
@@ -12,7 +13,7 @@ chai.use(require('chai-as-promised'));
 export const updatedStringValue1 = 'test update';
 export const updatedStringValue2 = 'test update 2';
 
-const dbDef: DBDef_V3<DBProto_Type> = {
+const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-set-tests',
@@ -28,7 +29,7 @@ const dbDef: DBDef_V3<DBProto_Type> = {
 };
 
 type Input = {
-	setAction: (collection: FirestoreCollectionV3<DBProto_Type>, inserted: DB_Type[]) => Promise<void>
+	setAction: (collection: FirestoreCollectionV3<DatabaseDef_Type>, inserted: DB_Type[]) => Promise<void>
 	toCreate: PreDB<DB_Type>[]
 }
 
@@ -172,7 +173,7 @@ export const TestSuite_FirestoreV3_Set: Test = {
 	label: 'Firestore set tests',
 	testcases: TestCases_FB_Set,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
+		const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		const toInsert = deepClone(testCase.input.toCreate);

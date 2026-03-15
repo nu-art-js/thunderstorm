@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {DBProto} from '@nu-art/ts-common';
+import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {ThunderDispatcher} from './ThunderDispatcher.js';
 
 /**
@@ -36,13 +36,17 @@ export type MultiApiEvent =
 	| typeof EventType_DeleteMulti;
 
 
-export type ApiCallerEventType<Proto extends DBProto<any>> =
+export type ApiCallerEventType<Proto extends DB_Prototype> =
 	| [SingleApiEvent, Proto['dbType']]
 	| [MultiApiEvent, Proto['dbType'][]];
 
-export type DispatcherDef<Proto extends DBProto<any>, MethodName extends `${string}`> = {
+export type DispatcherDef<Proto extends DB_Prototype, MethodName extends `${string}`> = {
 	eventName: MethodName;
 	method: (...params: ApiCallerEventType<Proto>) => void;
+};
+
+export type DispatcherInterface<Def extends DispatcherDef<any, any>> = {
+	[K in Def['eventName']]: Def['method'];
 };
 
 export class ThunderDispatcherV3<T extends DispatcherDef<any, any>>

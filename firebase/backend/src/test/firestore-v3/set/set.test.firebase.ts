@@ -4,13 +4,14 @@ import {compare, DB_Object, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/
 import {expect} from 'chai';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {firestore} from '../../_entity/_core/consts.js';
-import {DBProto_Type, DB_Type} from '../_entity.js';
-import {DBDef_V3, tsValidateMustExist} from '@nu-art/ts-common';
+import {DatabaseDef_Type, DB_Type} from '../_entity.js';
+import {Database} from '@nu-art/db-api-shared';
+import {tsValidateMustExist} from '@nu-art/ts-common';
 
 const descriptionOf = (testCase: TestCase_FirestoreV3_Set): string =>
 	typeof testCase.description === 'function' ? testCase.description(testCase) : (testCase.description ?? 'set test');
 
-const dbDef: DBDef_V3<DBProto_Type> = {
+const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-set-tests',
@@ -31,7 +32,7 @@ const runTestCase = (testCase: TestCase_FirestoreV3_Set) => async () => {
 	await runSingleTestCase(test_FirestoreV3_Set, {
 		...testCase,
 		result: async (_actual) => {
-			const collection = firestore.getCollection<DBProto_Type>(dbDef);
+			const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 			const sortedRemaining = sortArray((await collection.query.custom(_EmptyQuery)), item => item._uniqueId);
 			const expectedResult = await Promise.resolve((testCase.result as SetTestResult)());
 			const allResults = sortArray([...expectedResult.created ?? [], ...expectedResult.updated ?? [], ...expectedResult.notUpdated ?? []], item => item._uniqueId);

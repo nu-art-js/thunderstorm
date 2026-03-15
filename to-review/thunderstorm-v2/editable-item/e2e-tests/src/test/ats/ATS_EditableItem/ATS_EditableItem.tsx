@@ -6,7 +6,7 @@
 
 import {AppToolsScreen, ATS_Frontend, ComponentSync, LL_V_L, SimpleListAdapter, TS_PropRenderer} from '@nu-art/thunder-routing';
 import {EditableDBItemV3, EditableItem} from '@nu-art/editable-item';
-import type {DBProto_EditableTest, UI_EditableTest} from '../../shared/types.js';
+import type {DatabaseDef_EditableTest, UI_EditableTest} from '../../shared/types.js';
 import {ModuleFE_EditableTest} from '../editable-test/ModuleFE_EditableTest.js';
 import {TS_EditableContent} from '@nu-art/editable-item';
 import {EDITABLE} from '@nu-art/editable-item';
@@ -59,7 +59,7 @@ const Dropdown_Zevel = EDITABLE.DropDown({
 });
 
 class EditableItemTestEditor
-	extends TS_EditableContent<DBProto_EditableTest> {
+	extends TS_EditableContent<DatabaseDef_EditableTest> {
 
 	render() {
 		return <LL_V_L>

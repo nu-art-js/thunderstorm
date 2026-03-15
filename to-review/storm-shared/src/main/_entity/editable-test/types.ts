@@ -4,9 +4,12 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import type {DB_Object, DB_Prototype, DB_ProtoSeed, VersionsDeclaration} from '@nu-art/db-api-shared';
 
-export type DB_EditableTest = DB_Object & {
+export const EditableTest_DbKey = 'editable-test';
+type DBKey = typeof EditableTest_DbKey;
+
+export type DB_EditableTest = DB_Object<DBKey> & {
 	a: string;
 	b: string;
 	c: string;
@@ -20,8 +23,6 @@ type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_EditableTest>;
 type Dependencies = Record<string, never>;
 type UniqueKeys = '_id';
 type GeneratedProps = never;
-type Proto = Proto_DB_Object<DB_EditableTest, 'editable-test', GeneratedProps, Versions, UniqueKeys, Dependencies>;
 
-export type DBProto_EditableTest = DBProto<Proto>;
-
-export type UI_EditableTest = DBProto_EditableTest['uiType'];
+export type DatabaseDef_EditableTest = DB_Prototype<DB_ProtoSeed<DB_EditableTest, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>>;
+export type UI_EditableTest = DatabaseDef_EditableTest['uiType'];

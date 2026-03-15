@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
-import {ThunderDispatcher} from '@nu-art/thunderstorm-frontend/index';
+import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 export interface OnShowConflictResolution {
 	__onShowConflictResolution: (dependencies?: DBEntityDependencies) => void;

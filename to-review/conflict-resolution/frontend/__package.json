@@ -42,8 +42,14 @@
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
     "react": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?"
+    "@nu-art/db-api-frontend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/editable-item": "?",
+    "@nu-art/http-client": "?",
+    "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunder-ui-modules": "?",
+    "@nu-art/thunder-widgets": "?"
   },
   "devDependencies": {
     "@types/react": "?"

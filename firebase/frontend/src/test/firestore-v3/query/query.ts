@@ -1,9 +1,10 @@
 import {queryAllTestCases, queryComplexTestCases, QueryTest, queryTestCases, queryWithPagination} from './consts.js';
 import {CollectionTest, firestore, prepareCollectionTest} from '../_core/consts.js';
-import {DBDef_V3, deepClone, tsValidateMustExist} from '@nu-art/ts-common';
-import {DBProto_Type} from '../_entity.js';
+import {Database} from '@nu-art/db-api-shared';
+import {deepClone, tsValidateMustExist} from '@nu-art/ts-common';
+import {DatabaseDef_Type} from '../_entity.js';
 
-const dbDef: DBDef_V3<DBProto_Type> = {
+const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-query-tests',
@@ -38,7 +39,7 @@ export const TestSuite_FirestoreV3_QueryUnique: QueryTest = {
 	label: 'Firestore query.custom tests',
 	testcases: TestCases_FB_QueryUnique,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
+		const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		const toInsert = deepClone(testCase.input.value);
 		await collection.create.all(toInsert);
@@ -50,7 +51,7 @@ export const TestSuite_FireStoreV3_QueryWithPagination: QueryTest = {
 	label: 'Firestore query.custom with pagination tests',
 	testcases: TestCases_FB_QueryPagination,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
+		const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		const toInsert = deepClone(testCase.input.value);
 		await collection.create.all(toInsert);

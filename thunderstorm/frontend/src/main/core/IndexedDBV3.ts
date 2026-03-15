@@ -19,7 +19,8 @@
  * limitations under the License.
  */
 
-import {DBIndex, DBProto, IndexKeys, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {DBIndex, IndexKeys, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
 const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
@@ -31,7 +32,7 @@ export type ReduceFunction_V3<ItemType, ReturnType> = (
 	array?: ItemType[]
 ) => ReturnType
 
-export type DBConfigV3<Proto extends DBProto<any>> = {
+export type DBConfigV3<Proto extends DB_Prototype> = {
 	name: string
 	group: string;
 	version?: number
@@ -47,13 +48,13 @@ export type IndexDb_Query_V3 = {
 	limit?: number
 };
 
-export class IndexedDBV3<Proto extends DBProto<any>> {
+export class IndexedDBV3<Proto extends DB_Prototype> {
 	private db!: IDBDatabase;
 	private config: DBConfigV3<Proto>;
 
 	private static dbs: { [collection: string]: IndexedDBV3<any> } = {};
 
-	static getOrCreate<Proto extends DBProto<any>>(config: DBConfigV3<Proto>): IndexedDBV3<Proto> {
+	static getOrCreate<Proto extends DB_Prototype>(config: DBConfigV3<Proto>): IndexedDBV3<Proto> {
 		return this.dbs[config.name] || (this.dbs[config.name] = new IndexedDBV3<Proto>(config));
 	}
 

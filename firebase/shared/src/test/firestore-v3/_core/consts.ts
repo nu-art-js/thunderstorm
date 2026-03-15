@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
+import {Database} from '@nu-art/db-api-shared';
 import {
 	DB_Object,
 	DB_Object_validator,
-	DBDef_V3,
 	deepClone,
 	generateHex,
 	keepDBObjectKeys,
@@ -34,7 +34,7 @@ import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/back
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {TestModel, TestSuite} from '@nu-art/testalot';
 import {expect} from 'chai';
-import {DB_Type, DB_Type_Complex, DBProto_Type_Complex, TestInputValue} from '../_entity.js';
+import {DB_Type, DB_Type_Complex, DatabaseDef_Type_Complex, TestInputValue} from '../_entity.js';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 import {FB_ArrayType} from './types.js';
 
@@ -153,7 +153,7 @@ export type CollectionTestInput = {
 	innerCollection: PreDB<DB_Type_Complex>[];
 	outerId?: string,
 	innerId?: string
-	check: (collectionOuter: FirestoreCollectionV3<DBProto_Type_Complex>, collectionInner: FirestoreCollectionV3<DBProto_Type_Complex>) => Promise<void>
+	check: (collectionOuter: FirestoreCollectionV3<DatabaseDef_Type_Complex>, collectionInner: FirestoreCollectionV3<DatabaseDef_Type_Complex>) => Promise<void>
 }
 export type CollectionTest = TestSuite<CollectionTestInput, TestInputValue>;
 
@@ -183,13 +183,13 @@ export const innerQueryCollection = [
 	{_id: id_inner9, name: 'inner9', refs: [], parentId: id_outer1},
 ];
 
-const Validator_Complex_Outer: DBProto_Type_Complex['modifiablePropsValidator'] = {
+const Validator_Complex_Outer: DatabaseDef_Type_Complex['modifiablePropsValidator'] = {
 	refs: tsValidateArray(tsValidateString()),
 	name: tsValidateString(),
 	parentId: tsValidateString(-1, false),
 };
 
-const DBDef_Type_Complex_Outer: DBDef_V3<DBProto_Type_Complex> = {
+const DBDef_Type_Complex_Outer: Database<DatabaseDef_Type_Complex> = {
 	modifiablePropsValidator: Validator_Complex_Outer,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-tests-outer',
@@ -204,7 +204,7 @@ const DBDef_Type_Complex_Outer: DBDef_V3<DBProto_Type_Complex> = {
 	}
 };
 
-const DBDef_Type_Complex_Inner: DBDef_V3<DBProto_Type_Complex> = {
+const DBDef_Type_Complex_Inner: Database<DatabaseDef_Type_Complex> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-tests-inner',
@@ -220,8 +220,8 @@ const DBDef_Type_Complex_Inner: DBDef_V3<DBProto_Type_Complex> = {
 };
 
 export async function prepareCollectionTest(testCase: TestModel<CollectionTestInput, TestInputValue>) {
-	const outerCollection = firestore.getCollection<DBProto_Type_Complex>(DBDef_Type_Complex_Outer);
-	const innerCollection = firestore.getCollection<DBProto_Type_Complex>(DBDef_Type_Complex_Inner);
+	const outerCollection = firestore.getCollection<DatabaseDef_Type_Complex>(DBDef_Type_Complex_Outer);
+	const innerCollection = firestore.getCollection<DatabaseDef_Type_Complex>(DBDef_Type_Complex_Inner);
 	await Promise.all([outerCollection, innerCollection].map(async (collection) => await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete()));
 	const outerToInsert = deepClone(testCase.input.outerCollection);
 	const innerToInsert = deepClone(testCase.input.innerCollection);

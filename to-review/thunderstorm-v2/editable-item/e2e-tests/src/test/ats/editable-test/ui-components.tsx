@@ -6,11 +6,11 @@
 
 import {ModuleFE_EditableTest} from './ModuleFE_EditableTest.js';
 import {DBItemDropDownMultiSelector} from '@nu-art/editable-item';
-import type {DBProto_EditableTest} from '../../shared/types.js';
+import type {DatabaseDef_EditableTest} from '../../shared/types.js';
 import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown} from '@nu-art/thunder-widgets';
 import {TS_MultiSelect_V2} from '@nu-art/editable-item';
 
-const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_EditableTest> = {
+const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_EditableTest> = {
 	module: ModuleFE_EditableTest,
 	modules: [ModuleFE_EditableTest],
 	mapper: (item) => [item.a],

@@ -1,17 +1,18 @@
-import {convertUpperCamelCase, DBDef_V3, tsValidateString, tsValidateTimestamp, tsValidateUniqueId} from '@nu-art/ts-common';
-import {DBProto_PushSession} from './types.js';
+import {Database} from '@nu-art/db-api-shared';
+import {convertUpperCamelCase, tsValidateString, tsValidateTimestamp, tsValidateUniqueId} from '@nu-art/ts-common';
+import {DatabaseDef_PushSession} from './types.js';
 import {PushPubSubDBGroup} from '../shared.js';
 
-const Validator_ModifiableProps: DBProto_PushSession['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_PushSession['modifiablePropsValidator'] = {
 	accountId: tsValidateUniqueId,
 	pushSessionId: tsValidateString(),
 	firebaseToken: tsValidateString(),
 	timestamp: tsValidateTimestamp()
 };
 
-const Validator_GeneratedProps: DBProto_PushSession['generatedPropsValidator'] = {};
+const Validator_GeneratedProps: DatabaseDef_PushSession['generatedPropsValidator'] = {};
 
-export const DBDef_PushSession: DBDef_V3<DBProto_PushSession> = {
+export const DBDef_PushSession: Database<DatabaseDef_PushSession> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],

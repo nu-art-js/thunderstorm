@@ -1,6 +1,6 @@
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {BadImplementationException, ImplementationMissingException, RecursiveObjectOfPrimitives, TypedKeyValue} from '@nu-art/ts-common';
-import {HeaderKey_Authorization, HeaderKey_Origin} from '@nu-art/thunderstorm-shared/headers';
+import {HeaderKey_Authorization, HeaderKey_Origin} from '@nu-art/api-types';
 import {HeaderKey} from '@nu-art/http-server';
 import {_SessionKey_Account, DatabaseDef_Account, DB_Session, HeaderKey_DeviceId, HeaderKey_TabId} from '@nu-art/user-account-shared';
 

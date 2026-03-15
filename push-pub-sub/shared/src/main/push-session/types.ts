@@ -1,20 +1,18 @@
-import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DB_Prototype, DB_ProtoSeed, VersionsDeclaration} from '@nu-art/db-api-shared';
 import {FirebaseToken, PushSessionId} from '../types.js';
 
-
+export const PushSession_DbKey = 'push-session';
+type DBKey = typeof PushSession_DbKey;
 type VersionTypes_PushSession = { '1.0.0': DB_PushSession };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PushSession>;
-type Dependencies = {}
+type Dependencies = {};
 type UniqueKeys = 'pushSessionId';
-type Proto = Proto_DB_Object<DB_PushSession, 'push-session', never, Versions, UniqueKeys, Dependencies>;
+type GeneratedProps = never;
 
-export type DBProto_PushSession = DBProto<Proto>;
-
-export type UI_PushSession = DBProto_PushSession['uiType'];
-
-export type DB_PushSession = DB_Object & FirebaseToken & PushSessionId & {
+export type DB_PushSession = DB_Object<DBKey> & FirebaseToken & PushSessionId & {
 	timestamp: number
 	accountId: string
-}
+};
 
-
+export type DatabaseDef_PushSession = DB_Prototype<DB_ProtoSeed<DB_PushSession, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>>;
+export type UI_PushSession = DatabaseDef_PushSession['uiType'];

@@ -5,7 +5,7 @@ import chaiAsPromised from 'chai-as-promised';
 import {createTestCases, CreateTestInput} from './consts.js';
 import {expect} from 'chai';
 import {createTests_dbDef} from './create.js';
-import {DBProto_Type} from '../../_entity/type/index.js';
+import {DatabaseDef_Type} from '../../_entity/type/index.js';
 import {TestInputValue} from '../_entity.js';
 import {TestModel} from '@nu-art/testalot';
 
@@ -84,7 +84,7 @@ export const TestCases_FB_CreateAll: TestCase_FirestoreV3_CreateAll[] = [
 ];
 
 const test = async (input: CreateTestInput): Promise<TestInputValue> => {
-	const collection = firestore.getCollection<DBProto_Type>(createTests_dbDef);
+	const collection = firestore.getCollection<DatabaseDef_Type>(createTests_dbDef);
 	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 	const toCreate = deepClone(input.value);

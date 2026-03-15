@@ -6,9 +6,12 @@
 
 export * from './className.js';
 export * from './clearWebsiteDataDispatcher.js';
-export * from './index.js';
 export * from './ModuleFE_LocalStorage.js';
 export * from './mouse-utils.js';
 export * from './thunder-dispatcher.js';
 export * from './tools.js';
 export * from './window-resize.js';
+export * from './ThunderTypes.js';
+export * from './AppWrapper.js';
+export * from './thunder-helpers.js';
+export * from './Thunder.js';

@@ -1,4 +1,5 @@
-import {DBIndex, DBProto} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {DBIndex} from '@nu-art/ts-common';
 
 
 export type ReduceFunction_V3<ItemType, ReturnType> = (
@@ -8,7 +9,7 @@ export type ReduceFunction_V3<ItemType, ReturnType> = (
 	array?: ItemType[]
 ) => ReturnType
 
-export type DBConfigV3<Proto extends DBProto<any>> = {
+export type DBConfigV3<Proto extends DB_Prototype> = {
 	name: string
 	group: string;
 	version: string

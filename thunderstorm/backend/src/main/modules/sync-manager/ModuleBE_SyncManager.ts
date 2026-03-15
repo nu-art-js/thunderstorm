@@ -54,7 +54,7 @@ import {
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState
 } from '@nu-art/thunderstorm-shared/sync-manager/types';
-import {DBDef_DeletedDoc, DBProto_DeletedDoc} from '@nu-art/thunderstorm-shared';
+import {DBDef_DeletedDoc, DatabaseDef_DeletedDoc} from '@nu-art/thunderstorm-shared';
 import {OnSyncEnvCompleted} from '../sync-env/ModuleBE_SyncEnv.js';
 import {OnModuleCleanupV2} from '../../_entity.js';
 import {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
@@ -85,7 +85,7 @@ export class ModuleBE_SyncManager_Class
 	extends Module<Config>
 	implements OnModuleCleanupV2, OnSyncEnvCompleted {
 
-	public collection!: FirestoreCollectionV3<DBProto_DeletedDoc>;
+	public collection!: FirestoreCollectionV3<DatabaseDef_DeletedDoc>;
 
 	private database!: DatabaseWrapperBE;
 	private dbModules!: (ModuleBE_BaseDB<any>)[];

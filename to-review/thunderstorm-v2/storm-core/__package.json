@@ -1,0 +1,49 @@
+{
+  "name": "@nu-art/storm-core",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Storm backend bootstrap: Storm, BaseStorm, RouteResolver_ModulePath",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/api-types": "?",
+    "@nu-art/firebase-backend": "?",
+    "@nu-art/http-server": "?",
+    "@nu-art/ts-common": "?",
+    "express": "?"
+  },
+  "devDependencies": {
+    "@types/express": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

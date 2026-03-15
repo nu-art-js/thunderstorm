@@ -5,7 +5,7 @@ import {TS_ToastOverlay} from '../toaster/index.js';
 import {TS_MemoryMonitor} from '../_utils/TS_MemoryMonitor/index.js';
 import {ComponentSync} from '../_core/ComponentSync.js';
 import {ModuleFE_Routing, TS_Route} from '@nu-art/thunder-routing';
-import {stopPropagation} from '@nu-art/thunder-core';
+import {stopPropagation, Thunder} from '@nu-art/thunder-core';
 
 export class ThunderstormDefaultApp
 	extends ComponentSync<{ rootRoute: TS_Route, additionalOverlays?: React.ElementType[] }> {
@@ -26,8 +26,7 @@ export class ThunderstormDefaultApp
 	}
 
 	render() {
-		// @ts-ignore
-		const blockRightClick = !Thunder.getInstance().config.isDebug;
+		const blockRightClick = !(Thunder.getInstance().getConfig() as { isDebug?: boolean }).isDebug;
 
 		return (
 			<div id="app" onDrop={stopPropagation} onDragOver={stopPropagation} onContextMenu={blockRightClick ? stopPropagation : undefined}>

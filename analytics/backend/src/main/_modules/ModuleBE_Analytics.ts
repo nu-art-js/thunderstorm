@@ -1,7 +1,7 @@
+import {ApiHandler} from '@nu-art/http-server';
 import {Module} from '@nu-art/ts-common';
 import {AnalyticsPlugin_Base} from '../plugins/AnalyticsPlugin_Base.js';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm-backend';
-import {Analytics_SendEvent, Analytics_UpdateLexicon, Analytics_UpdateUser, ApiDef_Analytics} from '@nu-art/analytics-shared';
+import {API_Analytics, ApiDef_Analytics} from '@nu-art/analytics-shared';
 import {AnalyticsPluginRegistry} from '../plugins/index.js';
 
 type Config = {
@@ -18,11 +18,6 @@ class ModuleBE_Analytics_Class
 	protected init() {
 		super.init();
 		this.initPlugins();
-		addRoutes([
-			createBodyServerApi(ApiDef_Analytics()._v1.sendEvent, this.api_sendEvent),
-			createBodyServerApi(ApiDef_Analytics()._v1.updateUser, this.api_updateUser),
-			createBodyServerApi(ApiDef_Analytics()._v1.updateLexicon, this.api_updateLexicon),
-		]);
 	}
 
 	//######################### Plugin Management #########################
@@ -45,23 +40,26 @@ class ModuleBE_Analytics_Class
 
 	//######################### API Callbacks #########################
 
-	private api_sendEvent = async (request: Analytics_SendEvent['request']): Promise<Analytics_SendEvent['response']> => {
+	@ApiHandler(() => ApiDef_Analytics().sendEvent)
+	protected async api_sendEvent(body: API_Analytics['sendEvent']['Body']): Promise<API_Analytics['sendEvent']['Response']> {
 		return this.plugins.forEach(plugin => {
-			plugin.registerEvent(request.event);
+			plugin.registerEvent(body.event);
 		});
-	};
+	}
 
-	private api_updateUser = async (request: Analytics_UpdateUser['request']): Promise<Analytics_UpdateUser['response']> => {
+	@ApiHandler(() => ApiDef_Analytics().updateUser)
+	protected async api_updateUser(body: API_Analytics['updateUser']['Body']): Promise<API_Analytics['updateUser']['Response']> {
 		return this.plugins.forEach(plugin => {
-			plugin.updateUser?.(request);
+			plugin.updateUser?.(body);
 		});
-	};
+	}
 
-	private api_updateLexicon = async (request: Analytics_UpdateLexicon['request']): Promise<Analytics_UpdateLexicon['response']> => {
+	@ApiHandler(() => ApiDef_Analytics().updateLexicon)
+	protected async api_updateLexicon(body: API_Analytics['updateLexicon']['Body']): Promise<API_Analytics['updateLexicon']['Response']> {
 		return this.plugins.forEach(plugin => {
-			plugin.updateLexicon?.(request);
+			plugin.updateLexicon?.(body);
 		});
-	};
+	}
 }
 
 export const ModuleBE_Analytics = new ModuleBE_Analytics_Class();

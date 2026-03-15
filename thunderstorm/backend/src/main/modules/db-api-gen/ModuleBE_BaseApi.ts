@@ -19,7 +19,8 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, DB_BaseObject, DBProto, Metadata, Module} from '@nu-art/ts-common';
+import {DB_BaseObject, DB_Prototype} from '@nu-art/db-api-shared';
+import {__stringify, _values, ApiException, Metadata, Module} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {DBApiDefGeneratorIDBV3} from '@nu-art/thunderstorm-shared';
@@ -32,7 +33,7 @@ import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api.js
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class ModuleBE_BaseApi_Class<Proto extends DBProto<any>>
+export class ModuleBE_BaseApi_Class<Proto extends DB_Prototype>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDB<Proto>;

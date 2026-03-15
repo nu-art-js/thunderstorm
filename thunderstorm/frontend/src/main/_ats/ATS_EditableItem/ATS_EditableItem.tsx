@@ -6,7 +6,7 @@ import {TS_PropRenderer} from '../../components/TS_PropRenderer/index.js';
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem.js';
 import {TS_DropDown} from '../../components/TS_Dropdown/index.js';
 import {SimpleListAdapter} from '../../components/adapter/Adapter.js';
-import {DBProto_EditableTest, UI_EditableTest} from '@nu-art/thunderstorm-shared';
+import {DatabaseDef_EditableTest, UI_EditableTest} from '@nu-art/thunderstorm-shared';
 import {ModuleFE_EditableTest} from '../../_entity/editable-test/index.js';
 
 
@@ -59,7 +59,7 @@ const Dropdown_Zevel = TS_DropDown.prepareEditable({
 });
 
 class EditableItemTestEditor
-	extends TS_EditableContent<DBProto_EditableTest> {
+	extends TS_EditableContent<DatabaseDef_EditableTest> {
 	render() {
 		return <LL_V_L>
 			<TS_PropRenderer.Vertical label={'Prop A'}>

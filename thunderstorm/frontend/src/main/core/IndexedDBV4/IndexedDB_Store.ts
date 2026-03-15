@@ -1,11 +1,12 @@
-import {DBProto, IndexKeys, Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {IndexKeys, Logger, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {DBConfigV3, IndexDb_Query_V3, ReduceFunction_V3} from './types.js';
 
 
-type StoreResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>, write?: boolean, store?: IDBObjectStore) => Promise<IDBObjectStore>;
-type StoreExistsResolver<Proto extends DBProto<any>> = (dbConfig: DBConfigV3<Proto>) => Promise<boolean>;
+type StoreResolver<Proto extends DB_Prototype> = (dbConfig: DBConfigV3<Proto>, write?: boolean, store?: IDBObjectStore) => Promise<IDBObjectStore>;
+type StoreExistsResolver<Proto extends DB_Prototype> = (dbConfig: DBConfigV3<Proto>) => Promise<boolean>;
 
-export class IndexedDB_Store<Proto extends DBProto<any>>
+export class IndexedDB_Store<Proto extends DB_Prototype>
 	extends Logger {
 
 	private config: DBConfigV3<Proto>;

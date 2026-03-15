@@ -17,7 +17,7 @@ import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {AccountType_Service, DatabaseDef_Account, DatabaseDef_Session, DB_Session, DBDef_Session} from '@nu-art/user-account-shared';
 import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
-import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
+import {MemKey_HttpResponse} from '@nu-art/http-server';
 import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {_EmptyQuery} from '@nu-art/firebase-shared';

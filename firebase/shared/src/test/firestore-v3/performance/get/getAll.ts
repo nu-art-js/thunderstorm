@@ -1,11 +1,12 @@
 import {firestore, testInstance1} from '../../_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {DBDef_V3, deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DBProto_Type} from '../../../_entity/type/shared/index.js';
+import {DatabaseDef_Type} from '../../../_entity/type/shared/index.js';
 import {FirestoreCollectionV3} from '../../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 
-const dbDef: DBDef_V3<DBProto_Type> = {
+const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-get-all-tests',
@@ -30,7 +31,7 @@ export const TestSuite_FirestoreV3_Performance_GetAll: TestSuite<{}, {}> = {
 	label: 'Firestore getAll vs Promise.all get() performance test',
 	testcases: [{description: 'performance - firestoreGetAll vs. promiseAllGet', result: [], input: {}}],
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
+		const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		const inserted = await collection.create.all(Array(10).fill(deepClone(testInstance1)));
 		const _ids = inserted.map(_item => _item._id);

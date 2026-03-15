@@ -1,22 +1,23 @@
-import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DB_Prototype, DB_ProtoSeed, VersionsDeclaration} from '@nu-art/db-api-shared';
 
-type VersionTypes_BackupDoc = { '1.0.0': DB_BackupDoc }
+export const BackupDoc_DbKey = 'firestore-backup-status-v2';
+type DBKey = typeof BackupDoc_DbKey;
+type VersionTypes_BackupDoc = { '1.0.0': DB_BackupDoc };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_BackupDoc>;
-type Dependencies = {}
+type Dependencies = {};
 type UniqueKeys = '_id';
-type GeneratedProps = never
-type DBKey = 'firestore-backup-status-v2'
-type Proto = Proto_DB_Object<DB_BackupDoc, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>;
-export type DBProto_BackupDoc = DBProto<Proto>;
-export type UI_BackupDoc = DBProto_BackupDoc['uiType'];
+type GeneratedProps = never;
 
-export type DB_BackupDoc = DB_Object & {
+export type DB_BackupDoc = DB_Object<DBKey> & {
 	timestamp: number,
 	backupPath: string,
 	metadataPath: string,
 	firebasePath: string,
 	metadata: BackupMetaData
-}
+};
+
+export type DatabaseDef_BackupDoc = DB_Prototype<DB_ProtoSeed<DB_BackupDoc, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>>;
+export type UI_BackupDoc = DatabaseDef_BackupDoc['uiType'];
 
 export type ActDetailsDoc = {
 	timestamp: number,

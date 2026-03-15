@@ -1,10 +1,11 @@
 import {firestore, testInstance1} from '../../_core/consts.js';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DB_Type, DBProto_Type} from '../../_entity.js';
+import {DB_Type, DatabaseDef_Type} from '../../_entity.js';
 
-const dbDef: DBDef_V3<DBProto_Type> = {
+const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-create-performance-tests',
@@ -23,7 +24,7 @@ export const TestSuite_FirestoreV2_Performance_WriteMulti: TestSuite<{}, {}> = {
 	label: 'Firestore write multi performance test',
 	testcases: [{description: 'performance - set.all', result: [], input: {}}],
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
+		const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		const docNumber = 50000;

@@ -18,7 +18,7 @@
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
 import {__stringify, ApiException, decode, ImplementationMissingException, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
+import {MemKey_HttpResponse} from '@nu-art/http-server';
 import {ModuleBE_AccountDB} from './ModuleBE_AccountDB.js';
 import {API_SAML, ApiDef_SAML, QueryParam_Email, QueryParam_RedirectUrl, QueryParam_SessionId} from '@nu-art/user-account-shared';
 import {MemKey_AccountEmail} from '../session/consts.js';

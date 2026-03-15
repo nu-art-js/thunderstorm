@@ -3,14 +3,14 @@ import {TestSuite} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts.js';
 import {_EmptyQuery} from '../../../main/index.js';
-import {DB_Type, DBProto_Type, TestInputValue} from '../_entity.js';
+import {DB_Type, DatabaseDef_Type, TestInputValue} from '../_entity.js';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 
 
 export type CreateTestInput = {
 	value: TestInputValue;
 	expectCreateToThrow?: boolean;
-	check?: (collection: FirestoreCollectionV3<DBProto_Type>, expectedItem: TestInputValue) => Promise<void>
+	check?: (collection: FirestoreCollectionV3<DatabaseDef_Type>, expectedItem: TestInputValue) => Promise<void>
 }
 
 export type CreateTest = TestSuite<CreateTestInput, TestInputValue>;

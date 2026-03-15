@@ -4,8 +4,9 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
-import {Button, ComponentSync, LL_H_C, LL_V_L, ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend/index';
+import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
+import {Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
+import type {ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
 import {_keys, _values, filterDuplicates, flatArray, RuntimeModules} from '@nu-art/ts-common';
 import {dispatch_ShowConflictResolution} from '../../_dispatchers/index.js';
 import {TS_Icons} from '@nu-art/ts-styles/icons/index';
@@ -32,8 +33,8 @@ export class Panel_ConflictResolution
 
 	
 	private resolveEntityLabel = () => {
-		const module = RuntimeModules().filter(module => (module as ModuleFE_BaseDB<any>).dbDef?.dbKey === this.props.dependencies.dbKey)[0] as ModuleFE_BaseDB<any>;
-		return module?.dbDef.entityName ?? 'Entity';
+		const module = RuntimeModules().filter(m => (m as ModuleFE_BaseDB<any>).config?.dbKey === this.props.dependencies.dbKey)[0] as ModuleFE_BaseDB<any>;
+		return module?.config.dbConfig.name ?? 'Entity';
 	};
 
 	private closePanel = () => {

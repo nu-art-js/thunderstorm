@@ -47,11 +47,11 @@ export type DB_Asset = DB_Object<typeof Assets_DbKey> & AssetData;
 export type DB_AssetTemp = DB_Object<typeof AssetsTemp_DbKey> & AssetData;
 export type DB_AssetDeleted = DB_Object<typeof AssetsDeleted_DbKey> & AssetData;
 
-export type DBProto_Assets = DB_Prototype<DB_ProtoSeed<DB_Asset, typeof Assets_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
-export type DBProto_AssetsTemp = DB_Prototype<DB_ProtoSeed<DB_AssetTemp, typeof AssetsTemp_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
-export type DBProto_AssetsDeleted = DB_Prototype<DB_ProtoSeed<DB_AssetDeleted, typeof AssetsDeleted_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
+export type DatabaseDef_Assets = DB_Prototype<DB_ProtoSeed<DB_Asset, typeof Assets_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
+export type DatabaseDef_AssetsTemp = DB_Prototype<DB_ProtoSeed<DB_AssetTemp, typeof AssetsTemp_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
+export type DatabaseDef_AssetsDeleted = DB_Prototype<DB_ProtoSeed<DB_AssetDeleted, typeof AssetsDeleted_DbKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
 
-export type UI_Asset = DBProto_Assets['uiType'];
+export type UI_Asset = DatabaseDef_Assets['uiType'];
 
 /** Request shape for upload (name, mimeType, key?, public?, metadata?). */
 export type Request_Uploader = {

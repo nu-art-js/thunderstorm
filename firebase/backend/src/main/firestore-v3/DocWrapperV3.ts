@@ -1,4 +1,5 @@
-import {_keys, currentTimeMillis, DB_Object, DBProto, exists, MUSTNeverHappenException, TS_Object, UniqueId} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {_keys, currentTimeMillis, DB_Object, exists, MUSTNeverHappenException, TS_Object, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types.js';
 import {Transaction} from 'firebase-admin/firestore';
 import {assertUniqueId, CollectionActionType, FirestoreCollectionV3, PostWriteProcessingData} from './FirestoreCollectionV3.js';
@@ -13,7 +14,7 @@ export type UpdateObject<DBType extends TS_Object> = {
 } & Fa.UpdateData<DBType>;
 
 
-export class DocWrapperV3<Proto extends DBProto<any>> {
+export class DocWrapperV3<Proto extends DB_Prototype> {
 	readonly ref: FirestoreType_DocumentReference<Proto['dbType']>;
 	readonly collection: FirestoreCollectionV3<Proto>;
 	data?: Proto['dbType'];

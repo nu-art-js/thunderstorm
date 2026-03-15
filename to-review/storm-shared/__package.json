@@ -10,6 +10,7 @@
 	"scripts": {"build": "tsc -b -f"},
 	"dependencies": {
 		"@nu-art/api-types": "?",
+		"@nu-art/db-api-shared": "?",
 		"@nu-art/ts-common": "?",
 		"react": "?"
 	},

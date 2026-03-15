@@ -20,7 +20,8 @@ import {FirestoreCollectionHooks, FirestoreCollectionV3,} from './FirestoreColle
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types.js';
 import {FirebaseSession} from '../auth/firebase-session.js';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
-import {DB_Object, DBDef_V3, DBProto, Promise_all_sequentially, UniqueId} from '@nu-art/ts-common';
+import {Database, DB_Prototype} from '@nu-art/db-api-shared';
+import {DB_Object, Promise_all_sequentially, UniqueId} from '@nu-art/ts-common';
 import {DocumentReference, DocumentSnapshot, getFirestore, Query, QueryDocumentSnapshot, QuerySnapshot, Transaction,} from 'firebase-admin/firestore';
 
 
@@ -160,7 +161,7 @@ export class FirestoreWrapperBEV3
 		return toRet;
 	};
 
-	public getCollection<Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>): FirestoreCollectionV3<Proto> {
+	public getCollection<Proto extends DB_Prototype>(dbDef: Database<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>): FirestoreCollectionV3<Proto> {
 		const collection = this.collections[dbDef.dbKey];
 		if (collection)
 			return collection;
@@ -168,7 +169,7 @@ export class FirestoreWrapperBEV3
 		return this.collections[dbDef.dbKey] = new FirestoreCollectionV3<Proto>(this, dbDef, hooks);
 	}
 
-	public listen<Proto extends DBProto<any>>(collection: FirestoreCollectionV3<Proto>, doc: string) {
+	public listen<Proto extends DB_Prototype>(collection: FirestoreCollectionV3<Proto>, doc: string) {
 		collection.wrapper.firestore.doc(`${collection.collection.path}/${doc}`).onSnapshot(() => {
 			this.logInfo('received snapshot!');
 		});

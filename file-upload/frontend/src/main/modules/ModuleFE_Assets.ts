@@ -22,18 +22,18 @@ import {CrudApiDef} from '@nu-art/db-api-shared';
 import {HttpClient} from '@nu-art/http-client';
 import {currentTimeMillis} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '@nu-art/thunder-core';
-import {ApiDef_Assets, DBDef_Assets, DBProto_Assets} from '@nu-art/file-upload-shared';
+import {ApiDef_Assets, DBDef_Assets, DatabaseDef_Assets} from '@nu-art/file-upload-shared';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 
 type AssetsApiVV1 = { getReadSignedUrl: (params: { _id: string }) => { executeSync(): Promise<{ signedUrl: string }> } };
 
 export interface OnAssetsUpdated {
-	__onAssetsUpdated: (...params: ApiCallerEventType<DBProto_Assets['dbType']>) => void;
+	__onAssetsUpdated: (...params: ApiCallerEventType<DatabaseDef_Assets['dbType']>) => void;
 }
 
 export const dispatch_onAssetsListChanged = new ThunderDispatcher<OnAssetsUpdated, '__onAssetsUpdated'>('__onAssetsUpdated');
 
-const assetsConfig: DBConfig_ModuleFE<DBProto_Assets> = {
+const assetsConfig: DBConfig_ModuleFE<DatabaseDef_Assets> = {
 	dbKey: DBDef_Assets.dbKey,
 	validator: DBDef_Assets.modifiablePropsValidator,
 	uniqueKeys: ['_id'],
@@ -46,17 +46,17 @@ const assetsConfig: DBConfig_ModuleFE<DBProto_Assets> = {
 	},
 };
 
-const dispatcher: EventDispatcher<DBProto_Assets['dbType']> = (...args: ApiCallerEventType<DBProto_Assets['dbType']>) => dispatch_onAssetsListChanged.dispatchUI(...args);
+const dispatcher: EventDispatcher<DatabaseDef_Assets['dbType']> = (...args: ApiCallerEventType<DatabaseDef_Assets['dbType']>) => dispatch_onAssetsListChanged.dispatchUI(...args);
 
 export class ModuleFE_Assets_Class
-	extends ModuleFE_BaseApi<DBProto_Assets> {
+	extends ModuleFE_BaseApi<DatabaseDef_Assets> {
 
 	readonly vv1: AssetsApiVV1;
 
 	constructor() {
 		super({
 			config: assetsConfig,
-			crudApiDef: CrudApiDef<DBProto_Assets>(DBDef_Assets.dbKey, 'v1'),
+			crudApiDef: CrudApiDef<DatabaseDef_Assets>(DBDef_Assets.dbKey, 'v1'),
 			dispatcher,
 		});
 		this.vv1 = {
@@ -70,7 +70,7 @@ export class ModuleFE_Assets_Class
 	}
 
 	async resolveValidSignedUrl(assetId: string) {
-		const id = assetId as DBProto_Assets['dbType']['_id'];
+		const id = assetId as DatabaseDef_Assets['dbType']['_id'];
 		const asset = this.cache.unique(id);
 		const signedUrl = (asset?.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset?.signedUrl : undefined;
 		if (signedUrl)

@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBEntityDependencies, DBEntityDependencyErrorType} from '@nu-art/thunderstorm-shared';
-import {ModuleFE_XHR} from '@nu-art/thunderstorm-frontend/index';
+import {DBEntityDependencies, DBEntityDependencyErrorType} from '@nu-art/conflict-resolution-shared';
+import {HttpClient} from '@nu-art/http-client';
 import {BadImplementationException, Module, TypedMap, asArray} from '@nu-art/ts-common';
 import {dispatch_ShowConflictResolution} from '../_dispatchers/index.js';
 import {ConflictResolutionItem} from '@nu-art/conflict-resolution-shared';
@@ -16,10 +16,10 @@ class ModuleFE_ConflictResolution_Class
 	private readonly conflictResolutionItems: ConflictResolutionItem<any>[] = [];
 
 	public initDefaultHasDependencyResponse = () => {
-		ModuleFE_XHR.setDefaultOnError(async (errorResponse, input, request) => {
-			if (errorResponse.errorResponse?.error?.type === DBEntityDependencyErrorType) {
-				dispatch_ShowConflictResolution.dispatchUI(errorResponse.errorResponse.error.data);
-			}
+		HttpClient.default?.setDefaultOnError(async (errorResponse) => {
+			const err = errorResponse.errorResponse?.error;
+			if (err?.type === DBEntityDependencyErrorType && err.data)
+				dispatch_ShowConflictResolution.dispatchUI(err.data as DBEntityDependencies);
 		});
 	};
 

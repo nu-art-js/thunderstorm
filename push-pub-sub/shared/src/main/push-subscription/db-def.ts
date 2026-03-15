@@ -1,6 +1,6 @@
+import {Database} from '@nu-art/db-api-shared';
 import {
 	convertUpperCamelCase,
-	DBDef_V3,
 	exists,
 	tsValidateDynamicObject,
 	tsValidateMustExist,
@@ -8,7 +8,7 @@ import {
 	tsValidateResult,
 	tsValidateString
 } from '@nu-art/ts-common';
-import {DBProto_PushSubscription} from './types.js';
+import {DatabaseDef_PushSubscription} from './types.js';
 import {PushPubSubDBGroup} from '../shared.js';
 
 
@@ -25,17 +25,17 @@ const Validator_FilterKey = (value?: number | string) => {
 	return tsValidateResult<string | number>(value, tsValidateMustExist);
 };
 
-const Validator_ModifiableProps: DBProto_PushSubscription['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_PushSubscription['modifiablePropsValidator'] = {
 	pushSessionId: tsValidateString(),
 	filter: tsValidateDynamicObject(Validator_FilterKey, tsValidateString(), false),
 	topic: tsValidateString(200)
 };
 
-const Validator_GeneratedProps: DBProto_PushSubscription['generatedPropsValidator'] = {
+const Validator_GeneratedProps: DatabaseDef_PushSubscription['generatedPropsValidator'] = {
 //
 };
 
-export const DBDef_PushSubscription: DBDef_V3<DBProto_PushSubscription> = {
+export const DBDef_PushSubscription: Database<DatabaseDef_PushSubscription> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],

@@ -1,11 +1,11 @@
 import {ModuleFE_EditableTest} from './ModuleFE_EditableTest.js';
 import {DBItemDropDownMultiSelector} from '../../components/_TS_MultiSelect/DBItemDropDownMultiSelector.js';
-import {DBProto_EditableTest} from '@nu-art/thunderstorm-shared/_entity/editable-test/index';
+import {DatabaseDef_EditableTest} from '@nu-art/thunderstorm-shared/_entity/editable-test/index';
 import {GenericDropDownV3, TemplatingProps_TS_GenericDropDown} from '../../components/GenericDropDown/index.js';
 import {TS_MultiSelect_V2} from '../../components/TS_MultiSelect/index.js';
 
 
-const Props_DropDown: TemplatingProps_TS_GenericDropDown<DBProto_EditableTest> = {
+const Props_DropDown: TemplatingProps_TS_GenericDropDown<DatabaseDef_EditableTest> = {
 	module: ModuleFE_EditableTest,
 	modules: [ModuleFE_EditableTest],
 	mapper: item => [item.a],

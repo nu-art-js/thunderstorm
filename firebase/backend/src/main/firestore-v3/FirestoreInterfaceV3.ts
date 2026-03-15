@@ -19,13 +19,14 @@
 import {ComparatorMap, FirestoreQuery, QueryComparator} from '@nu-art/firebase-shared';
 import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from '../firestore/types.js';
 import {FirestoreCollectionV3} from './FirestoreCollectionV3.js';
-import {__stringify, BadImplementationException, DBProto, ImplementationMissingException, StaticLogger} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {__stringify, BadImplementationException, ImplementationMissingException, StaticLogger} from '@nu-art/ts-common';
 import {Query} from 'firebase-admin/firestore';
 
 
 export class FirestoreInterfaceV3 {
 
-	static buildQuery<Proto extends DBProto<any>>(collection: FirestoreCollectionV3<Proto>, query?: FirestoreQuery<Proto['dbType']>) {
+	static buildQuery<Proto extends DB_Prototype>(collection: FirestoreCollectionV3<Proto>, query?: FirestoreQuery<Proto['dbType']>) {
 		try {
 			let myQuery: FirestoreType_Query = collection.collection;
 			if (query && query.select)

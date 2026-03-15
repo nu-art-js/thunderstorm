@@ -37,7 +37,7 @@ import {ApiHandler} from '@nu-art/http-server';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {OnAssetUploaded} from './ModuleBE_BucketListener.js';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage.js';
-import {ApiDef_AssetUploader, DB_Asset, DB_AssetDeleted, DB_AssetTemp, DBDef_Assets, DBProto_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
+import {ApiDef_AssetUploader, DB_Asset, DB_AssetDeleted, DB_AssetTemp, DBDef_Assets, DatabaseDef_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
@@ -96,7 +96,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FileMetadat
 };
 
 export class ModuleBE_AssetsDB_Class
-	extends ModuleBE_BaseDB<DBProto_Assets, MyConfig>
+	extends ModuleBE_BaseDB<DatabaseDef_Assets, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {

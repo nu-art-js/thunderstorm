@@ -2,10 +2,10 @@ import {CollectionTest, firestore, id_inner1, id_inner2, id_inner3, id_inner4, i
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
-import {DBProto_Type_Complex} from '../../_entity/type-complex/shared/index.js';
+import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/shared/index.js';
 
 
-const transaction_addInner4 = (collectionOuter: FirestoreCollectionV3<DBProto_Type_Complex>, now: number) => {
+const transaction_addInner4 = (collectionOuter: FirestoreCollectionV3<DatabaseDef_Type_Complex>, now: number) => {
 	return firestore.firestore.runTransaction(async (transaction) => {
 		console.log(`pah1 ${currentTimeMillis() - now}`);
 
@@ -19,7 +19,7 @@ const transaction_addInner4 = (collectionOuter: FirestoreCollectionV3<DBProto_Ty
 	});
 };
 
-const transaction_removeInner2 = (collectionOuter: FirestoreCollectionV3<DBProto_Type_Complex>, now: number) => {
+const transaction_removeInner2 = (collectionOuter: FirestoreCollectionV3<DatabaseDef_Type_Complex>, now: number) => {
 	return firestore.firestore.runTransaction(async (transaction) => {
 		console.log(`pah2 ${currentTimeMillis() - now}`);
 
@@ -33,7 +33,7 @@ const transaction_removeInner2 = (collectionOuter: FirestoreCollectionV3<DBProto
 	});
 
 };
-const transaction_removeInner3 = (collectionOuter: FirestoreCollectionV3<DBProto_Type_Complex>, now: number) => {
+const transaction_removeInner3 = (collectionOuter: FirestoreCollectionV3<DatabaseDef_Type_Complex>, now: number) => {
 	return firestore.firestore.runTransaction(async (transaction) => {
 		console.log(`pah3 ${currentTimeMillis() - now}`);
 

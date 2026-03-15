@@ -1,20 +1,20 @@
-import {DB_Object, DBProto, Proto_DB_Object, VersionsDeclaration} from '@nu-art/ts-common';
+import {DB_Object, DB_Prototype, DB_ProtoSeed, VersionsDeclaration} from '@nu-art/db-api-shared';
 
+export const PushMessagesHistory_DbKey = 'push-messages-history';
+type DBKey = typeof PushMessagesHistory_DbKey;
 type VersionTypes_PushMessagesHistory = { '1.0.0': DB_PushMessagesHistory };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_PushMessagesHistory>;
-type Dependencies = {}
+type Dependencies = {};
 type UniqueKeys = '_id';
 type GeneratedKeys = 'pushSessionId' | 'token' | 'message' | 'read' | 'originatingAccountId';
-type Proto = Proto_DB_Object<DB_PushMessagesHistory, 'push-messages-history', GeneratedKeys, Versions, UniqueKeys, Dependencies>;
 
-export type DBProto_PushMessagesHistory = DBProto<Proto>;
-
-export type UI_PushMessagesHistory = DBProto_PushMessagesHistory['uiType'];
-export type DB_PushMessagesHistory = DB_Object & {
+export type DB_PushMessagesHistory = DB_Object<DBKey> & {
 	pushSessionId: string
 	token: string
 	message: any
 	read: boolean
 	originatingAccountId: string
-}
+};
 
+export type DatabaseDef_PushMessagesHistory = DB_Prototype<DB_ProtoSeed<DB_PushMessagesHistory, DBKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
+export type UI_PushMessagesHistory = DatabaseDef_PushMessagesHistory['uiType'];

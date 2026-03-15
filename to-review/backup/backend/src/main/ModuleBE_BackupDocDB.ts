@@ -33,7 +33,7 @@ import {
 	ApiDef_BackupDoc,
 	DB_BackupDoc,
 	DBDef_BackupDoc,
-	DBProto_BackupDoc,
+	DatabaseDef_BackupDoc,
 	Request_BackupId,
 	Response_BackupDocs,
 	BackupMetaData,
@@ -48,7 +48,7 @@ const KeepIntervalDefault = 7 * Day;
 export class ModuleBE_BackupDocDB_Class
 	extends Module<BackupDocDBConfig> {
 
-	public collection!: FirestoreCollectionV3<DBProto_BackupDoc>;
+	public collection!: FirestoreCollectionV3<DatabaseDef_BackupDoc>;
 	private resolvedConfig!: BackupDocDBConfig;
 
 	constructor(config?: BackupDocDBConfig) {
@@ -75,7 +75,7 @@ export class ModuleBE_BackupDocDB_Class
 		this.collection = this.getBackupStatusCollection();
 	}
 
-	public getBackupStatusCollection = (): FirestoreCollectionV3<DBProto_BackupDoc> => {
+	public getBackupStatusCollection = (): FirestoreCollectionV3<DatabaseDef_BackupDoc> => {
 		return ModuleBE_Firebase
 			.createAdminSession()
 			.getFirestoreV3()
@@ -133,7 +133,7 @@ export class ModuleBE_BackupDocDB_Class
 	};
 
 	queryUnique = async (backupDocId: UniqueId): Promise<DB_BackupDoc | undefined> => {
-		return await this.collection.query.unique(backupDocId);
+		return await this.collection.query.unique(backupDocId as DB_BackupDoc['_id']);
 	};
 
 	upsert = async (instance: PreDB<DB_BackupDoc>): Promise<DB_BackupDoc> => {

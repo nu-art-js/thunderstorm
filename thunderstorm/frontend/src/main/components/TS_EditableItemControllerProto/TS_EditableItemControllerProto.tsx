@@ -1,10 +1,9 @@
 import * as React from 'react';
 import './TS_EditableItemControllerProto.scss';
+import {DB_Object, DB_Prototype} from '@nu-art/db-api-shared';
 import {
 	asArray,
 	BadImplementationException,
-	DB_Object,
-	DBProto,
 	deepClone,
 	exists,
 	ResolvableContent,
@@ -22,7 +21,7 @@ import {
 import { EditableRef } from '../TS_EditableContent/types.js';
 
 
-export type Props_EditableItemControllerProto<Proto extends DBProto<any>, EditorProps extends {} = {}> =
+export type Props_EditableItemControllerProto<Proto extends DB_Prototype, EditorProps extends {} = {}> =
 	& ProtoDef_Selection['props']
 	& {
 	item?: Readonly<Partial<Proto['uiType']>> | string,
@@ -42,7 +41,7 @@ export type Props_EditableItemControllerProto<Proto extends DBProto<any>, Editor
  * @template Proto - The database prototype def to be edited
  * @template Props - The Props this class component takes
  */
-export class TS_EditableItemControllerProto<Proto extends DBProto<any>,
+export class TS_EditableItemControllerProto<Proto extends DB_Prototype,
 	EditorProps extends {} = {},
 	Props extends Props_EditableItemControllerProto<Proto, EditorProps> = Props_EditableItemControllerProto<Proto, EditorProps>>
 	extends ProtoComponent<ProtoDef_Selection, Props, EditableRef<Proto['uiType']>> {

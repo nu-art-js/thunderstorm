@@ -36,6 +36,7 @@
     "test-v2": "ts-mocha -p src/test/tsconfig.json --timeout 0 'src/test/**/*.test.firebase.ts'"
   },
   "dependencies": {
+    "@nu-art/db-api-shared": "?",
     "@nu-art/firebase-shared": "?",
     "@google-cloud/common": "?",
     "@google-cloud/firestore": "?",

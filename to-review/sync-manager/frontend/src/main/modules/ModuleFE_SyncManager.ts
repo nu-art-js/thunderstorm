@@ -43,6 +43,7 @@ import {
 	DeltaSyncModule,
 	FullSyncModule,
 	LastUpdated,
+	ModuleSyncType,
 	NoNeedToSyncModule,
 	Response_DBSync,
 	SmartSync_DeltaSync,
@@ -55,17 +56,11 @@ import {
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules} from '../components/AwaitModules/dispatchers.js';
-import {
-	apiWithBody,
-	DataStatus,
-	EventType_Query,
-	ModuleFE_BaseApi,
-	ModuleFE_ConnectivityModule,
-	OnConnectivityChange
-} from '@nu-art/thunderstorm-frontend';
-import {ModuleSyncType} from '@nu-art/thunderstorm-frontend';
+import {EventType_Query} from '@nu-art/db-api-shared';
+import {DataStatus, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '@nu-art/thunder-ui-modules';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend';
-import {BaseHttpRequest} from '@nu-art/thunderstorm-shared';
+import {HttpClient, HttpRequest} from '@nu-art/http-client';
 import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 
@@ -84,7 +79,7 @@ export type GenericUpdate = {
 export const performGenericUpdate = async (updateData: GenericUpdate[]) => {
 	const promises: (() => Promise<void>)[] = [];
 	updateData.forEach(update => {
-		const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(module => module.dbDef?.dbKey === update.dbKey);
+		const module = RuntimeModules().find<ModuleFE_BaseApi<any>>(module => module.config?.dbKey === update.dbKey);
 		if (!module)
 			throw new MUSTNeverHappenException(`Trying to perform a generic update without an existing module for dbKey ${update.dbKey}`);
 
@@ -118,7 +113,7 @@ export class ModuleFE_SyncManager_Class
 	private readonly currentlySyncingModules: {
 		module: ModuleFE_BaseApi<any>,
 		syncId: string,
-		request?: BaseHttpRequest<any>
+		request?: HttpRequest<any>
 	}[] = [];
 	private syncFirebaseListener?: RefListenerFE<SyncDataFirebaseState>;
 	private outOfSyncCollections: Set<string> = new Set<string>();
@@ -149,7 +144,7 @@ export class ModuleFE_SyncManager_Class
 					return 1;
 
 				//Is full sync
-				const priorityModuleKeys: string[] = filterDuplicates(flatArray(dispatch_QueryAwaitedModules.dispatchUI())).map(module => module.dbDef.dbKey);
+				const priorityModuleKeys: string[] = filterDuplicates(flatArray(dispatch_QueryAwaitedModules.dispatchUI())).map(module => module.config.dbKey);
 				return priorityModuleKeys.includes(data.dbKey) ? 2 : 3;
 			})
 			.setOnQueueEmpty(this.clearSyncingStatus);
@@ -180,14 +175,14 @@ export class ModuleFE_SyncManager_Class
 
 	// ######################### Smart Sync #########################
 
-	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module) => module.syncType === ModuleSyncType.APISync);
+	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module) => (module as ModuleFE_BaseApi<any> & { syncType?: ModuleSyncType }).syncType === ModuleSyncType.APISync);
 
 	private getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = this.getModulesToSync();
 		return existingDBModules.map(module => {
 			const lastSync = module.IDB.getLastSync();
 			return ({
-				dbKey: module.dbDef.dbKey,
+				dbKey: module.config.dbKey,
 				lastUpdated: lastSync
 			});
 		});
@@ -213,7 +208,10 @@ export class ModuleFE_SyncManager_Class
 
 		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
 		try {
-			await apiWithBody(smartSyncDef as typeof ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
+			const client = HttpClient.default;
+			const req = client.createRequest(smartSyncDef as typeof ApiDef_SyncManager.v1.smartSync).setBodyAsJson(request);
+			const response = await req.execute();
+			await this.onSmartSyncCompleted(response);
 		} catch (e: any) {
 			this.logError(e);
 			this.syncing = false;
@@ -278,7 +276,7 @@ export class ModuleFE_SyncManager_Class
 	// ######################### Sync operations #########################
 
 	private performSync = (data: NoNeedToSyncModule | DeltaSyncModule | FullSyncModule) => {
-		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
+		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.config?.dbKey === data.dbKey);
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying to queue a module to sync without an existing rtModule: ${data.dbKey}`);
 
@@ -299,7 +297,7 @@ export class ModuleFE_SyncManager_Class
 	};
 
 	private performNoSync = async (data: NoNeedToSyncModule) => {
-		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
+		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.config?.dbKey === data.dbKey);
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying perform NoSync without an existing rtModule: ${data.dbKey}`);
 
@@ -310,30 +308,30 @@ export class ModuleFE_SyncManager_Class
 		this.currentlySyncingModules.push({module: rtModule, syncId: this.generateSyncRequestId()});
 
 		this.logVerbose(`Performing NoSyncOperation for module ${rtModule.getName()}`);
-		this.logVerbose(`No sync for: ${rtModule.dbDef.dbKey}, Already UpToDate.`);
+		this.logVerbose(`No sync for: ${rtModule.config.dbKey}, Already UpToDate.`);
 
 		try {
-			rtModule.logVerbose(`Updating Cache: ${rtModule.dbDef.dbKey}`);
-			await rtModule.cache.load();
-			rtModule.logVerbose(`Firing event (DataStatus.ContainsData): ${rtModule.dbDef.dbKey}`);
+			rtModule.logVerbose(`Updating Cache: ${rtModule.config.dbKey}`);
+			await rtModule.loadCache();
+			rtModule.logVerbose(`Firing event (DataStatus.ContainsData): ${rtModule.config.dbKey}`);
 			rtModule.setDataStatus(DataStatus.ContainsData);
 		} catch (e: any) {
 			this.logError(e);
 		} finally {
-			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
+			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.config?.dbKey === data.dbKey);
 			removeFromArrayByIndex(this.currentlySyncingModules, indexOfModuleToRemove);
 		}
 	};
 
 	private performDeltaSync = async (data: DeltaSyncModule) => {
-		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
+		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.config?.dbKey === data.dbKey);
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying perform DeltaSync without an existing rtModule: ${data.dbKey}`);
 
 		this.logDebug(`Performing DeltaSyncOperation for module ${rtModule.getName()}`);
 		try {
 			this.currentlySyncingModules.push({module: rtModule, syncId: this.generateSyncRequestId()});
-			rtModule.logVerbose(`Firing event (DataStatus.UpdatingData): ${rtModule.dbDef.dbKey}`);
+			rtModule.logVerbose(`Firing event (DataStatus.UpdatingData): ${rtModule.config.dbKey}`);
 			rtModule.setDataStatus(DataStatus.UpdatingData);
 			if (data.items.toUpdate.length)
 				await rtModule.onEntriesUpdated(data.items.toUpdate);
@@ -343,19 +341,19 @@ export class ModuleFE_SyncManager_Class
 
 			rtModule.IDB.setLastUpdated(data.lastUpdated);
 
-			this.logDebug(`Delta Sync Completed: ${rtModule.dbDef.dbKey}`);
-			await rtModule.cache.load();
+			this.logDebug(`Delta Sync Completed: ${rtModule.config.dbKey}`);
+			await rtModule.loadCache();
 			rtModule.setDataStatus(DataStatus.ContainsData);
 		} catch (e: any) {
 			this.logError(e);
 		} finally {
-			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
+			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.config?.dbKey === data.dbKey);
 			removeFromArrayByIndex(this.currentlySyncingModules, indexOfModuleToRemove);
 		}
 	};
 
 	private performFullSync = async (data: FullSyncModule) => {
-		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.dbDef?.dbKey === data.dbKey);
+		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.config?.dbKey === data.dbKey);
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying perform DeltaSync without an existing rtModule: ${data.dbKey}`);
 
@@ -365,14 +363,14 @@ export class ModuleFE_SyncManager_Class
 		try {
 			// if the backend have decided module collection needs a full sync, we need to clean local idb and cache
 			if (this.cleanIDBOnFullSync) {
-				rtModule.logVerbose(`Cleaning IDB: ${rtModule.dbDef.dbKey}`);
-				await rtModule.IDB.clear(); // Also sets the module's data status to NoData.
+				rtModule.logVerbose(`Cleaning IDB: ${rtModule.config.dbKey}`);
+				await rtModule.IDB.clearAll(); // Also sets the module's data status to NoData.
 			}
-			rtModule.logVerbose(`Cleaning Cache: ${rtModule.dbDef.dbKey}`);
+			rtModule.logVerbose(`Cleaning Cache: ${rtModule.config.dbKey}`);
 			rtModule.cache.clear();
 
 			// for full sync go fetch all db items
-			rtModule.logVerbose(`Syncing: ${rtModule.dbDef.dbKey}`);
+			rtModule.logVerbose(`Syncing: ${rtModule.config.dbKey}`);
 			let allItems;
 			try {
 				if (this.cancelledSyncs.includes(syncId)) {
@@ -380,12 +378,7 @@ export class ModuleFE_SyncManager_Class
 					return;
 				}
 
-				const baseHttpRequest = rtModule.v1.query({where: {}});
-
-				const indexOfModuleToUpdate = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
-				this.currentlySyncingModules[indexOfModuleToUpdate].request = baseHttpRequest;
-
-				allItems = await baseHttpRequest.executeSync();
+				allItems = await rtModule.query({where: {}});
 			} catch (e: any) {
 				if (this.cancelledSyncs.includes(syncId)) {
 					this.removeFromCancelledSyncs(syncId);
@@ -395,35 +388,35 @@ export class ModuleFE_SyncManager_Class
 				throw e;
 			}
 
-			rtModule.logVerbose(`Updating IDB: ${rtModule.dbDef.dbKey}`);
+			rtModule.logVerbose(`Updating IDB: ${rtModule.config.dbKey}`);
 			if (this.cancelledSyncs.includes(syncId)) {
 				this.removeFromCancelledSyncs(syncId);
 				return;
 			}
 			await rtModule.IDB.syncIndexDb(allItems);
 			rtModule.IDB.setLastUpdated(data.lastUpdated);
-			rtModule.logVerbose(`Updating Cache: ${rtModule.dbDef.dbKey}`);
+			rtModule.logVerbose(`Updating Cache: ${rtModule.config.dbKey}`);
 			rtModule.logVerbose(`allItems length ${allItems.length}`);
-			await rtModule.cache.load();
-			rtModule.logVerbose(`IDB items length ${(await rtModule.IDB.query()).length}`);
+			await rtModule.loadCache();
+			rtModule.logVerbose(`IDB items length ${(await rtModule.IDB.getAll()).length}`);
 			rtModule.logVerbose(`cache items length ${rtModule.cache.all().length}`);
 
-			rtModule.logVerbose(`Firing event (DataStatus.ContainsData): ${rtModule.dbDef.dbKey}`);
+			rtModule.logVerbose(`Firing event (DataStatus.ContainsData): ${rtModule.config.dbKey}`);
 			rtModule.setDataStatus(DataStatus.ContainsData);
 
-			rtModule.logVerbose(`Firing event (EventType_Query): ${rtModule.dbDef.dbKey}`);
+			rtModule.logVerbose(`Firing event (EventType_Query): ${rtModule.config.dbKey}`);
 
-			this.logDebug(`Full Sync Completed: ${rtModule.dbDef.dbKey}`);
+			this.logDebug(`Full Sync Completed: ${rtModule.config.dbKey}`);
 			if (allItems.length === 0)
 				return;
 
-			rtModule.dispatchMulti(EventType_Query, allItems);
+			rtModule.dispatcher(EventType_Query, allItems);
 
 		} catch (e: any) {
-			this.logError(`Error while syncing collection '${rtModule.dbDef.dbKey}'`, e);
+			this.logError(`Error while syncing collection '${rtModule.config.dbKey}'`, e);
 			throw e;
 		} finally {
-			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
+			const indexOfModuleToRemove = this.currentlySyncingModules.findIndex(module => module.module.config?.dbKey === data.dbKey);
 			removeFromArrayByIndex(this.currentlySyncingModules, indexOfModuleToRemove);
 		}
 	};

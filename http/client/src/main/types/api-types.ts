@@ -15,6 +15,7 @@ export {
 	QueryApi,
 	EmptyApi,
 	ApiDef,
+	ApiDefCaller,
 	ApiStruct,
 	ApiDefResolver
 } from '@nu-art/api-types';

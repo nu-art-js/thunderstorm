@@ -1,9 +1,8 @@
 import './Component_ShortUrlEditor.scss';
-import {EditableRef, TS_EditableContent, TS_EditableItemStatus} from '@nu-art/thunderstorm-frontend/editable-item';
-import {Button, InferProps, InferState, LL_H_C, ModuleFE_Thunderstorm, TS_Card, TS_PropRenderer} from '@nu-art/thunderstorm-frontend/index';
-import {TS_InputV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_Input/index';
+import type {EditableRef} from '@nu-art/editable-item';
+import {EDITABLE, TS_EditableContent, TS_EditableItemStatus} from '@nu-art/editable-item';
+import {Button, InferProps, InferState, LL_H_C, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_TextAreaV2} from '@nu-art/thunderstorm-frontend/components/TS_V2_TextArea/index';
 import {DatabaseDef_ShortUrl, GetShortUrlRequest, UI_ShortUrl} from '@nu-art/ts-short-url-shared';
 import {ModuleFE_ShortUrl} from '../../../_entity/short-url/index.js';
 
@@ -11,12 +10,12 @@ import {ModuleFE_ShortUrl} from '../../../_entity/short-url/index.js';
 type Props = EditableRef<UI_ShortUrl> & { deleteCallback?: VoidFunction }
 type State = EditableRef<UI_ShortUrl>
 
-const StringEditableInput = TS_InputV2.editable({
+const StringEditableInput = EDITABLE.Input.editable({
 	type: 'text',
 	saveEvent: ['blur', 'accept']
 });
 
-const TextArea = TS_TextAreaV2.editable({
+const TextArea = EDITABLE.TextArea({
 	saveEvent: ['blur', 'accept']
 });
 
@@ -31,7 +30,7 @@ export class Component_ShortUrlEditor
 
 	render() {
 		const _id = this.state.editable.get('_id');
-		return <TS_Card className={'short-url-editor'}>
+		return <div className={'short-url-editor'}>
 			<LL_H_C className={'utils'}>
 				<TS_EditableItemStatus editable={this.state.editable as any}/>
 				<TS_Icons.x.component onClick={async () => {
@@ -64,7 +63,7 @@ export class Component_ShortUrlEditor
 					editable={this.state.editable as any}
 					prop={'fullUrl'}
 					className={'url-input'}
-					onChange={value => {
+					onChange={(value: string) => {
 						if (value.length)
 							return this.state.editable.updateObj({fullUrl: value});
 
@@ -76,7 +75,7 @@ export class Component_ShortUrlEditor
 				<TextArea
 					editable={this.state.editable as any}
 					prop={'description'}
-					onChange={value => {
+					onChange={(value: string) => {
 						if (value?.length)
 							return this.state.editable.updateObj({description: value});
 
@@ -90,7 +89,7 @@ export class Component_ShortUrlEditor
 					disabled={!_id}
 					onClick={async () => {
 						const {shortUrl} = await ModuleFE_ShortUrl.getShortUrl({_id: _id!} as GetShortUrlRequest);
-						await ModuleFE_Thunderstorm.copyToClipboard(shortUrl);
+						await navigator.clipboard.writeText(shortUrl);
 					}}>
 					Copy ShortUrl To Clipboard</Button>
 				<Button
@@ -100,6 +99,6 @@ export class Component_ShortUrlEditor
 					}}
 				>Save</Button>
 			</LL_H_C>
-		</TS_Card>;
+		</div>;
 	}
 }

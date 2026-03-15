@@ -1,19 +1,20 @@
-import {DBDef_V3, tsValidateString} from '@nu-art/ts-common';
-import {DBProto_EditableTest} from './types.js';
+import {Database} from '@nu-art/db-api-shared';
+import {tsValidateString} from '@nu-art/ts-common';
+import {DatabaseDef_EditableTest} from './types.js';
 
 
-const Validator_ModifiableProps: DBProto_EditableTest['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_EditableTest['modifiablePropsValidator'] = {
 	'a': tsValidateString(),
 	'b': tsValidateString(),
 	'c': tsValidateString(),
 	'd': tsValidateString(),
 };
 
-const Validator_GeneratedProps: DBProto_EditableTest['generatedPropsValidator'] = {
+const Validator_GeneratedProps: DatabaseDef_EditableTest['generatedPropsValidator'] = {
 // 
 };
 
-export const DBDef_EditableTest: DBDef_V3<DBProto_EditableTest> = {
+export const DBDef_EditableTest: Database<DatabaseDef_EditableTest> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],

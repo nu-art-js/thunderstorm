@@ -1,10 +1,10 @@
+import {DB_Prototype} from '@nu-art/db-api-shared';
 import {
 	_keys,
 	ArrayType,
 	AssetValueType,
 	AwaitedDebounceInstance,
 	compare,
-	DBProto,
 	deepClone,
 	deleteKeysObject,
 	exists,
@@ -514,7 +514,7 @@ export class EditableItem<T>
 	 *
 	 * @returns The new EditableItem.
 	 */
-	editRefV3<Proto extends DBProto<any>, K extends SubsetKeys<keyof T, T, string>>(key: K, module: ModuleFE_BaseApi<Proto>, initialValue: Partial<Proto['uiType']>) {
+	editRefV3<Proto extends DB_Prototype, K extends SubsetKeys<keyof T, T, string>>(key: K, module: ModuleFE_BaseApi<Proto>, initialValue: Partial<Proto['uiType']>) {
 		const itemId = this.item[key] as string;
 		let editingItem;
 		if (!exists(itemId))
@@ -564,7 +564,7 @@ export class EditableItem<T>
  * @template T The type of the item that extends DB_Object.
  * @template Ks The keys of the T type. Default is '_id'.
  */
-export class EditableDBItemV3<Proto extends DBProto<any>>
+export class EditableDBItemV3<Proto extends DB_Prototype>
 	extends EditableItem<Proto['uiType']> {
 
 	private readonly module: ModuleFE_BaseApi<Proto>;
