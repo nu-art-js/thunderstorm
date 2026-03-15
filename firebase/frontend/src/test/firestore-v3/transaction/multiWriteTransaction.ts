@@ -1,16 +1,17 @@
 import {TestSuite} from '@nu-art/testalot';
-import {DBDef_V3, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {firestore, testInstance1} from '../_core/consts.js';
 import {expect} from 'chai';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
-import {DB_Type, DBProto_Type} from '../_entity.js';
+import {DB_Type, DatabaseDef_Type} from '../_entity.js';
 
 type Input = {
-	action: (collection: FirestoreCollectionV3<DBProto_Type>, items: PreDB<DB_Type>[]) => Promise<void>
+	action: (collection: FirestoreCollectionV3<DatabaseDef_Type>, items: PreDB<DB_Type>[]) => Promise<void>
 	numberOfItemsToCreate: number
 }
 
-const dbDef: DBDef_V3<DBProto_Type> = {
+const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-transaction-multi-write-tests',
@@ -33,14 +34,14 @@ export const TestSuite_FirestoreV3_Transaction_MultiWrite: TestSuite<Input, {}> 
 			result: [],
 			input: {
 				numberOfItemsToCreate: 510,
-				action: async (collection: FirestoreCollectionV3<DBProto_Type>, items: PreDB<DB_Type>[]) => {
+				action: async (collection: FirestoreCollectionV3<DatabaseDef_Type>, items: PreDB<DB_Type>[]) => {
 					await collection.set.all(items);
 				}
 			},
 		}
 	],
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DBProto_Type>(dbDef);
+		const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		const items: PreDB<DB_Type>[] = [];

@@ -5,9 +5,22 @@
  */
 
 import * as React from 'react';
-import {DBProto} from '@nu-art/ts-common';
+import type {UniqueId} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
 
-export type ConflictResolutionItem<Proto extends DBProto<any>> = {
+/** Same shape as @nu-art/db-api-backend DBEntityDependencies; used by frontend without depending on backend. */
+export type DBEntityDependencyResult = { [dbKey: string]: UniqueId[] };
+
+export type DBEntityDependencies = {
+	dbKey: string;
+	dependencyMap: {
+		[entityId: UniqueId]: DBEntityDependencyResult;
+	};
+};
+
+export const DBEntityDependencyErrorType = 'entity-has-dependencies';
+
+export type ConflictResolutionItem<Proto extends DB_Prototype> = {
 	//Key of the DBEntity
 	dbKey: Proto['dbKey'];
 	//What will be rendered in the conflict resolution panel

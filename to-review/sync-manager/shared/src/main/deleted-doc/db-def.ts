@@ -4,12 +4,13 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBDef_V3, tsValidateMustExist} from '@nu-art/ts-common';
-import {DBProto_DeletedDoc} from './types.js';
+import {Database} from '@nu-art/db-api-shared';
+import {tsValidateMustExist} from '@nu-art/ts-common';
+import {DatabaseDef_DeletedDoc} from './types.js';
 
-const Validator_GeneratedProps: DBProto_DeletedDoc['generatedPropsValidator'] = {};
+const Validator_GeneratedProps: DatabaseDef_DeletedDoc['generatedPropsValidator'] = {};
 
-export const DBDef_DeletedDoc: DBDef_V3<DBProto_DeletedDoc> = {
+export const DBDef_DeletedDoc: Database<DatabaseDef_DeletedDoc> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],

@@ -1,6 +1,6 @@
 import {DatabaseDef_ShortUrl} from '@nu-art/ts-short-url-shared';
 import {ModuleFE_ShortUrl} from './ModuleFE_ShortUrl.js';
-import {GenericDropDownV3} from '@nu-art/thunderstorm-frontend/index';
+import {prepareGenericDropDown} from '@nu-art/editable-item';
 
 const Props_DropDown = {
 	module: ModuleFE_ShortUrl,
@@ -10,7 +10,7 @@ const Props_DropDown = {
 	renderer: (item: DatabaseDef_ShortUrl['dbType']) => <div className="ll_h_c"> {item.title} </div>
 };
 
-export const DropDown_ShortUrl = GenericDropDownV3.prepare(Props_DropDown as any);
+export const DropDown_ShortUrl = prepareGenericDropDown(Props_DropDown as any);
 
 // const Props_MultiSelect = DBItemDropDownMultiSelector.propsV3({
 // 	module: ModuleFE_ShortUrl,

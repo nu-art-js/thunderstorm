@@ -1,6 +1,6 @@
 import * as React from 'react';
+import {DB_Prototype} from '@nu-art/db-api-shared';
 import {
-	DBProto,
 	sortArray
 } from '@nu-art/ts-common';
 import {ModuleFE_BaseApi} from '../../../../modules/db-api-gen/ModuleFE_BaseApi.js';
@@ -26,7 +26,7 @@ import {
 } from '../../../../utils/types.js';
 
 
-export type Props_ListRenderer<Proto extends DBProto<any>> = {
+export type Props_ListRenderer<Proto extends DB_Prototype> = {
 	module: ModuleFE_BaseApi<Proto>,
 	selected?: Partial<Proto['uiType']>
 	filter: ItemEditor_FilterType<Proto>,
@@ -37,7 +37,7 @@ export type Props_ListRenderer<Proto extends DBProto<any>> = {
 };
 type State = {}
 
-export class ItemEditor_DefaultList<Proto extends DBProto<any>>
+export class ItemEditor_DefaultList<Proto extends DB_Prototype>
 	extends ComponentSync<Props_ListRenderer<Proto>, State> {
 
 	private listContainerRef?: HTMLDivElement;

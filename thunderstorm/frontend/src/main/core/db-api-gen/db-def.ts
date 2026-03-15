@@ -1,14 +1,15 @@
-import {Const_UniqueKey, DBDef_V3, DBProto, DefaultDBVersion} from '@nu-art/ts-common';
+import {Database, DB_Prototype} from '@nu-art/db-api-shared';
+import {Const_UniqueKey, DefaultDBVersion} from '@nu-art/ts-common';
 import {DBConfigV3} from '../IndexedDBV4/types.js';
 
-export type DBApiFEConfig<Proto extends DBProto<any>> = {
+export type DBApiFEConfig<Proto extends DB_Prototype> = {
 	key: string
 	versions: Proto['versions']
 	validator: Proto['modifiablePropsValidator']
 	dbConfig: DBConfigV3<Proto>
 }
 
-export const getModuleFEConfigV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): DBApiFEConfig<Proto> => {
+export const getModuleFEConfigV3 = <Proto extends DB_Prototype>(dbDef: Database<Proto>): DBApiFEConfig<Proto> => {
 	return {
 		key: dbDef.dbKey,
 		versions: dbDef.versions || [DefaultDBVersion],

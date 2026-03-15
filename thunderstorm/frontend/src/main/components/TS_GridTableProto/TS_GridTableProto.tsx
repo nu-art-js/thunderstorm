@@ -2,7 +2,6 @@ import * as React from 'react';
 import {Fragment} from 'react';
 import './TS_GridTableProto.scss';
 import {
-	DBProto,
 	ResolvableContent,
 	resolveContent
 } from '@nu-art/ts-common';
@@ -16,7 +15,7 @@ import {TemplatingProps_EditableItemController, TS_EditableItemController} from 
 import {Editable_SaveAction} from '../../utils/EditableItem.js';
 
 
-type Props_TS_GridTableProto<Proto extends DBProto<any>, EditorProps extends object = object> =
+type Props_TS_GridTableProto<Proto extends DB_Prototype, EditorProps extends object = object> =
 	Omit<LinearLayoutProps, 'autoSave'>
 	& TemplatingProps_EditableItemController<Proto, EditorProps>
 	& {
@@ -30,7 +29,7 @@ type State_TS_GridTable = {
 //
 }
 
-export class TS_GridTableProto<Proto extends DBProto<any>, EditorProps extends object = object>
+export class TS_GridTableProto<Proto extends DB_Prototype, EditorProps extends object = object>
 	extends ComponentSync<Props_TS_GridTableProto<Proto, EditorProps>, State_TS_GridTable> {
 
 	render() {

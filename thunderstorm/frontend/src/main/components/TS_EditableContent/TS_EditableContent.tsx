@@ -1,6 +1,6 @@
 import {ReactNode} from 'react';
 import {TS_PropRenderer} from '../TS_PropRenderer/index.js';
-import {DBProto} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
 import {Controller, Props_Controller} from '../../core/Controller.js';
 import {InferState} from '../../utils/types.js';
 import {EditableRef} from './types.js';
@@ -10,7 +10,7 @@ type _State<Item> = EditableRef<Item> & {
 	tag?: string
 }
 
-export type EditableContentType<Opt> = Opt extends DBProto<any> ? Opt['uiType'] : Opt;
+export type EditableContentType<Opt> = Opt extends DB_Prototype ? Opt['uiType'] : Opt;
 
 export abstract class TS_EditableContent<Opt, P = {}, S = {}, ItemType extends EditableContentType<Opt> = EditableContentType<Opt>,
 	Props extends P & EditableRef<ItemType> & Props_Controller = P & EditableRef<ItemType> & Props_Controller,

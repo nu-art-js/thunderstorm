@@ -20,6 +20,7 @@
  */
 
 import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase-shared';
+import {Database, DB_Prototype, dbObjectToId} from '@nu-art/db-api-shared';
 import {
 	_keys,
 	ApiException,
@@ -27,9 +28,6 @@ import {
 	BadImplementationException,
 	batchActionParallel,
 	currentTimeMillis,
-	DBDef_V3,
-	dbObjectToId,
-	DBProto,
 	DotNotation,
 	filterDuplicates,
 	filterInstances,
@@ -54,7 +52,7 @@ export type BaseDBApiConfigV3 = {
 	chunksSize: number
 }
 
-export type DBApiConfigV3<Proto extends DBProto<any>> = BaseDBApiConfigV3 & DBApiBEConfig<Proto>
+export type DBApiConfigV3<Proto extends DB_Prototype> = BaseDBApiConfigV3 & DBApiBEConfig<Proto>
 const CONST_DefaultWriteChunkSize = 200;
 
 /**
@@ -62,7 +60,7 @@ const CONST_DefaultWriteChunkSize = 200;
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = any,
+export abstract class ModuleBE_BaseDB<Proto extends DB_Prototype, ConfigType = any,
 	Config extends ConfigType & DBApiConfigV3<Proto> = ConfigType & DBApiConfigV3<Proto>>
 	extends Module<Config>
 	implements EntityDependencyCollection {
@@ -72,7 +70,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 
 	// private static DeleteHardLimit = 250;
 	public collection!: FirestoreCollectionV3<Proto>;
-	public dbDef: DBDef_V3<Proto>;
+	public dbDef: Database<Proto>;
 	public query!: FirestoreCollectionV3<Proto>['query'];
 	public create!: FirestoreCollectionV3<Proto>['create'];
 	public set!: FirestoreCollectionV3<Proto>['set'];
@@ -80,7 +78,7 @@ export abstract class ModuleBE_BaseDB<Proto extends DBProto<any>, ConfigType = a
 	public doc!: FirestoreCollectionV3<Proto>['doc'];
 	public runTransaction!: FirestoreCollectionV3<Proto>['runTransaction'];
 
-	protected constructor(dbDef: DBDef_V3<Proto>, appConfig?: BaseDBApiConfigV3) {
+	protected constructor(dbDef: Database<Proto>, appConfig?: BaseDBApiConfigV3) {
 		super();
 
 		const config = getModuleBEConfig(dbDef);

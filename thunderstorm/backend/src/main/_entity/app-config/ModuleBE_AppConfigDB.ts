@@ -1,12 +1,12 @@
-import {DB_AppConfig, DBDef_AppConfig, DBProto_AppConfig} from '@nu-art/thunderstorm-shared';
+import {DB_AppConfig, DBDef_AppConfig, DatabaseDef_AppConfig} from '@nu-art/thunderstorm-shared';
 import {DBApiConfigV3, ModuleBE_BaseDB} from '../../modules/db-api-gen/ModuleBE_BaseDB.js';
 import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 
 type InferType<T> = T extends AppConfigKey_BE<infer ValueType> ? ValueType : never;
-type Config = DBApiConfigV3<DBProto_AppConfig> & {}
+type Config = DBApiConfigV3<DatabaseDef_AppConfig> & {}
 
 export class ModuleBE_AppConfigDB_Class
-	extends ModuleBE_BaseDB<DBProto_AppConfig, Config> {
+	extends ModuleBE_BaseDB<DatabaseDef_AppConfig, Config> {
 
 	private keyMap: TypedMap<AppConfigKey_BE<any>> = {};
 
@@ -15,7 +15,7 @@ export class ModuleBE_AppConfigDB_Class
 		super(DBDef_AppConfig);
 	}
 
-	protected async preWriteProcessing(dbInstance: PreDB<DB_AppConfig>, originalDbInstance: DBProto_AppConfig['dbType'], transaction?: FirebaseFirestore.Transaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: PreDB<DB_AppConfig>, originalDbInstance: DatabaseDef_AppConfig['dbType'], transaction?: FirebaseFirestore.Transaction): Promise<void> {
 		this.logVerbose('############## Pre Manipulation ##############');
 		this.logVerbose(dbInstance);
 		const appKey = this.keyMap[dbInstance.key];

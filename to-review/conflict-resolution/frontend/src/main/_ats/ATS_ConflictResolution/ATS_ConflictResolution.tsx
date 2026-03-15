@@ -4,25 +4,16 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {filterDuplicates, Minute, RuntimeModules, sortArray} from '@nu-art/ts-common';
+import {filterDuplicates, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_ConflictResolution.scss';
-import {
-	AppToolsScreen,
-	ATS_Backend,
-	Button,
-	ComponentSync,
-	LL_V_L,
-	ModuleFE_BaseApi,
-	SimpleListAdapter,
-	TS_DropDown,
-	TS_Input,
-	TS_PropRenderer
-} from '@nu-art/thunderstorm-frontend/index';
-import {ModuleFE_CollectionActions} from '@nu-art/thunderstorm-frontend/modules/ModuleFE_CollectionActions';
+import {Button, ComponentSync, LL_V_L, SimpleListAdapter, TS_DropDown, TS_Input, TS_PropRenderer} from '@nu-art/thunder-widgets';
+import {AppToolsScreen, ATS_Backend, ModuleFE_CollectionActions} from '@nu-art/thunder-ui-modules';
+import type {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
 import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution.js';
 
 type State = {
-	upgradableModules: ModuleFE_BaseApi<any, any>[];
+	upgradableModules: ModuleFE_BaseApi<any>[];
 	selectedModule?: ModuleFE_BaseApi<any>;
 	itemId?: string
 };
@@ -46,19 +37,19 @@ export class ATS_ConflictResolution
 	}
 
 	private getAdapter = () => {
-		return SimpleListAdapter(this.state.upgradableModules, module => <>{module.item.dbDef.dbKey}</>);
+		return SimpleListAdapter(this.state.upgradableModules, module => <>{module.item.config.dbKey}</>);
 	};
 
 	private checkUsage = async () => {
 		const itemId = this.state.itemId;
-		const dbKey = this.state.selectedModule?.dbDef.dbKey;
+		const dbKey = this.state.selectedModule?.config.dbKey;
 		if (!itemId || !dbKey)
 			return;
 
 		const response = await ModuleFE_CollectionActions.check.usage({
-			dbKey: dbKey,
+			dbKey,
 			itemIds: [itemId]
-		}).setTimeout(2 * Minute).executeSync();
+		}) as { dependencies?: DBEntityDependencies };
 		if (response.dependencies)
 			ModuleFE_ConflictResolution.showDependencies(response.dependencies);
 	};

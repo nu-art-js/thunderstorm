@@ -19,8 +19,9 @@
  * limitations under the License.
  */
 
+import {DB_BaseObject, Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {EntityDependencyError, FirestoreQuery} from '@nu-art/firebase-shared';
-import {DB_BaseObject, DBDef_V3, DBProto, IndexKeys, Metadata} from '@nu-art/ts-common';
+import {IndexKeys, Metadata} from '@nu-art/ts-common';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types.js';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
@@ -35,7 +36,7 @@ import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
  *
  * but something about the type resolution goes wrong and instead of seeing Type<GenericType>, it resolves to Type> which makes no sense
  */
-export type ApiStruct_DBApiGenV3<Proto extends DBProto<any>> = {
+export type ApiStruct_DBApiGenV3<Proto extends DB_Prototype> = {
 	v1: {
 		query: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>, FirestoreQuery<Proto['dbType']> | undefined | {}>,
 		queryUnique: QueryApi<Proto['dbType'], DB_BaseObject, ResponseError<string, any>, string>,
@@ -49,7 +50,7 @@ export type ApiStruct_DBApiGenV3<Proto extends DBProto<any>> = {
 	},
 }
 
-export type ApiStruct_DBApiGenIDBV3<Proto extends DBProto<any>> = {
+export type ApiStruct_DBApiGenIDBV3<Proto extends DB_Prototype> = {
 	v1: {
 		query: BodyApi<Proto['dbType'][], FirestoreQuery<Proto['dbType']>>,
 		queryUnique: QueryApi<Proto['dbType'], DB_BaseObject, ResponseError<string, any>, string | IndexKeys<Proto['dbType'], keyof Proto['dbType']>>,
@@ -63,7 +64,7 @@ export type ApiStruct_DBApiGenIDBV3<Proto extends DBProto<any>> = {
 	},
 }
 
-export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenV3<Proto>> => {
+export const DBApiDefGeneratorV3 = <Proto extends DB_Prototype>(dbDef: Database<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenV3<Proto>> => {
 	return {
 		v1: {
 			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/query`, timeout: 60000},
@@ -79,7 +80,7 @@ export const DBApiDefGeneratorV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<
 	};
 };
 
-export const DBApiDefGeneratorIDBV3 = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenIDBV3<Proto>> => {
+export const DBApiDefGeneratorIDBV3 = <Proto extends DB_Prototype>(dbDef: Database<Proto>, version = 'v1'): ApiDefResolver<ApiStruct_DBApiGenIDBV3<Proto>> => {
 	return {
 		v1: {
 			query: {method: HttpMethod.POST, path: `${version}/${dbDef.dbKey}/query`, timeout: 60000},

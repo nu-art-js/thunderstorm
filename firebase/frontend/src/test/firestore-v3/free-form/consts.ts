@@ -1,9 +1,10 @@
 import {firestore} from '../_core/consts.js';
 import {expect} from 'chai';
-import {ArrayType, DBDef_V3, exists, tsValidateMustExist} from '@nu-art/ts-common';
-import {DB_FreeForm, DBProto_FreeForm, TestModel_FreeForm} from './types.js';
+import {Database} from '@nu-art/db-api-shared';
+import {ArrayType, exists, tsValidateMustExist} from '@nu-art/ts-common';
+import {DB_FreeForm, DatabaseDef_FreeForm, TestModel_FreeForm} from './types.js';
 
-const DBDef_FreeForm: DBDef_V3<DBProto_FreeForm> = {
+const DBDef_FreeForm: Database<DatabaseDef_FreeForm> = {
 	dbKey: 'free-form_testcase1',
 	versions: ['1.0.0'],
 	modifiablePropsValidator: tsValidateMustExist,
@@ -23,7 +24,7 @@ export const FreeForm_TestCase1: ArrayType<TestModel_FreeForm['testcases']> = {
 	result: [],
 	input: {
 		run: async () => {
-			const collection = firestore.getCollection<DBProto_FreeForm>(DBDef_FreeForm);
+			const collection = firestore.getCollection<DatabaseDef_FreeForm>(DBDef_FreeForm);
 			const dbItems = await collection.create.all([{values: ['val1', 'val2', 'val3']}, {values: ['val3', 'val4', 'val5']}]);
 
 			await firestore.firestore.runTransaction(async (transaction) => {

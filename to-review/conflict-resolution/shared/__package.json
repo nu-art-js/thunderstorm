@@ -38,6 +38,7 @@
     "linkDirectory": true
   },
   "dependencies": {
+    "@nu-art/db-api-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
     "react": "?"

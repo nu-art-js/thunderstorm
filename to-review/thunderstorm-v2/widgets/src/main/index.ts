@@ -40,3 +40,4 @@ export * from './toaster/index.js';
 export * from './toggle/index.js';
 export * from './video/index.js';
 export * from './virtualized-list/index.js';
+export * from './pages/index.js';

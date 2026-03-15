@@ -7,9 +7,10 @@
 import {FirestoreQuery} from '@nu-art/firebase-shared';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
-import type {DBProto_DeletedDoc, SyncableCollectionBE, SyncPostWriteData, SyncPostWriteOptions} from '@nu-art/sync-manager-shared';
+import type {DatabaseDef_DeletedDoc, SyncableCollectionBE, SyncPostWriteData, SyncPostWriteOptions} from '@nu-art/sync-manager-shared';
 import {
 	ApiDef_SyncManager,
+	DB_DeletedDoc,
 	DBDef_DeletedDoc,
 	DeltaSyncModule,
 	FullSyncModule,
@@ -34,13 +35,10 @@ import {
 	Module,
 	PreDB,
 	ResolvableContent,
-	resolveContent,
-	UniqueId
+	resolveContent
 } from '@nu-art/ts-common';
 import {ApiHandler} from '@nu-art/http-server';
 import type {Transaction} from 'firebase-admin/firestore';
-
-type DeletedDBItem = DB_Object & { __collectionName: string; __docId: UniqueId };
 
 export type SyncManagerBEConfig = {
 	retainDeletedCount: number;
@@ -53,7 +51,7 @@ export type SyncManagerBEConfig = {
 export class ModuleBE_SyncManager_Class
 	extends Module<SyncManagerBEConfig> {
 
-	public collection!: FirestoreCollectionV3<DBProto_DeletedDoc>;
+	public collection!: FirestoreCollectionV3<DatabaseDef_DeletedDoc>;
 
 	private database!: DatabaseWrapperBE;
 	private syncableCollections!: SyncableCollectionBE[];
@@ -167,9 +165,9 @@ export class ModuleBE_SyncManager_Class
 		return {toUpdate, toDelete};
 	};
 
-	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DeletedDBItem> => {
+	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DB_DeletedDoc> => {
 		const {_id, __updated, __created, _v} = item;
-		const deletedItem: PreDB<DeletedDBItem> = {
+		const deletedItem: PreDB<DB_DeletedDoc> = {
 			__docId: _id,
 			__updated,
 			__created,
@@ -207,13 +205,13 @@ export class ModuleBE_SyncManager_Class
 			await this.setOldestDeleted(collectionName, now);
 	}
 
-	queryDeleted = async (collectionName: string, query: FirestoreQuery<DB_Object>): Promise<DeletedDBItem[]> => {
-		const finalQuery: FirestoreQuery<DeletedDBItem> = {
+	queryDeleted = async (collectionName: string, query: FirestoreQuery<DB_Object>): Promise<DB_DeletedDoc[]> => {
+		const finalQuery = {
 			...query,
 			where: {...query.where, __collectionName: collectionName},
-		};
+		} as FirestoreQuery<DB_DeletedDoc>;
 		const deletedItems = await this.collection.query.custom(finalQuery);
-		deletedItems.forEach(_item => { _item._id = _item.__docId ?? _item._id; });
+		deletedItems.forEach(_item => { _item._id = (_item.__docId ?? _item._id) as DB_DeletedDoc['_id']; });
 		return deletedItems;
 	};
 
@@ -226,7 +224,7 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	private async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction?: unknown): Promise<void> {
-		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
+		const toInsert: PreDB<DB_DeletedDoc>[] = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
 		const now = currentTimeMillis();
 		toInsert.forEach(item => item.__updated = now);
 		await this.collection.create.all(toInsert, transaction as Transaction);

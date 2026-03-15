@@ -1,7 +1,7 @@
 import {ReactNode} from 'react';
 import {Controller, Props_Controller} from '../../core/Controller.js';
 import {TS_PropRenderer} from '../TS_PropRenderer/index.js';
-import {DBProto} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
 import {InferProps, InferState} from '../../utils/types.js';
 import { EditableRef } from '../TS_EditableContent/types.js';
 
@@ -49,7 +49,7 @@ export abstract class TS_EditableItemComponent<ItemType, P = {}, S = {},
 	item = (): Partial<ItemType> => this.state.editable.item;
 }
 
-export abstract class TS_EditableItemComponentProto<Proto extends DBProto<any>, P = {}, S = {},
+export abstract class TS_EditableItemComponentProto<Proto extends DB_Prototype, P = {}, S = {},
 	UI_Type extends Proto['uiType'] = Proto['uiType'],
 	Props extends P & EditableRef<UI_Type> & Props_Controller = P & EditableRef<UI_Type> & Props_Controller,
 	State extends S & _State<UI_Type> = S & _State<UI_Type>,

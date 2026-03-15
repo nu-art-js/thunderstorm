@@ -4,10 +4,11 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBDef_V3, tsValidateArray, tsValidateNumber, tsValidateString, tsValidateTimestamp} from '@nu-art/ts-common';
-import type {DBProto_BackupDoc} from './types.js';
+import {Database} from '@nu-art/db-api-shared';
+import {tsValidateArray, tsValidateNumber, tsValidateString, tsValidateTimestamp} from '@nu-art/ts-common';
+import type {DatabaseDef_BackupDoc} from './types.js';
 
-const Validator_ModifiableProps: DBProto_BackupDoc['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_BackupDoc['modifiablePropsValidator'] = {
 	timestamp: tsValidateTimestamp(),
 	backupPath: tsValidateString(),
 	firebasePath: tsValidateString(),
@@ -22,9 +23,9 @@ const Validator_ModifiableProps: DBProto_BackupDoc['modifiablePropsValidator'] =
 	}
 };
 
-const Validator_GeneratedProps: DBProto_BackupDoc['generatedPropsValidator'] = {};
+const Validator_GeneratedProps: DatabaseDef_BackupDoc['generatedPropsValidator'] = {};
 
-export const DBDef_BackupDoc: DBDef_V3<DBProto_BackupDoc> = {
+export const DBDef_BackupDoc: Database<DatabaseDef_BackupDoc> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],

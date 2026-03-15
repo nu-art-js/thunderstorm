@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+import {Database, dbObjectToId, DB_Prototype} from '@nu-art/db-api-shared';
 import {
 	__stringify,
 	_keys,
@@ -26,10 +27,7 @@ import {
 	Const_UniqueKeys,
 	CustomException,
 	DB_Object_validator,
-	DBDef_V3,
 	dbIdLength,
-	dbObjectToId,
-	DBProto,
 	deepClone,
 	DefaultDBVersion,
 	Exception,
@@ -106,7 +104,7 @@ export class FirestoreBulkException
  * If one of the validators is a function, returns an array of functions.
  * If both validators are objects, returns a merged object.
  */
-const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
+const getDbDefValidator = <Proto extends DB_Prototype>(dbDef: Database<Proto>): [Proto['generatedPropsValidator'], Proto['modifiablePropsValidator']] | Proto['generatedPropsValidator'] & Proto['modifiablePropsValidator'] => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
 
@@ -127,16 +125,16 @@ const getDbDefValidator = <Proto extends DBProto<any>>(dbDef: DBDef_V3<Proto>): 
 /**
  * FirestoreCollection is a class for handling Firestore collections.
  */
-export class FirestoreCollectionV3<Proto extends DBProto<any>>
+export class FirestoreCollectionV3<Proto extends DB_Prototype>
 	extends Logger {
 	readonly wrapper: FirestoreWrapperBEV3;
 	readonly collection: FirestoreType_Collection;
-	readonly dbDef: DBDef_V3<Proto>;
+	readonly dbDef: Database<Proto>;
 	readonly uniqueKeys: Proto['uniqueKeys'][] | string[];
 	private readonly validator;
 	readonly hooks?: FirestoreCollectionHooks<Proto['dbType']>;
 
-	constructor(wrapper: FirestoreWrapperBEV3, _dbDef: DBDef_V3<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
+	constructor(wrapper: FirestoreWrapperBEV3, _dbDef: Database<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
 		super();
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(_dbDef.backend.name))
@@ -159,15 +157,18 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 			if (!id)
 				throw new MUSTNeverHappenException('Did not receive an _id at doc.unique!');
 
+			let idStr: string;
 			if (typeof id !== 'string')
-				id = assertUniqueId<Proto>(id, this.uniqueKeys);
+				idStr = assertUniqueId<Proto>(id, this.uniqueKeys) as string;
+			else
+				idStr = id;
 
-			const doc = this.wrapper.firestore.doc(`${this.collection.path}/${id}`) as FirestoreType_DocumentReference<Proto['dbType']>;
+			const doc = this.wrapper.firestore.doc(`${this.collection.path}/${idStr}`) as FirestoreType_DocumentReference<Proto['dbType']>;
 			return this.doc._(doc);
 		},
 		item: (item: Proto['uiType']) => {
 			item._id = assertUniqueId<Proto>(item, this.uniqueKeys);
-			return this.doc.unique(item._id!);
+			return this.doc.unique(item._id as Proto['uniqueParam']);
 		},
 		all: (_ids: (Proto['uniqueParam'])[]) => _ids.map(this.doc.unique),
 		allItems: (preDBItems: Proto['uiType'][]) => {
@@ -436,7 +437,7 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 		 * Multi is a non atomic operation - doesn't use transactions. Use 'all' variants for transaction.
 		 */
 		multi: {
-			all: async (ids: UniqueId[], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id)), undefined, multiWriteType),
+			all: async (ids: UniqueId[], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id as Proto['uniqueParam'])), undefined, multiWriteType),
 			items: async (items: Proto['uiType'][], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(items.map(_item => this.doc.item(_item)), undefined, multiWriteType),
 			allDocs: async (docs: DocWrapperV3<Proto>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => await this._deleteAll(docs, undefined, multiWriteType),
 			query: async (query: FirestoreQuery<Proto['dbType']>, multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteQuery(query, undefined, multiWriteType)
@@ -590,12 +591,12 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
  * If the collection has unique keys, assert they exist, and use them to generate the _id.
  * In the case an _id already exists, verify it is not different from the uniqueKeys-generated _id.
  */
-export const assertUniqueId = <Proto extends DBProto<any>>(item: Proto['dbType'], keys: Proto['uniqueKeys']): string => {
+export const assertUniqueId = <Proto extends DB_Prototype>(item: Proto['dbType'], keys: Proto['uniqueKeys']): Proto['dbType']['_id'] => {
 	// If there are no specific uniqueKeys, generate a random _id.
 	if (compare(keys, Const_UniqueKeys as Proto['uniqueKeys']))
-		return item._id ?? generateHex(dbIdLength);
+		return (item._id ?? generateHex(dbIdLength)) as Proto['dbType']['_id'];
 
-	const _id = composeDbObjectUniqueId(item, keys);
+	const _id = composeDbObjectUniqueId(item, keys) as Proto['dbType']['_id'];
 	// If the item has an _id, and it matches the uniqueKeys-generated _id, all is well.
 	// If the uniqueKeys-generated _id doesn't match the existing _id, this means someone had changed the uniqueKeys or _id which must never happen.
 	if (exists(item._id) && _id !== item._id)

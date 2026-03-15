@@ -3,10 +3,6 @@ import {ApiDefResolver} from '../../types.js';
 export type RequestType_DeletedDoc = {};
 export type ResponseType_DeletedDoc = {};
 
-export type ApiStruct_DeletedDoc = {
-	_v1: {}
-}
+export type API_DeletedDoc = Record<string, never>;
 
-export const ApiDef_DeletedDoc: ApiDefResolver<ApiStruct_DeletedDoc> = {
-	_v1: {}
-};
+export const ApiDef_DeletedDoc: ApiDefResolver<API_DeletedDoc> = {};

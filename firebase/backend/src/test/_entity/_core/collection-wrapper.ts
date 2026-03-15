@@ -17,14 +17,14 @@
  */
 
 import {FilterKeys, ModuleBE_Firebase} from '../../_main.js';
-import {DBDef_V3, DBProto} from '@nu-art/ts-common';
+import {Database, DB_Prototype} from '@nu-art/db-api-shared';
 
 
-export class FirestoreCollectionV3_Tester<Proto extends DBProto<any>> {
-	readonly dbDef: DBDef_V3<Proto>;
+export class FirestoreCollectionV3_Tester<Proto extends DB_Prototype> {
+	readonly dbDef: Database<Proto>;
 	readonly externalUniqueFilter?: FilterKeys<Proto['dbType']>;
 
-	constructor(dbDef: DBDef_V3<Proto>, externalUniqueFilter?: FilterKeys<Proto['dbType']>) {
+	constructor(dbDef: Database<Proto>, externalUniqueFilter?: FilterKeys<Proto['dbType']>) {
 		this.dbDef = dbDef;
 		this.externalUniqueFilter = externalUniqueFilter;
 	}

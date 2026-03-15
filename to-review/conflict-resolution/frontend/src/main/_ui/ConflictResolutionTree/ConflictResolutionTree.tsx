@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
-import {Adapter, AdapterBuilder, ComponentSync, TS_Tree} from '@nu-art/thunderstorm-frontend/index';
+import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
+import {Adapter, AdapterBuilder, ComponentSync, TS_Tree} from '@nu-art/thunder-widgets';
 import {calculateConflictResolutionTree} from './tree-calculation.js';
 import {ConflictResolutionTreeRenderers} from './tree-rendering.js';
 import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution.js';

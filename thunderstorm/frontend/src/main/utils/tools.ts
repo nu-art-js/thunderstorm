@@ -20,7 +20,8 @@
  */
 
 import {Browser} from '@nu-art/thunderstorm-shared/consts';
-import {BadImplementationException, DBProto, filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {BadImplementationException, filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
 import * as React from 'react';
 import {DependencyList, Dispatch, EffectCallback, SetStateAction} from 'react';
 import {ModuleFE_BaseDB} from '../modules/db-api-gen/ModuleFE_BaseDB.js';
@@ -171,8 +172,8 @@ export const stringReplacer = (_content: string, _toReplace: string, replacer: (
 	}
 };
 
-export type EntityToResolve<P extends DBProto<any> = DBProto<any>> = string | P['dbType'] | undefined;
+export type EntityToResolve<P extends DB_Prototype = DB_Prototype> = string | P['dbType'] | undefined;
 export const resolveId = (entity: EntityToResolve) => typeof entity === 'string' ? entity : entity?._id;
-export const resolveEntity = <P extends DBProto<any>>(module: ModuleFE_BaseDB<P>) => (entity: EntityToResolve<P>) => typeof entity === 'string'
+export const resolveEntity = <P extends DB_Prototype>(module: ModuleFE_BaseDB<P>) => (entity: EntityToResolve<P>) => typeof entity === 'string'
 	? module.cache.unique(entity)
 	: entity;

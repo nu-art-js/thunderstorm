@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {AppToolsScreen} from '@nu-art/thunderstorm-frontend/index';
+import {AppToolsScreen} from '@nu-art/thunder-ui-modules';
 import {ATS_ConflictResolution} from './ATS_ConflictResolution/ATS_ConflictResolution.js';
 
 export const ATSGroup_ConflictResolution: AppToolsScreen[] = [

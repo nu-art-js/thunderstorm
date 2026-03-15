@@ -1,4 +1,5 @@
-import {DB_Object, DBProto, Module} from '@nu-art/ts-common';
+import {DB_Object, DB_Prototype} from '@nu-art/db-api-shared';
+import {Module} from '@nu-art/ts-common';
 import React from 'react';
 
 type Config = {};
@@ -47,7 +48,7 @@ class ModuleFE_Utils_Class<T extends BaseRendererParam<string, any>> extends Mod
 	// assertion callbacks
 
 	// Method to register a renderer
-	registerProcessors<K extends string, T extends DBProto<any>>(key: K, assertionCallback: AssertionCallbacksMapper<T['dbType']>[K]): any {
+	registerProcessors<K extends string, T extends DB_Prototype>(key: K, assertionCallback: AssertionCallbacksMapper<T['dbType']>[K]): any {
 		this.processors[key] = assertionCallback;
 		return this;
 	}
@@ -58,7 +59,7 @@ class ModuleFE_Utils_Class<T extends BaseRendererParam<string, any>> extends Mod
 	}
 
 	// Method to get a renderer by key and pass props
-	getProcessor<T extends DBProto<any>, K extends keyof AssertionCallbacksMapper<T['dbType']>>(key: K): AssertionCallbacksMapper<T['dbType']>[K] {
+	getProcessor<T extends DB_Prototype, K extends keyof AssertionCallbacksMapper<T['dbType']>>(key: K): AssertionCallbacksMapper<T['dbType']>[K] {
 		const callback = this.processors[key];
 		if (!callback) {
 			throw new Error(`assertion callback not found for key: ${key}`);

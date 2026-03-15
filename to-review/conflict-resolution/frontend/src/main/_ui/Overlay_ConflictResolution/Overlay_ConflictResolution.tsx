@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
-import {ComponentSync} from '@nu-art/thunderstorm-frontend/index';
+import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
+import {ComponentSync} from '@nu-art/thunder-widgets';
 import './Overlay_ConflictResolution.scss';
 import {Panel_ConflictResolution} from '../Panel_ConflictResolution/Panel_ConflictResolution.js';
 import {OnShowConflictResolution} from '../../_dispatchers/index.js';

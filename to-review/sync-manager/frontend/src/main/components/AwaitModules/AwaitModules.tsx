@@ -1,11 +1,14 @@
+/**
+ * BLOCKED: ModuleSyncType and module.syncType - v2 ModuleFE_BaseDB has no syncType. DataStatus/ModuleFE_BaseDB from db-api-frontend could replace once syncType is available or adapted. Ping user.
+ */
 import * as React from 'react';
 import {exists, ResolvableContent, resolveContent, RuntimeModules} from '@nu-art/ts-common';
 import './AwaitModules.scss';
 import {ComponentSync, LL_H_C, LL_V_L, TS_ProgressBar} from '@nu-art/thunder-widgets';
-import {DataStatus, ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend';
+import {DataStatus, ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
+import {ModuleSyncType} from '@nu-art/sync-manager-shared';
 import {type QueryAwaitedModules} from './dispatchers.js';
 import {ModuleFE_SyncManager} from '../../modules/ModuleFE_SyncManager.js';
-import {ModuleSyncType} from '@nu-art/thunderstorm-frontend';
 
 type Props = React.PropsWithChildren<{
 	modules: ResolvableContent<(ModuleFE_BaseDB<any>)[]>;
@@ -81,7 +84,7 @@ export class AwaitModules
 		const permissibleModules = ModuleFE_SyncManager.getPermissibleModuleNames();
 		if (!permissibleModules.length)
 			return [];
-		return this.state.validModules.filter(module => module.syncType === ModuleSyncType.APISync && !permissibleModules.includes(module.dbDef.dbKey));
+		return this.state.validModules.filter(module => (module as ModuleFE_BaseDB<any> & { syncType?: ModuleSyncType }).syncType === ModuleSyncType.APISync && !permissibleModules.includes(module.config.dbKey));
 	};
 	// ######################### Render #########################
 	protected renderMissingPermissions = () => {
@@ -90,7 +93,7 @@ export class AwaitModules
 			<LL_V_L className={'missing-permission-modules'}>
 				<h1>Missing Permissions For The Following Databases</h1>
 				<LL_H_C>
-					{missingPermissionModules.map(module => <span key={module.dbDef.dbKey}>{module.dbDef.entityName}</span>)}
+					{missingPermissionModules.map(module => <span key={module.config.dbKey}>{module.config.dbConfig.name}</span>)}
 				</LL_H_C>
 			</LL_V_L>
 		</div>;

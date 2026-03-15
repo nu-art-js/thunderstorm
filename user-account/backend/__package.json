@@ -42,8 +42,6 @@
     "@nu-art/http-server": "?",
     "@nu-art/slack-backend": "?",
     "@nu-art/slack-shared": "?",
-    "@nu-art/thunderstorm-backend": "?",
-    "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/api-types": "?",
     "express": "?",

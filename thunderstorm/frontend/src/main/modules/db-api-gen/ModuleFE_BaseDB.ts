@@ -19,20 +19,16 @@
  * limitations under the License.
  */
 
+import {DB_Object, Database, dbObjectToId, DB_Prototype, KeysOfDB_Object} from '@nu-art/db-api-shared';
 import {
 	_keys,
 	arrayToMap,
 	BadImplementationException,
-	DB_Object,
-	DBDef_V3,
-	dbObjectToId,
-	DBProto,
 	deleteKeysObject,
 	exists,
 	filterDuplicates,
 	IndexKeys,
 	InvalidResult,
-	KeysOfDB_Object,
 	lastElement,
 	Logger,
 	LogLevel,
@@ -68,14 +64,14 @@ import {CustomMemCreators, ModuleSyncType} from './types.js';
 import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types.js';
 
 
-export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfig<Proto> = DBApiFEConfig<Proto>>
+export abstract class ModuleFE_BaseDB<Proto extends DB_Prototype, Config extends DBApiFEConfig<Proto> = DBApiFEConfig<Proto>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
 
 	readonly validator: Proto['modifiablePropsValidator'];
 	readonly cache: MemCache<Proto>;
 	readonly IDB!: IDBCache<Proto>;
-	readonly dbDef: DBDef_V3<Proto>;
+	readonly dbDef: Database<Proto>;
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string>;
 	public readonly syncType: ModuleSyncType;
@@ -83,7 +79,7 @@ export abstract class ModuleFE_BaseDB<Proto extends DBProto<any>, Config extends
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType, customMemCreators?: CustomMemCreators<Proto>) {
+	protected constructor(dbDef: Database<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, syncType: ModuleSyncType, customMemCreators?: CustomMemCreators<Proto>) {
 		super();
 		this.syncType = syncType;
 		this.defaultDispatcher = defaultDispatcher;

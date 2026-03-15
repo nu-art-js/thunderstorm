@@ -4,19 +4,20 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBEntityDependencies} from '@nu-art/thunderstorm-shared';
+import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
 import {ConflictResolutionTree} from './types.js';
-import {DBProto, RuntimeModules, StaticLogger, UniqueId, _keys} from '@nu-art/ts-common';
-import {ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend/index';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {RuntimeModules, StaticLogger, UniqueId, _keys} from '@nu-art/ts-common';
+import type {ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
 
-const getItem = (dbKey: string, itemId: UniqueId): DBProto<any>['dbType'] | undefined => {
-	const module = RuntimeModules().filter(module => (module as ModuleFE_BaseDB<any>).dbDef?.dbKey === dbKey)[0] as ModuleFE_BaseDB<any>;
+const getItem = (dbKey: string, itemId: UniqueId): DB_Prototype['dbType'] | undefined => {
+	const module = RuntimeModules().filter(m => (m as ModuleFE_BaseDB<any>).config?.dbKey === dbKey)[0] as ModuleFE_BaseDB<any>;
 	if (!module) {
 		StaticLogger.logWarning(`Could not get module for dbKey ${dbKey}`);
 		return;
 	}
 
-	const item = module.cache.unique(itemId) as DBProto<any>['dbType'] | undefined;
+	const item = module.cache.unique(itemId) as DB_Prototype['dbType'] | undefined;
 	if (!item)
 		StaticLogger.logWarning(`Could not get item for dbKey ${dbKey} and id ${itemId}`);
 	return item;

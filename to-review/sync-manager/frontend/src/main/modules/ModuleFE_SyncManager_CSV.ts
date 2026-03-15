@@ -1,21 +1,18 @@
 import {_keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {Readable, Writable} from 'stream';
-import {
-	DataStatus,
-	ModuleFE_BaseDB,
-	ModuleFE_CSVParser,
-	ModuleSyncType,
-	PapaparseConfig,
-	Thunder
-} from '@nu-art/thunderstorm-frontend';
+import {DataStatus, ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
+import {ModuleSyncType} from '@nu-art/sync-manager-shared';
+import {Thunder} from '@nu-art/thunder-core';
 import {HeaderKey_ContentType} from '@nu-art/api-types';
+import {ModuleFE_CSVParser, type PapaparseConfig} from '../ModuleFE_CSVParser.js';
+
 export class ModuleFE_SyncManager_CSV_Class extends Module {
-    constructor() {
-        super();
-    }
-    private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseDB<any>>((module) => module.syncType === ModuleSyncType.CSVSync);
-    syncFromCSVUrl = async (url: string, config?: PapaparseConfig) => {
-        const modules = arrayToMap(this.getModulesToSync(), i => i.dbDef.dbKey);
+	constructor() {
+		super();
+	}
+	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseDB<any>>((module) => (module as ModuleFE_BaseDB<any> & { syncType?: ModuleSyncType }).syncType === ModuleSyncType.CSVSync);
+	syncFromCSVUrl = async (url: string, config?: PapaparseConfig) => {
+		const modules = arrayToMap(this.getModulesToSync(), i => i.config.dbKey);
         const start = performance.now();
         const itemsToSync: any[] = [];
         const errors: any[] = [];
@@ -46,7 +43,7 @@ export class ModuleFE_SyncManager_CSV_Class extends Module {
                         await module.upgradeInstances(documents);
                         // Upsert items to the idb
                         await module.IDB.syncIndexDb(documents);
-                        await module.cache.load();
+                        await module.loadCache();
                         module.setDataStatus(DataStatus.ContainsData);
                     }
                     const end = performance.now();
@@ -66,7 +63,7 @@ export class ModuleFE_SyncManager_CSV_Class extends Module {
         const modules = this.getModulesToSync();
         this.logDebug('Readying modules', modules);
         for (const module of modules) {
-            await module.cache.load();
+            await module.loadCache();
             module.setDataStatus(DataStatus.ContainsData);
         }
     };
@@ -96,10 +93,10 @@ class ModuleIDBWriter extends Writable {
         super();
         this.modules = modules;
         this.paginationSize = paginationSize;
-        this.moduleNameMap = modules.reduce((acc, curr) => {
-            acc[curr.dbDef.backend.name as string] = curr;
-            return acc;
-        }, {} as TypedMap<ModuleFE_BaseDB<any>>);
+		this.moduleNameMap = modules.reduce((acc, curr) => {
+			acc[curr.config.dbKey] = curr;
+			return acc;
+		}, {} as TypedMap<ModuleFE_BaseDB<any>>);
     }
     async _write(chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) {
         console.log('WRITE');
@@ -120,7 +117,7 @@ class ModuleIDBWriter extends Writable {
             if (!module)
                 continue;
             const document = JSON.parse(item.document);
-            await module.IDB.storeWrapper.upsert(document);
+            await module.IDB.upsert(document);
         }
         this.itemsToUpsert = [];
     };

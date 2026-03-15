@@ -12,9 +12,12 @@
   },
   "dependencies": {
     "@nu-art/analytics-shared": "?",
-    "@nu-art/ts-common": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?"
+    "@nu-art/db-api-frontend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/http-client": "?",
+    "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-widgets": "?",
+    "@nu-art/ts-common": "?"
   },
   "devDependencies": {},
   "private": false,

@@ -24,7 +24,7 @@ import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {Readable} from 'stream';
 import {FirestoreCollectionV3} from '@nu-art/firebase-backend';
-import {ApiDef, BackupMetaData, DB_BackupDoc, DBProto_BackupDoc, FetchBackupDoc, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
+import {ApiDef, BackupMetaData, DB_BackupDoc, DatabaseDef_BackupDoc, FetchBackupDoc, HttpMethod, QueryApi} from '@nu-art/thunderstorm-shared';
 import {addRoutes} from '../../modules/ModuleBE_APIs.js';
 import {ApiDef_BackupDoc, Request_BackupId, Response_BackupDocs} from '@nu-art/thunderstorm-shared/_entity/backup-doc/api-def';
 import {createQueryServerApi} from '../../core/typed-api.js';
@@ -41,7 +41,7 @@ export interface OnModuleCleanupV2 {
 
 const dispatch_onModuleCleanupV2 = new Dispatcher<OnModuleCleanupV2, '__onCleanupInvokedV2'>('__onCleanupInvokedV2');
 
-type Config = DBApiConfigV3<DBProto_BackupDoc> & {
+type Config = DBApiConfigV3<DatabaseDef_BackupDoc> & {
 	keepInterval: number,
 	minTimeThreshold: number,
 	excludedDbKeys?: string[],
@@ -68,7 +68,7 @@ type DBModules = ModuleBE_BaseDB<any>;
 export class ModuleBE_BackupDocDB_Class
 	extends Module<Config> {
 
-	public collection!: FirestoreCollectionV3<DBProto_BackupDoc>;
+	public collection!: FirestoreCollectionV3<DatabaseDef_BackupDoc>;
 
 	constructor() {
 		super();
@@ -80,12 +80,12 @@ export class ModuleBE_BackupDocDB_Class
 		super.init();
 		this.collection = this.getBackupStatusCollection();
 		addRoutes([
-			createQueryServerApi(ApiDef_BackupDoc._v1.initiateBackup, () => this.initiateBackup()),
-			createQueryServerApi(ApiDef_BackupDoc._v1.fetchBackupDocs, this.fetchBackupDocs),
+			createQueryServerApi(ApiDef_BackupDoc.initiateBackup, () => this.initiateBackup()),
+			createQueryServerApi(ApiDef_BackupDoc.fetchBackupDocs, this.fetchBackupDocs),
 		]);
 	}
 
-	public getBackupStatusCollection = (): FirestoreCollectionV3<DBProto_BackupDoc> => {
+	public getBackupStatusCollection = (): FirestoreCollectionV3<DatabaseDef_BackupDoc> => {
 		return ModuleBE_Firebase
 			.createAdminSession()
 			.getFirestoreV3()

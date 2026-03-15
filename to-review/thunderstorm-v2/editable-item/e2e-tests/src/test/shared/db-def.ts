@@ -4,21 +4,21 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {DBDef_V3, tsValidateString} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {tsValidateString} from '@nu-art/ts-common';
 import type {BaseDBDefBE} from '@nu-art/db-api-backend';
-import type {DB_Prototype} from '@nu-art/db-api-shared';
-import type {DBProto_EditableTest, DB_EditableTest, UI_EditableTest} from './types.js';
+import type {DatabaseDef_EditableTest, DB_EditableTest, UI_EditableTest} from './types.js';
 
-const Validator_ModifiableProps: DBProto_EditableTest['modifiablePropsValidator'] = {
+const Validator_ModifiableProps: DatabaseDef_EditableTest['modifiablePropsValidator'] = {
 	a: tsValidateString(),
 	b: tsValidateString(),
 	c: tsValidateString(),
 	d: tsValidateString(),
 };
 
-const Validator_GeneratedProps: DBProto_EditableTest['generatedPropsValidator'] = {};
+const Validator_GeneratedProps: DatabaseDef_EditableTest['generatedPropsValidator'] = {};
 
-export const DBDef_EditableTest: DBDef_V3<DBProto_EditableTest> = {
+export const DBDef_EditableTest: Database<DatabaseDef_EditableTest> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
 	versions: ['1.0.0'],
@@ -45,4 +45,4 @@ export const editableTestDbDefBE: BaseDBDefBE = {
 export const editableTestValidator: (item?: UI_EditableTest) => undefined = () => undefined;
 
 /** DB_Prototype for editable-test entity (ModuleBE_BaseDB / ModuleFE_BaseApi). */
-export type EditableTestDB_Prototype = DB_Prototype<'editable-test', DB_EditableTest, UI_EditableTest, typeof editableTestValidator, (keyof DB_EditableTest)[]>;
+export type EditableTestDB_Prototype = DatabaseDef_EditableTest;

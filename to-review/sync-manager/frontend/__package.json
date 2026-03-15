@@ -24,20 +24,22 @@
     "build": "tsc -b -f"
   },
   "dependencies": {
-    "@nu-art/http-client": "?",
-    "@nu-art/thunder-widgets": "?",
-    "@nu-art/db-api-frontend": "?",
-    "@nu-art/sync-manager-shared": "?",
-    "@nu-art/ts-common": "?",
-    "react": "?",
-    "@nu-art/thunderstorm-frontend": "?",
-    "@nu-art/thunderstorm-shared": "?",
-    "@nu-art/thunder-routing": "?",
-    "@nu-art/firebase-frontend": "?",
     "@nu-art/api-types": "?",
-    "@nu-art/thunder-core": "?"
+    "@nu-art/db-api-frontend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/firebase-frontend": "?",
+    "@nu-art/http-client": "?",
+    "@nu-art/sync-manager-shared": "?",
+    "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunder-ui-modules": "?",
+    "@nu-art/thunder-widgets": "?",
+    "@nu-art/ts-common": "?",
+    "papaparse": "?",
+    "react": "?"
   },
   "devDependencies": {
+    "@types/papaparse": "?",
     "@types/react": "?",
     "@nu-art/testalot": "?",
     "chai": "?"

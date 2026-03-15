@@ -19,8 +19,9 @@
  * limitations under the License.
  */
 
+import {DB_BaseObject, Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
-import {BadImplementationException, DB_BaseObject, DBDef_V3, DBProto, IndexKeys, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, IndexKeys, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB.js';
 import {ApiDefCaller, ApiStruct_DBApiGenIDBV3, BaseHttpRequest, DBApiDefGeneratorIDBV3, HttpException, TypedApi} from '../../shared.js';
 import {DBApiFEConfig} from '../../core/db-api-gen/db-def.js';
@@ -68,7 +69,7 @@ type Operation = {
  * @template _Config - Base configuration type
  * @template Config - Extended configuration type with DBApiFEConfig
  */
-export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config extends object = object, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
+export abstract class ModuleFE_BaseApi<Proto extends DB_Prototype, _Config extends object = object, Config extends _Config & DBApiFEConfig<Proto> = _Config & DBApiFEConfig<Proto>>
 	extends ModuleFE_BaseDB<Proto, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
 
@@ -84,7 +85,7 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 	 * @param version - Optional API version string
 	 * @param customMemCreators - Optional custom memory creators for the database
 	 */
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string, customMemCreators?: CustomMemCreators<Proto>) {
+	protected constructor(dbDef: Database<Proto>, defaultDispatcher: ThunderDispatcher<any, string>, version?: string, customMemCreators?: CustomMemCreators<Proto>) {
 		super(dbDef, defaultDispatcher, ModuleSyncType.APISync, customMemCreators);
 
 		const apiDef = this.resolveApiDef(dbDef, version);
@@ -137,7 +138,7 @@ export abstract class ModuleFE_BaseApi<Proto extends DBProto<any>, _Config exten
 	 * @param version - Optional API version
 	 * @returns Generated API definition for the database
 	 */
-	protected resolveApiDef(dbDef: DBDef_V3<Proto>, version: string | undefined) {
+	protected resolveApiDef(dbDef: Database<Proto>, version: string | undefined) {
 		return DBApiDefGeneratorIDBV3<Proto>(dbDef, version);
 	}
 

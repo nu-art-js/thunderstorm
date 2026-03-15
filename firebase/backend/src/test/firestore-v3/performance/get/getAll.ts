@@ -1,13 +1,14 @@
 import {firestore, testInstance1} from '../../../_entity/_core/consts.js';
-import {DBDef_V3, deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DBProto_Type} from '../../../_entity/type/index.js';
+import {DatabaseDef_Type} from '../../../_entity/type/index.js';
 import {FirestoreCollectionV3} from '../../../../main/firestore-v3/FirestoreCollectionV3.js';
 
 type TestCase_GetAll = { description?: string; input: {}; result: {} };
 type Test_GetAll = { label: string; testcases: TestCase_GetAll[]; processor: (testCase: TestCase_GetAll) => Promise<void> };
 
-const dbDef: DBDef_V3<DBProto_Type> = {
+const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-get-all-tests',
@@ -33,7 +34,7 @@ const testCases_GetAll: TestCase_GetAll[] = [
 ];
 
 const processor_GetAll = async (_testCase: TestCase_GetAll): Promise<void> => {
-	const collection = firestore.getCollection<DBProto_Type>(dbDef);
+	const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 	await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	const inserted = await collection.create.all(Array(10).fill(deepClone(testInstance1)));
 	const _ids = inserted.map(_item => _item._id);

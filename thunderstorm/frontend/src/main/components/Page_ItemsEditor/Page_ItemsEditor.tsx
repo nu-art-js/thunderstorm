@@ -1,8 +1,8 @@
 import * as React from 'react';
+import {DB_Prototype} from '@nu-art/db-api-shared';
 import {
 	asArray,
 	dbObjectToId,
-	DBProto,
 	exists,
 	UniqueId
 } from '@nu-art/ts-common';
@@ -51,16 +51,16 @@ import {ModuleFE_BrowserHistoryV2} from '../../modules/ModuleFE_BrowserHistoryV2
 import {EditableDBItemV3, EditableItem} from '../../utils/EditableItem.js';
 
 
-export type MenuAction<Proto extends DBProto<any>> = {
+export type MenuAction<Proto extends DB_Prototype> = {
 	label: string,
 	action: (state: State_ItemsEditor<Proto>) => Promise<any>
 }
-export type State_ItemsEditor<Proto extends DBProto<any>> = {
+export type State_ItemsEditor<Proto extends DB_Prototype> = {
 	editable: EditableItem<Proto['uiType']>,
 	filter: ItemEditor_FilterType<Proto>,
 	actionInProgress?: number
 };
-export type Props_ItemsEditor<Proto extends DBProto<any>> = {
+export type Props_ItemsEditor<Proto extends DB_Prototype> = {
 	ListRenderer?: React.ComponentType<Props_ListRenderer<Proto>>
 	EditorRenderer: React.ComponentType<Partial<Props_EditableItemControllerProto<Proto>>>,
 	Filter?: React.ComponentType<Props_Filter<Proto>>
@@ -84,7 +84,7 @@ export type ProtoDef_Selection = ProtoComponentDef<'selected', {
 	selected: { [dbKey: string]: UniqueId }
 }>
 
-export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
+export abstract class Page_ItemsEditor<Proto extends DB_Prototype,
 	CProto extends SuperProto<ProtoDef_Selection, ProtoComponentDef<string, any>> = ProtoDef_Selection,
 	P = {}, S = {}>
 	extends ProtoComponent<CProto, Props_ItemsEditor<Proto> & P, State_ItemsEditor<Proto> & S> {
@@ -200,7 +200,7 @@ export abstract class Page_ItemsEditor<Proto extends DBProto<any>,
 			onCreateNewItem={async () => this.onSelected({} as Partial<Proto['uiType']>)}/>;
 	}
 
-	static refactoring_setSelected<Proto extends DBProto<any>>(module: ModuleFE_BaseApi<Proto>, id?: string) {
+	static refactoring_setSelected<Proto extends DB_Prototype>(module: ModuleFE_BaseApi<Proto>, id?: string) {
 		const selected = (ModuleFE_BrowserHistoryV2.get('selected') ?? {}) as { [dbKey: string]: UniqueId };
 
 		const selectedId = id;

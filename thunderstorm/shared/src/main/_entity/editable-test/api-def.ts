@@ -7,10 +7,6 @@ export type ResponseType = {
 //
 };
 
-export type ApiStruct_EditableTest = {
-	_v1: {}
-}
+export type API_EditableTest = Record<string, never>;
 
-export const ApiDef_EditableTest: ApiDefResolver<ApiStruct_EditableTest> = {
-	_v1: {}
-};
+export const ApiDef_EditableTest: ApiDefResolver<API_EditableTest> = {};

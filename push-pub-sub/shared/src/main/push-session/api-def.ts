@@ -1,9 +1,5 @@
 import {ApiDefResolver} from '@nu-art/api-types';
 
-export type ApiStruct_PushSession = {
-	_v1: {}
-}
+export type API_PushSession = Record<string, never>;
 
-export const ApiDef_PushSession: ApiDefResolver<ApiStruct_PushSession> = {
-	_v1: {}
-};
+export const ApiDef_PushSession: ApiDefResolver<API_PushSession> = {};

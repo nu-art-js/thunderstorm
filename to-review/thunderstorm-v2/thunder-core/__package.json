@@ -37,10 +37,12 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "?",
-    "react": "?"
+    "react": "?",
+    "react-dom": "?"
   },
   "devDependencies": {
-    "@types/react": "?"
+    "@types/react": "?",
+    "@types/react-dom": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

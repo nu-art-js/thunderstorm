@@ -1,10 +1,11 @@
-import {convertUpperCamelCase, DBDef_V3, tsValidateBoolean, tsValidateMustExist, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
-import {DBProto_PushMessagesHistory} from './types.js';
+import {Database} from '@nu-art/db-api-shared';
+import {convertUpperCamelCase, tsValidateBoolean, tsValidateMustExist, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
+import {DatabaseDef_PushMessagesHistory} from './types.js';
 import {PushPubSubDBGroup} from '../shared.js';
 
-const Validator_ModifiableProps: DBProto_PushMessagesHistory['modifiablePropsValidator'] = {};
+const Validator_ModifiableProps: DatabaseDef_PushMessagesHistory['modifiablePropsValidator'] = {};
 
-const Validator_GeneratedProps: DBProto_PushMessagesHistory['generatedPropsValidator'] = {
+const Validator_GeneratedProps: DatabaseDef_PushMessagesHistory['generatedPropsValidator'] = {
 	pushSessionId: tsValidateString(),
 	token: tsValidateString(),
 	message: tsValidateMustExist,
@@ -12,9 +13,10 @@ const Validator_GeneratedProps: DBProto_PushMessagesHistory['generatedPropsValid
 	originatingAccountId: tsValidateUniqueId,
 };
 
-export const DBDef_PushMessagesHistory: DBDef_V3<DBProto_PushMessagesHistory> = {
+export const DBDef_PushMessagesHistory: Database<DatabaseDef_PushMessagesHistory> = {
 	modifiablePropsValidator: Validator_ModifiableProps,
 	generatedPropsValidator: Validator_GeneratedProps,
+	generatedProps: ['pushSessionId', 'token', 'message', 'read', 'originatingAccountId'],
 	versions: ['1.0.0'],
 	dbKey: 'push-messages-history',
 	entityName: convertUpperCamelCase('PushMessagesHistory', '-').toLowerCase(),

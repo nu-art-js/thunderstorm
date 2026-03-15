@@ -5,7 +5,7 @@
  */
 
 import {ThunderDispatcher} from '@nu-art/thunder-core';
-import type {ModuleFE_BaseDB} from '@nu-art/thunderstorm-frontend';
+import type {ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
 
 export interface QueryAwaitedModules {
 	__queryAwaitedModule(): (ModuleFE_BaseDB<any>)[];

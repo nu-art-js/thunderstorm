@@ -56,7 +56,7 @@ Companion to `todo.md`. Features inside the thunderstorm monolith, their depende
 - **ModuleBE_SyncManager**
   - **Category:** BE
   - **Dependency features:** ModuleBE_BaseDB, sync-env (OnSyncEnvCompleted), _entity (OnModuleCleanupV2), ModuleBE_APIs, typed-api
-  - **Shared infra:** `@nu-art/ts-common`, `@nu-art/firebase-shared`, `@nu-art/firebase-backend` (ModuleBE_Firebase, DatabaseWrapperBE, FirestoreCollectionV3), `@nu-art/thunderstorm-shared` (sync-manager types, apis, DBDef_DeletedDoc, DBProto_DeletedDoc)
+  - **Shared infra:** `@nu-art/ts-common`, `@nu-art/firebase-shared`, `@nu-art/firebase-backend` (ModuleBE_Firebase, DatabaseWrapperBE, FirestoreCollectionV3), `@nu-art/thunderstorm-shared` (sync-manager types, apis, DBDef_DeletedDoc, DatabaseDef_DeletedDoc)
 
 - **ModuleFE_SyncManager**
   - **Category:** FE

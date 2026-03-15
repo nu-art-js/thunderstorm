@@ -5,13 +5,14 @@
  */
 
 import * as React from 'react';
-import {TreeNode, TreeType} from '@nu-art/thunderstorm-frontend/index';
-import {DBProto, UniqueId} from '@nu-art/ts-common';
+import {TreeNode, TreeType} from '@nu-art/thunder-widgets';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {UniqueId} from '@nu-art/ts-common';
 
 type Props_CheckedItem = {
 	itemId: UniqueId;
 	dbKey: string;
-	item?: DBProto<any>['dbType'];
+	item?: DB_Prototype['dbType'];
 };
 
 type Props_ConflictingCollection = {
@@ -21,7 +22,7 @@ type Props_ConflictingCollection = {
 type Props_ConflictingItem = {
 	itemId: UniqueId;
 	dbKey: string;
-	item?: DBProto<any>['dbType'];
+	item?: DB_Prototype['dbType'];
 };
 
 type ConflictResolutionTree_Map = {

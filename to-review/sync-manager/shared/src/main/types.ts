@@ -51,3 +51,10 @@ export type DeltaSyncModule = SyncDbData & {
 export type FullSyncModule = SyncDbData & {
 	sync: typeof SmartSync_FullSync;
 };
+
+/** How a frontend DB module syncs (used by AwaitModules and sync-manager). */
+export enum ModuleSyncType {
+	NoSync,
+	CSVSync,
+	APISync
+}

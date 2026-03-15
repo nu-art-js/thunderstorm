@@ -1,4 +1,4 @@
-import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm-shared';
+import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/api-types';
 import {TSAnalyticsEvent} from './types.js';
 
 export type Analytics_SendEvent = {
@@ -32,18 +32,14 @@ export type Analytics_UpdateLexicon = {
 	response: void;
 }
 
-export type ApiStruct_Analytics = {
-	_v1: {
-		sendEvent: BodyApi<Analytics_SendEvent['response'], Analytics_SendEvent['request']>;
-		updateUser: BodyApi<Analytics_UpdateUser['response'], Analytics_UpdateUser['request']>;
-		updateLexicon: BodyApi<Analytics_UpdateLexicon['response'], Analytics_UpdateLexicon['request']>
-	}
-}
+export type API_Analytics = {
+	sendEvent: BodyApi<Analytics_SendEvent['response'], Analytics_SendEvent['request']>;
+	updateUser: BodyApi<Analytics_UpdateUser['response'], Analytics_UpdateUser['request']>;
+	updateLexicon: BodyApi<Analytics_UpdateLexicon['response'], Analytics_UpdateLexicon['request']>;
+};
 
-export const ApiDef_Analytics: (baseUrl?: string) => ApiDefResolver<ApiStruct_Analytics> = (baseUrl) => ({
-	_v1: {
-		sendEvent: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/send-event'},
-		updateUser: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/update-user'},
-		updateLexicon: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/update-lexicon'},
-	}
+export const ApiDef_Analytics: (baseUrl?: string) => ApiDefResolver<API_Analytics> = (baseUrl) => ({
+	sendEvent: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/send-event'},
+	updateUser: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/update-user'},
+	updateLexicon: {baseUrl, method: HttpMethod.POST, path: '/v1/analytics/update-lexicon'},
 });

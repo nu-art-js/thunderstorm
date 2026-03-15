@@ -1,6 +1,7 @@
 import * as React from 'react';
 import './TS_EditableItemController.scss';
-import {BadImplementationException, DB_Object, DBProto, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {DB_Object, DB_Prototype} from '@nu-art/db-api-shared';
+import {BadImplementationException, exists, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {Editable_SaveAction, EditableDBItemV3} from '../../utils/EditableItem.js';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi.js';
 import {ApiCallerEventType} from '../../core/db-api-gen/types.js';
@@ -9,7 +10,7 @@ import {ComponentSync} from '../../core/ComponentSync.js';
 import {EditableRef} from '../TS_EditableContent/types.js';
 
 
-export type TemplatingProps_EditableItemController<Proto extends DBProto<any>, EditorProps extends object = object> = {
+export type TemplatingProps_EditableItemController<Proto extends DB_Prototype, EditorProps extends object = object> = {
 	module: ModuleFE_BaseApi<Proto>,
 	onError?: (item: Partial<Proto['uiType']>, err: Error) => any | Promise<any>
 	onSave?: (err: Proto['uiType']) => any | Promise<any>
@@ -20,7 +21,7 @@ export type TemplatingProps_EditableItemController<Proto extends DBProto<any>, E
 	editorProps?: EditorProps
 };
 
-export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps extends object = object> =
+export type Props_EditableItemController<Proto extends DB_Prototype, EditorProps extends object = object> =
 	TemplatingProps_EditableItemController<Proto, EditorProps>
 	& {
 	item?: Readonly<Partial<Proto['uiType']>> | string,
@@ -34,7 +35,7 @@ export type Props_EditableItemController<Proto extends DBProto<any>, EditorProps
  * @template Proto - The database prototype def to be edited
  * @template Props - The Props this class component takes
  */
-export class TS_EditableItemController<Proto extends DBProto<any>,
+export class TS_EditableItemController<Proto extends DB_Prototype,
 	EditorProps extends object = object,
 	Props extends Props_EditableItemController<Proto, EditorProps> = Props_EditableItemController<Proto, EditorProps>>
 	extends ComponentSync<Props, EditableRef<Proto['uiType']>> {
