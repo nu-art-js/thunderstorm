@@ -30,7 +30,7 @@ class Page_ApiGen_Renderer
 	}
 
 	callServerApi_CustomError = () => {
-		ModuleFE_PermissionsProject.v1.query({});
+		ModuleFE_PermissionsProject.query({});
 	};
 
 	render() {

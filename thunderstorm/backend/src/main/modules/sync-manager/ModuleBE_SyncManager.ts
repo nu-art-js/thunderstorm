@@ -95,7 +95,7 @@ export class ModuleBE_SyncManager_Class
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
-		this.smartSyncApi = createBodyServerApi(ApiDef_SyncManager.v1.smartSync, this.calculateSmartSync);
+		this.smartSyncApi = createBodyServerApi(ApiDef_SyncManager.smartSync, this.calculateSmartSync);
 
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}

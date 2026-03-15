@@ -30,8 +30,8 @@ export class ModuleBE_ServerInfo_Class
 		});
 
 		addRoutes([
-			createQueryServerApi(ApiDef_ServerInfo.v1.getServerInfo, this.getServerInfo),
-			createQueryServerApi(ApiDef_ServerInfo.v1.updateServerInfoState, async () => this.writeServerInfoState())
+			createQueryServerApi(ApiDef_ServerInfo.getServerInfo, this.getServerInfo),
+			createQueryServerApi(ApiDef_ServerInfo.updateServerInfoState, async () => this.writeServerInfoState())
 		]);
 
 		this.serverInfoData = ModuleBE_Firebase.createAdminSession().getDatabase().ref<ServerInfoFirebaseState>(Default_ServerInfoNodePath);

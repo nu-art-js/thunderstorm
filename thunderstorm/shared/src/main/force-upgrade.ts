@@ -38,13 +38,9 @@ export const ApiDef_AssertAppVersion: ApiDef<QueryApi<UpgradeRequired>> = {
 };
 
 export type ApiStruct_ForceUpgrade = {
-	v1: {
-		assertAppVersion: QueryApi<UpgradeRequired>
-	}
+	assertAppVersion: QueryApi<UpgradeRequired>
 }
 
 export const ApiDef_ForceUpgrade: ApiDefResolver<ApiStruct_ForceUpgrade> = {
-	v1: {
-		assertAppVersion: {method: HttpMethod.GET, path: 'assert-app-version'}
-	}
+	assertAppVersion: {method: HttpMethod.GET, path: 'assert-app-version'}
 };

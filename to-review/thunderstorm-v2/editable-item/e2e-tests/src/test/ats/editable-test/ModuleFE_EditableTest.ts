@@ -27,22 +27,11 @@ const editableTestBaseDBConfig: BaseDBConfig<EditableTestDB_Prototype> = {
 };
 
 /**
- * Frontend module for editable-test entity. Exposes .v1 and .dbDef for compatibility
- * with @nu-art/editable-item's EditableDBItemV3 which expects storm-style module shape.
+ * Frontend module for editable-test entity. Exposes .dbDef for compatibility
+ * with @nu-art/editable-item's EditableDBItemV3 which expects module.dbDef.
  */
 export class ModuleFE_EditableTest_Class
 	extends ModuleFE_BaseApi<EditableTestDB_Prototype> {
-
-	/** Compatibility with EditableDBItemV3 (expects module.v1.upsert(_item).executeSync()). */
-	get v1(): {
-		upsert: (item: import('../../shared/types.js').UI_EditableTest) => { executeSync: () => Promise<import('../../shared/types.js').DB_EditableTest> };
-		delete: (item: import('../../shared/types.js').DB_EditableTest) => { executeSync: () => Promise<void> };
-	} {
-		return {
-			upsert: (item) => ({ executeSync: () => this.upsert(item) }),
-			delete: (item) => ({ executeSync: () => this.delete(item) }),
-		};
-	}
 
 	/** Compatibility with EditableDBItemV3 hasConflicts (expects module.dbDef). */
 	get dbDef(): typeof DBDef_EditableTest {
@@ -52,7 +41,7 @@ export class ModuleFE_EditableTest_Class
 	constructor() {
 		super({
 			config: editableTestBaseDBConfig,
-			crudApiDef: CrudApiDef<EditableTestDB_Prototype>('editable-test', 'v1'),
+			crudApiDef: CrudApiDef<EditableTestDB_Prototype>('editable-test'),
 		});
 	}
 }

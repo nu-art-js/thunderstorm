@@ -14,13 +14,11 @@ export class ModuleFE_AppConfig_Class
 	extends ModuleFE_BaseApi<DatabaseDef_AppConfig>
 	implements ApiDefCaller<API_AppConfig> {
 
-	_v1: ApiDefCaller<API_AppConfig>;
+	getConfigByKey: ApiDefCaller<API_AppConfig>['getConfigByKey'];
 
 	constructor() {
 		super(DBDef_AppConfig, dispatch_onAppConfigsUpdated);
-		this._v1 = {
-			getConfigByKey: apiWithQuery(ApiDef_AppConfig.getConfigByKey),
-		};
+		this.getConfigByKey = apiWithQuery(ApiDef_AppConfig.getConfigByKey);
 	}
 
 	async init() {
@@ -38,7 +36,7 @@ export class ModuleFE_AppConfig_Class
 			_config = {key: appConfigKey.key} as DB_AppConfig;
 
 		_config.data = data;
-		await this.v1.upsert(_config).executeSync();
+		await this.upsert(_config).executeSync();
 	}
 
 	async delete<K extends AppConfigKey_FE<any>>(appConfigKey: K) {
@@ -46,7 +44,7 @@ export class ModuleFE_AppConfig_Class
 		if (!config)
 			throw new BadImplementationException('Config of this key does not exist');
 
-		await this.v1.delete(config).executeSync();
+		await this.delete(config).executeSync();
 	}
 
 }

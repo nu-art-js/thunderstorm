@@ -70,7 +70,7 @@ export class ModuleBE_SyncManager_Class
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 	}
 
-	@ApiHandler(() => ApiDef_SyncManager.v1.smartSync)
+	@ApiHandler(() => ApiDef_SyncManager.smartSync)
 	async calculateSmartSync(body: SyncManagerAPI_SmartSync['request']): Promise<SyncManagerAPI_SmartSync['response']> {
 		const frontendCollectionNames = body.modules.map(item => item.dbKey);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);

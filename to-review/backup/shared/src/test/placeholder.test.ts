@@ -9,7 +9,7 @@ import {ApiDef_BackupDoc} from '../main/apis.js';
 
 describe('backup-shared', () => {
 	it('ApiDef_BackupDoc has _v1 paths', () => {
-		assert.equal(ApiDef_BackupDoc._v1.initiateBackup.path, 'v1/initiate-backup-v2');
-		assert.equal(ApiDef_BackupDoc._v1.fetchBackupDocs.path, 'v1/fetch-backup-docs-v2');
+		assert.equal(ApiDef_BackupDoc.initiateBackup.path, 'v1/initiate-backup-v2');
+		assert.equal(ApiDef_BackupDoc.fetchBackupDocs.path, 'v1/fetch-backup-docs-v2');
 	});
 });

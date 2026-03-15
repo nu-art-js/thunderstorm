@@ -35,6 +35,7 @@
     "@nu-art/thunder-ui-modules": "?",
     "@nu-art/thunder-widgets": "?",
     "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
     "papaparse": "?",
     "react": "?"
   },

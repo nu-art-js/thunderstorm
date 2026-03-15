@@ -56,7 +56,7 @@ export class ModuleFE_Assets_Class
 	constructor() {
 		super({
 			config: assetsConfig,
-			crudApiDef: CrudApiDef<DatabaseDef_Assets>(DBDef_Assets.dbKey, 'v1'),
+			crudApiDef: CrudApiDef<DatabaseDef_Assets>(DBDef_Assets.dbKey),
 			dispatcher,
 		});
 		this.vv1 = {

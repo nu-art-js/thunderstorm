@@ -19,17 +19,15 @@ class ModuleFE_ServerInfo_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_ServerInfo> {
 
-	v1: ApiCallerRouter<ApiStruct_ServerInfo>['v1'];
+	getServerInfo: ApiDefCaller<ApiStruct_ServerInfo>['getServerInfo'];
+	updateServerInfoState: ApiDefCaller<ApiStruct_ServerInfo>['updateServerInfoState'];
 	private serverInfoFirebaseListener?: RefListenerFE<ServerInfoFirebaseState>;
 
 	constructor() {
 		super();
-		this.v1 = {
-			getServerInfo: apiWithQuery(ApiDef_ServerInfo.v1.getServerInfo),
-
-			// @ts-ignore // to be used only by Jenkins
-			updateServerInfoState: undefined,
-		};
+		this.getServerInfo = apiWithQuery(ApiDef_ServerInfo.getServerInfo);
+		// @ts-ignore // to be used only by Jenkins
+		this.updateServerInfoState = undefined;
 	}
 
 	public startListening() {

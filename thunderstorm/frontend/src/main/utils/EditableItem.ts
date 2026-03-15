@@ -583,8 +583,8 @@ export class EditableDBItemV3<Proto extends DB_Prototype>
 	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_BaseApi<Proto>, debounceInstance?: AwaitedDebounceInstance<any, any>) {
 		super(item);
 
-		this.setSaveAction(async (_item: Proto['uiType']) => await module.v1.upsert(_item).executeSync());
-		this.setDeleteAction(async (_item: Proto['dbType']) => await module.v1.delete(_item).executeSync());
+		this.setSaveAction(async (_item: Proto['uiType']) => await module.upsert(_item).executeSync());
+		this.setDeleteAction(async (_item: Proto['dbType']) => await module.delete(_item).executeSync());
 		this.module = module;
 
 		//binds

@@ -48,7 +48,7 @@ export class ModuleFE_ShortUrl_Class extends ModuleFE_BaseApi<DatabaseDef_ShortU
 	constructor() {
 		super({
 			config: shortUrlConfig(),
-			crudApiDef: CrudApiDef<DatabaseDef_ShortUrl>(DBDef_ShortUrl.dbKey, 'v1'),
+			crudApiDef: CrudApiDef<DatabaseDef_ShortUrl>(DBDef_ShortUrl.dbKey),
 			dispatcher: dispatch_onShortUrlsUpdated
 		});
 	}

@@ -18,15 +18,11 @@ export type Response_BackupDocs = {
 export type Response_InitiateBackup = { pathToBackup: string; backupId: string } | undefined;
 
 export type ApiStruct_BackupDoc = {
-	_v1: {
-		initiateBackup: QueryApi<Response_InitiateBackup>;
-		fetchBackupDocs: QueryApi<Response_BackupDocs, Request_BackupId>;
-	};
+	initiateBackup: QueryApi<Response_InitiateBackup>;
+	fetchBackupDocs: QueryApi<Response_BackupDocs, Request_BackupId>;
 };
 
 export const ApiDef_BackupDoc: ApiDefResolver<ApiStruct_BackupDoc> = {
-	_v1: {
-		initiateBackup: {method: HttpMethod.GET, path: 'v1/initiate-backup-v2'},
-		fetchBackupDocs: {method: HttpMethod.GET, path: 'v1/fetch-backup-docs-v2'}
-	}
+	initiateBackup: {method: HttpMethod.GET, path: 'v1/initiate-backup-v2'},
+	fetchBackupDocs: {method: HttpMethod.GET, path: 'v1/fetch-backup-docs-v2'}
 };

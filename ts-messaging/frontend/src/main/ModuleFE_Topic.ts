@@ -39,7 +39,7 @@ export class ModuleFE_topic_Class extends ModuleFE_BaseApi<DatabaseDef_Topic> {
 	constructor() {
 		super({
 			config: topicConfig(),
-			crudApiDef: CrudApiDef<DatabaseDef_Topic>(DBDef_Topic.dbKey, 'v1'),
+			crudApiDef: CrudApiDef<DatabaseDef_Topic>(DBDef_Topic.dbKey),
 			dispatcher: dispatch_onTopicsUpdated,
 		});
 	}

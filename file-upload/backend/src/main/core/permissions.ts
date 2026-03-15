@@ -11,7 +11,7 @@ import {CrudApiDef} from '@nu-art/db-api-shared';
 import {ApiDef_Assets, ApiDef_AssetUploader, DBDef_Assets} from '@nu-art/file-upload-shared';
 import {DefaultDef_Domain, DefaultDef_Package, Domain_Developer} from '@nu-art/permissions-backend';
 
-const AssetsCrudApiDef = CrudApiDef(DBDef_Assets.dbKey, 'v1');
+const AssetsCrudApiDef = CrudApiDef(DBDef_Assets.dbKey);
 
 const Domain_AssetsManager_ID = '993c496c6aaad9c67723034137d26c42';
 

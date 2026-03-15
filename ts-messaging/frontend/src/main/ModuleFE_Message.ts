@@ -39,7 +39,7 @@ export class ModuleFE_Message_Class extends ModuleFE_BaseApi<DatabaseDef_Message
 	constructor() {
 		super({
 			config: messageConfig(),
-			crudApiDef: CrudApiDef<DatabaseDef_Message>(DBDef_message.dbKey, 'v1'),
+			crudApiDef: CrudApiDef<DatabaseDef_Message>(DBDef_message.dbKey),
 			dispatcher: dispatch_onMessagesUpdated,
 		});
 	}
