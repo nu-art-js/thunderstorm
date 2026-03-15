@@ -70,7 +70,7 @@ class ModuleBE_ForceUpgrade_Class
 
 	init() {
 		super.init();
-		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params) => {
+		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.assertAppVersion, async (params) => {
 			return this.compareVersion();
 		})]);
 	}

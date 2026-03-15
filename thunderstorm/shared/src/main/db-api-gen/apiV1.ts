@@ -36,62 +36,54 @@ import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
  * but something about the type resolution goes wrong and instead of seeing Type<GenericType>, it resolves to Type> which makes no sense
  */
 export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
-	v1: {
-		query: BodyApi<DBType[], FirestoreQuery<DBType>, FirestoreQuery<DBType> | undefined | {}>,
-		queryUnique: QueryApi<DBType, DB_BaseObject, ResponseError<string, any>, string>,
-		upsert: BodyApi<DBType, PreDB<DBType>>,
-		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
-		patch: BodyApi<DBType, PreDB<DBType>>
-		delete: QueryApi<DBType, DB_BaseObject>,
-		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
-		deleteAll: QueryApi<void>
-		metadata: QueryApi<Metadata<DBType>>,
-	},
+	query: BodyApi<DBType[], FirestoreQuery<DBType>, FirestoreQuery<DBType> | undefined | {}>,
+	queryUnique: QueryApi<DBType, DB_BaseObject, ResponseError<string, any>, string>,
+	upsert: BodyApi<DBType, PreDB<DBType>>,
+	upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
+	patch: BodyApi<DBType, PreDB<DBType>>
+	delete: QueryApi<DBType, DB_BaseObject>,
+	deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
+	deleteAll: QueryApi<void>
+	metadata: QueryApi<Metadata<DBType>>,
 }
 
 export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBType> = {
-	v1: {
-		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
-		queryUnique: QueryApi<DBType, QueryParams, ResponseError<string, any>, string | IndexKeys<DBType, Ks>>,
-		upsert: BodyApi<DBType, PreDB<DBType>>,
-		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
-		patch: BodyApi<DBType, IndexKeys<DBType, Ks> & Partial<DBType>>
-		delete: QueryApi<DBType, DB_BaseObject>,
-		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
-		deleteAll: QueryApi<DBType[]>,
-		metadata: QueryApi<Metadata<DBType>>,
-	},
+	query: BodyApi<DBType[], FirestoreQuery<DBType>>,
+	queryUnique: QueryApi<DBType, QueryParams, ResponseError<string, any>, string | IndexKeys<DBType, Ks>>,
+	upsert: BodyApi<DBType, PreDB<DBType>>,
+	upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
+	patch: BodyApi<DBType, IndexKeys<DBType, Ks> & Partial<DBType>>
+	delete: QueryApi<DBType, DB_BaseObject>,
+	deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
+	deleteAll: QueryApi<DBType[]>,
+	metadata: QueryApi<Metadata<DBType>>,
 }
 
 export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType, '_id'>): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
 	return {
-		v1: {
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/metadata`},
-		}
+		query: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/query`},
+		queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/query-unique`},
+		upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert`},
+		upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert-all`},
+		patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/patch`},
+		delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-unique`},
+		deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/delete`},
+		deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-all`},
+		metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/metadata`},
 	};
 };
 
 export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(dbDef: DBDef<DBType, Ks>): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
 	return {
-		v1: {
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-unique`},
-			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-all`},
-			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/metadata`},
-		}
+		query: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/query`},
+		queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/query-unique`},
+		upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert`},
+		upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/upsert-all`},
+		patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/patch`},
+		delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-unique`},
+		deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbKey}/delete`},
+		deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/delete-all`},
+		metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbKey}/metadata`},
 	};
 };
 

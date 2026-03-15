@@ -203,13 +203,13 @@ export class ModuleFE_SyncManager_Class
 		// if the module have a custom base url for this api apply it to the api def keeping the original path
 		const customBase = resolveContent(this.smartSyncApiUrl);
 		const smartSyncDef = customBase
-			? {...ApiDef_SyncManager.v1.smartSync, fullUrl: customBase}
-			: ApiDef_SyncManager.v1.smartSync;
+			? {...ApiDef_SyncManager.smartSync, fullUrl: customBase}
+			: ApiDef_SyncManager.smartSync;
 
 		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
 		try {
 			const client = HttpClient.default;
-			const req = client.createRequest(smartSyncDef as typeof ApiDef_SyncManager.v1.smartSync).setBodyAsJson(request);
+			const req = client.createRequest(smartSyncDef as typeof ApiDef_SyncManager.smartSync).setBodyAsJson(request);
 			const response = await req.execute();
 			await this.onSmartSyncCompleted(response);
 		} catch (e: any) {

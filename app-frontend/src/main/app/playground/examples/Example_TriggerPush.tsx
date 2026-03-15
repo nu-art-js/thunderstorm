@@ -58,7 +58,7 @@ class Example_TriggerPush_Renderer
 			topic: 'test',
 			props: {id: 'test1'}
 		}];
-		ModuleFE_PushPubSub.v1.registerAll(mySubscriptions);
+		ModuleFE_PushPubSub.registerAll(mySubscriptions);
 	}
 }
 

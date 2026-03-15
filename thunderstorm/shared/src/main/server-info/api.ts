@@ -10,15 +10,11 @@ export type Response_ServerInfo = BasicServerInfo & {
 }
 
 export type ApiStruct_ServerInfo = {
-	v1: {
-		getServerInfo: QueryApi<Response_ServerInfo>
-		updateServerInfoState: QueryApi<void>
-	}
+	getServerInfo: QueryApi<Response_ServerInfo>
+	updateServerInfoState: QueryApi<void>
 }
 
 export const ApiDef_ServerInfo: ApiDefResolver<ApiStruct_ServerInfo> = {
-	v1: {
-		getServerInfo: {method: HttpMethod.GET, path: 'v1/server-info'},
-		updateServerInfoState: {method: HttpMethod.GET, path: 'v1/update-server-info'}
-	}
+	getServerInfo: {method: HttpMethod.GET, path: 'v1/server-info'},
+	updateServerInfoState: {method: HttpMethod.GET, path: 'v1/update-server-info'}
 };

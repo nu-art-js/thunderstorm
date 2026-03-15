@@ -73,8 +73,14 @@ export abstract class ModuleFE_BaseApi<Proto extends DB_Prototype, _Config exten
 	extends ModuleFE_BaseDB<Proto, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>> {
 
-	// @ts-ignore
-	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['v1'];
+	readonly query: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['query'];
+	readonly queryUnique: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['queryUnique'];
+	readonly upsert: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['upsert'];
+	readonly upsertAll: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['upsertAll'];
+	readonly patch: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['patch'];
+	readonly delete: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['delete'];
+	readonly deleteQuery: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['deleteQuery'];
+	readonly deleteAll: ApiDefCaller<ApiStruct_DBApiGenIDBV3<Proto>>['deleteAll'];
 	private operations: TypedMap<Operation> = {};
 
 	/**
@@ -90,45 +96,34 @@ export abstract class ModuleFE_BaseApi<Proto extends DB_Prototype, _Config exten
 
 		const apiDef = this.resolveApiDef(dbDef, version);
 
-		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
-		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
-		const upsert = apiWithBody(apiDef.v1.upsert, async (item, original) => {
+		const _query = apiWithBody(apiDef.query, (response) => this.onQueryReturned(response));
+		const queryUniqueFn = apiWithQuery(apiDef.queryUnique, this.onGotUnique);
+		const upsertFn = apiWithBody(apiDef.upsert, async (item, original) => {
 			const toRet = await this.onEntryUpdated(item, JSON.parse(original as unknown as string));
 			this.IDB.setLastUpdated(item.__updated);
 			return toRet;
 		});
-		const patch = apiWithBody(apiDef.v1.patch, (items) => this.onEntryPatched(items));
+		const patchFn = apiWithBody(apiDef.patch, (items) => this.onEntryPatched(items));
 
-		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
-		// @ts-ignore
-		this.v1 = {
-			query: (query?: FirestoreQuery<Proto['dbType']>) => _query(query || _EmptyQuery),
-			// @ts-ignore
-			queryUnique: (_id: string) => {
-				return queryUnique({_id});
-			},
-			// @ts-ignore
-			upsert: (toUpsert: Proto['uiType']) => {
-				toUpsert = this.cleanUp(toUpsert);
-				this.validateInternal(toUpsert);
-				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
-			},
-			upsertAll: apiWithBody(apiDef.v1.upsertAll, async (items) => {
-				const toRet = await this.onEntriesUpdated(items);
-				const lastUpdated = items.reduce((toRet, current) => Math.max(toRet, current.__updated), -1);
-				this.IDB.setLastUpdated(lastUpdated);
-				return toRet;
-			}),
-			// @ts-ignore
-			patch: (toPatch: Partial<DBType>) => {
-				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<Proto['dbType'], keyof Proto['dbType']> & Proto['uiType']), 'patch');
-			},
-			delete: (item: DB_BaseObject) => {
-				return this.updatePending(item, _delete(item), 'delete');
-			},
-			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
-			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
+		const _delete = apiWithQuery(apiDef.delete, this.onEntryDeleted);
+		this.query = (query?: FirestoreQuery<Proto['dbType']>) => _query(query || _EmptyQuery);
+		this.queryUnique = (_id: string) => queryUniqueFn({_id});
+		this.upsert = (toUpsert: Proto['uiType']) => {
+			toUpsert = this.cleanUp(toUpsert);
+			this.validateInternal(toUpsert);
+			return this.updatePending(toUpsert as DB_BaseObject, upsertFn(toUpsert), 'upsert');
 		};
+		this.upsertAll = apiWithBody(apiDef.upsertAll, async (items) => {
+			const toRet = await this.onEntriesUpdated(items);
+			const lastUpdated = items.reduce((toRet, current) => Math.max(toRet, current.__updated), -1);
+			this.IDB.setLastUpdated(lastUpdated);
+			return toRet;
+		});
+		this.patch = (toPatch: Partial<Proto['dbType']>) =>
+			this.updatePending(toPatch as DB_BaseObject, patchFn(toPatch as IndexKeys<Proto['dbType'], keyof Proto['dbType']> & Proto['uiType']), 'patch');
+		this.delete = (item: DB_BaseObject) => this.updatePending(item, _delete(item), 'delete');
+		this.deleteQuery = apiWithBody(apiDef.deleteQuery, this.onEntriesDeleted);
+		this.deleteAll = apiWithQuery(apiDef.deleteAll);
 	}
 
 	/**

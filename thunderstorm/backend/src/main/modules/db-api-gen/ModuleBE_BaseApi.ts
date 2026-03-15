@@ -46,25 +46,25 @@ export class ModuleBE_BaseApi_Class<Proto extends DB_Prototype>
 	}
 
 	init() {
-		this.logDebug(`Adding routes : ${this.apiDef.v1.query.path}`);
+		this.logDebug(`Adding routes : ${this.apiDef.query.path}`);
 		addRoutes([
-			createBodyServerApi(this.apiDef.v1.query, async queryBody => {
+			createBodyServerApi(this.apiDef.query, async queryBody => {
 				const items = await this.dbModule.query.where(queryBody);
 				await this.dbModule.upgradeInstances(items);
 				return items;
 			}),
-			createQueryServerApi(this.apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
+			createQueryServerApi(this.apiDef.queryUnique, async (queryObject: DB_BaseObject) => {
 				const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 				if (!toReturnItem)
 					throw new ApiException(404, `Could not find ${this.dbModule.collection.dbDef.entityName} with _id: ${queryObject._id}`);
 				return toReturnItem;
 			}),
-			createBodyServerApi(this.apiDef.v1.upsert, this.dbModule.set.item),
-			createBodyServerApi(this.apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
-			createQueryServerApi(this.apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
-			createBodyServerApi(this.apiDef.v1.deleteQuery, this._deleteQuery),
-			createQueryServerApi(this.apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
-			createQueryServerApi(this.apiDef.v1.metadata, this._metadata)
+			createBodyServerApi(this.apiDef.upsert, this.dbModule.set.item),
+			createBodyServerApi(this.apiDef.upsertAll, (body) => this.dbModule.set.all(body)),
+			createQueryServerApi(this.apiDef.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
+			createBodyServerApi(this.apiDef.deleteQuery, this._deleteQuery),
+			createQueryServerApi(this.apiDef.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
+			createQueryServerApi(this.apiDef.metadata, this._metadata)
 		]);
 	}
 
@@ -83,6 +83,6 @@ export class ModuleBE_BaseApi_Class<Proto extends DB_Prototype>
 	};
 }
 
-export const createApisForDBModuleV3 = <Proto extends DBProto<any>>(dbModule: ModuleBE_BaseDB<Proto>, version?: string) => {
+export const createApisForDBModuleV3 = <Proto extends DB_Prototype>(dbModule: ModuleBE_BaseDB<Proto>, version?: string) => {
 	return new ModuleBE_BaseApi_Class<Proto>(dbModule, version);
 };

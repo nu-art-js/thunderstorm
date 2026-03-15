@@ -150,7 +150,7 @@ export class ModuleBE_BackupDocDB_Class
 		return `backup/${timeFormat}`;
 	};
 
-	@ApiHandler(ApiDef_BackupDoc._v1.initiateBackup)
+	@ApiHandler(ApiDef_BackupDoc.initiateBackup)
 	async initiateBackup(payload?: { pathToBackup?: string } | boolean): Promise<{ pathToBackup: string; backupId: string } | undefined> {
 		const force = payload === true;
 		const queryParams = typeof payload === 'object' && payload !== null ? payload : undefined;
@@ -295,7 +295,7 @@ export class ModuleBE_BackupDocDB_Class
 		return stream.pipe(transformer);
 	};
 
-	@ApiHandler(ApiDef_BackupDoc._v1.fetchBackupDocs)
+	@ApiHandler(ApiDef_BackupDoc.fetchBackupDocs)
 	async fetchBackupDocs(body: Request_BackupId): Promise<Response_BackupDocs> {
 		const backupDoc = await this.queryUnique(body.backupId);
 

@@ -12,11 +12,8 @@ export class ModuleFE_EditableTest_Class
 	extends ModuleFE_BaseApi<DatabaseDef_EditableTest>
 	implements ApiDefCaller<API_EditableTest> {
 
-	_v1: ApiDefCaller<API_EditableTest>;
-
 	constructor() {
 		super(DBDef_EditableTest, dispatch_onEditableTestChanged);
-		this._v1 = {};
 	}
 
 }

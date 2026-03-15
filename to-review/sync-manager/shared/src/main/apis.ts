@@ -18,13 +18,9 @@ export type SyncManagerAPI_SmartSync = {
 };
 
 export type ApiStruct_SyncManager = {
-	v1: {
-		smartSync: BodyApi<SyncManagerAPI_SmartSync['response'], SyncManagerAPI_SmartSync['request']>;
-	};
+	smartSync: BodyApi<SyncManagerAPI_SmartSync['response'], SyncManagerAPI_SmartSync['request']>;
 };
 
 export const ApiDef_SyncManager: ApiDefResolver<ApiStruct_SyncManager> = {
-	v1: {
-		smartSync: {method: HttpMethod.POST, path: 'v1/db-api/smart-sync', timeout: Minute},
-	},
+	smartSync: {method: HttpMethod.POST, path: 'v1/db-api/smart-sync', timeout: Minute},
 };

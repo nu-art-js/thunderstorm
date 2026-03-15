@@ -38,16 +38,16 @@ class ExampleModule_Class
 	protected init() {
 		super.init();
 		addRoutes([
-			createQueryServerApi(ApiDef_Examples.v1.getMax, DispatchModule.getMax),
-			createBodyServerApi(ApiDef_Examples.v1.setMax, (body) => {
+			createQueryServerApi(ApiDef_Examples.getMax, DispatchModule.getMax),
+			createBodyServerApi(ApiDef_Examples.setMax, (body) => {
 				console.log('Setting max');
 				return DispatchModule.setMax(body.n);
 			}),
-			createBodyServerApi(ApiDef_Examples.v1.anotherEndpoint, (body) => {
+			createBodyServerApi(ApiDef_Examples.anotherEndpoint, (body) => {
 				this.logInfoBold(`got id: ${body.message}`);
 				return new Promise(() => 'another endpoint response');
 			}),
-			createBodyServerApi(ApiDef_Examples.v1.customError, () => {
+			createBodyServerApi(ApiDef_Examples.customError, () => {
 				const debugMessage = 'The debug message, you will only see this while your backend configuration is set to debug true';
 				const error1: CustomError1 = {prop1: 'value for prop1', prop2: 'value for prop2'};
 				const error2: CustomError2 = {prop3: 'value for prop3', prop4: 'value for prop4'};
@@ -62,30 +62,30 @@ class ExampleModule_Class
 
 				throw randomObject([exception1, exception2]);
 			}),
-			createQueryServerApi(ApiDef_Examples.v1.dispatchEndpoint, async () => {
+			createQueryServerApi(ApiDef_Examples.dispatchEndpoint, async () => {
 				return await this.getDispatchNumber();
 			}),
-			createQueryServerApi(ApiDef_Examples.v1.endpoint, async () => {
+			createQueryServerApi(ApiDef_Examples.endpoint, async () => {
 				return this.getRandomString();
 			}),
-			createQueryServerApi(ApiDef_Examples.v1.testPush, async () => {
+			createQueryServerApi(ApiDef_Examples.testPush, async () => {
 				await ModuleBE_PushPubSub.pushToKey({topic: 'key', props: {a: 'prop'}, data: {some: 'more', data: 'here'}});
 				// await ModuleBE_PushPubSub.pushToUser('9226fa2e4c128b84fd46526ca6ee926c', 'key', {a: 'prop'}, {some: 'more', data: 'here'}, true);
 				return 'push succeeded!';
 			}),
-			createQueryServerApi(ApiDef_Examples.v1.getWithoutParam, async () => {
+			createQueryServerApi(ApiDef_Examples.getWithoutParam, async () => {
 				return 'another endpoint response';
 			}),
-			createQueryServerApi(ApiDef_Examples.v1.getWithParams, async () => {
+			createQueryServerApi(ApiDef_Examples.getWithParams, async () => {
 				return 'another endpoint response';
 			}),
-			createBodyServerApi(ApiDef_Examples.v1.postWithoutResponse, async (body) => {
+			createBodyServerApi(ApiDef_Examples.postWithoutResponse, async (body) => {
 				if (!body.message)
 					return;
 
 				this.logInfoBold(`got id: ${body.message}`);
 			}),
-			createBodyServerApi(ApiDef_Examples.v1.postWithResponse, async (body) => {
+			createBodyServerApi(ApiDef_Examples.postWithResponse, async (body) => {
 				this.logInfoBold(`got id: ${body.message}`);
 				return 'needs to return a string';
 			})

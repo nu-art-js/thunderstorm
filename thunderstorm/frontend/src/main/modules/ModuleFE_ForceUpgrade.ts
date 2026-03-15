@@ -53,13 +53,11 @@ const dispatch_onUpgradeRequired = new Dispatcher<OnUpgradeRequired, '__onUpgrad
 class ModuleFE_ForceUpgrade_Class
 	extends Module<Config>
 	implements ApiDefCaller<ApiStruct_ForceUpgrade> {
-	readonly v1: ApiDefCaller<ApiStruct_ForceUpgrade>['v1'];
+	readonly assertAppVersion: ApiDefCaller<ApiStruct_ForceUpgrade>['assertAppVersion'];
 
 	constructor() {
 		super();
-		this.v1 = {
-			assertAppVersion: apiWithQuery(ApiDef_ForceUpgrade.v1.assertAppVersion)
-		};
+		this.assertAppVersion = apiWithQuery(ApiDef_ForceUpgrade.assertAppVersion);
 	}
 
 	protected init(): void {
@@ -71,7 +69,7 @@ class ModuleFE_ForceUpgrade_Class
 		const def: ApiDef<QueryApi<UpgradeRequired>> =
 			{method: HttpMethod.GET, path: this.config.assertVersionUrl};
 
-		// this.v1.assertAppVersion({}).execute((response) => {
+		// this.assertAppVersion({}).execute((response) => {
 		// 	dispatch_onUpgradeRequired.dispatchModule(response);
 		// });
 		ModuleFE_XHR

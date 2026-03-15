@@ -99,14 +99,14 @@ export class ATS_PushPubSub
 
 		const message = {topic: this.state.triggerKey, filter, data};
 		this.logInfo(`triggering push: ${__stringify(message, true)}`);
-		await ModuleFE_PushPubSub.v1.test({message}).executeSync();
+		await ModuleFE_PushPubSub.test({message}).executeSync();
 	};
 
 	private subscribe = async () => {
 		if (!ModuleFE_PushPubSub.hasToken())
 			return ModuleFE_Toaster.toastError('No push token generated');
 
-		await ModuleFE_PushPubSub.v1.register({
+		await ModuleFE_PushPubSub.register({
 			topic: this.state.registerKey,
 			filter: this.composeFilter(this.state.registerFilter)
 		}).executeSync();

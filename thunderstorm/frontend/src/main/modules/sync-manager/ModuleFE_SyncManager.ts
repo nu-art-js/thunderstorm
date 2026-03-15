@@ -177,11 +177,11 @@ export class ModuleFE_SyncManager_Class
 		// if the module have a custom base url for this api apply it to the api def keeping the original path
 		const customBase = resolveContent(this.smartSyncApiUrl);
 		if (customBase)
-			ApiDef_SyncManager.v1.smartSync.fullUrl = customBase;
+			ApiDef_SyncManager.smartSync.fullUrl = customBase;
 
 		// implement the smart sync call internal so no one will initiate it from the anywhere in the code, except this module
 		try {
-			await apiWithBody(ApiDef_SyncManager.v1.smartSync, this.onSmartSyncCompleted)(request).executeSync();
+			await apiWithBody(ApiDef_SyncManager.smartSync, this.onSmartSyncCompleted)(request).executeSync();
 		} catch (e: any) {
 			this.logError(e);
 			this.syncing = false;
@@ -346,7 +346,7 @@ export class ModuleFE_SyncManager_Class
 					return;
 				}
 
-				const baseHttpRequest = rtModule.v1.query({where: {}});
+				const baseHttpRequest = rtModule.query({where: {}});
 
 				const indexOfModuleToUpdate = this.currentlySyncingModules.findIndex(module => module.module.dbDef?.dbKey === data.dbKey);
 				this.currentlySyncingModules[indexOfModuleToUpdate].request = baseHttpRequest;

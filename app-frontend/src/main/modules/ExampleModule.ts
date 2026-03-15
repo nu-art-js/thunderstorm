@@ -56,7 +56,17 @@ export const dispatchAll = () => {
 export class ExampleModule_Class
 	extends Module<Config>
 	implements OnPushMessageReceived {
-	readonly v1: ApiDefCaller<ApiStruct_Examples>['v1'];
+	readonly getMax: ApiDefCaller<ApiStruct_Examples>['getMax'];
+	readonly setMax: ApiDefCaller<ApiStruct_Examples>['setMax'];
+	readonly anotherEndpoint: ApiDefCaller<ApiStruct_Examples>['anotherEndpoint'];
+	readonly customError: ApiDefCaller<ApiStruct_Examples>['customError'];
+	readonly dispatchEndpoint: ApiDefCaller<ApiStruct_Examples>['dispatchEndpoint'];
+	readonly endpoint: ApiDefCaller<ApiStruct_Examples>['endpoint'];
+	readonly testPush: ApiDefCaller<ApiStruct_Examples>['testPush'];
+	readonly getWithoutParam: ApiDefCaller<ApiStruct_Examples>['getWithoutParam'];
+	readonly getWithParams: ApiDefCaller<ApiStruct_Examples>['getWithParams'];
+	readonly postWithoutResponse: ApiDefCaller<ApiStruct_Examples>['postWithoutResponse'];
+	readonly postWithResponse: ApiDefCaller<ApiStruct_Examples>['postWithResponse'];
 	private message!: string;
 
 	data: string[] = [];
@@ -65,19 +75,17 @@ export class ExampleModule_Class
 
 	constructor() {
 		super();
-		this.v1 = {
-			getMax: apiWithQuery(ApiDef_Examples.v1.getMax),
-			setMax: apiWithBody(ApiDef_Examples.v1.setMax),
-			anotherEndpoint: apiWithBody(ApiDef_Examples.v1.anotherEndpoint),
-			customError: apiWithBody(ApiDef_Examples.v1.customError),
-			dispatchEndpoint: apiWithQuery(ApiDef_Examples.v1.dispatchEndpoint),
-			endpoint: apiWithQuery(ApiDef_Examples.v1.endpoint),
-			testPush: apiWithQuery(ApiDef_Examples.v1.testPush),
-			getWithoutParam: apiWithQuery(ApiDef_Examples.v1.getWithoutParam),
-			getWithParams: apiWithQuery(ApiDef_Examples.v1.getWithParams),
-			postWithoutResponse: apiWithBody(ApiDef_Examples.v1.postWithoutResponse),
-			postWithResponse: apiWithBody(ApiDef_Examples.v1.postWithResponse),
-		};
+		this.getMax = apiWithQuery(ApiDef_Examples.getMax);
+		this.setMax = apiWithBody(ApiDef_Examples.setMax);
+		this.anotherEndpoint = apiWithBody(ApiDef_Examples.anotherEndpoint);
+		this.customError = apiWithBody(ApiDef_Examples.customError);
+		this.dispatchEndpoint = apiWithQuery(ApiDef_Examples.dispatchEndpoint);
+		this.endpoint = apiWithQuery(ApiDef_Examples.endpoint);
+		this.testPush = apiWithQuery(ApiDef_Examples.testPush);
+		this.getWithoutParam = apiWithQuery(ApiDef_Examples.getWithoutParam);
+		this.getWithParams = apiWithQuery(ApiDef_Examples.getWithParams);
+		this.postWithoutResponse = apiWithBody(ApiDef_Examples.postWithoutResponse);
+		this.postWithResponse = apiWithBody(ApiDef_Examples.postWithResponse);
 	}
 
 	protected init(): void {
@@ -98,7 +106,7 @@ export class ExampleModule_Class
 	}
 
 	callCustomErrorApi() {
-		this.v1.customError().execute(undefined, (request, resError?: ApiErrorResponse<CustomError1 | CustomError2>) => {
+		this.customError().execute(undefined, (request, resError?: ApiErrorResponse<CustomError1 | CustomError2>) => {
 			const error = resError?.error;
 			if (!error)
 				return;
@@ -125,7 +133,7 @@ export class ExampleModule_Class
 	public getMessageFromServer1 = () => {
 		this.logInfo('getting label from server');
 		const bodyObject: CommonBodyReq = {message: this.message || 'No message'};
-		this.v1.anotherEndpoint(bodyObject).execute(this.setMessage);
+		this.anotherEndpoint(bodyObject).execute(this.setMessage);
 		this.logInfo('continue... will receive an event once request is completed..');
 	};
 
@@ -144,7 +152,7 @@ export class ExampleModule_Class
 
 	testPush = () => {
 		this.logInfo('getting label from server');
-		this.v1.testPush({}).execute();
+		this.testPush({}).execute();
 	};
 
 	setMessage = async (_message: unknown) => {
@@ -180,7 +188,7 @@ export class ExampleModule_Class
 
 	testBackendDispatcher = () => {
 		this.logInfo('passing to server');
-		this.v1.dispatchEndpoint({}).execute(async (response) => {
+		this.dispatchEndpoint({}).execute(async (response) => {
 			this.fetchMax();
 			console.log('i think i got something...');
 			console.log(response);
@@ -191,7 +199,7 @@ export class ExampleModule_Class
 	};
 
 	fetchMax = () => {
-		this.v1.getMax({}).execute(async response => {
+		this.getMax({}).execute(async response => {
 			this.max = (response as { n: number }).n;
 			dispatchAll();
 		});

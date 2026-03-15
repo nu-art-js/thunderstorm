@@ -9,10 +9,6 @@ import type {ApiDefResolver} from '@nu-art/api-types';
 export type RequestType = Record<string, never>;
 export type ResponseType = Record<string, never>;
 
-export type ApiStruct_EditableTest = {
-	_v1: Record<string, never>;
-};
+export type ApiStruct_EditableTest = Record<string, never>;
 
-export const ApiDef_EditableTest: ApiDefResolver<ApiStruct_EditableTest> = {
-	_v1: {},
-};
+export const ApiDef_EditableTest: ApiDefResolver<ApiStruct_EditableTest> = {};

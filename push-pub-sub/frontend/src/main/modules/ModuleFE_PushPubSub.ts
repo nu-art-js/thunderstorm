@@ -60,13 +60,6 @@ export class ModuleFE_PushPubSub_Class
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived, '__onMessageReceived'>('__onMessageReceived');
 
-	readonly v1: {
-		test: (params: Request_PushTest) => { executeSync: () => Promise<unknown> };
-		register: (subscription: BaseSubscriptionData) => { executeSync: () => Promise<unknown> };
-		unregister: (subscription: BaseSubscriptionData) => { executeSync: () => Promise<unknown> };
-		registerAll: (subscriptions: BaseSubscriptionData[]) => { executeSync: () => Promise<unknown> };
-	};
-
 	private readonly pushSessionId: string;
 	protected timeout: number = 800;
 
@@ -74,25 +67,29 @@ export class ModuleFE_PushPubSub_Class
 		super();
 		window.name = window.name || generateHex(32);
 		this.pushSessionId = pushSessionId.set(window.name);
-		this.v1 = {
-			test: (params: Request_PushTest) => ({executeSync: () => this.test(params)}),
-			register: (subscription: BaseSubscriptionData) => {
-				this.subscribeImpl(subscription);
-				return {executeSync: () => this._register(this.composeRegisterRequest())};
-			},
-			unregister: (subscription: BaseSubscriptionData) => {
-				removeFromArray(this.subscriptions, d => d.topic === subscription.topic && compare(subscription.filter, d.filter));
-				return {executeSync: () => this._register(this.composeRegisterRequest())};
-			},
-			registerAll: (subscriptions: BaseSubscriptionData[]) => {
-				subscriptions.forEach(subscription => this.subscribeImpl(subscription));
-				return {executeSync: () => this._register(this.composeRegisterRequest())};
-			}
-		};
+	}
+
+	test(params: Request_PushTest): { executeSync: () => Promise<unknown> } {
+		return { executeSync: () => this.runTest(params) };
+	}
+
+	register(subscription: BaseSubscriptionData): { executeSync: () => Promise<unknown> } {
+		this.subscribeImpl(subscription);
+		return { executeSync: () => this._register(this.composeRegisterRequest()) };
+	}
+
+	unregister(subscription: BaseSubscriptionData): { executeSync: () => Promise<unknown> } {
+		removeFromArray(this.subscriptions, d => d.topic === subscription.topic && compare(subscription.filter, d.filter));
+		return { executeSync: () => this._register(this.composeRegisterRequest()) };
+	}
+
+	registerAll(subscriptions: BaseSubscriptionData[]): { executeSync: () => Promise<unknown> } {
+		subscriptions.forEach(subscription => this.subscribeImpl(subscription));
+		return { executeSync: () => this._register(this.composeRegisterRequest()) };
 	}
 
 	@ApiCaller(ApiDef_PushMessages.test)
-	async test(_body: Request_PushTest): Promise<void> {
+	async runTest(_body: Request_PushTest): Promise<void> {
 		void _body;
 	}
 

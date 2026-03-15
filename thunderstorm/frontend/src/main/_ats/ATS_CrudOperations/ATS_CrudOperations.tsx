@@ -24,24 +24,24 @@ type Action = {
 const ACTIONS: Action[] = [
 	{
 		label: 'upsert',
-		action: (dbModule, input) => dbModule.v1.upsert(input)
+		action: (dbModule, input) => dbModule.upsert(input)
 	},
 	{
 		label: 'upsert all',
-		action: (dbModule, input) => dbModule.v1.upsertAll(JSON.parse(input))
+		action: (dbModule, input) => dbModule.upsertAll(JSON.parse(input))
 	},
 	{
 		label: 'query',
-		action: (dbModule, input) => dbModule.v1.query(input as unknown as FirestoreQuery<any>)
+		action: (dbModule, input) => dbModule.query(input as unknown as FirestoreQuery<any>)
 
 	},
 	{
 		label: 'delete',
-		action: (dbModule, input) => dbModule.v1.delete(input as unknown as DB_BaseObject)
+		action: (dbModule, input) => dbModule.delete(input as unknown as DB_BaseObject)
 	},
 	{
 		label: 'delete query',
-		action: (dbModule, input) => dbModule.v1.deleteQuery(input as unknown as FirestoreQuery<any>)
+		action: (dbModule, input) => dbModule.deleteQuery(input as unknown as FirestoreQuery<any>)
 	}
 ];
 

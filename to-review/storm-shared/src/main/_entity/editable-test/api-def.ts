@@ -7,9 +7,9 @@
 import {HttpMethod, BodyApi, ApiDefResolver} from '@nu-art/api-types';
 
 export type ApiStruct_EditableTest = {
-	_v1: BodyApi<void, void>;
+	submit: BodyApi<void, void>;
 };
 
 export const ApiDef_EditableTest: ApiDefResolver<ApiStruct_EditableTest> = {
-	_v1: { method: HttpMethod.POST, path: 'v1/editable-test' },
+	submit: { method: HttpMethod.POST, path: 'v1/editable-test' },
 };
