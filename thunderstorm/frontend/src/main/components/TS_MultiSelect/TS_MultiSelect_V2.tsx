@@ -1,10 +1,10 @@
 import * as React from 'react';
-import {Component, ReactNode} from 'react';
-import {SubsetKeys} from '@nu-art/ts-common';
+import { Component, ReactNode } from 'react';
+import { SubsetKeys } from '@nu-art/ts-common';
 import './TS_MultiSelect.scss';
-import {LL_H_C, LL_V_L} from '../Layouts/index.js';
-import {_className} from '../../utils/tools.js';
-import {EditableItem} from '../../utils/EditableItem.js';
+import { LL_H_C, LL_V_L } from '../Layouts/index.js';
+import { _className } from '../../utils/tools.js';
+import { EditableItem } from '../../utils/EditableItem.js';
 
 
 type Binder_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, ExpectedType> = EnclosingItem[K] extends ExpectedType[]
@@ -27,8 +27,9 @@ export type StaticProps_TS_MultiSelect_V2<ItemType> = {
 	selectionFilter?: (item: ItemType) => boolean; // for the shown list
 	itemFilter?: (item: ItemType) => boolean; // for the selection dropdown
 	sort?: (items: ItemType[]) => ItemType[];
+	getItemKey?: (item: ItemType, indexInList: number) => string | number;
 	// mandatory
-	itemRenderer: (item?: ItemType, onDelete?: () => Promise<void>, disabled?: boolean) => ReactNode
+	itemRenderer: (item: ItemType, onDelete: () => Promise<void>, disabled: boolean, rowIndex: number, listEditable: EditableItem<ItemType[]>) => ReactNode
 	selectionRenderer: React.ComponentType<MultiSelect_Selector<ItemType>>,
 }
 
@@ -85,13 +86,21 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 		return <Wrapper className={className}>
 			{/*selected items list*/}
 			{itemsToRender.map((item, i) => {
-				return <LL_H_C className="ts-multi-select__list-value" key={i}>
-					{props.itemRenderer(item, async () => {
-						const index = existingItems.indexOf(item);
-
-						await editableProp.removeArrayItem(index);
-						this.forceUpdate();
-					}, this.props.disabled)}
+				const key = props.getItemKey?.(item, i) ?? i
+				return <LL_H_C className="ts-multi-select__list-value" key={key}>
+					{props.itemRenderer(
+						item,
+						async () => {
+							const index = existingItems.indexOf(item);
+							if (index < 0)
+								return;
+							await editableProp.removeArrayItem(index);
+							this.forceUpdate();
+						},
+						this.props.disabled ?? false,
+						i,
+						editableProp
+					)}
 				</LL_H_C>;
 			})}
 			{/*dropdown - only render if not disabled*/}
