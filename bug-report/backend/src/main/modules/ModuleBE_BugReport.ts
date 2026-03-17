@@ -21,7 +21,7 @@ import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend/v1';
 import {ApiHandler} from '@nu-art/http-server';
 import JSZip from 'jszip';
-import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared';
+import {API_BugReport, ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 
 type Config = {
@@ -49,7 +49,7 @@ export class ModuleBE_BugReport_Class
 	}
 
 	@ApiHandler(ApiDef_BugReport.sendBugReport)
-	async handleSendBugReport(body: Request_BugReport): Promise<TicketDetails[]> {
+	async sendBugReport(body: API_BugReport['sendBugReport']['Body']): Promise<API_BugReport['sendBugReport']['Response']> {
 		return await ModuleBE_BugReport.saveFile(body, MemKey_AccountId.get());
 	}
 

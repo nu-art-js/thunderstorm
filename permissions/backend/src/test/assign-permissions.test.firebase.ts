@@ -59,7 +59,7 @@ const test = async (input: AssignPermissionsSetup): Promise<boolean> => {
 	// Simulate target user's permissions (Read = 100)
 	MemKey_UserPermissions.set({[domainId]: 100});
 
-	await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, Test_Api_Stam);
+	await ModuleBE_PermissionsAssert.assertPathPermissions(projectId, Test_Api_Stam);
 	return true;
 };
 

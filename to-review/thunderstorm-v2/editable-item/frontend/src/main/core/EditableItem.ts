@@ -560,7 +560,7 @@ export class EditableDBItem<Types extends DB_Prototype>
 			const id = (item as { _id?: string })._id;
 			if (id == null)
 				return;
-			await module.delete({_id: id} as Parameters<ModuleFE_BaseApi<Types>['delete']>[0]);
+			await module.deleteUnique({_id: id} as Parameters<ModuleFE_BaseApi<Types>['deleteUnique']>[0]);
 		});
 		this.debounceInstance = debounceInstance ?? queuedDebounce(async () => {
 			this.logDebug('Debounce triggered');

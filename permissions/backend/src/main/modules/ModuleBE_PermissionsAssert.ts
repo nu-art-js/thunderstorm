@@ -38,13 +38,13 @@ import {ModuleBE_BaseApi_Class, ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {HttpMethod} from '@nu-art/api-types';
 import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account-backend';
 import {
+	API_PermissionsAssert,
 	ApiDef_PermissionsAssert,
 	Base_AccessLevel,
 	DB_PermissionAccessLevel,
 	DB_PermissionAPI,
 	DomainToLevelValueMap,
 	Request_AssertApiForUser,
-	Response_User,
 	SessionData_StrictMode
 } from '@nu-art/permissions-shared';
 import {
@@ -87,7 +87,7 @@ export class ModuleBE_PermissionsAssert_Class
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async () => {
 		await this.CustomMiddleware(keys, async (projectId: string) => {
 
-			return this.assertUserPermissions(projectId, MemKey_HttpRequestUrl.get());
+			return this.assertPathPermissions(projectId, MemKey_HttpRequestUrl.get());
 		})();
 	};
 
@@ -189,19 +189,19 @@ export class ModuleBE_PermissionsAssert_Class
 	}
 
 	@ApiHandler(ApiDef_PermissionsAssert.assertUserPermissions)
-	async handleAssertUserPermissions(body: Request_AssertApiForUser): Promise<Response_User> {
+	async assertUserPermissions(body: API_PermissionsAssert['assertUserPermissions']['Body']): Promise<API_PermissionsAssert['assertUserPermissions']['Response']> {
 		return this.assertPermission(body);
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {
-		await ModuleBE_PermissionsAssert.assertUserPermissions(body.projectId, body.path);
+		await ModuleBE_PermissionsAssert.assertPathPermissions(body.projectId, body.path);
 		return {userId: MemKey_AccountId.get()};
 	};
 
 	/**
 	 * @deprecated Path-based API permission; use function-based permissions and assertFunctionPermission(def) instead. API collection deprecated.
 	 */
-	async assertUserPermissions(projectId: string, path: string) {
+	async assertPathPermissions(projectId: string, path: string) {
 		// [DomainId]: accessLevel's numerical value
 		const userPermissions = MemKey_UserPermissions.get();
 		const apiDetails = await this.getApiDetails(path, projectId);

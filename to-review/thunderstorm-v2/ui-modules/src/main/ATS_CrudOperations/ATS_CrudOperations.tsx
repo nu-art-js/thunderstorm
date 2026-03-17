@@ -35,7 +35,7 @@ const ACTIONS: Action[] = [
 	},
 	{
 		label: 'delete',
-		action: (dbModule, parsed) => dbModule.delete(parsed as any)
+		action: (dbModule, parsed) => dbModule.deleteUnique(parsed as any)
 	},
 	{
 		label: 'delete query',

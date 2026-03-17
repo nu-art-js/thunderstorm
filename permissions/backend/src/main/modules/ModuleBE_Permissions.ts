@@ -162,12 +162,19 @@ class ModuleBE_Permissions_Class
 	}
 
 	@ApiHandler(ApiDef_Permissions.toggleStrictMode)
-	async handleToggleStrictMode(_params?: unknown): Promise<void> {
-		await this.toggleStrictMode();
+	async toggleStrictMode(_params?: unknown): Promise<void> {
+		const envConfigRef = getEnvConfigRef(ModuleBE_PermissionsAssert);
+		if (!envConfigRef)
+			return;
+		MemKey_ServerApi.get().addPostCallAction(async () => {
+			const currentConfig = await envConfigRef.get({}) as { strictMode?: boolean };
+			currentConfig.strictMode = !currentConfig.strictMode;
+			await envConfigRef.set(currentConfig);
+		});
 	}
 
 	@ApiHandler(ApiDef_Permissions.createProject)
-	async handleCreateProject(_params?: unknown): Promise<void> {
+	async createProject(_params?: unknown): Promise<void> {
 		await this.__performProjectSetup().processor();
 	}
 
@@ -209,17 +216,6 @@ class ModuleBE_Permissions_Class
 				permissionMap[domain._id] = DefaultAccessLevel_NoAccess.value; //"fill in the gaps" - All domains that are not defined for the user, are NoAccess by default.
 		});
 		return permissionMap;
-	};
-
-	toggleStrictMode = async () => {
-		const envConfigRef = getEnvConfigRef(ModuleBE_PermissionsAssert);
-		if (!envConfigRef)
-			return;
-		MemKey_ServerApi.get().addPostCallAction(async () => {
-			const currentConfig = await envConfigRef.get({}) as { strictMode?: boolean };
-			currentConfig.strictMode = !currentConfig.strictMode;
-			await envConfigRef.set(currentConfig);
-		});
 	};
 
 	__performProjectSetup() {

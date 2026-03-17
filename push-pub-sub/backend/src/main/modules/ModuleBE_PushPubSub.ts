@@ -20,8 +20,8 @@ import {arrayToMap, batchActionParallel, compare, currentTimeMillis, Day, filter
 
 import {FirebaseType_BatchResponse, ModuleBE_Firebase, PushMessagesWrapperBE} from '@nu-art/firebase-backend';
 import {
+	API_PushMessages,
 	ApiDef_PushMessages,
-	BaseSubscriptionData,
 	DB_PushSubscription,
 	PushMessage,
 	PushMessage_Payload,
@@ -86,24 +86,24 @@ export class ModuleBE_PushPubSub_Class
 	}
 
 	@ApiHandler(ApiDef_PushMessages.register, {httpServer: () => HttpServer.getDefault()})
-	async registerHandler(body: Request_PushRegister): Promise<BaseSubscriptionData> {
-		await this.register(body);
+	async register(body: API_PushMessages['register']['Body']): Promise<API_PushMessages['register']['Response']> {
+		await this.processRegistration(body);
 		return body.subscriptions?.[0] ?? {topic: '', filter: undefined};
 	}
 
 	@ApiHandler(ApiDef_PushMessages.unregister, {httpServer: () => HttpServer.getDefault()})
-	async unregisterHandler(body: Request_PushRegister): Promise<BaseSubscriptionData> {
-		await this.register(body);
+	async unregister(body: API_PushMessages['unregister']['Body']): Promise<API_PushMessages['unregister']['Response']> {
+		await this.processRegistration(body);
 		return body.subscriptions?.[0] ?? {topic: '', filter: undefined};
 	}
 
 	@ApiHandler(ApiDef_PushMessages.registerAll, {httpServer: () => HttpServer.getDefault()})
-	async registerAllHandler(body: Request_PushRegister): Promise<BaseSubscriptionData[]> {
-		await this.register(body);
+	async registerAll(body: API_PushMessages['registerAll']['Body']): Promise<API_PushMessages['registerAll']['Response']> {
+		await this.processRegistration(body);
 		return body.subscriptions ?? [];
 	}
 
-	register = async (body: Request_PushRegister) => {
+	private processRegistration = async (body: Request_PushRegister) => {
 		const accountId = MemKey_AccountId.get();
 		const session: UI_PushSession = {
 			firebaseToken: body.firebaseToken,

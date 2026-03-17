@@ -17,8 +17,8 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ApiCallContext, ApiCaller} from '@nu-art/http-client';
-import {API_AdminBugReport, ApiDef_AdminBugReport, DB_BugReport, Paths, ReportLogFile, SignedUrl} from '@nu-art/bug-report-shared/api';
+import {ApiCaller} from '@nu-art/http-client';
+import {API_AdminBugReport, ApiDef_AdminBugReport, DB_BugReport, ReportLogFile} from '@nu-art/bug-report-shared/api';
 
 
 export const RequestKey_GetLog = 'GetLog';
@@ -34,16 +34,17 @@ export class ModuleFE_BugReportAdmin_Class
 	}
 
 	@ApiCaller(ApiDef_AdminBugReport.retrieveLogs, {
-		onComplete: (m: ModuleFE_BugReportAdmin_Class, ctx: ApiCallContext<API_AdminBugReport['retrieveLogs']>) => m.setLogs(ctx.response)
+		onComplete: (m, ctx) => m.setLogs(ctx.response)
 	})
-	async retrieveLogs(_params?: unknown): Promise<DB_BugReport[]> {
-		return [];
+	async retrieveLogs(_params?: API_AdminBugReport['retrieveLogs']['Params']): Promise<API_AdminBugReport['retrieveLogs']['Response']> {
+		void _params;
+		return undefined as unknown as API_AdminBugReport['retrieveLogs']['Response'];
 	}
 
 	@ApiCaller(ApiDef_AdminBugReport.downloadLogs)
-	async downloadLogs(body: Paths): Promise<SignedUrl> {
+	async downloadLogs(body: API_AdminBugReport['downloadLogs']['Body']): Promise<API_AdminBugReport['downloadLogs']['Response']> {
 		void body;
-		return {fileName: '', signedUrl: '', publicUrl: ''};
+		return undefined as unknown as API_AdminBugReport['downloadLogs']['Response'];
 	}
 
 	public downloadMultiLogs = (reports: ReportLogFile[]) => {

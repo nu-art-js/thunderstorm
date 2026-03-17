@@ -23,7 +23,7 @@
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "scripts": {
-    "build": "tsc -b -f"
+
   },
   "dependencies": {
     "@nu-art/db-api-shared": "?",

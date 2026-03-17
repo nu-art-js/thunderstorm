@@ -24,20 +24,20 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import type {FirestoreCollectionV3} from '@nu-art/firebase-backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {Readable} from 'stream';
-import type {FirestoreCollectionV3} from '@nu-art/firebase-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import {
 	ApiDef_BackupDoc,
+	type ApiStruct_BackupDoc,
+	BackupMetaData,
+	DatabaseDef_BackupDoc,
 	DB_BackupDoc,
 	DBDef_BackupDoc,
-	DatabaseDef_BackupDoc,
-	Request_BackupId,
+	FetchBackupDoc,
 	Response_BackupDocs,
-	BackupMetaData,
-	FetchBackupDoc
 } from '@nu-art/backup-shared';
 import {CSVModuleV3} from '@nu-art/ts-common/modules/CSVModuleV3';
 import type {BackupableModule, BackupDocDBConfig} from './types.js';
@@ -151,7 +151,7 @@ export class ModuleBE_BackupDocDB_Class
 	};
 
 	@ApiHandler(ApiDef_BackupDoc.initiateBackup)
-	async initiateBackup(payload?: { pathToBackup?: string } | boolean): Promise<{ pathToBackup: string; backupId: string } | undefined> {
+	async initiateBackup(payload?: ApiStruct_BackupDoc['initiateBackup']['Params'] | boolean): Promise<ApiStruct_BackupDoc['initiateBackup']['Response']> {
 		const force = payload === true;
 		const queryParams = typeof payload === 'object' && payload !== null ? payload : undefined;
 		const pathInBucket = queryParams?.pathToBackup ?? this.getDefaultPath();
@@ -238,7 +238,9 @@ export class ModuleBE_BackupDocDB_Class
 		} catch (e: unknown) {
 			const mod = modules[backupsCounter];
 			this.logWarning(`backup of ${mod?.dbDef.dbKey} has failed with error`, e as Error);
-			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(mod?.dbDef.dbKey, true)}\nError: ${_logger_logException(e instanceof Error ? e : new Error(String(e)))}`;
+			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(mod?.dbDef.dbKey, true)}\nError: ${_logger_logException(e instanceof Error
+				? e
+				: new Error(String(e)))}`;
 			throw new ApiException(500, errorMessage, e instanceof Error ? e : new Error(String(e)));
 		}
 
@@ -296,7 +298,7 @@ export class ModuleBE_BackupDocDB_Class
 	};
 
 	@ApiHandler(ApiDef_BackupDoc.fetchBackupDocs)
-	async fetchBackupDocs(body: Request_BackupId): Promise<Response_BackupDocs> {
+	async fetchBackupDocs(body: ApiStruct_BackupDoc['fetchBackupDocs']['Params']): Promise<ApiStruct_BackupDoc['fetchBackupDocs']['Response']> {
 		const backupDoc = await this.queryUnique(body.backupId);
 
 		if (!backupDoc)

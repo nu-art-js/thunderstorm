@@ -37,7 +37,7 @@ import {ApiHandler} from '@nu-art/http-server';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {OnAssetUploaded} from './ModuleBE_BucketListener.js';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage.js';
-import {ApiDef_AssetUploader, DB_Asset, DB_AssetDeleted, DB_AssetTemp, DBDef_Assets, DatabaseDef_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
+import {API_AssetUploader, ApiDef_AssetUploader, DB_Asset, DB_AssetDeleted, DB_AssetTemp, DBDef_Assets, DatabaseDef_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
@@ -119,13 +119,13 @@ export class ModuleBE_AssetsDB_Class
 	}
 
 	@ApiHandler(ApiDef_AssetUploader.getUploadUrl)
-	async getUploadUrlHandler(body: UI_Asset[]): Promise<TempSignedUrl[]> {
+	async getUploadUrl(body: API_AssetUploader['getUploadUrl']['Body']): Promise<API_AssetUploader['getUploadUrl']['Response']> {
 		return this.getUrl(body);
 	}
 
 	@ApiHandler(ApiDef_AssetUploader.processAssetManually)
-	async processAssetManuallyHandler(params: { feId?: string }): Promise<void[]> {
-		await this.processAssetManually(params.feId);
+	async processAssetManually(params: API_AssetUploader['processAssetManually']['Params']): Promise<API_AssetUploader['processAssetManually']['Response']> {
+		await this.processAssetImpl(params.feId);
 		return [];
 	}
 
@@ -249,7 +249,7 @@ export class ModuleBE_AssetsDB_Class
 		}));
 	};
 
-	processAssetManually = async (feId?: string) => {
+	processAssetImpl = async (feId?: string) => {
 		let query: FirestoreQuery<DB_AssetTemp> = {limit: 1};
 		if (feId)
 			query = {where: {feId}};

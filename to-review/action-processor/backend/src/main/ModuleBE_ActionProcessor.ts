@@ -5,7 +5,7 @@
  */
 
 import {_values, ApiException, BadImplementationException, exists, isErrorOfType, Logger, LogLevel, Module, resolveContent, TypedMap,} from '@nu-art/ts-common';
-import {ApiDef_ActionProcessing, Request_ActionToProcess} from '@nu-art/action-processor-shared';
+import {ApiDef_ActionProcessing, type ApiStruct_ActionProcessing} from '@nu-art/action-processor-shared';
 import {ApiHandler} from '@nu-art/http-server';
 import {ActionDeclaration} from './types.js';
 import {RAD_SetupProject} from './Action_SetupProject.js';
@@ -38,7 +38,7 @@ export class ModuleBE_ActionProcessor_Class
 	};
 
 	@ApiHandler(ApiDef_ActionProcessing.vv1.execute)
-	async refactor(action: Request_ActionToProcess): Promise<void> {
+	async execute(action: ApiStruct_ActionProcessing['vv1']['execute']['Body']): Promise<ApiStruct_ActionProcessing['vv1']['execute']['Response']> {
 		this.logWarning(`RECEIVED ACTION: ${action.key}`);
 
 		const actionObj = this.actions[action.key];
@@ -64,7 +64,7 @@ export class ModuleBE_ActionProcessor_Class
 	}
 
 	@ApiHandler(ApiDef_ActionProcessing.vv1.list)
-	async list(_query?: Record<string, string | number | boolean | undefined>): Promise<{ key: string; description: string; group: string; label?: string }[]> {
+	async list(_query?: ApiStruct_ActionProcessing['vv1']['list']['Params']): Promise<ApiStruct_ActionProcessing['vv1']['list']['Response']> {
 		return _values(this.actions)
 			.filter(action => !exists(action.declaration.visible) || resolveContent(action.declaration.visible))
 			.map(action => {

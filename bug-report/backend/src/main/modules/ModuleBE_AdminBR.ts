@@ -18,7 +18,7 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ApiDef_AdminBugReport, DB_BugReport, Paths, SignedUrl} from '@nu-art/bug-report-shared/api';
+import {API_AdminBugReport, ApiDef_AdminBugReport, DB_BugReport, Paths} from '@nu-art/bug-report-shared/api';
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend/v1';
 import {ApiHandler} from '@nu-art/http-server';
 
@@ -48,12 +48,12 @@ export class ModuleBE_AdminBR_Class
 	}
 
 	@ApiHandler(ApiDef_AdminBugReport.retrieveLogs)
-	async handleRetrieveLogs(_params?: unknown): Promise<DB_BugReport[]> {
+	async retrieveLogs(_params?: API_AdminBugReport['retrieveLogs']['Params']): Promise<API_AdminBugReport['retrieveLogs']['Response']> {
 		return this.bugReport.getAll();
 	}
 
 	@ApiHandler(ApiDef_AdminBugReport.downloadLogs)
-	async handleDownloadLogs(body: Paths): Promise<SignedUrl> {
+	async downloadLogs(body: API_AdminBugReport['downloadLogs']['Body']): Promise<API_AdminBugReport['downloadLogs']['Response']> {
 		return ModuleBE_AdminBR.downloadFiles(body);
 	}
 

@@ -98,57 +98,57 @@ export class ModuleBE_AccountDB_Class
 	}
 
 	@ApiHandler(ApiDef_UserAccount.refreshSession)
-	async handleRefreshSession(_params: API_UserAccount['refreshSession']['Params']): Promise<API_UserAccount['refreshSession']['Response']> {
+	async refreshSession(_params: API_UserAccount['refreshSession']['Params']): Promise<API_UserAccount['refreshSession']['Response']> {
 		this.logInfo(`Refreshing session for account id = ${MemKey_AccountId.get()}`);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.registerAccount)
-	async handleRegisterAccount(body: API_UserAccount['registerAccount']['Body']): Promise<API_UserAccount['registerAccount']['Response']> {
+	async registerAccount(body: API_UserAccount['registerAccount']['Body']): Promise<API_UserAccount['registerAccount']['Response']> {
 		return this.account.register(body);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.changePassword)
-	async handleChangePassword(body: API_UserAccount['changePassword']['Body']): Promise<API_UserAccount['changePassword']['Response']> {
+	async changePassword(body: API_UserAccount['changePassword']['Body']): Promise<API_UserAccount['changePassword']['Response']> {
 		return this.account.changePassword(body);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.login)
-	async handleLogin(body: API_UserAccount['login']['Body']): Promise<API_UserAccount['login']['Response']> {
+	async login(body: API_UserAccount['login']['Body']): Promise<API_UserAccount['login']['Response']> {
 		return this.account.login(body);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.createAccount)
-	async handleCreateAccount(body: API_UserAccount['createAccount']['Body']): Promise<API_UserAccount['createAccount']['Response']> {
+	async createAccount(body: API_UserAccount['createAccount']['Body']): Promise<API_UserAccount['createAccount']['Response']> {
 		return this.account.create(body);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.logout)
-	async handleLogout(_params: API_UserAccount['logout']['Params']): Promise<API_UserAccount['logout']['Response']> {
+	async logout(_params: API_UserAccount['logout']['Params']): Promise<API_UserAccount['logout']['Response']> {
 		return this.account.logout();
 	}
 
 	@ApiHandler(ApiDef_UserAccount.createToken)
-	async handleCreateToken(body: API_UserAccount['createToken']['Body']): Promise<API_UserAccount['createToken']['Response']> {
+	async createToken(body: API_UserAccount['createToken']['Body']): Promise<API_UserAccount['createToken']['Response']> {
 		return this.token.create(body);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.setPassword)
-	async handleSetPassword(body: API_UserAccount['setPassword']['Body']): Promise<API_UserAccount['setPassword']['Response']> {
+	async setPassword(body: API_UserAccount['setPassword']['Body']): Promise<API_UserAccount['setPassword']['Response']> {
 		return this.account.setPassword(body);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.getSessions)
-	async handleGetSessions(params: API_UserAccount['getSessions']['Params']): Promise<API_UserAccount['getSessions']['Response']> {
+	async getSessions(params: API_UserAccount['getSessions']['Params']): Promise<API_UserAccount['getSessions']['Response']> {
 		return this.account.getSessions(params);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.changeThumbnail)
-	async handleChangeThumbnail(body: API_UserAccount['changeThumbnail']['Body']): Promise<API_UserAccount['changeThumbnail']['Response']> {
+	async changeThumbnail(body: API_UserAccount['changeThumbnail']['Body']): Promise<API_UserAccount['changeThumbnail']['Response']> {
 		return this.account.changeThumbnail(body);
 	}
 
 	@ApiHandler(ApiDef_UserAccount.getPasswordAssertionConfig)
-	async handleGetPasswordAssertionConfig(_params: API_UserAccount['getPasswordAssertionConfig']['Params']): Promise<API_UserAccount['getPasswordAssertionConfig']['Response']> {
+	async getPasswordAssertionConfig(_params: API_UserAccount['getPasswordAssertionConfig']['Params']): Promise<API_UserAccount['getPasswordAssertionConfig']['Response']> {
 		return {
 			config: this.config.ignorePasswordAssertion
 				? undefined

@@ -57,7 +57,7 @@ test.describe('BaseDB - dispatcher', () => {
 			api.setDispatcher(spy);
 			await api.onEntriesUpdated([deleted]);
 			await api.loadCache();
-			await api.delete({_id: '1'});
+			await api.deleteUnique({_id: '1'});
 			return {moduleEvents};
 		});
 		expect(result.moduleEvents.some((e: any) => e.event === 'delete')).toBe(true);

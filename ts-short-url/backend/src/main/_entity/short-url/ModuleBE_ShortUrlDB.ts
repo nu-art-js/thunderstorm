@@ -1,10 +1,9 @@
 import {
+	API_ShortUrl,
 	ApiDef_ShortUrl,
 	DBDef_ShortUrl,
 	DB_ShortUrl,
 	DatabaseDef_ShortUrl,
-	GetShortUrlRequest,
-	GetShortUrlResponse,
 	UI_ShortUrl
 } from '@nu-art/ts-short-url-shared';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
@@ -28,7 +27,7 @@ export class ModuleBE_ShortUrlDB_Class
 	}
 
 	@ApiHandler(ApiDef_ShortUrl.getShortUrl)
-	async getShortUrl(params: GetShortUrlRequest): Promise<GetShortUrlResponse> {
+	async getShortUrl(params: API_ShortUrl['getShortUrl']['Params']): Promise<API_ShortUrl['getShortUrl']['Response']> {
 		const dbDoc = await this.query.unique(params._id);
 
 		if (!dbDoc)

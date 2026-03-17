@@ -15,7 +15,7 @@ test.describe('BaseApi - delete', () => {
 		await page.evaluate(() => (window as _Window).DbApiFrontend.cleanupDbApiIDB());
 	});
 
-	test('delete(params) and handleDeleteComplete → onEntryDeleted', async ({page}) => {
+	test('deleteUnique(params) and handleDeleteComplete → onEntryDeleted', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;
 			const deleted = {_id: '1', name: 'gone', __created: 1, __updated: 1, _v: 'v1'};
@@ -27,7 +27,7 @@ test.describe('BaseApi - delete', () => {
 			await api.onEntriesUpdated([deleted]);
 			await api.loadCache();
 			const before = api.cache.all().length;
-			await api.delete({_id: '1'});
+			await api.deleteUnique({_id: '1'});
 			const all = api.cache.all();
 			return {before, length: all.length, items: all};
 		});

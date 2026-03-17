@@ -35,11 +35,11 @@ export const ApiDef_UserAccount: ApiDefResolver<API_UserAccount> = {
 	refreshSession: {method: HttpMethod.GET, path: '/v1/account/refresh-session'},
 	createAccount: {method: HttpMethod.POST, path: '/v1/account/create-account'},
 	changePassword: {method: HttpMethod.POST, path: '/v1/account/change-password'},
-	login: {method: HttpMethod.POST, path: 'v1/account/login', timeout: Minute},
-	logout: {method: HttpMethod.GET, path: 'v1/account/logout'},
-	createToken: {method: HttpMethod.POST, path: 'v1/account/create-token', timeout: Minute},
+	login: {method: HttpMethod.POST, path: '/v1/account/login', timeout: Minute},
+	logout: {method: HttpMethod.GET, path: '/v1/account/logout'},
+	createToken: {method: HttpMethod.POST, path: '/v1/account/create-token', timeout: Minute},
 	setPassword: {method: HttpMethod.POST, path: '/v1/account/set-password'},
-	getSessions: {method: HttpMethod.GET, path: 'v1/account/get-sessions'},
+	getSessions: {method: HttpMethod.GET, path: '/v1/account/get-sessions'},
 	changeThumbnail: {method: HttpMethod.POST, path: '/v1/account/change-thumbnail'},
 	getPasswordAssertionConfig: {method: HttpMethod.GET, path: '/v1/account/get-password-assertion-config'}
 };
@@ -50,6 +50,6 @@ export type API_SAML = {
 }
 
 export const ApiDef_SAML: ApiDefResolver<API_SAML> = {
-	loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'},
-	assertSAML: {method: HttpMethod.POST, path: 'v1/account/assert'}
+	loginSaml: {method: HttpMethod.GET, path: '/v1/account/login-saml'},
+	assertSAML: {method: HttpMethod.POST, path: '/v1/account/assert'}
 };

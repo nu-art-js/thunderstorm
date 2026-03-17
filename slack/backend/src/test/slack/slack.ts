@@ -22,7 +22,7 @@ export const TestSuite_SlackMessage: TestSuite<string, any> = {
 	label: 'Slack Tests',
 	testcases: TestCase_SlackMessage,
 	processor: async (testCase) => {
-		const result = await ModuleBE_Slack.postMessage(testCase.input);
+		const result = await ModuleBE_Slack.sendText(testCase.input);
 		// const expected = testCase.result;
 		// expect(result).to.eql(expected);
 	}

@@ -4,20 +4,20 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {ApiDefResolver, QueryApi} from '@nu-art/http-client';
-import {HttpMethod} from '@nu-art/http-client';
+import type {ApiDefResolver, QueryApi} from '@nu-art/api-types';
+import {HttpMethod} from '@nu-art/api-types';
 import {DatabaseDef_AppConfig} from './types.js';
 import {CrudApiDef} from '@nu-art/db-api-shared';
 import {DBDef_AppConfig} from './db-def.js';
 
 export type RequestBody_GetResolverByKey = { key: string };
 
-export type ApiStruct_AppConfig = {
+export type API_AppConfig = {
 	getConfigByKey: QueryApi<unknown, RequestBody_GetResolverByKey>;
 };
 
-export const ApiDef_AppConfig: ApiDefResolver<ApiStruct_AppConfig> = {
-	getConfigByKey: {method: HttpMethod.GET, path: 'v1/app-config/get-resolver-data-by-key'},
+export const ApiDef_AppConfig: ApiDefResolver<API_AppConfig> = {
+	getConfigByKey: {method: HttpMethod.GET, path: '/v1/app-config/get-resolver-data-by-key'},
 };
 
 

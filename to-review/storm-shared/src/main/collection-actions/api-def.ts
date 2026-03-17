@@ -26,7 +26,7 @@ export type CollectionActions_Check = {
 	};
 };
 
-export type ApiStruct_CollectionActions = {
+export type API_CollectionActions = {
 	upgrade: {
 		collections: BodyApi<CollectionActions_Upgrade['collections']['response'], CollectionActions_Upgrade['collections']['request']>;
 		all: BodyApi<CollectionActions_Upgrade['all']['response'], CollectionActions_Upgrade['all']['request']>;
@@ -36,12 +36,12 @@ export type ApiStruct_CollectionActions = {
 	};
 };
 
-export const ApiDef_CollectionActions: ApiDefResolver<ApiStruct_CollectionActions> = {
+export const ApiDef_CollectionActions: ApiDefResolver<API_CollectionActions> = {
 	upgrade: {
-		collections: {method: HttpMethod.POST, path: 'v1/collection-actions/upgrade/collections'},
-		all: {method: HttpMethod.POST, path: 'v1/collection-actions/upgrade/all'},
+		collections: {method: HttpMethod.POST, path: '/v1/collection-actions/upgrade/collections'},
+		all: {method: HttpMethod.POST, path: '/v1/collection-actions/upgrade/all'},
 	},
 	check: {
-		usage: {method: HttpMethod.POST, path: 'v1/collection-actions/check/usage'},
+		usage: {method: HttpMethod.POST, path: '/v1/collection-actions/check/usage'},
 	},
 };

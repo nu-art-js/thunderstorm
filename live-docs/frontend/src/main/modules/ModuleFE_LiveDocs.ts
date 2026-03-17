@@ -19,7 +19,7 @@
 import {Module} from '@nu-art/ts-common';
 import {ApiCaller} from '@nu-art/http-client';
 import {ToastBuilder} from '@nu-art/thunder-widgets';
-import {DB_Document, LiveDocReqParams} from '@nu-art/live-docs-shared';
+import {DB_Document} from '@nu-art/live-docs-shared';
 import {ApiDef_LiveDoc, API_LiveDoc} from '@nu-art/live-docs-shared/api';
 import {DefaultLiveDocEditor} from '../utils.js';
 
@@ -49,7 +49,7 @@ export class ModuleFE_LiveDocs_Class
 	};
 
 	@ApiCaller(ApiDef_LiveDoc.get, {
-		onComplete: (m, ctx) => m.onGotDoc(ctx.response, (ctx.params as LiveDocReqParams).key)
+		onComplete: (m, ctx) => m.onGotDoc(ctx.response, ctx.params!.key)
 	})
 	async get(params: API_LiveDoc['get']['Params']): Promise<API_LiveDoc['get']['Response']> {
 		void params;
@@ -57,7 +57,7 @@ export class ModuleFE_LiveDocs_Class
 	}
 
 	@ApiCaller(ApiDef_LiveDoc.upsert, {
-		onComplete: (m, ctx) => m.onGotDoc(ctx.response, (ctx.body as { key: string }).key)
+		onComplete: (m, ctx) => m.onGotDoc(ctx.response, ctx.body!.key)
 	})
 	async upsert(body: API_LiveDoc['upsert']['Body']): Promise<API_LiveDoc['upsert']['Response']> {
 		void body;
@@ -65,7 +65,7 @@ export class ModuleFE_LiveDocs_Class
 	}
 
 	@ApiCaller(ApiDef_LiveDoc.history, {
-		onComplete: (m, ctx) => m.onGotDoc(ctx.response, (ctx.params as { key: string }).key)
+		onComplete: (m, ctx) => m.onGotDoc(ctx.response, ctx.params!.key)
 	})
 	async history(params: API_LiveDoc['history']['Params']): Promise<API_LiveDoc['history']['Response']> {
 		void params;

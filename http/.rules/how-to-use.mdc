@@ -111,7 +111,7 @@ Decorate methods with `@ApiHandler` to register them as HTTP route handlers. The
 
 ```typescript
 @ApiHandler(ApiDef_<Domain>.<actionA>)
-async handle<ActionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
 	// implementation
 }
 ```
@@ -123,7 +123,7 @@ async handle<ActionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Dom
 	(m: MyModule_Class) => m.apiDef.<actionA>,
 	{httpServer: m => resolveContent(m.httpServer)}
 )
-async handle<ActionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
 	// implementation
 }
 ```
@@ -273,6 +273,6 @@ Catch `HttpException`; it exposes `responseCode`, `errorResponse`, `request`.
 |----------|-----------|
 | API struct type | `API_<Domain>` |
 | API def resolver constant | `ApiDef_<Domain>` |
-| Backend handler method | `handle<ActionName>` |
+| Backend handler method | `<actionName>` (matches API struct key) |
 | Frontend caller method | `<actionName>` (matches API struct key) |
 | File name | `api-def.ts` |

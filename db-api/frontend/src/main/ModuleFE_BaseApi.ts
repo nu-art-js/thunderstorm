@@ -180,7 +180,7 @@ export abstract class ModuleFE_BaseApi<Proto extends DB_Prototype<any>>
 			onComplete: (m, ctx) => m.handleDeleteComplete(ctx)
 		}
 	)
-	async delete(params: CrudApiTypes<Proto>['deleteUnique']['Params']): Promise<CrudApiTypes<Proto>['deleteUnique']['Response']> {
+	async deleteUnique(params: CrudApiTypes<Proto>['deleteUnique']['Params']): Promise<CrudApiTypes<Proto>['deleteUnique']['Response']> {
 		void params;
 		return undefined as unknown as CrudApiTypes<Proto>['deleteUnique']['Response'];
 	}

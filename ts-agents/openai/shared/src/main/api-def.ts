@@ -15,5 +15,5 @@ export type API_OpenAI = {
 };
 
 export const ApiDef_OpenAI: ApiDefResolver<API_OpenAI> = {
-	test: {method: HttpMethod.POST, path: 'v1/open-ai/test', timeout: Minute},
+	test: {method: HttpMethod.POST, path: '/v1/open-ai/test', timeout: Minute},
 };

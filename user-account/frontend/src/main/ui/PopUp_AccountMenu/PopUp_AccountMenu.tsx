@@ -100,7 +100,7 @@ export class PopUp_AccountMenu
 
 	private logOut = async () => {
 		this.closePopUp();
-		ModuleFE_Account.logout();
+		ModuleFE_Account.performLogout();
 	};
 
 	private onActionClick = (action: PopUp_AccountMenu_Action) => {

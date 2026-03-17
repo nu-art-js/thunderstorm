@@ -121,13 +121,13 @@ export class ModuleFE_AssetUploader_Class
 			topic: PushKey_FileUploaded,
 			props: {feId: r.asset.feId},
 		}));
-		await ModuleFE_PushPubSub.registerAll(subscriptions).executeSync();
+		await ModuleFE_PushPubSub.subscribeAll(subscriptions).executeSync();
 	}
 
 	__onMessageReceived(notification: PushMessage_Payload<PushMessage_FileUploaded>): void {
 		super.__onMessageReceived(notification);
 		if (notification.message?.status === FileStatus.Completed || notification.message?.status?.startsWith('Error'))
-			ModuleFE_PushPubSub.unregister({topic: PushKey_FileUploaded, filter: notification.filter});
+			ModuleFE_PushPubSub.unsubscribe({topic: PushKey_FileUploaded, filter: notification.filter});
 	}
 }
 

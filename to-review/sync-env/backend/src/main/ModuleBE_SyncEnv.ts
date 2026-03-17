@@ -9,7 +9,7 @@ import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {Transform, Writable} from 'stream';
 import {firestore} from 'firebase-admin';
-import {ApiDef_SyncEnv, Request_FetchFirebaseBackup, Request_FetchFromEnv, Request_GetMetadata, Response_FetchBackupMetadata} from '@nu-art/sync-env-shared';
+import {ApiDef_SyncEnv, Request_GetMetadata, type ApiStruct_SyncEnv} from '@nu-art/sync-env-shared';
 import {HttpMethod} from '@nu-art/api-types';
 import {ApiHandler} from '@nu-art/http-server';
 import {HttpClient} from '@nu-art/http-client';
@@ -138,7 +138,7 @@ export class ModuleBE_SyncEnv_Class
 	}
 
 	@ApiHandler(ApiDef_SyncEnv.vv1.fetchBackupMetadata)
-	async fetchBackupMetadata(queryParams: Request_GetMetadata): Promise<Response_FetchBackupMetadata> {
+	async fetchBackupMetadata(queryParams: ApiStruct_SyncEnv['vv1']['fetchBackupMetadata']['Params']): Promise<ApiStruct_SyncEnv['vv1']['fetchBackupMetadata']['Response']> {
 		const backupInfo = await this.getBackupInfo(queryParams);
 		if (!backupInfo)
 			throw new ApiException(404, 'backup file not found');
@@ -152,7 +152,7 @@ export class ModuleBE_SyncEnv_Class
 	}
 
 	@ApiHandler(ApiDef_SyncEnv.vv1.syncToEnv)
-	async pushToEnv(body: { env: 'dev' | 'prod'; moduleName: string; items: unknown[] }): Promise<void> {
+	async pushToEnv(body: ApiStruct_SyncEnv['vv1']['syncToEnv']['Body']): Promise<ApiStruct_SyncEnv['vv1']['syncToEnv']['Response']> {
 		const url = this.syncEnvConfig.urlMap[body.env];
 		if (!url)
 			throw new BadImplementationException(`No urlMap for env: ${body.env}`);
@@ -173,13 +173,13 @@ export class ModuleBE_SyncEnv_Class
 
 
 	@ApiHandler(ApiDef_SyncEnv.vv1.createBackup)
-	async createBackup(_query?: Record<string, string | number | boolean | undefined>): Promise<{ pathToBackup: string } | undefined> {
+	async createBackup(_query?: ApiStruct_SyncEnv['vv1']['createBackup']['Params']): Promise<ApiStruct_SyncEnv['vv1']['createBackup']['Response']> {
 		await this.backupProvider.initiateBackup(true);
 		return undefined;
 	}
 
 	@ApiHandler(ApiDef_SyncEnv.vv1.getLatestBackup)
-	async getLatestBackupId(_query?: Record<string, string | number | boolean | undefined>): Promise<{ latestBackupId: string }> {
+	async getLatestBackupId(_query?: ApiStruct_SyncEnv['vv1']['getLatestBackup']['Params']): Promise<ApiStruct_SyncEnv['vv1']['getLatestBackup']['Response']> {
 		const result = await this.backupProvider.getLatestBackupId();
 		if (!result?.latestBackupId)
 			throw HttpCodes._4XX.ENTITY_DOESNT_EXISTS('No backup found');
@@ -187,7 +187,7 @@ export class ModuleBE_SyncEnv_Class
 	}
 
 	@ApiHandler(ApiDef_SyncEnv.vv1.syncFromEnvBackup)
-	async syncFromEnvBackup(body: Request_FetchFromEnv): Promise<void> {
+	async syncFromEnvBackup(body: ApiStruct_SyncEnv['vv1']['syncFromEnvBackup']['Body']): Promise<ApiStruct_SyncEnv['vv1']['syncFromEnvBackup']['Response']> {
 		if (!this.syncEnvConfig.allowSyncEnv)
 			throw new MUSTNeverHappenException('SyncEnv is disabled on this env- to sync into this env, add \'allowSyncEnv: true\'.');
 		if (!this.syncEnvConfig.allowCleanSync && body.cleanSync)
@@ -253,7 +253,7 @@ export class ModuleBE_SyncEnv_Class
 
 
 	@ApiHandler(ApiDef_SyncEnv.vv1.syncFirebaseFromBackup)
-	async syncFirebaseFromBackup(queryParams: Request_FetchFirebaseBackup): Promise<void> {
+	async syncFirebaseFromBackup(queryParams: ApiStruct_SyncEnv['vv1']['syncFirebaseFromBackup']['Params']): Promise<ApiStruct_SyncEnv['vv1']['syncFirebaseFromBackup']['Response']> {
 		try {
 			this.logDebug('Getting the firebase backup file');
 			const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();

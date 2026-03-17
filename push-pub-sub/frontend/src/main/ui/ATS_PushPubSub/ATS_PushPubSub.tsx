@@ -99,14 +99,14 @@ export class ATS_PushPubSub
 
 		const message = {topic: this.state.triggerKey, filter, data};
 		this.logInfo(`triggering push: ${__stringify(message, true)}`);
-		await ModuleFE_PushPubSub.test({message}).executeSync();
+		await ModuleFE_PushPubSub.test({message});
 	};
 
 	private subscribe = async () => {
 		if (!ModuleFE_PushPubSub.hasToken())
 			return ModuleFE_Toaster.toastError('No push token generated');
 
-		await ModuleFE_PushPubSub.register({
+		await ModuleFE_PushPubSub.subscribe({
 			topic: this.state.registerKey,
 			filter: this.composeFilter(this.state.registerFilter)
 		}).executeSync();
@@ -141,7 +141,7 @@ export class ATS_PushPubSub
 							<LL_H_C style={{width: 100}}>{subscription.key}</LL_H_C>
 							<LL_V_L>{subscription.values.map((value, index) => <LL_H_C
 								key={index}><TS_Icons.bin.component
-								onClick={() => void ModuleFE_PushSubscription.delete({_id: value._id})}/>{JSON.stringify(value.filter)}
+								onClick={() => void ModuleFE_PushSubscription.deleteUnique({_id: value._id})}/>{JSON.stringify(value.filter)}
 							</LL_H_C>)}</LL_V_L>
 						</LL_H_C>)}
 				</LL_V_L>
