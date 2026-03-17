@@ -21,8 +21,10 @@ export type SyncPostWriteOptions = {
 /** One collection the sync-manager backend can query for delta/full sync. App supplies an array of these (e.g. by wrapping ModuleBE_BaseDB). */
 export interface SyncableCollectionBE {
 	readonly dbKey: string;
+
 	/** Items with __updated >= since. */
 	queryUpdatedSince(since: number): Promise<DB_Object[]>;
+
 	/** Used to bootstrap lastUpdated for a new module (e.g. max __updated). */
 	getNewestTimestamp(): Promise<number>;
 }

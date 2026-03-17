@@ -29,10 +29,10 @@ const allExceptions = [
 
 /**
  * Checks if an error is a custom exception from the nu-art exception hierarchy.
- * 
+ *
  * Tests the error against all known custom exception types to determine if it's
  * a framework exception rather than a standard JavaScript Error.
- * 
+ *
  * @param e - Error to check
  * @returns true if the error is a custom exception, false otherwise
  */

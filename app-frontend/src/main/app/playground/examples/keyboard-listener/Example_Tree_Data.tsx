@@ -141,4 +141,4 @@ class Example_ColorfulNodeRenderer
 	}
 }
 
-export const Playground_Tree_Data = {name:'Tree - Data',renderer:Example_Tree_Data}
+export const Playground_Tree_Data = {name: 'Tree - Data', renderer: Example_Tree_Data};

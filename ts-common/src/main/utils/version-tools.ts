@@ -24,11 +24,11 @@ import {tsValidateVersion} from '../validator/validators.js';
 /**
  * Normalizes a version string by converting non-numeric characters to dots,
  * collapsing multiple consecutive dots, and extracting numeric segments.
- * 
+ *
  * @param version - Version string to normalize
  * @returns Array of numeric segments
  * @throws BadImplementationException if version contains no numeric segments
- * 
+ *
  * @example
  * ```typescript
  * normalizeVersion('1.0.0--rc.17') // Returns [1, 0, 0, 17]
@@ -43,38 +43,38 @@ function normalizeVersion(version: string): number[] {
 	normalized = normalized.replace(/\.+/g, '.');
 	// Trim leading/trailing dots
 	normalized = normalized.replace(/^\.+|\.+$/g, '');
-	
+
 	if (!normalized)
 		throw new BadImplementationException(`Unable to extract calculable version from '${version}' - no numeric segments found`);
-	
+
 	// Split and convert to numbers
 	return normalized.split('.').map(Number);
 }
 
 /**
  * Compares two semantic version strings.
- * 
+ *
  * Normalizes version strings by replacing non-numeric characters with dots,
  * then compares them numerically segment by segment. Supports versions with
  * any number of segments (e.g., "1.0.0", "1.0.0--rc.17", "1.2.3.4.5").
- * 
+ *
  * **Normalization process**:
  * - Replaces all non-numeric characters (letters, dashes, etc.) with dots
  * - Collapses multiple consecutive dots into a single dot
  * - Extracts numeric segments for comparison
- * 
+ *
  * **Comparison logic**:
  * - Compares segments from left to right numerically
  * - If all segments are equal up to the minimum length, the version with more segments is considered greater
  * - Returns -1 if first version is greater
  * - Returns 0 if versions are equal
  * - Returns 1 if second version is greater
- * 
+ *
  * @param firstVersion - First version string (must contain at least one numeric segment)
  * @param secondVersion - Second version string (must contain at least one numeric segment)
  * @returns Comparison result: -1, 0, or 1
  * @throws BadImplementationException if versions are undefined or don't contain numeric segments
- * 
+ *
  * @example
  * ```typescript
  * compareVersions('1.2.3', '1.2.4') // Returns 1 (second is greater)
@@ -93,37 +93,37 @@ export function compareVersions(firstVersion: string, secondVersion: string) {
 
 	const firstVersionAsArray = normalizeVersion(firstVersion);
 	const secondVersionAsArray = normalizeVersion(secondVersion);
-	
+
 	const minLength = Math.min(firstVersionAsArray.length, secondVersionAsArray.length);
-	
+
 	// Compare segments up to the minimum length
 	for (let i = 0; i < minLength; i++) {
 		const firstVal = firstVersionAsArray[i];
 		const secondVal = secondVersionAsArray[i];
-		
+
 		if (secondVal > firstVal)
 			return 1;
 
 		if (secondVal < firstVal)
 			return -1;
 	}
-	
+
 	// If all segments are equal up to minimum length, compare by length
 	if (firstVersionAsArray.length > secondVersionAsArray.length)
 		return -1;
-	
+
 	if (firstVersionAsArray.length < secondVersionAsArray.length)
 		return 1;
-	
+
 	return 0;
 }
 
 /**
  * Validates that a version string matches the semantic version format (X.Y.Z).
- * 
+ *
  * Uses the validator system to check that the version string contains exactly
  * three dot-separated numbers with no other content.
- * 
+ *
  * @param version - Version string to validate
  * @returns Validation result object
  */

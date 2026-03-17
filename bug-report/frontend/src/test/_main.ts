@@ -17,4 +17,4 @@
  * limitations under the License.
  */
 
-export * from "../main/backend/index.js"
+export * from '../main/backend/index.js';

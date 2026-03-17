@@ -11,11 +11,11 @@ import {LogClient_BaseRotate} from './LogClient_BaseRotate.js';
 
 /**
  * Log client that writes logs to rotating files on disk.
- * 
+ *
  * Creates log files in the format `{name}-{index}.txt` where index 0 is the current log.
  * When the current log exceeds maxSize, it rotates: log-0.txt → log-1.txt, log-1.txt → log-2.txt, etc.
  * The oldest log (log-{maxEntries-1}.txt) is deleted during rotation.
- * 
+ *
  * The log folder is created automatically if it doesn't exist. If a log file already
  * exists, its size is used to initialize the bufferSize counter.
  */
@@ -29,7 +29,7 @@ export class LogClient_File
 
 	/**
 	 * Creates a new file-based log client.
-	 * 
+	 *
 	 * @param name - Log file name prefix (e.g., "app" creates "app-0.txt", "app-1.txt", etc.)
 	 * @param pathToFolder - Directory path for log files (created if it doesn't exist)
 	 * @param maxEntries - Maximum number of rotated log files to keep (default: 10)
@@ -50,7 +50,7 @@ export class LogClient_File
 
 	/**
 	 * Gets the filename for a log file at the given index.
-	 * 
+	 *
 	 * @param index - Log file index (0 = current, 1+ = rotated)
 	 * @returns Full path to the log file
 	 */
@@ -60,7 +60,7 @@ export class LogClient_File
 
 	/**
 	 * Writes a log message to the current log file.
-	 * 
+	 *
 	 * @param log - Formatted log string (includes newline)
 	 */
 	protected printLogMessage(log: string) {
@@ -69,7 +69,7 @@ export class LogClient_File
 
 	/**
 	 * Rotates a log file by renaming it to the next index.
-	 * 
+	 *
 	 * @param fromIndex - Source index
 	 * @param toIndex - Destination index
 	 */
@@ -82,7 +82,7 @@ export class LogClient_File
 
 	/**
 	 * Cleans up the oldest log file and closes the current write stream.
-	 * 
+	 *
 	 * Called during rotation to delete the oldest log and prepare for a new current log.
 	 */
 	protected cleanup(): void {
@@ -94,7 +94,7 @@ export class LogClient_File
 
 	/**
 	 * Prepares a new log file by creating a write stream.
-	 * 
+	 *
 	 * Opens the current log file (index 0) in append mode.
 	 */
 	protected prepare(): void {

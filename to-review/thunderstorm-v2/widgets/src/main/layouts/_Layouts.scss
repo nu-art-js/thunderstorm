@@ -1,10 +1,33 @@
 @use "./Layouts_" as *;
 
-.ll_v_l { @extend %ll_v_l; }
-.ll_v_c { @extend %ll_v_c; }
-.ll_v_r { @extend %ll_v_r; }
-.ll_h_t { @extend %ll_h_t; }
-.ll_h_c { @extend %ll_h_c; }
-.ll_h_b { @extend %ll_h_b; }
-.ll_vh_c { @extend %ll_vh_c; }
-.ts-grid { @extend %ts-grid; }
+.ll_v_l {
+  @extend %ll_v_l;
+}
+
+.ll_v_c {
+  @extend %ll_v_c;
+}
+
+.ll_v_r {
+  @extend %ll_v_r;
+}
+
+.ll_h_t {
+  @extend %ll_h_t;
+}
+
+.ll_h_c {
+  @extend %ll_h_c;
+}
+
+.ll_h_b {
+  @extend %ll_h_b;
+}
+
+.ll_vh_c {
+  @extend %ll_vh_c;
+}
+
+.ts-grid {
+  @extend %ts-grid;
+}

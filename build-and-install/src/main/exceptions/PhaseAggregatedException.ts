@@ -5,13 +5,13 @@ import {CommandoException} from '@nu-art/commando';
 
 /**
  * Exception thrown when one or more phases fail during execution.
- * 
+ *
  * **Aggregation**: Contains all `UnitPhaseException` errors from a failed step.
- * 
+ *
  * **Error Formatting**: The `print()` method provides detailed error output:
  * - For `CommandoException`: Shows message, cause, stdout, and stderr
  * - For other errors: Shows error object
- * 
+ *
  * **Usage**: Thrown by `PhaseManager.execute()` when any phase fails.
  */
 export class PhaseAggregatedException
@@ -20,7 +20,7 @@ export class PhaseAggregatedException
 
 	/**
 	 * Creates a new PhaseAggregatedException.
-	 * 
+	 *
 	 * @param errors - Array of unit/phase errors that occurred
 	 * @param step - The step that failed
 	 */
@@ -32,11 +32,11 @@ export class PhaseAggregatedException
 
 	/**
 	 * Prints detailed error information to logger.
-	 * 
+	 *
 	 * **Formatting**:
 	 * - CommandoException: Shows message, cause, stdout, stderr
 	 * - Other errors: Shows error object
-	 * 
+	 *
 	 * @param logger - Logger to print errors to
 	 */
 	print(logger: Logger) {

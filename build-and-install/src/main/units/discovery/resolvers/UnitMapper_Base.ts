@@ -16,21 +16,21 @@ export type UnitConfigJSON_Base = { type: string };
 
 /**
  * Base class for unit mapper resolvers.
- * 
+ *
  * **Purpose**: Each mapper resolver checks if a directory path matches its unit type
  * and creates the appropriate unit instance if it matches.
- * 
+ *
  * **Resolution Process**:
  * 1. `resolveUnit()` is called for each directory during workspace scan
  * 2. Mapper checks if path matches its criteria (package.json type, file presence, etc.)
  * 3. If match, creates and returns unit instance
  * 4. If no match, returns undefined (next mapper tries)
- * 
+ *
  * **Configuration**:
  * - `validator`: Validates unit config JSON (e.g., package.json.unitConfig.type)
  * - `baiConfig`: BAI configuration (set by UnitsMapper)
  * - `runtimeParams`: Runtime parameters (set by UnitsMapper)
- * 
+ *
  * **Usage**: Extended by specific mappers (UnitMapper_NodeLib, UnitMapper_FirebaseFunction, etc.)
  * to implement unit-specific discovery logic.
  */
@@ -50,7 +50,7 @@ export abstract class UnitMapper_Base<
 
 	/**
 	 * Sets runtime parameters for the mapper.
-	 * 
+	 *
 	 * Called by UnitsMapper to provide runtime context.
 	 */
 	setRuntimeParams(runtimeParams: BaiParams) {
@@ -59,7 +59,7 @@ export abstract class UnitMapper_Base<
 
 	/**
 	 * Sets BAI configuration for the mapper.
-	 * 
+	 *
 	 * Called by UnitsMapper to provide configuration context.
 	 */
 	setConfig(config: BAI_Config) {
@@ -68,12 +68,12 @@ export abstract class UnitMapper_Base<
 
 	/**
 	 * Resolves a unit from a directory path.
-	 * 
+	 *
 	 * **Behavior**:
 	 * - Checks if path matches this mapper's criteria
 	 * - If match, creates and returns unit instance
 	 * - If no match, returns undefined
-	 * 
+	 *
 	 * @param path - Directory path to check
 	 * @param root - Project root path
 	 * @returns Promise resolving to unit instance or undefined

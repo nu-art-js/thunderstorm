@@ -7,7 +7,7 @@ import {expect} from 'chai';
 import {DB_Type, DatabaseDef_Type, TestInputValue} from '../_entity.js';
 import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
 
-const chai = await import("'chai'");
+const chai = await import('\'chai\'');
 chai.use(chaiAsPromised);
 
 export const createTests_dbDef: Database<DatabaseDef_Type> = {

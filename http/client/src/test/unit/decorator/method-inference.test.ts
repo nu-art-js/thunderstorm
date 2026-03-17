@@ -11,16 +11,16 @@ import {expect} from 'chai';
 import {TestHttpClient} from '../../helpers.js';
 
 // httpbin.org response shapes
-type GetResponse = {url: string; args: Record<string, string>; headers: Record<string, string>};
-type PostResponse = {url: string; json?: Record<string, unknown>; data?: string};
-type GetApi = QueryApi<GetResponse, {id?: string}>;
-type PostApi = BodyApi<PostResponse, {name?: string}>;
+type GetResponse = { url: string; args: Record<string, string>; headers: Record<string, string> };
+type PostResponse = { url: string; json?: Record<string, unknown>; data?: string };
+type GetApi = QueryApi<GetResponse, { id?: string }>;
+type PostApi = BodyApi<PostResponse, { name?: string }>;
 type PutApi = BodyApi<PostResponse, Record<string, unknown>, ResponseError, typeof HttpMethod.PUT>;
 type PatchApi = BodyApi<PostResponse, Record<string, unknown>, ResponseError, typeof HttpMethod.PATCH>;
 
 describe('ApiCaller decorator - method inference', () => {
 	const client = new TestHttpClient();
-	client.setConfig({ origin: 'https://example.org' });
+	client.setConfig({origin: 'https://example.org'});
 
 	it('uses setUrlParams for GET', async () => {
 		class C {
@@ -29,6 +29,7 @@ describe('ApiCaller decorator - method inference', () => {
 				return undefined as any;
 			}
 		}
+
 		const responseBody = {url: 'https://example.org/get?id=x', args: {id: 'x'}, headers: {}};
 		client.setMockResponse({data: responseBody, status: 200, statusText: 'OK', headers: {}, config: {}});
 		const c = new C();
@@ -46,6 +47,7 @@ describe('ApiCaller decorator - method inference', () => {
 				return undefined as any;
 			}
 		}
+
 		const responseBody = {url: 'https://example.org/delete?_id=y', args: {_id: 'y'}, headers: {}};
 		client.setMockResponse({data: responseBody, status: 200, statusText: 'OK', headers: {}, config: {}});
 		const c = new C();
@@ -62,6 +64,7 @@ describe('ApiCaller decorator - method inference', () => {
 				return undefined as any;
 			}
 		}
+
 		const responseBody = {url: 'https://example.org/post', json: {name: 'foo'}, data: ''};
 		client.setMockResponse({data: responseBody, status: 200, statusText: 'OK', headers: {}, config: {}});
 		const c = new C();
@@ -83,6 +86,7 @@ describe('ApiCaller decorator - method inference', () => {
 				return undefined as any;
 			}
 		}
+
 		const putBody = {url: 'https://example.org/put', json: {x: 1}};
 		const patchBody = {url: 'https://example.org/patch', json: {y: 2}};
 		client.setMockResponse({data: putBody, status: 200, statusText: 'OK', headers: {}, config: {}});

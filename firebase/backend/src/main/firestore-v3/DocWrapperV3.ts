@@ -6,8 +6,9 @@ import {assertUniqueId, CollectionActionType, FirestoreCollectionV3, PostWritePr
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {addDeletedToTransaction} from './consts.js';
 import admin from 'firebase-admin';
-import type { firestore as Fa } from 'firebase-admin';
-const { FieldValue } = admin.firestore;
+import type {firestore as Fa} from 'firebase-admin';
+
+const {FieldValue} = admin.firestore;
 
 export type UpdateObject<DBType extends TS_Object> = {
 	_id: UniqueId;

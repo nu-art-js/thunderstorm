@@ -1,4 +1,14 @@
-import {CollectionTest, firestore, id_inner1, id_inner2, id_inner3, id_inner4, id_outer1, innerQueryCollection, outerQueryCollection} from '../../_entity/_core/consts.js';
+import {
+	CollectionTest,
+	firestore,
+	id_inner1,
+	id_inner2,
+	id_inner3,
+	id_inner4,
+	id_outer1,
+	innerQueryCollection,
+	outerQueryCollection
+} from '../../_entity/_core/consts.js';
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
 import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';

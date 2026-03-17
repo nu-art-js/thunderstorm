@@ -35,5 +35,5 @@ export type PermissionScope = {
  * for the @RequirePermission decorator (e.g. pathway: read, write, delete, admin).
  */
 export function definePermissionScope<K extends string, V extends readonly string[]>(key: K, values: V): PermissionScope & { key: K; values: V } {
-	return Object.freeze({ key, values }) as PermissionScope & { key: K; values: V };
+	return Object.freeze({key, values}) as PermissionScope & { key: K; values: V };
 }

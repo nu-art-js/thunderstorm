@@ -9,7 +9,7 @@ import {LogParam} from './types.js';
 
 /**
  * Converts an object to a formatted string for logging.
- * 
+ *
  * @param instance - Object to stringify
  * @returns Formatted string representation
  */
@@ -19,7 +19,7 @@ export function _logger_logObject(instance: object): string {
 
 /**
  * Converts an array of log parameters to an array of strings.
- * 
+ *
  * Handles different types appropriately:
  * - undefined → 'undefined'
  * - null → 'null'
@@ -27,7 +27,7 @@ export function _logger_logObject(instance: object): string {
  * - number → string conversion
  * - Error → stack trace extraction
  * - object → JSON stringification
- * 
+ *
  * @param params - Array of log parameters
  * @returns Array of string representations
  */
@@ -64,14 +64,14 @@ export function _logger_convertLogParamsToStrings(params: LogParam[]): string[] 
 
 /**
  * Formats an Error object into a readable string with stack trace and cause chain.
- * 
+ *
  * Processes the error stack trace, removes duplicate stack frames, and handles
  * CustomException instances specially. Recursively processes error causes to build
  * a complete error chain.
- * 
+ *
  * **Note**: Mutates and filters the stack trace to remove framework-specific noise
  * and duplicate frames.
- * 
+ *
  * @param error - Error object to format
  * @param fullStack - Accumulated stack trace from previous errors in the chain
  * @returns Formatted error string with stack trace
@@ -115,10 +115,10 @@ export function _logger_logException(error: Error, fullStack = ''): string {
 
 /**
  * Indents all newlines in a string with a prefix.
- * 
+ *
  * Useful for formatting multi-line log messages so that continuation lines
  * are properly aligned with the log prefix.
- * 
+ *
  * @param linePrefix - Prefix to add before each line
  * @param input - String that may contain newlines
  * @returns String with all newlines prefixed

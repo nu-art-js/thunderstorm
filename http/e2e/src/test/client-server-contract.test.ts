@@ -20,12 +20,14 @@ describe('E2E client-server contract', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/echo-one'};
+
 		class EchoOne {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(params: { a?: string }) {
 				return {a: params?.a ?? ''};
 			}
 		}
+
 		new EchoOne();
 		await server.startServer();
 
@@ -39,12 +41,14 @@ describe('E2E client-server contract', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/echo-query'};
+
 		class EchoQuery {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(params: Record<string, string>) {
 				return params ?? {};
 			}
 		}
+
 		new EchoQuery();
 		await server.startServer();
 
@@ -58,12 +62,14 @@ describe('E2E client-server contract', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/ping'};
+
 		class Ping {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				return {ok: true};
 			}
 		}
+
 		new Ping();
 		await server.startServer();
 
@@ -77,12 +83,14 @@ describe('E2E client-server contract', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'delete' as const, path: '/echo-delete'};
+
 		class EchoDelete {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async delete(params: Record<string, string>) {
 				return params ?? {};
 			}
 		}
+
 		new EchoDelete();
 		await server.startServer();
 
@@ -96,12 +104,14 @@ describe('E2E client-server contract', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'post' as const, path: '/echo-body'};
+
 		class EchoBody {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async post(body: { x: number }) {
 				return body;
 			}
 		}
+
 		new EchoBody();
 		await server.startServer();
 
@@ -115,12 +125,14 @@ describe('E2E client-server contract', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'post' as const, path: '/echo-empty'};
+
 		class EchoEmpty {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async post(body: Record<string, unknown>) {
 				return {received: body ?? {}};
 			}
 		}
+
 		new EchoEmpty();
 		await server.startServer();
 
@@ -134,12 +146,14 @@ describe('E2E client-server contract', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'put' as const, path: '/echo-put'};
+
 		class EchoPut {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async put(body: { key: string }) {
 				return body;
 			}
 		}
+
 		new EchoPut();
 		await server.startServer();
 
@@ -153,6 +167,7 @@ describe('E2E client-server contract', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/empty'};
+
 		class EmptyApi {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
@@ -160,6 +175,7 @@ describe('E2E client-server contract', () => {
 				MemKey_HttpResponse.get().code(204);
 			}
 		}
+
 		new EmptyApi();
 		await server.startServer();
 

@@ -9,6 +9,7 @@ export class Example_Analytics_Render
 			Click to add event
 		</div>;
 	}
+
 	addEvent = () => {
 		ModuleFE_Toaster.toastInfo('No Analytics set up yet');
 	};

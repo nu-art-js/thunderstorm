@@ -23,17 +23,17 @@ import {LogTypes} from '../types.js';
 
 /**
  * Function that processes log messages from shell output.
- * 
+ *
  * Returns `false` to consume the log (prevent default logging),
  * `true` to continue processing, or a Promise resolving to boolean.
- * 
+ *
  * Processors are called in order until one returns `false`.
  */
 export type ShellLogProcessor = (log: string, std: LogTypes) => (Promise<boolean> | boolean);
 
 /**
  * Function called when a subprocess PID is detected.
- * 
+ *
  * Used with `appendAsync()` to notify when a background process starts.
  */
 export type ShellPidListener = (pid: number) => (Promise<any> | any);
@@ -50,20 +50,20 @@ type OnCloseListener = (exitCode: number) => void;
 
 /**
  * Interactive shell session manager using Node.js child_process spawn.
- * 
+ *
  * Maintains a persistent bash session and provides:
  * - Command execution in the same shell context
  * - Log processing pipeline (multiple processors)
  * - Subprocess management (PID tracking, killing)
  * - Exit code extraction via echo commands
- * 
+ *
  * **Key Features**:
  * - Detached process (session leader) for proper signal handling
  * - Log processors can consume or pass through messages
  * - Automatic log level filtering (stderr=Error, stdout=Info)
  * - PID tracking for background processes
  * - Graceful shutdown with timeout
- * 
+ *
  * **Process Management**:
  * - Spawns `/bin/bash` as detached process
  * - Removes NODE_OPTIONS to prevent debug flags from propagating

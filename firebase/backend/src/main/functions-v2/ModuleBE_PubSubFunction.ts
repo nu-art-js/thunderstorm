@@ -49,7 +49,7 @@ export abstract class ModuleBE_PubSubFunction<T extends TS_Object>
 				data = JSON.parse(Buffer.from(originalMessage.data, 'base64').toString());
 			} catch (e: any) {
 				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
-					              '\n' + __stringify(originalMessage.data) + '\n' + __stringify(e));
+					'\n' + __stringify(originalMessage.data) + '\n' + __stringify(e));
 			}
 
 			return this.handleCallback(() => this._onPublish(data, originalMessage, event));

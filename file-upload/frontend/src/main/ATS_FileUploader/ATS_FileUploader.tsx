@@ -34,7 +34,9 @@ export class ATS_FileUploader
 	render() {
 		return <LL_H_T>
 			<LL_V_L>
-				{sortArray([...ModuleFE_Assets.cache.all()], (asset: { __updated?: number }) => asset.__updated).map((asset: { _id: string; name: string; bucketName?: string; path?: string }) => (
+				{sortArray([...ModuleFE_Assets.cache.all()], (asset: { __updated?: number }) => asset.__updated).map((asset: {
+					_id: string; name: string; bucketName?: string; path?: string
+				}) => (
 					<LL_H_C key={asset._id} className="clickable h-gap__n" title={`${asset.bucketName ?? ''}/${asset.path ?? ''}`}>
 						{asset.name}
 					</LL_H_C>

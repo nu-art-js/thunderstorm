@@ -128,7 +128,7 @@ export class TS_Notifications
 
 	private renderNotification(notification: DB_Notification) {
 		return <div className={`ts-notification ts-notification__${notification.status}`} key={notification._id}
-			onClick={e => this.onNotificationClick(e, notification)}>
+								onClick={e => this.onNotificationClick(e, notification)}>
 			<div className={'ts-notification__header'}>
 				<div className={'ts-notification__title'}>{notification.title}</div>
 				<span className={'ts-notification__close'} onClick={(e) => {
@@ -160,11 +160,11 @@ export class TS_Notifications
 		const className = _className('ts-notification-container', this.state.notifications.length > 1 ? 'list' : undefined);
 		const overlayClass = _className('ts-notification-overlay', this.state.transitionPhase);
 		return <div className={overlayClass} onClick={e => this.onClickToClose(e, 'click')}
-			onContextMenu={e => this.onClickToClose(e, 'contextmenu')}
-			style={{transitionDuration: `${this.transitionTimeout}ms`}}>
+								onContextMenu={e => this.onClickToClose(e, 'contextmenu')}
+								style={{transitionDuration: `${this.transitionTimeout}ms`}}>
 			<div className={className} onClick={e => this.onClickToClose(e, 'click')}
-				onContextMenu={e => this.onClickToClose(e, 'contextmenu')}
-				style={{transitionDuration: `${this.transitionTimeout}ms`}}>
+					 onContextMenu={e => this.onClickToClose(e, 'contextmenu')}
+					 style={{transitionDuration: `${this.transitionTimeout}ms`}}>
 				{this.renderNotifications()}
 			</div>
 		</div>;

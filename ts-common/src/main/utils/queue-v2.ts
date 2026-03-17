@@ -34,14 +34,14 @@ export  type QueueItem<InputType, OutputType> = {
 
 /**
  * Enhanced queue implementation with sorting, filtering, and cancellation support.
- * 
+ *
  * Similar to `Queue` but with additional features:
  * - Generic item/runner pattern (separates data from execution logic)
  * - Sorting support (process items in a specific order)
  * - Filtering support (modify queue before execution)
  * - Cancellation support (stop processing)
  * - Items are frozen (immutable) to prevent mutation
- * 
+ *
  * @template ItemType - Type of items in the queue
  * @template OutputType - Type returned by the runner function
  */
@@ -69,7 +69,7 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Creates a new QueueV2 instance.
-	 * 
+	 *
 	 * @param name - Logger tag name
 	 * @param runner - Function that processes each queue item
 	 */
@@ -85,7 +85,7 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Sets the maximum number of parallel operations.
-	 * 
+	 *
 	 * @param parallelCount - Maximum parallel operations (default: 1)
 	 * @returns This instance for method chaining
 	 */
@@ -96,7 +96,7 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Sets a callback to be invoked when the queue becomes empty.
-	 * 
+	 *
 	 * @param onQueueEmpty - Function to call when queue is empty
 	 * @returns This instance for method chaining
 	 */
@@ -107,7 +107,7 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Adds an item to the queue and starts execution.
-	 * 
+	 *
 	 * @param toExecute - Item to process
 	 * @param onCompleted - Optional callback for successful completion
 	 * @param onError - Optional callback for errors
@@ -121,9 +121,9 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Adds an item to the queue without triggering execution.
-	 * 
+	 *
 	 * The item is frozen (Object.freeze) to prevent mutation.
-	 * 
+	 *
 	 * @param item - Item to add
 	 * @param onCompleted - Optional callback for successful completion
 	 * @param onError - Optional callback for errors
@@ -136,10 +136,10 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Sets a sorting function for queue items.
-	 * 
+	 *
 	 * Items are sorted before processing. The sorter function should return
 	 * a string or number that will be used for comparison.
-	 * 
+	 *
 	 * @param sorter - Function that returns a sort key for each item
 	 * @returns This instance for method chaining
 	 */
@@ -150,10 +150,10 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Sets a filter function for queue items.
-	 * 
+	 *
 	 * The filter is applied before sorting and execution. Can be used to
 	 * remove items, reorder them, or modify the queue dynamically.
-	 * 
+	 *
 	 * @param filter - Function that filters/modifies the queue array
 	 * @returns This instance for method chaining
 	 */
@@ -171,14 +171,14 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Executes queued operations with sorting, filtering, and cancellation support.
-	 * 
+	 *
 	 * **Execution flow**:
 	 * 1. Checks if queue is empty → invokes callbacks
 	 * 2. Applies filter (if set) to modify queue
 	 * 3. Applies sorter (if set) to order items
 	 * 4. Processes items up to parallel limit
 	 * 5. Each completion triggers `execute()` again (recursive pattern)
-	 * 
+	 *
 	 * **Cancellation**: If `cancelAll()` was called, stops processing new items
 	 * but allows currently running items to complete.
 	 */
@@ -237,7 +237,7 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Executes all queued operations and waits for completion.
-	 * 
+	 *
 	 * @returns Promise that resolves when queue is empty
 	 */
 	async executeSync() {
@@ -249,7 +249,7 @@ export class QueueV2<ItemType, OutputType = any>
 
 	/**
 	 * Cancels all pending operations and clears the queue.
-	 * 
+	 *
 	 * Sets a cancellation flag that prevents new items from starting.
 	 * Currently running operations are allowed to complete. The queue
 	 * is cleared immediately.

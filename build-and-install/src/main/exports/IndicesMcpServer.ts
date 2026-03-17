@@ -10,7 +10,8 @@ type PackageInfo = {
 	root: string;
 };
 
-export class IndicesMcpServer extends Logger {
+export class IndicesMcpServer
+	extends Logger {
 	private server?: Server;
 	private port: number;
 	private projectRoot: string;
@@ -214,7 +215,7 @@ export class IndicesMcpServer extends Logger {
 				package: packageName,
 				stale,
 				message: stale
-					? "Source files are newer than index files. Run 'bai --map-exports' to regenerate."
+					? 'Source files are newer than index files. Run \'bai --map-exports\' to regenerate.'
 					: 'Indices are up to date.'
 			});
 		} catch (error: any) {

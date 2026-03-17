@@ -29,17 +29,17 @@ export const iconsRenderer = (key: IconData, props?: IconAttributes) => {
 	return <RenderIcon {...props} icon={key.value}/>;
 };
 
-const arrowClose: IconData = {ratio: 5 / 6,  value: require('@res/icons/icon__arrowClose.svg')};
-const arrowOpen: IconData = {ratio: 5 / 6,  value: require('@res/icons/icon__arrowOpen.svg')};
-const avatar: IconData = {ratio: 14 / 13,  value: require('@res/icons/icon__avatar.svg')};
-const check: IconData = {ratio: 12 / 12,  value: require('@res/icons/icon__check.svg')};
-const close: IconData = {ratio: 10 / 10,  value: require('@res/icons/icon__close.svg')};
-const errorToast: IconData = {ratio: 24 / 26,  value: require('@res/icons/icon__errorToast.svg')};
-const infoToast: IconData = {ratio: 24 / 26,  value: require('@res/icons/icon__infoToast.svg')};
-const lock: IconData = {ratio: 15 / 12,  value: require('@res/icons/icon__lock.svg')};
-const successToast: IconData = {ratio: 24 / 26,  value: require('@res/icons/icon__successToast.svg')};
-const icon_arrowheadFullDown: IconData = {ratio: 24 / 24,  value: require('@res/icons/icon_arrowheadFullDown.svg')};
-const icon_arrowheadFullUp: IconData = {ratio: 24 / 24,  value: require('@res/icons/icon_arrowheadFullUp.svg')};
+const arrowClose: IconData = {ratio: 5 / 6, value: require('@res/icons/icon__arrowClose.svg')};
+const arrowOpen: IconData = {ratio: 5 / 6, value: require('@res/icons/icon__arrowOpen.svg')};
+const avatar: IconData = {ratio: 14 / 13, value: require('@res/icons/icon__avatar.svg')};
+const check: IconData = {ratio: 12 / 12, value: require('@res/icons/icon__check.svg')};
+const close: IconData = {ratio: 10 / 10, value: require('@res/icons/icon__close.svg')};
+const errorToast: IconData = {ratio: 24 / 26, value: require('@res/icons/icon__errorToast.svg')};
+const infoToast: IconData = {ratio: 24 / 26, value: require('@res/icons/icon__infoToast.svg')};
+const lock: IconData = {ratio: 15 / 12, value: require('@res/icons/icon__lock.svg')};
+const successToast: IconData = {ratio: 24 / 26, value: require('@res/icons/icon__successToast.svg')};
+const icon_arrowheadFullDown: IconData = {ratio: 24 / 24, value: require('@res/icons/icon_arrowheadFullDown.svg')};
+const icon_arrowheadFullUp: IconData = {ratio: 24 / 24, value: require('@res/icons/icon_arrowheadFullUp.svg')};
 
 export const ICONS = {
 

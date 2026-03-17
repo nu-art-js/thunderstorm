@@ -1,5 +1,13 @@
 import {__stringify, exists} from '../utils/tools.js';
-import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core.js';
+import {
+	InvalidResult,
+	InvalidResultArray,
+	InvalidResultObject,
+	tsValidateExists,
+	tsValidateResult,
+	Validator,
+	ValidatorTypeResolver
+} from './validator-core.js';
 import {currentTimeMillis, TimeRange} from '../utils/date-time-tools.js';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types.js';
 import {asArray, filterInstances} from '../utils/array-tools.js';
@@ -9,13 +17,13 @@ import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 /**
  * Validates a dynamic object where both keys and values are validated.
- * 
+ *
  * Validates each key-value pair in the object using separate validators.
  * Returns an object with validation errors keyed by the object's keys.
- * 
+ *
  * **Error aggregation**: If both key and value fail validation, combines both errors.
  * If only one fails, reports that specific error.
- * 
+ *
  * @template T - Object type to validate
  * @param valuesValidator - Validator for object values
  * @param keysValidator - Validator for object keys
@@ -48,12 +56,12 @@ export const tsValidateDynamicObject = <T extends object>(valuesValidator: Valid
 
 /**
  * Validates input against multiple validators (union type).
- * 
+ *
  * The input must pass at least one of the provided validators. If all validators
  * fail, returns an array with an error message and all validation results.
- * 
+ *
  * **Early exit**: Returns undefined (valid) as soon as one validator passes.
- * 
+ *
  * @template T - Type to validate
  * @param validators - Array of validators to try
  * @param mandatory - Whether input is required (default: true)
@@ -94,14 +102,14 @@ export const tsValidateUnionV3 = <T>(validatorObject: validatorObject<T>, mandat
 
 /**
  * Validates an array by validating each element.
- * 
+ *
  * Applies the validator to each element in the array. Returns an array of
  * validation results (one per element) if any elements fail. Supports multiple
  * validators (all must pass for each element) and minimum length checking.
- * 
+ *
  * **Strict mode**: When `strict=true`, validation errors include element indices.
  * When `strict=false`, errors may be less specific.
- * 
+ *
  * @template T - Array type
  * @template I - Element type
  * @param validator - Validator(s) to apply to each element (can be array for multiple validators)
@@ -129,12 +137,12 @@ export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayT
 
 /**
  * Validates a string with optional length constraints.
- * 
+ *
  * Supports:
  * - Single maximum length: `length = 10` (max 10 chars)
  * - Range: `length = [5, 10]` (min 5, max 10 chars)
  * - No limit: `length = -1` (any length)
- * 
+ *
  * @param length - Maximum length, or [min, max] range, or -1 for no limit (default: -1)
  * @param mandatory - Whether string is required (default: true)
  * @returns Validator for strings
@@ -264,11 +272,11 @@ export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<st
 
 /**
  * Validates a timestamp is within a specified time interval from now.
- * 
+ *
  * Checks that the timestamp is between `(now - interval)` and `now`.
  * If no interval is provided, defaults to checking if timestamp is between 0 and now
  * (essentially any past or present timestamp).
- * 
+ *
  * @param interval - Maximum age in milliseconds (default: current time, i.e., any past timestamp)
  * @param mandatory - Whether timestamp is required (default: true)
  * @returns Validator for timestamps
@@ -329,14 +337,14 @@ export const tsValidator_valueByKey = <T>(validatorObject: {
 
 /**
  * Validates an array of objects using different validators based on a key value.
- * 
+ *
  * For each object in the array, looks up a validator from `validatorMap` using
  * the value of the specified `key`. This enables polymorphic validation where
  * different object types in the array are validated differently.
- * 
+ *
  * **Example**: Array of shapes where each shape has a `type` field ('circle' or 'square'),
  * and different validators are used based on the type.
- * 
+ *
  * @template T - Object type
  * @param key - Key to use for validator lookup
  * @param validatorMap - Map of key values to validators

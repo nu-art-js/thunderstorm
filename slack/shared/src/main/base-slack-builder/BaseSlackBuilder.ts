@@ -33,7 +33,7 @@ export abstract class BaseSlackBuilder
 			this.blocks = blocks;
 	}
 
-	
+
 	/** Static template function
 	 * For error reporting get slack emoji unicode for each severity level
 	 * @param severity Severity level from the severity enum
@@ -112,7 +112,7 @@ export abstract class BaseSlackBuilder
 		return `*${exception.exceptionType}* - ${exception.message}`;
 	};
 
-	
+
 	/**
 	 * Add files to send in the slack message, accepts both single and multiple files at once
 	 * @param files List or a single file to send
@@ -161,7 +161,7 @@ export abstract class BaseSlackBuilder
 		await this.sendFiles?.(tp);
 	};
 
-		/**
+	/**
 	 * Abstract function, implement according to needs in each class.
 	 * This function will handle sending of the main message made out of blocks
 	 */

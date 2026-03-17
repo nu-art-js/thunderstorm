@@ -16,14 +16,14 @@ type TestCase_CreateFlag = TestModel<Input_CreateFlag, Result_CreateFlag>;
 const test_CreateFlag = async (input: Input_CreateFlag): Promise<Result_CreateFlag> => {
 	const flag = DebugFlags.createFlag(input.key, input.minLevel);
 	const registered = DebugFlags.instance.AllDebugFlags[input.key] === flag;
-	return { flag, registered };
+	return {flag, registered};
 };
 
 const runTestCase_CreateFlag = (testCase: TestCase_CreateFlag) => () => runSingleTestCase(test_CreateFlag, testCase);
 
 describe('DebugFlags - Create Flag', () => {
 	it('should create and register a flag', runTestCase_CreateFlag({
-		input: { key: 'TestFlag' },
+		input: {key: 'TestFlag'},
 		result: async (result) => {
 			expect(result.flag).to.be.instanceOf(DebugFlag);
 			expect(result.registered).to.be.true;
@@ -32,7 +32,7 @@ describe('DebugFlags - Create Flag', () => {
 	}));
 
 	it('should create flag with custom min level', runTestCase_CreateFlag({
-		input: { key: 'TestFlag2', minLevel: LogLevel.Warning },
+		input: {key: 'TestFlag2', minLevel: LogLevel.Warning},
 		result: async (result) => {
 			expect(result.flag).to.be.instanceOf(DebugFlag);
 			result.flag.enable(true);
@@ -51,20 +51,20 @@ const test_EnableDisable = async (input: Input_EnableDisable): Promise<Result_En
 	const flag = DebugFlags.createFlag(input.key);
 	flag.enable(input.enable);
 	const enabled = flag.isEnabled();
-	return { enabled };
+	return {enabled};
 };
 
 const runTestCase_EnableDisable = (testCase: TestCase_EnableDisable) => () => runSingleTestCase(test_EnableDisable, testCase);
 
 describe('DebugFlags - Enable/Disable', () => {
 	it('should enable a flag', runTestCase_EnableDisable({
-		input: { key: 'EnableTest', enable: true },
-		result: { enabled: true }
+		input: {key: 'EnableTest', enable: true},
+		result: {enabled: true}
 	}));
 
 	it('should disable a flag', runTestCase_EnableDisable({
-		input: { key: 'DisableTest', enable: false },
-		result: { enabled: false }
+		input: {key: 'DisableTest', enable: false},
+		result: {enabled: false}
 	}));
 
 	it('should toggle flag state', () => {
@@ -88,25 +88,25 @@ const test_MinLevel = async (input: Input_MinLevel): Promise<Result_MinLevel> =>
 	flag.enable(true);
 	flag.setMinLevel(input.minLevel);
 	const canLog = flag.canLog(input.testLevel);
-	return { canLog };
+	return {canLog};
 };
 
 const runTestCase_MinLevel = (testCase: TestCase_MinLevel) => () => runSingleTestCase(test_MinLevel, testCase);
 
 describe('DebugFlags - Min Level', () => {
 	it('should allow logging at min level', runTestCase_MinLevel({
-		input: { key: 'MinLevel1', minLevel: LogLevel.Info, testLevel: LogLevel.Info },
-		result: { canLog: true }
+		input: {key: 'MinLevel1', minLevel: LogLevel.Info, testLevel: LogLevel.Info},
+		result: {canLog: true}
 	}));
 
 	it('should allow logging above min level', runTestCase_MinLevel({
-		input: { key: 'MinLevel2', minLevel: LogLevel.Info, testLevel: LogLevel.Warning },
-		result: { canLog: true }
+		input: {key: 'MinLevel2', minLevel: LogLevel.Info, testLevel: LogLevel.Warning},
+		result: {canLog: true}
 	}));
 
 	it('should block logging below min level', runTestCase_MinLevel({
-		input: { key: 'MinLevel3', minLevel: LogLevel.Info, testLevel: LogLevel.Debug },
-		result: { canLog: false }
+		input: {key: 'MinLevel3', minLevel: LogLevel.Info, testLevel: LogLevel.Debug},
+		result: {canLog: false}
 	}));
 
 	it('should block logging when disabled regardless of level', () => {

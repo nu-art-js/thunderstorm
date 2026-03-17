@@ -20,7 +20,8 @@ export const dispatch_onMessagesUpdated = Object.assign(
 	}
 );
 
-export class ModuleFE_Message_Class extends ModuleFE_BaseApi<DatabaseDef_Message> {
+export class ModuleFE_Message_Class
+	extends ModuleFE_BaseApi<DatabaseDef_Message> {
 
 	constructor() {
 		super({

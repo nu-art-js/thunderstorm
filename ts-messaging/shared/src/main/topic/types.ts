@@ -3,7 +3,7 @@ import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-ar
 export const Topic_DbKey = 'topics';
 type DBKey = typeof Topic_DbKey;
 
-type VersionTypes_Topic = {'1.0.0': DB_Topic};
+type VersionTypes_Topic = { '1.0.0': DB_Topic };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_Topic>;
 type UniqueKeys = '_id';
 type GeneratedKeys = 'type' | 'refId';

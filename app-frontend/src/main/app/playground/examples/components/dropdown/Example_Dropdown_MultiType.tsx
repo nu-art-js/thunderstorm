@@ -79,4 +79,4 @@ export class Example_Dropdown_MultiType
 	}
 }
 
-export const Playground_DropdownMultiType ={name:'Dropdown - Multi Type',renderer:Example_Dropdown_MultiType}
+export const Playground_DropdownMultiType = {name: 'Dropdown - Multi Type', renderer: Example_Dropdown_MultiType};

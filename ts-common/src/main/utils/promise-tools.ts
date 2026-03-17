@@ -7,13 +7,13 @@ export type PromiseCallbackFunction<T> = (resolve: ResolvePromiseFunction<T>, re
 
 /**
  * Wraps a callback-based function in a Promise.
- * 
+ *
  * Useful for converting callback-style APIs to Promise-based APIs.
  * The callback receives resolve and reject functions to control the Promise.
- * 
+ *
  * @param callback - Function that receives resolve/reject and performs the action
  * @returns Promise that resolves/rejects based on callback execution
- * 
+ *
  * @example
  * ```typescript
  * const promise = promiseWrapper((resolve, reject) => {
@@ -27,9 +27,9 @@ export const promiseWrapper = <T>(callback: PromiseCallbackFunction<T>) => {
 
 /**
  * Type guard that checks if a value is a Promise.
- * 
+ *
  * Checks for both native Promise instances and thenable objects (duck typing).
- * 
+ *
  * @param obj - Value to check
  * @returns true if the value is a Promise or thenable
  */

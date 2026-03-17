@@ -23,7 +23,7 @@ import {DefaultProcessorsMapper} from './consts.js';
 
 /**
  * Type-safe CLI parameter resolver and parser.
- * 
+ *
  * Parses command-line arguments (`process.argv`) into a typed object based on
  * parameter definitions. Supports:
  * - Multiple keys/aliases per parameter
@@ -33,7 +33,7 @@ import {DefaultProcessorsMapper} from './consts.js';
  * - Array parameters (collect multiple values)
  * - Dependencies (set other params based on current param)
  * - Quoted string handling
- * 
+ *
  * **Usage**:
  * ```typescript
  * const resolver = CLIParamsResolver.create(
@@ -43,7 +43,7 @@ import {DefaultProcessorsMapper} from './consts.js';
  * const params = resolver.resolveParamValue();
  * // params.name: string, params.count: number
  * ```
- * 
+ *
  * @template T - Array of BaseCliParam definitions
  * @template Output - Resolved parameters object type
  */
@@ -54,7 +54,7 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 
 	/**
 	 * Creates a CLIParamsResolver instance.
-	 * 
+	 *
 	 * @template T - Array of BaseCliParam definitions
 	 * @param params - Parameter definitions
 	 * @returns New CLIParamsResolver instance
@@ -65,7 +65,7 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 
 	/**
 	 * Creates a CLIParamsResolver and processes parameters.
-	 * 
+	 *
 	 * @param params - Parameter definitions (may be incomplete)
 	 */
 	private constructor(params: BaseCliParam<string, any>[]) {
@@ -74,7 +74,7 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 
 	/**
 	 * Parses command-line arguments into a typed parameters object.
-	 * 
+	 *
 	 * **Parsing Behavior**:
 	 * - Splits arguments by `=` (e.g., `--key=value`)
 	 * - Strips quotes from values and unescapes quotes
@@ -84,9 +84,9 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 	 * - Accumulates array values (removes duplicates)
 	 * - Applies initial values for missing params
 	 * - Warns when overriding non-array values
-	 * 
+	 *
 	 * **Input Format**: `--key=value` or `--key value` (space-separated not supported)
-	 * 
+	 *
 	 * @param inputParams - Command-line arguments (default: `process.argv.slice(2)`)
 	 * @returns Typed object with resolved parameter values
 	 * @throws Error if value not in options, or if required value missing
@@ -116,8 +116,8 @@ export class CLIParamsResolver<T extends BaseCliParam<string, any>[], Output ext
 			if (exists(cliParamToResolve.dependencies))
 				cliParamToResolve.dependencies?.forEach(dependency => {
 					// If dependency value is a function, call it with the current param's processed value
-					const dependencyValue = typeof dependency.value === 'function' 
-						? dependency.value(finalValue) 
+					const dependencyValue = typeof dependency.value === 'function'
+						? dependency.value(finalValue)
 						: dependency.value;
 					output[dependency.param.keyName as Key] = dependencyValue;
 				});

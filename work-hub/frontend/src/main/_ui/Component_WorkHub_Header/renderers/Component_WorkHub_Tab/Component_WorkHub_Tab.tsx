@@ -4,7 +4,7 @@ import {_className} from '@nu-art/thunder-core';
 import {LL_H_C} from '@nu-art/thunder-widgets';
 import {exists} from '@nu-art/ts-common';
 import {WorkHubTab} from '@nu-art/work-hub-shared';
-import { ModuleFE_WorkHub } from '../../../../_module/index.js';
+import {ModuleFE_WorkHub} from '../../../../_module/index.js';
 
 type Props = {
 	tab: WorkHubTab;
@@ -26,7 +26,7 @@ const onTabClick = (e: MouseEvent<HTMLDivElement>, tabId: string) => {
 
 const onTabRightClick = (e: MouseEvent<HTMLDivElement>, tab: WorkHubTab) => {
 	const workHubItem = ModuleFE_WorkHub.workHubItem.getByKey(tab.itemKey);
-	if(!workHubItem)
+	if (!workHubItem)
 		return;
 
 	workHubItem.openTabMenu(e, tab);

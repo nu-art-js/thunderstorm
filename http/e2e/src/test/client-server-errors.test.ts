@@ -21,12 +21,14 @@ describe('E2E client-server errors', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/err400'};
+
 		class Err400 {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				throw new ApiException(400, 'bad request');
 			}
 		}
+
 		new Err400();
 		await server.startServer();
 
@@ -46,12 +48,14 @@ describe('E2E client-server errors', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/ping'};
+
 		class Ping {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				return {ok: true};
 			}
 		}
+
 		new Ping();
 		await server.startServer();
 
@@ -71,12 +75,14 @@ describe('E2E client-server errors', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/err401'};
+
 		class Err401 {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				throw new ApiException(401, 'unauthorized');
 			}
 		}
+
 		new Err401();
 		await server.startServer();
 
@@ -95,12 +101,14 @@ describe('E2E client-server errors', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/err403'};
+
 		class Err403 {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				throw new ApiException(403, 'forbidden');
 			}
 		}
+
 		new Err403();
 		await server.startServer();
 
@@ -119,12 +127,14 @@ describe('E2E client-server errors', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/err500'};
+
 		class Err500 {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				throw new Error('server error');
 			}
 		}
+
 		new Err500();
 		await server.startServer();
 

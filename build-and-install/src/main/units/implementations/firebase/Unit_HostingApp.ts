@@ -151,6 +151,7 @@ export abstract class Unit_HostingApp<C extends Unit_HostingApp_Config = Unit_Ho
 	//######################### Compile / Launch (abstract) #########################
 
 	protected abstract compileImpl(): Promise<void>;
+
 	protected abstract runApp(): Promise<void>;
 
 	//######################### Shared helpers #########################

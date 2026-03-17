@@ -49,7 +49,11 @@ const generateDefaultKeyName = (namespace: string, accessLevelName: string) => {
 };
 
 export const CreateDefaultAccessLevels = (seed: string, accessLevels: PreDBAccessLevel[]) => {
-	return accessLevels.map(level => ({...level, _id: asBrandedId<DatabaseDef_PermissionAccessLevel['dbKey']>(md5(`${seed}${level.name}`)), uiLabel: level.name}));
+	return accessLevels.map(level => ({
+		...level,
+		_id: asBrandedId<DatabaseDef_PermissionAccessLevel['dbKey']>(md5(`${seed}${level.name}`)),
+		uiLabel: level.name
+	}));
 };
 
 export const generateKeyNamesByAccessLevel = <AccessLevel extends PreDBAccessLevel>(namespace: string, accessLevels: AccessLevel[]) => {

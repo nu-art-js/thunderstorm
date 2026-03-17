@@ -28,7 +28,8 @@ export const dispatch_onShortUrlsUpdated = Object.assign(
 	}
 );
 
-export class ModuleFE_ShortUrl_Class extends ModuleFE_BaseApi<DatabaseDef_ShortUrl> {
+export class ModuleFE_ShortUrl_Class
+	extends ModuleFE_BaseApi<DatabaseDef_ShortUrl> {
 
 	constructor() {
 		super({

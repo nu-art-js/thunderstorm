@@ -24,34 +24,34 @@ describe('ModuleBE_PermissionsAssert', () => {
 
 		it('passes when user has all domains with value >= required', runTestCase({
 			input: {
-				domainToLevelValueMap: { domain1: 100 },
-				userPermissions: { domain1: 100 }
+				domainToLevelValueMap: {domain1: 100},
+				userPermissions: {domain1: 100}
 			},
 			result: true
 		}));
 
 		it('passes when user level is higher than required', runTestCase({
 			input: {
-				domainToLevelValueMap: { domain1: 100 },
-				userPermissions: { domain1: 200 }
+				domainToLevelValueMap: {domain1: 100},
+				userPermissions: {domain1: 200}
 			},
 			result: true
 		}));
 
 		it('throws 403 when user missing domain', runTestCase({
 			input: {
-				domainToLevelValueMap: { domain1: 100 },
+				domainToLevelValueMap: {domain1: 100},
 				userPermissions: {}
 			},
-			error: { expected: /Missing Access For This Domain/ }
+			error: {expected: /Missing Access For This Domain/}
 		}));
 
 		it('throws 403 when user level lower than required', runTestCase({
 			input: {
-				domainToLevelValueMap: { domain1: 100 },
-				userPermissions: { domain1: 50 }
+				domainToLevelValueMap: {domain1: 100},
+				userPermissions: {domain1: 50}
 			},
-			error: { expected: /Action Forbidden/ }
+			error: {expected: /Action Forbidden/}
 		}));
 	});
 
@@ -71,42 +71,42 @@ describe('ModuleBE_PermissionsAssert', () => {
 
 		it('passes when def is provisioned and user has >= level', runTestCase({
 			input: {
-				def: { id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100 },
-				userPermissions: { d1: 100 }
+				def: {id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100},
+				userPermissions: {d1: 100}
 			},
 			result: true
 		}));
 
 		it('throws 503 when def not provisioned (no domainId)', runTestCase({
 			input: {
-				def: { id: 'x', scopeKey: 's', value: 'v' },
+				def: {id: 'x', scopeKey: 's', value: 'v'},
 				userPermissions: {}
 			},
-			error: { expected: /not yet provisioned/ }
+			error: {expected: /not yet provisioned/}
 		}));
 
 		it('throws 503 when def not provisioned (no levelValue)', runTestCase({
 			input: {
-				def: { id: 'x', scopeKey: 's', value: 'v', domainId: 'd1' },
-				userPermissions: { d1: 100 }
+				def: {id: 'x', scopeKey: 's', value: 'v', domainId: 'd1'},
+				userPermissions: {d1: 100}
 			},
-			error: { expected: /not yet provisioned/ }
+			error: {expected: /not yet provisioned/}
 		}));
 
 		it('throws 403 when user missing domain', runTestCase({
 			input: {
-				def: { id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100 },
+				def: {id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100},
 				userPermissions: {}
 			},
-			error: { expected: /Missing Access For This Domain/ }
+			error: {expected: /Missing Access For This Domain/}
 		}));
 
 		it('throws 403 when user level less than required', runTestCase({
 			input: {
-				def: { id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100 },
-				userPermissions: { d1: 50 }
+				def: {id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100},
+				userPermissions: {d1: 50}
 			},
-			error: { expected: /Action Forbidden/ }
+			error: {expected: /Action Forbidden/}
 		}));
 	});
 });

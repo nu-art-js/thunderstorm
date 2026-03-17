@@ -20,7 +20,7 @@ import {
 	Firebase_PubSubFunction,
 	FirebaseEventContext,
 	TopicMessage
-} from "@nu-art/firebase-backend-functions";
+} from '@nu-art/firebase-backend-functions';
 
 type MyType = any;
 
@@ -28,12 +28,12 @@ export class PubsubExample_Class
 	extends Firebase_PubSubFunction<MyType> {
 
 	constructor() {
-		super("example-topic");
+		super('example-topic');
 	}
 
 	onPublish = async (object: MyType | undefined, originalMessage: TopicMessage, context: FirebaseEventContext): Promise<any> => {
 		console.log(`Pubsub example`, object);
-	}
+	};
 }
 
 export const PubsubExample = new PubsubExample_Class();

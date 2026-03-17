@@ -16,7 +16,7 @@ export class ATS_Printable
 	static Screen: AppToolsScreen = {
 		key: 'ats-ts-printable',
 		name: 'Printable',
-		group: "ui",
+		group: 'ui',
 		renderer: this,
 	};
 

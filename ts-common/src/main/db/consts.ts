@@ -13,7 +13,7 @@ export const DefaultNewItemId = '##NEWITEM##';
 
 /**
  * Metadata definition for DBPointer type.
- * 
+ *
  * Describes the structure and validation rules for database pointer objects.
  */
 export const MetaData_DBPointer: MetadataObject<DBPointer> = {

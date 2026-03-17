@@ -45,7 +45,7 @@ const test = async (input: Input): Promise<Result> => {
 	const response = await configuredRequest.execute();
 	const status = configuredRequest.getStatus();
 	const contentType = configuredRequest.getResponseHeader('content-type');
-	
+
 	return {
 		status,
 		data: response,
@@ -161,7 +161,7 @@ describe('HttpRequest - Response Types', () => {
 		input: {
 			client,
 			apiDef: createTestApiDef<QueryApi<any, any>>(HttpMethod.GET, '/response-headers'),
-			setup: (req) => req.setUrlParams({ 'X-Custom-Header': 'custom-value' })
+			setup: (req) => req.setUrlParams({'X-Custom-Header': 'custom-value'})
 		},
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);

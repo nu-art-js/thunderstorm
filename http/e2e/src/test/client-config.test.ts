@@ -20,6 +20,7 @@ describe('E2E client config', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/echo-header'};
+
 		class EchoHeader {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
@@ -28,6 +29,7 @@ describe('E2E client config', () => {
 				return {value: headers['x-custom'] ?? ''};
 			}
 		}
+
 		new EchoHeader();
 		await server.startServer();
 
@@ -42,12 +44,14 @@ describe('E2E client config', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/ping'};
+
 		class Ping {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				return {ok: true};
 			}
 		}
+
 		new Ping();
 		await server.startServer();
 
@@ -62,18 +66,21 @@ describe('E2E client config', () => {
 		await server.init();
 		const getDef = {method: 'get' as const, path: '/echo-query'};
 		const postDef = {method: 'post' as const, path: '/echo-body'};
+
 		class EchoQuery {
 			@ApiHandler(() => getDef, {httpServer: () => server})
 			async get(params: Record<string, string>) {
 				return params ?? {};
 			}
 		}
+
 		class EchoBody {
 			@ApiHandler(() => postDef, {httpServer: () => server})
 			async post(body: { n: number }) {
 				return body;
 			}
 		}
+
 		new EchoQuery();
 		new EchoBody();
 		await server.startServer();
@@ -92,6 +99,7 @@ describe('E2E client config', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/slow', timeout: 50};
+
 		class Slow {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
@@ -99,6 +107,7 @@ describe('E2E client config', () => {
 				return {ok: true};
 			}
 		}
+
 		new Slow();
 		await server.startServer();
 		try {
@@ -121,16 +130,19 @@ describe('E2E client config', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/echo-caller'};
+
 		class EchoCaller {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(params: Record<string, string>) {
 				return params ?? {};
 			}
 		}
+
 		new EchoCaller();
 		await server.startServer();
 
 		HttpClient.setDefault({origin});
+
 		class ClientWithCaller {
 			// ApiCaller would be used here; for E2E we call via HttpRequest to avoid circular test setup
 			async callEcho(params: Record<string, string>) {
@@ -138,6 +150,7 @@ describe('E2E client config', () => {
 				return client.createRequest(apiDef).setUrlParams(params).execute();
 			}
 		}
+
 		const caller = new ClientWithCaller();
 		const res = await caller.callEcho({a: '1', b: '2'});
 		expect(res).to.deep.equal({a: '1', b: '2'});

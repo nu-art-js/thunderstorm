@@ -42,14 +42,14 @@ class Example_FieldEditorClick_Renderer
 		const props1 = this.props1();
 		const props2 = this.props2();
 		return <>
-			<Example_NewProps name={"Field Editor Click"} renderer={FieldEditorClick} data={[props1, props2]}/>
+			<Example_NewProps name={'Field Editor Click'} renderer={FieldEditorClick} data={[props1, props2]}/>
 		</>;
 	}
 
 	private props1(): FieldEditorClickProps {
 		return {
-			id: "prop1",
-			type: "text",
+			id: 'prop1',
+			type: 'text',
 			onAccept: (value: string) => {
 				this.setState(state => ({
 					instance: {...state.instance, ['prop1']: value}
@@ -62,8 +62,8 @@ class Example_FieldEditorClick_Renderer
 
 	private props2(): FieldEditorClickProps {
 		return {
-			id: "prop2",
-			type: "text",
+			id: 'prop2',
+			type: 'text',
 			onAccept: (value: string) => {
 				this.setState(state => ({
 					instance: {...state.instance, ['prop2']: value}
@@ -75,4 +75,4 @@ class Example_FieldEditorClick_Renderer
 	}
 }
 
-export const Example_FieldEditorClick = {renderer: Example_FieldEditorClick_Renderer, name: 'FieldEditorClick Example'}
+export const Example_FieldEditorClick = {renderer: Example_FieldEditorClick_Renderer, name: 'FieldEditorClick Example'};

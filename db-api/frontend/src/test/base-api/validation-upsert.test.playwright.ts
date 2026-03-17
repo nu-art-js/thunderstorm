@@ -20,7 +20,13 @@ test.describe('BaseApi - validation on upsert', () => {
 			const {TestBaseApiValidation, HttpClient} = (window as _Window).DbApiFrontend;
 			const client = new HttpClient();
 			client.setConfig({origin: 'http://127.0.0.1'});
-			(client as any).sendRequest = async () => ({data: {_id: '1', name: 'x', __created: 1, __updated: 1, _v: 'v1'}, status: 200, statusText: 'OK', headers: {}, config: {}});
+			(client as any).sendRequest = async () => ({
+				data: {_id: '1', name: 'x', __created: 1, __updated: 1, _v: 'v1'},
+				status: 200,
+				statusText: 'OK',
+				headers: {},
+				config: {}
+			});
 			const api = new TestBaseApiValidation(client);
 			await api.init();
 			let thrown = false;

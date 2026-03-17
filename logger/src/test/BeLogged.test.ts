@@ -26,29 +26,29 @@ const test_AddClient = async (input: Input_AddClient): Promise<Result_AddClient>
 		BeLogged.addClient(client);
 		clients.push(client);
 	}
-	
+
 	// Try to add the same client again (should not duplicate)
 	if (clients.length > 0) {
 		BeLogged.addClient(clients[0]);
 	}
-	
+
 	// Clean up
 	clients.forEach(client => BeLogged.removeClient(client));
-	
-	return { added: true };
+
+	return {added: true};
 };
 
 const runTestCase_AddClient = (testCase: TestCase_AddClient) => () => runSingleTestCase(test_AddClient, testCase);
 
 describe('BeLogged - Add Client', () => {
 	it('should add single client', runTestCase_AddClient({
-		input: { clientCount: 1 },
-		result: { added: true }
+		input: {clientCount: 1},
+		result: {added: true}
 	}));
 
 	it('should add multiple clients', runTestCase_AddClient({
-		input: { clientCount: 3 },
-		result: { added: true }
+		input: {clientCount: 3},
+		result: {added: true}
 	}));
 
 	it('should not add duplicate client', () => {
@@ -71,30 +71,30 @@ const test_RemoveClient = async (input: Input_RemoveClient): Promise<Result_Remo
 		BeLogged.addClient(client);
 		clients.push(client);
 	}
-	
+
 	for (let i = 0; i < input.removeClients; i++) {
 		if (clients[i]) {
 			BeLogged.removeClient(clients[i]);
 		}
 	}
-	
+
 	// Clean up any remaining
 	clients.forEach(client => BeLogged.removeClient(client));
-	
-	return { removed: true };
+
+	return {removed: true};
 };
 
 const runTestCase_RemoveClient = (testCase: TestCase_RemoveClient) => () => runSingleTestCase(test_RemoveClient, testCase);
 
 describe('BeLogged - Remove Client', () => {
 	it('should remove single client', runTestCase_RemoveClient({
-		input: { addClients: 1, removeClients: 1 },
-		result: { removed: true }
+		input: {addClients: 1, removeClients: 1},
+		result: {removed: true}
 	}));
 
 	it('should remove multiple clients', runTestCase_RemoveClient({
-		input: { addClients: 3, removeClients: 2 },
-		result: { removed: true }
+		input: {addClients: 3, removeClients: 2},
+		result: {removed: true}
 	}));
 
 	it('should handle removing non-existent client', () => {
@@ -109,18 +109,18 @@ describe('BeLogged - Log Distribution', () => {
 		const client1 = createTestBuffer('client1');
 		const client2 = createTestBuffer('client2');
 		const client3 = createTestBuffer('client3');
-		
+
 		BeLogged.addClient(client1);
 		BeLogged.addClient(client2);
 		BeLogged.addClient(client3);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('distributed message');
-		
+
 		expect(getBufferContent(client1)).to.include('distributed message');
 		expect(getBufferContent(client2)).to.include('distributed message');
 		expect(getBufferContent(client3)).to.include('distributed message');
-		
+
 		BeLogged.removeClient(client1);
 		BeLogged.removeClient(client2);
 		BeLogged.removeClient(client3);
@@ -129,22 +129,22 @@ describe('BeLogged - Log Distribution', () => {
 	it('should not log to removed clients', () => {
 		const client1 = createTestBuffer('client1');
 		const client2 = createTestBuffer('client2');
-		
+
 		BeLogged.addClient(client1);
 		BeLogged.addClient(client2);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('before removal');
-		
+
 		BeLogged.removeClient(client1);
-		
+
 		logger.logInfo('after removal');
-		
+
 		expect(getBufferContent(client1)).to.include('before removal');
 		expect(getBufferContent(client1)).not.to.include('after removal');
 		expect(getBufferContent(client2)).to.include('before removal');
 		expect(getBufferContent(client2)).to.include('after removal');
-		
+
 		BeLogged.removeClient(client2);
 	});
 });
@@ -153,24 +153,24 @@ describe('BeLogged - Client Filtering', () => {
 	it('should respect client filters', () => {
 		const client1 = createTestBuffer('client1');
 		const client2 = createTestBuffer('client2');
-		
+
 		// Client1 only logs errors
 		client1.setFilter((level) => level === LogLevel.Error);
 		// Client2 logs everything
 		client2.setFilter(() => true);
-		
+
 		BeLogged.addClient(client1);
 		BeLogged.addClient(client2);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('info message');
 		logger.logError('error message');
-		
+
 		expect(getBufferContent(client1)).not.to.include('info message');
 		expect(getBufferContent(client1)).to.include('error message');
 		expect(getBufferContent(client2)).to.include('info message');
 		expect(getBufferContent(client2)).to.include('error message');
-		
+
 		BeLogged.removeClient(client1);
 		BeLogged.removeClient(client2);
 	});
@@ -178,18 +178,18 @@ describe('BeLogged - Client Filtering', () => {
 	it('should filter by tag', () => {
 		const client = createTestBuffer('filtered');
 		client.setFilter((level, tag) => tag === 'AllowedTag');
-		
+
 		BeLogged.addClient(client);
-		
+
 		const logger1 = new Logger('AllowedTag');
 		const logger2 = new Logger('BlockedTag');
-		
+
 		logger1.logInfo('allowed message');
 		logger2.logInfo('blocked message');
-		
+
 		expect(getBufferContent(client)).to.include('allowed message');
 		expect(getBufferContent(client)).not.to.include('blocked message');
-		
+
 		BeLogged.removeClient(client);
 	});
 });

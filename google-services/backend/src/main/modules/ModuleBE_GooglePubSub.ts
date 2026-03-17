@@ -1,7 +1,7 @@
-import {Module} from "@nu-art/ts-common";
+import {Module} from '@nu-art/ts-common';
 import {PublishOptions, PubSub} from '@google-cloud/pubsub';
-import {ModuleBE_Auth} from "./ModuleBE_Auth.js";
-import {GoogleAuth} from "google-auth-library";
+import {ModuleBE_Auth} from './ModuleBE_Auth.js';
+import {GoogleAuth} from 'google-auth-library';
 
 class ModuleBE_GooglePubSub_Class
 	extends Module {

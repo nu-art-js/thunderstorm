@@ -14,7 +14,7 @@ import {QueryParam_SessionId} from '@nu-art/user-account-shared';
 import {OnAuthRequiredListener} from './no-auth-listener.js';
 import {HttpClient} from '@nu-art/http-client';
 import {HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
-import { ModuleFE_Routing } from '@nu-art/thunder-routing';
+import {ModuleFE_Routing} from '@nu-art/thunder-routing';
 
 export interface OnSessionUpdated {
 	__onSessionUpdated: VoidFunction;

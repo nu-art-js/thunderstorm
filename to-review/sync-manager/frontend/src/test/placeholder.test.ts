@@ -11,7 +11,8 @@ describe('sync-manager-frontend', () => {
 	it('class can be instantiated with config', () => {
 		const instance = new ModuleFE_SyncManager_Class({
 			getLocalSyncData: () => [],
-			onSmartSyncCompleted: () => {},
+			onSmartSyncCompleted: () => {
+			},
 		});
 		assert.exists(instance);
 		assert.typeOf(instance.smartSync, 'function');

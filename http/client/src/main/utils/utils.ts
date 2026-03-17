@@ -64,10 +64,10 @@ export function composeUrl(url: string, params: RouteParams = {}, hash = '') {
 
 /**
  * Encodes URL parameters into a StringMap with URI-encoded values.
- * 
+ *
  * Similar to composeQueryParams but returns an object instead of a query string.
  * Useful when you need the encoded parameters as a map rather than a string.
- * 
+ *
  * @param params - Route parameters object
  * @returns Object with URI-encoded parameter values
  */

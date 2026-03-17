@@ -25,8 +25,8 @@ export const DefaultStormTestConfig_Permissions: PermissionsTestConfig = {
 		...ModulePackBE_Permissions
 	],
 	config: {
-		ModuleBE_PermissionsAssert: { strictMode: true },
-		ModuleBE_AccountDB: { canRegister: true }
+		ModuleBE_PermissionsAssert: {strictMode: true},
+		ModuleBE_AccountDB: {canRegister: true}
 	},
 	before: async () => {
 		await new MemStorage().init(async () => {

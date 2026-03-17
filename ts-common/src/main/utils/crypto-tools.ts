@@ -27,10 +27,10 @@ const te = new TextEncoder();
 
 /**
  * Generates a random integer in the range [0, range).
- * 
+ *
  * **Note**: Uses `Math.random()` which is not cryptographically secure.
  * For security-sensitive use cases, use a cryptographically secure random number generator.
- * 
+ *
  * @param range - Upper bound (exclusive)
  * @returns Random integer from 0 to range-1
  */
@@ -40,9 +40,9 @@ export function randomNumber(range: number) {
 
 /**
  * Selects a random element from an array.
- * 
+ *
  * **Note**: Uses `Math.random()` which is not cryptographically secure.
- * 
+ *
  * @param items - Array to select from
  * @returns Random element from the array
  */
@@ -52,13 +52,13 @@ export function randomObject<T>(items: T[]): T {
 
 /**
  * Hashes a password with a salt using HMAC-SHA512.
- * 
+ *
  * Uses HMAC (Hash-based Message Authentication Code) with SHA-512 for password hashing.
  * The salt should be unique per password and stored alongside the hash.
- * 
+ *
  * **Security Note**: This is a basic hashing function. For production password storage,
  * consider using bcrypt, scrypt, or Argon2 which are specifically designed for password hashing.
- * 
+ *
  * @param salt - Salt value (string or Buffer)
  * @param password - Password to hash (string or Buffer)
  * @returns Hexadecimal hash string
@@ -81,10 +81,10 @@ export type JWT_BaseClaims = {
 
 /**
  * Derives an HMAC‑SHA secret key from a raw string.
- * 
+ *
  * Converts a string secret to a Uint8Array as required by jose library
  * for HMAC-based algorithms (HS256, HS384, HS512).
- * 
+ *
  * @param secret - Secret string
  * @returns Uint8Array key
  */
@@ -146,11 +146,11 @@ export const JwtTools = {
 
 	/**
 	 * Lightweight client‑side freshness check based on the `exp` claim.
-	 * 
+	 *
 	 * **Security Warning**: This does **not** verify the signature. It only checks
 	 * the expiration claim. An attacker could forge a token with a future expiration.
 	 * Always use `verifySignature()` or `decode()` with a secret for security-critical operations.
-	 * 
+	 *
 	 * @param token - JWT token string
 	 * @returns true if token is not expired, false otherwise (or if token is invalid)
 	 */
@@ -170,9 +170,9 @@ export const JwtTools = {
 	},
 	/**
 	 * Checks if a JWT token is expired.
-	 * 
+	 *
 	 * **Security Warning**: This does **not** verify the signature. See `isJwtActive()` for details.
-	 * 
+	 *
 	 * @param token - JWT token string
 	 * @returns true if token is expired or invalid, false if still active
 	 */

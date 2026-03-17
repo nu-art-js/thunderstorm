@@ -39,7 +39,7 @@ export class MockModuleBE_BaseDB_Class
 
 export function createMockDbModuleForApi(
 	mockCollection: FirestoreCollectionV3<any> = createMockFirestoreCollectionV3(),
-	dbKey: string = DEFAULT_DB_KEY
+	dbKey: string                              = DEFAULT_DB_KEY
 ): MockModuleBE_BaseDB_Class {
 	const dbDef: BaseDBDefBE = {
 		dbKey,

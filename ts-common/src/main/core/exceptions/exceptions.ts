@@ -68,16 +68,16 @@ export function isErrorOfType<T extends Error>(e: Error | unknown, _exceptionTyp
  */
 /**
  * Base class for all custom exceptions in the nu-art ecosystem.
- * 
+ *
  * Extends the native Error class and adds:
  * - Type identification via `exceptionType` (class name)
  * - Runtime type checking via `isInstanceOf()` method
  * - Markdown message generation for reporting
  * - Optional cause chain for error tracking
- * 
+ *
  * **Important**: The `stack` property is set from a new Error instance to ensure
  * proper stack trace capture at the point of exception creation.
- * 
+ *
  * @category Exceptions
  */
 export abstract class CustomException
@@ -86,7 +86,7 @@ export abstract class CustomException
 	/** The name of the exception class (e.g., "BadImplementationException") */
 	public exceptionType: string;
 
-	/** 
+	/**
 	 * Runtime type checker that compares exception types by class name.
 	 * Works with `isErrorOfType()` for type-safe error handling.
 	 */
@@ -100,7 +100,7 @@ export abstract class CustomException
 
 	/**
 	 * Creates a new CustomException instance.
-	 * 
+	 *
 	 * @param exceptionType - The exception class constructor (used to extract the class name)
 	 * @param message - Human-readable error message
 	 * @param cause - Optional underlying error that caused this exception
@@ -123,10 +123,10 @@ export abstract class CustomException
 
 /**
  * Generic exception class for general error conditions.
- * 
+ *
  * Use this for errors that don't fit into more specific exception categories.
  * For more specific cases, prefer the specialized exception classes.
- * 
+ *
  * @category Exceptions
  */
 export class Exception
@@ -139,10 +139,10 @@ export class Exception
 
 /**
  * Thrown when code is implemented incorrectly or violates design constraints.
- * 
+ *
  * Use this for programming errors, incorrect API usage, or violations of
  * architectural rules (e.g., module naming conventions, singleton violations).
- * 
+ *
  * @category Exceptions
  */
 export class BadImplementationException
@@ -155,10 +155,10 @@ export class BadImplementationException
 
 /**
  * Thrown when required functionality has not been implemented.
- * 
+ *
  * Use this when code expects an implementation that is missing (e.g., abstract
  * method not overridden, required module not registered).
- * 
+ *
  * @category Exceptions
  */
 export class ImplementationMissingException
@@ -171,10 +171,10 @@ export class ImplementationMissingException
 
 /**
  * Thrown when a condition that MUST never occur is detected.
- * 
+ *
  * Use this for critical invariants that, if violated, indicate a serious bug
  * or system corruption. This is stronger than `ThisShouldNotHappenException`.
- * 
+ *
  * @category Exceptions
  */
 export class MUSTNeverHappenException
@@ -187,11 +187,11 @@ export class MUSTNeverHappenException
 
 /**
  * Thrown when functionality is planned but not yet implemented.
- * 
+ *
  * Use this for placeholder code or features that are in development.
  * This is different from `ImplementationMissingException` which indicates
  * a missing required implementation.
- * 
+ *
  * @category Exceptions
  */
 export class NotImplementedYetException
@@ -204,11 +204,11 @@ export class NotImplementedYetException
 
 /**
  * Thrown when an unexpected but potentially recoverable condition occurs.
- * 
+ *
  * Use this for conditions that shouldn't happen under normal circumstances
  * but might occur due to edge cases or external factors. Less severe than
  * `MUSTNeverHappenException`.
- * 
+ *
  * @category Exceptions
  */
 export class ThisShouldNotHappenException
@@ -318,28 +318,28 @@ export class AssertionException
 
 /**
  * Exception class for API errors with HTTP response codes and structured error bodies.
- * 
+ *
  * Used for errors that need to be returned to API clients with:
  * - HTTP status code
  * - Structured error response body
  * - Debug message for server-side logging
- * 
+ *
  * The constructor accepts `causeOrMessage` as either a string (message) or Error (cause),
  * allowing flexible error construction. If both `causeOrMessage` (as Error) and `cause`
  * are provided, `causeOrMessage` takes precedence.
- * 
+ *
  * @template Err - Type of the error body (must extend ResponseError)
- * 
+ *
  * @category Exceptions
- * 
+ *
  * @example
  * ```typescript
  * // With message string
  * throw new ApiException(404, 'Resource not found');
- * 
+ *
  * // With cause Error
  * throw new ApiException(500, originalError);
- * 
+ *
  * // With both message and cause
  * throw new ApiException(400, 'Invalid input', validationError);
  * ```
@@ -354,7 +354,7 @@ export class ApiException<Err extends ResponseError = ApiError_GeneralErrorMessa
 
 	/**
 	 * Sets the error body and returns this instance for method chaining.
-	 * 
+	 *
 	 * @param errorBody - Error body object to include in the response
 	 * @returns This instance for chaining
 	 */
@@ -365,7 +365,7 @@ export class ApiException<Err extends ResponseError = ApiError_GeneralErrorMessa
 
 	/**
 	 * Creates a new ApiException.
-	 * 
+	 *
 	 * @param responseCode - HTTP status code (e.g., 404, 500)
 	 * @param causeOrMessage - Either a message string or an Error object (as cause)
 	 * @param cause - Optional additional cause Error (only used if causeOrMessage is a string)

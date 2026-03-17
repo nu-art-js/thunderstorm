@@ -23,7 +23,7 @@
 import {__stringify, BadImplementationException, ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {FirebaseSessionFE} from './auth/FirebaseSessionFE.js';
 import {SwFirebaseSessionFE} from './auth/SwFirebaseSessionFE.js';
-import { FirebaseConfig } from '@nu-art/firebase-shared';
+import {FirebaseConfig} from '@nu-art/firebase-shared';
 
 const localSessionId = 'local';
 

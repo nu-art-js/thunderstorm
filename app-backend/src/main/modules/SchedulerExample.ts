@@ -16,18 +16,18 @@
  * limitations under the License.
  */
 
-import {FirebaseScheduledFunction} from "@nu-art/firebase-backend-functions";
+import {FirebaseScheduledFunction} from '@nu-art/firebase-backend-functions';
 
 export class SchedulerExample_Class
 	extends FirebaseScheduledFunction {
 
 	constructor() {
-		super("schedulerExample");
+		super('schedulerExample');
 		this.setSchedule('every 2 minutes');
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		console.log("Do something");
+		console.log('Do something');
 	};
 }
 

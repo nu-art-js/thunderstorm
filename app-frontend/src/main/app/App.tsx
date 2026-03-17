@@ -43,16 +43,16 @@ export class App
 	};
 
 	render() {
-		console.log('IM HERE')
+		console.log('IM HERE');
 		return <div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
-				{/*<BugReport>*/}
-				{ModuleFE_RoutingV2.generateRoutes(Route_Root)}
-				{/*</BugReport>*/}
-				<VersionOnScreen/>
-				<TS_DialogOverlay/>
-				<TS_ToastOverlay/>
-				<TS_PopupMenuOverlay/>
-			</div>;
+			{/*<BugReport>*/}
+			{ModuleFE_RoutingV2.generateRoutes(Route_Root)}
+			{/*</BugReport>*/}
+			<VersionOnScreen/>
+			<TS_DialogOverlay/>
+			<TS_ToastOverlay/>
+			<TS_PopupMenuOverlay/>
+		</div>;
 	}
 }
 

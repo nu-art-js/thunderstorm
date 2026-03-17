@@ -25,14 +25,14 @@ const defaultIconSpec: IconSpec_TS_CheckboxV2 = {
  */
 export function TS_CheckboxV3(props: Props_TS_CheckboxV2) {
 	const {
-		checked,
-		onCheck,
-		label,
-		disabled = false,
-		className,
-		id: idProp,
-		customIcons
-	} = props;
+					checked,
+					onCheck,
+					label,
+					disabled = false,
+					className,
+					id: idProp,
+					customIcons
+				} = props;
 	const id = useId();
 	const resolvedId = idProp ?? id;
 	const spec = customIcons ?? defaultIconSpec;

@@ -30,11 +30,17 @@ import {OnFileStatusChanged} from '../types.js';
 /** Request handle for upload: used by createRequest and FileInfo.request. Replaces BaseHttpRequest in shared. */
 export interface IAssetUploadRequest<API> {
 	setUrl(url: string): this;
+
 	setHeader(key: string, value: string): this;
+
 	setTimeout(ms: number): this;
+
 	setBody(body: unknown): this;
+
 	setOnProgressListener(cb: (ev: UploadProgressEvent) => void): this;
+
 	executeSync(): Promise<unknown>;
+
 	execute(cb: (response: unknown) => void): void;
 }
 

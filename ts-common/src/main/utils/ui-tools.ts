@@ -1,21 +1,21 @@
 /**
  * Creates a debounced function with maximum timeout guarantee.
- * 
+ *
  * Delays function invocation until `timeout` ms after the last call, but guarantees
  * execution after `maxTimeout` ms even if calls continue. This combines debounce
  * behavior with throttle-like guarantees.
- * 
+ *
  * **Behavior**:
  * - Each call resets the `timeout` timer
  * - If `maxTimeout` elapses, function executes regardless of recent calls
  * - After execution, timers reset and the cycle repeats
- * 
+ *
  * @template Args - Function argument types
  * @param func - Function to debounce (can be async)
  * @param timeout - Delay in milliseconds (default: 500)
  * @param maxTimeout - Maximum wait time in milliseconds (default: 1000)
  * @returns Debounced function
- * 
+ *
  * @example
  * ```typescript
  * const debounced = debounce((msg) => console.log(msg), 500, 1000);
@@ -45,16 +45,16 @@ export const debounce = <Args extends any[]>(func: (...params: Args) => any | Pr
 
 /**
  * Creates a queued debounced function that prevents concurrent execution.
- * 
+ *
  * Similar to `debounce()` but ensures the function never runs concurrently.
  * If a call occurs while the function is executing, it queues another execution
  * after the current one completes.
- * 
+ *
  * **Behavior**:
  * - Standard debounce behavior (resets timer on each call)
  * - Maximum timeout guarantee (executes after maxTimeout)
  * - If function is running when timeout triggers, queues execution for after completion
- * 
+ *
  * @template Args - Function argument types
  * @param func - Async function to debounce
  * @param timeout - Delay in milliseconds (default: 500)
@@ -126,15 +126,15 @@ type Timers = {
 
 /**
  * Creates a debounced function that returns a Promise resolving to the function result.
- * 
+ *
  * Similar to `debounce()` but returns a Promise that resolves when the function executes.
  * Useful when you need to await the debounced function's result.
- * 
+ *
  * **Behavior**:
  * - Standard debounce (resets timer on each call)
  * - Maximum timeout guarantee (executes after fallbackTimeout)
  * - Returns Promise that resolves with function result or rejects with function error
- * 
+ *
  * @template Args - Function argument types
  * @template ReturnValue - Function return type
  * @param params - Debounce configuration

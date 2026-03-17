@@ -27,27 +27,27 @@ const commandoPool: (CommandoInteractive & BaseCommando & Commando_Basic)[] = []
 
 /**
  * Pool manager for Commando instances with lifecycle management.
- * 
+ *
  * Tracks all allocated Commando instances and provides a way to kill
  * all of them at once. Useful for cleanup in long-running processes
  * or test teardown.
- * 
+ *
  * **Behavior**:
  * - All allocated commandos are stored in an internal pool
  * - `allocateCommando()` always includes Commando_Basic plugin
  * - `killAll()` terminates all tracked commandos asynchronously
- * 
+ *
  * **Use Case**: Managing multiple interactive commandos that need
  * to be cleaned up together (e.g., test suites, long-running scripts).
  */
 export const CommandoPool = {
 	/**
 	 * Allocates a new Commando instance and adds it to the pool.
-	 * 
+	 *
 	 * Creates a CommandoInteractive instance with the provided plugins
 	 * plus Commando_Basic (always included). The instance is tracked
 	 * in the pool for later cleanup.
-	 * 
+	 *
 	 * @template T - Array of plugin constructor types
 	 * @param uid - Unique identifier for this commando instance
 	 * @param plugins - Plugin classes to merge with the commando
@@ -61,7 +61,7 @@ export const CommandoPool = {
 	},
 	/**
 	 * Kills all allocated commando instances.
-	 * 
+	 *
 	 * Calls `kill()` on all commandos in the pool asynchronously.
 	 * Useful for cleanup in test teardown or application shutdown.
 	 */

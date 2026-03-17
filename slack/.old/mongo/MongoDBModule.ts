@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
+import {Module} from '@nu-art/ts-common';
 
 import {
 	Collection,
 	Db,
 	MongoClient,
 	MongoClientOptions
-} from "mongodb";
+} from 'mongodb';
 
 type Config = {
 	host: string
@@ -38,7 +38,7 @@ export class MongoModule_Class
 	private dbs: { [key: string]: Db } = {};
 
 	constructor() {
-		super("mongo");
+		super('mongo');
 	}
 
 	private async connect() {
@@ -74,7 +74,7 @@ export class MongoModule_Class
 			return;
 
 		await this.mongo.close(true);
-		this.logInfo("Mongo connection terminated");
+		this.logInfo('Mongo connection terminated');
 	}
 }
 

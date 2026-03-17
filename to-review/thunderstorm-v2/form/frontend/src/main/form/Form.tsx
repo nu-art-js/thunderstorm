@@ -22,7 +22,7 @@ type Props<T extends TS_Object = object> = FormProps<T> & {
 	showErrors: boolean;
 };
 
-type State<T extends TS_Object = object> = {value: Partial<T>};
+type State<T extends TS_Object = object> = { value: Partial<T> };
 
 export class Component_Form<T extends TS_Object = TS_Object>
 	extends React.Component<Props<T>, State<T>> {

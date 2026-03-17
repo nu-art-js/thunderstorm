@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
-import {dispatchAll} from "@modules/ExampleModule";
-import {TestDispatch} from "@app/app-shared";
+import {Module} from '@nu-art/ts-common';
+import {dispatchAll} from '@modules/ExampleModule';
+import {TestDispatch} from '@app/app-shared';
 
 
 export class Test_Class
@@ -34,7 +34,7 @@ export class Test_Class
 
 	setModData = () => {
 		this.mod_data++;
-		dispatchAll()
+		dispatchAll();
 	};
 }
 

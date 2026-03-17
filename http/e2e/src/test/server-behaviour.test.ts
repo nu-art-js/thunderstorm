@@ -22,18 +22,21 @@ describe('E2E server behaviour', () => {
 		await server.init();
 		const redirectDef = {method: 'get' as const, path: '/redirect'};
 		const targetDef = {method: 'get' as const, path: '/target'};
+
 		class RedirectApi {
 			@ApiHandler(() => redirectDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				MemKey_HttpResponse.get().redirect(302, '/target');
 			}
 		}
+
 		class TargetApi {
 			@ApiHandler(() => targetDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				return {ok: true};
 			}
 		}
+
 		new RedirectApi();
 		new TargetApi();
 		await server.startServer();
@@ -55,6 +58,7 @@ describe('E2E server behaviour', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/res-header'};
+
 		class ResHeaderApi {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
@@ -62,6 +66,7 @@ describe('E2E server behaviour', () => {
 				return {ok: true};
 			}
 		}
+
 		new ResHeaderApi();
 		await server.startServer();
 
@@ -76,16 +81,21 @@ describe('E2E server behaviour', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/stream'};
+
 		class StreamApi {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
-				const s = new Readable({read() {}});
+				const s = new Readable({
+					read() {
+					}
+				});
 				s.push('chunk1');
 				s.push('chunk2');
 				s.push(null);
 				MemKey_HttpResponse.get().stream(200, s);
 			}
 		}
+
 		new StreamApi();
 		await server.startServer();
 
@@ -100,12 +110,14 @@ describe('E2E server behaviour', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/large'};
+
 		class LargeApi {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				return {items: Array.from({length: 500}, (_, i) => ({id: i, name: `item-${i}`}))};
 			}
 		}
+
 		new LargeApi();
 		await server.startServer();
 
@@ -121,12 +133,14 @@ describe('E2E server behaviour', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/empty-json'};
+
 		class EmptyJsonApi {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(_params: unknown) {
 				return {};
 			}
 		}
+
 		new EmptyJsonApi();
 		await server.startServer();
 

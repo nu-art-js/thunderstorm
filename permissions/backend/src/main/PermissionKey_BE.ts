@@ -31,7 +31,9 @@ export class PermissionKey_BE<K extends string> {
 		this.key = key;
 		this.resolver = initialDataResolver ?? PermissionKey_BE._resolver;
 		this.dataManipulator = PermissionKey_BE.buildData;
-		getAppConfigKeyHandler()?.registerKey(this as unknown as { key: string | number; resolver: (logger: Logger) => Promise<unknown>; dataManipulator: (data: unknown) => Promise<unknown> });
+		getAppConfigKeyHandler()?.registerKey(this as unknown as {
+			key: string | number; resolver: (logger: Logger) => Promise<unknown>; dataManipulator: (data: unknown) => Promise<unknown>
+		});
 	}
 
 	async get(): Promise<DB_PermissionKeyData> {

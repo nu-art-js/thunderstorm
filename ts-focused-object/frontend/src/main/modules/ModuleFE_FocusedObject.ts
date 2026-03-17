@@ -81,7 +81,7 @@ export class ModuleFE_FocusedObject_Class
 	async update(body: API_FocusedObject['update']['Body']): Promise<API_FocusedObject['update']['Response']> {
 		return undefined as unknown as Promise<API_FocusedObject['update']['Response']>;
 	}
-	
+
 	private initFirebaseListening = () => {
 		this.focusFirebaseListener = ModuleFE_FirebaseListener.createListener(getRelationalPath());
 		this.focusFirebaseListener.startListening(this.onRTDBChange);
@@ -98,7 +98,7 @@ export class ModuleFE_FocusedObject_Class
 		});
 	}
 
-	
+
 	private onRTDBChange = (snapshot: DataSnapshot) => {
 		this.focusDataMap = snapshot.val() ?? {} as FocusData_Map;
 		this.logDebug('Received firebase focus data', this.focusDataMap);
@@ -134,7 +134,7 @@ export class ModuleFE_FocusedObject_Class
 		this.currentlyFocused = {};
 	};
 
-	
+
 	private triggerKeepAlive = () => {
 		this.clearKeepAlive();
 		//No need to set keepalive timeout if currentlyFocused has no data
@@ -165,7 +165,7 @@ export class ModuleFE_FocusedObject_Class
 		delete this.unfocusTimeout;
 	};
 
-	
+
 	private updateRTDB = () => {
 		const focusedEntities = this.translateCurrentlyFocusedToFocusedEntities();
 		this.update({focusedEntities})
@@ -178,7 +178,7 @@ export class ModuleFE_FocusedObject_Class
 			});
 	};
 
-	
+
 	public focus = (entities: FocusedEntity[]) => {
 		entities.forEach(entity => {
 			if (!this.currentlyFocused[entity.dbKey])

@@ -15,9 +15,9 @@ export type EditableItemProps_TS_Checkbox<T extends TS_Object & { [k in K]?: any
 	Omit<Props_Checkbox, 'checked'>
 	& UIProps_EditableItem<T, K, boolean | undefined>
 	& {
-		checked?: boolean;
-		onCheck?: (value: boolean, e: React.MouseEvent<HTMLDivElement>) => void;
-	};
+	checked?: boolean;
+	onCheck?: (value: boolean, e: React.MouseEvent<HTMLDivElement>) => void;
+};
 
 export type TemplatingProps_TS_Checkbox = Omit<Props_TS_CheckboxV2, 'checked' | 'onCheck'>;
 

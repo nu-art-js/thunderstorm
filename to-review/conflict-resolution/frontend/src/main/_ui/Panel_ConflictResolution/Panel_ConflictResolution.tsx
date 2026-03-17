@@ -31,7 +31,7 @@ export class Panel_ConflictResolution
 		return state;
 	}
 
-	
+
 	private resolveEntityLabel = () => {
 		const module = RuntimeModules().filter(m => (m as ModuleFE_BaseDB<any>).config?.dbKey === this.props.dependencies.dbKey)[0] as ModuleFE_BaseDB<any>;
 		return module?.config.dbConfig.name ?? 'Entity';
@@ -56,7 +56,7 @@ export class Panel_ConflictResolution
 		this.setState({expanded: true});
 	};
 
-	
+
 	render() {
 		return <LL_V_L id={'panel__conflict-resolution'} className={this.state.expanded ? 'expanded' : undefined}>
 			{this.render_Header()}
@@ -91,6 +91,6 @@ export class Panel_ConflictResolution
 	private render_Body_Expanded = () => {
 		return <div className={'panel__conflict-resolution__tree-wrapper'}>
 			<ConflictResolutionTree dependencies={this.state.dependencies}/>
-		</div>
+		</div>;
 	};
 }

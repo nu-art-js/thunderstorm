@@ -7,7 +7,7 @@ import * as csv from 'fast-csv';
 
 /**
  * Output type for CSV where object values are stringified.
- * 
+ *
  * Converts object properties to strings while keeping primitives unchanged.
  */
 type Output<T extends TS_Object> = {
@@ -16,14 +16,14 @@ type Output<T extends TS_Object> = {
 
 /**
  * CSV module that handles JSON serialization for object fields.
- * 
+ *
  * Extends CSVModuleV3 to automatically stringify/parse JSON for specified fields.
  * This allows storing complex objects in CSV by converting them to JSON strings.
- * 
+ *
  * **Behavior**:
  * - On write: Stringifies specified object fields to JSON strings
  * - On read: Parses JSON strings back to objects for specified fields
- * 
+ *
  * @template I - Input item type (with object fields)
  * @template O - Output CSV row type (with object fields as strings)
  */
@@ -35,7 +35,7 @@ export class JSONCSVModule_Class<I extends TS_Object, O extends Output<I> = Outp
 
 	/**
 	 * Creates a JSONCSVModule instance.
-	 * 
+	 *
 	 * @param keysToStringify - Array of field names that contain objects to stringify
 	 */
 	constructor(keysToStringify: (keyof I)[]) {
@@ -45,7 +45,7 @@ export class JSONCSVModule_Class<I extends TS_Object, O extends Output<I> = Outp
 
 	/**
 	 * Converts input object to CSV output format (stringifies object fields).
-	 * 
+	 *
 	 * @param i - Input object
 	 * @returns Output object with object fields as JSON strings
 	 */
@@ -61,7 +61,7 @@ export class JSONCSVModule_Class<I extends TS_Object, O extends Output<I> = Outp
 
 	/**
 	 * Converts CSV row back to input format (parses JSON strings to objects).
-	 * 
+	 *
 	 * @param o - CSV row object (with JSON strings)
 	 * @returns Input object with JSON strings parsed back to objects
 	 */

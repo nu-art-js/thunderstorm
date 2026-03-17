@@ -25,6 +25,7 @@ describe('HttpServer integration - Supertest (in-process)', () => {
 				return {ok: true};
 			}
 		}
+
 		new PingApi();
 
 		const res = await request(server.getExpress())
@@ -44,6 +45,7 @@ describe('HttpServer integration - Supertest (in-process)', () => {
 				return {ok: true};
 			}
 		}
+
 		new PingOnly();
 
 		const res = await request(server.getExpress()).get('/nonexistent');
@@ -60,6 +62,7 @@ describe('HttpServer integration - Supertest (in-process)', () => {
 				return {ok: true};
 			}
 		}
+
 		new PingApi();
 
 		const res = await request(server.getExpress()).get('/ping');

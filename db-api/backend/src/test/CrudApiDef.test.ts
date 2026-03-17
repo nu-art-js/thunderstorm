@@ -18,7 +18,7 @@ const runTestCase = (tc: TestCase_CrudApiDef) => () => runSingleTestCase(test, t
 
 describe('CrudApiDef', () => {
 	it('default version v1: paths and methods', runTestCase({
-		input: { dbKey: 'tasks' },
+		input: {dbKey: 'tasks'},
 		result: async (actual) => {
 			expect(actual.query.method).to.equal(HttpMethod.POST);
 			expect(actual.query.path).to.equal('v1/tasks/query');
@@ -33,7 +33,7 @@ describe('CrudApiDef', () => {
 	}));
 
 	it('custom version v2: paths use version', runTestCase({
-		input: { dbKey: 'items', version: 'v2' },
+		input: {dbKey: 'items', version: 'v2'},
 		result: async (actual) => {
 			expect(actual.query.path).to.equal('v2/items/query');
 			expect(actual.queryUnique.path).to.equal('v2/items/query-unique');

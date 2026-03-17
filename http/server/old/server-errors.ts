@@ -18,7 +18,7 @@ export type AppPropsResolver = () => Promise<StringMap>;
 const defaultPropsResolver: AppPropsResolver = async () => ({} as StringMap);
 
 export function DefaultApiErrorMessageComposer(
-	headersToAttach: string[] = [],
+	headersToAttach: string[]       = [],
 	propsResolver: AppPropsResolver = defaultPropsResolver
 ): HttpErrorHandler {
 	return async (error: ApiException) => {
@@ -28,11 +28,15 @@ export function DefaultApiErrorMessageComposer(
 		const body = MemKey_HttpRequestBody.get();
 		const props = await propsResolver();
 		let message = `${error?.responseCode ?? '000'} - ${url}\n\n`;
-		_keys(props).forEach(key => { message += `  ${key}: ${props[key]}\n`; });
+		_keys(props).forEach(key => {
+			message += `  ${key}: ${props[key]}\n`;
+		});
 		if (error?.cause?.stack)
 			message += `${error.cause.stack}\n`;
 		if (headers && headersToAttach.length)
-			message += `Headers: ${__stringify(_keys(headers).reduce((acc, k) => (headersToAttach.includes(String(k)) ? { ...acc, [k]: headers[k] } : acc), {} as Record<string, unknown>))}\n`;
+			message += `Headers: ${__stringify(_keys(headers).reduce((acc, k) => (headersToAttach.includes(String(k))
+				? {...acc, [k]: headers[k]}
+				: acc), {} as Record<string, unknown>))}\n`;
 		if (query && Object.keys(query).length)
 			message += `Query: ${__stringify(query)}\n`;
 		if (body && typeof body === 'object' && Object.keys(body).length)

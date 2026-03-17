@@ -44,29 +44,29 @@ const BaseDef = {
 	generatedPropsValidator: Validator_GeneratedProps,
 	generatedProps: GeneratedProps,
 	versions: AssetVersions,
-	frontend: { group: AssetDBGroup, name: 'asset' },
-	backend: { name: 'assets' },
+	frontend: {group: AssetDBGroup, name: 'asset'},
+	backend: {name: 'assets'},
 };
 
 export const DBDef_Assets: Database<DatabaseDef_Assets> = {
 	...BaseDef,
 	dbKey: 'assets',
 	entityName: convertUpperCamelCase('Assets', '-').toLowerCase(),
-	backend: { name: 'assets' },
+	backend: {name: 'assets'},
 };
 
 export const DBDef_TempAssets: Database<DatabaseDef_AssetsTemp> = {
 	...BaseDef,
 	dbKey: 'assets-temp',
 	entityName: 'assets-temp',
-	frontend: { group: AssetDBGroup, name: 'temp' },
-	backend: { name: 'assets-temp' },
+	frontend: {group: AssetDBGroup, name: 'temp'},
+	backend: {name: 'assets-temp'},
 };
 
 export const DBDef_TempDeleted: Database<DatabaseDef_AssetsDeleted> = {
 	...BaseDef,
 	dbKey: 'assets-deleted',
 	entityName: 'assets-deleted',
-	frontend: { group: AssetDBGroup, name: 'deleted' },
-	backend: { name: 'assets-deleted' },
+	frontend: {group: AssetDBGroup, name: 'deleted'},
+	backend: {name: 'assets-deleted'},
 };

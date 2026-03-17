@@ -3,8 +3,8 @@ import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/Sto
 import {TimeProxy} from '@nu-art/ts-common/utils/time-proxy';
 import {expect} from 'chai';
 import {DefaultStormTestConfig_Session, ModuleDummy_AccountsUser, ModuleDummy_Claims} from '../utils/helpers.js';
-import { BaseSessionClaims, ModuleBE_SessionDB } from '../_main.js';
-import { DB_Session } from '@nu-art/user-account-shared';
+import {BaseSessionClaims, ModuleBE_SessionDB} from '../_main.js';
+import {DB_Session} from '@nu-art/user-account-shared';
 
 
 const initialClaims: BaseSessionClaims = {

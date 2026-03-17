@@ -12,23 +12,23 @@ import {
 
 /**
  * Filter function type for controlling which log messages are output.
- * 
+ *
  * Returns true if the message should be logged, false to suppress it.
  */
 export type LogFilter = (level: LogLevel, tag: string) => boolean;
 
 /**
  * Abstract base class for all log client implementations.
- * 
+ *
  * LogClient defines the interface for outputting log messages. Each implementation
  * handles the actual output mechanism (console, file, browser, etc.). The base class
  * provides:
  * - Prefix composition (timestamp, level, tag formatting)
  * - Filtering (optional per-client filtering)
  * - Lifecycle management (init/stop)
- * 
+ *
  * Concrete implementations must override `logMessage()` to perform the actual output.
- * 
+ *
  * @example
  * ```typescript
  * class CustomLogClient extends LogClient {
@@ -48,10 +48,10 @@ export abstract class LogClient {
 
 	/**
 	 * Abstract method that concrete implementations must override.
-	 * 
+	 *
 	 * Performs the actual output of the log message. The prefix is already composed,
 	 * and filtering has already been applied.
-	 * 
+	 *
 	 * @param level - Log level
 	 * @param bold - Whether to apply bold formatting
 	 * @param prefix - Composed prefix string (timestamp, level indicator, tag)
@@ -61,9 +61,9 @@ export abstract class LogClient {
 
 	/**
 	 * Sets a custom prefix composer for this log client.
-	 * 
+	 *
 	 * The composer function generates the prefix string that appears before each log message.
-	 * 
+	 *
 	 * @param logComposer - Function that generates the prefix from tag and level
 	 */
 	public setComposer(logComposer: LogPrefixComposer) {
@@ -72,7 +72,7 @@ export abstract class LogClient {
 
 	/**
 	 * Lifecycle hook called when the log client is added to BeLogged.
-	 * 
+	 *
 	 * Override to perform initialization (e.g., open files, set up connections).
 	 */
 	init() {
@@ -80,7 +80,7 @@ export abstract class LogClient {
 
 	/**
 	 * Lifecycle hook called when the log client is removed from BeLogged.
-	 * 
+	 *
 	 * Override to perform cleanup (e.g., close files, clean up resources).
 	 */
 	stop() {
@@ -88,10 +88,10 @@ export abstract class LogClient {
 
 	/**
 	 * Sets a filter function for this log client.
-	 * 
+	 *
 	 * The filter is applied before `logMessage()` is called. If the filter returns
 	 * false, the message is not output by this client.
-	 * 
+	 *
 	 * @param filter - Function that returns true to log, false to suppress
 	 * @returns This instance for method chaining
 	 */
@@ -102,10 +102,10 @@ export abstract class LogClient {
 
 	/**
 	 * Logs a message through this client.
-	 * 
+	 *
 	 * Applies the filter, composes the prefix, and calls `logMessage()` if the
 	 * message passes the filter.
-	 * 
+	 *
 	 * @param tag - Logger tag/identifier
 	 * @param level - Log level
 	 * @param bold - Whether to apply bold formatting
@@ -121,14 +121,14 @@ export abstract class LogClient {
 
 /**
  * Timezone offset in milliseconds, calculated once at module load.
- * 
+ *
  * Used to adjust timestamps to local timezone in log prefixes.
  */
 export const _logger_timezoneOffset: number = new Date().getTimezoneOffset() * 60000; //offset in milliseconds
 
 /**
  * Reusable Date object for timestamp formatting (mutated, not recreated for performance).
- * 
+ *
  * **Performance Note**: This Date object is mutated on every log call to avoid creating
  * new Date instances. This is safe in Node.js's single-threaded execution model but
  * would not be thread-safe in a multi-threaded environment.
@@ -137,7 +137,7 @@ export const _logger_finalDate: Date = new Date();
 
 /**
  * Array of log level prefix indicators.
- * 
+ *
  * Maps log levels to their string representations: '---' (unknown), '-V-' (Verbose),
  * '-D-' (Debug), '-I-' (Info), '-W-' (Warning), '-E-' (Error).
  */
@@ -145,7 +145,7 @@ export const _logger_logPrefixes = ['---', '-V-', '-D-', '-I-', '-W-', '-E-'] as
 
 /**
  * Gets the prefix indicator for a log level.
- * 
+ *
  * @param level - Log level
  * @returns Prefix string ('-V-' for Verbose, '-D-' for Debug, etc.)
  */
@@ -173,9 +173,9 @@ export function _logger_getPrefix(level: LogLevel): typeof _logger_logPrefixes[n
 
 /**
  * Default prefix composer that generates timestamps and level indicators.
- * 
+ *
  * Format: `  YYYY-MM-DD_HH:mm:ss.SSS -X- Tag:  `
- * 
+ *
  * **Note**: Mutates the shared `_logger_finalDate` object for performance.
  * Uses timezone offset to adjust timestamps.
  */

@@ -22,12 +22,12 @@ import {CliBlock} from '../types.js';
 
 /**
  * Programming constructs plugin for Commando.
- * 
+ *
  * Provides control flow structures for building shell scripts:
  * - Conditionals (`if`/`else`)
  * - Loops (`for`, `while`)
  * - Functions
- * 
+ *
  * These methods build shell script structures with proper indentation
  * and syntax, allowing programmatic construction of complex shell scripts.
  */
@@ -83,9 +83,9 @@ export class Commando_Programming
 
 	/**
 	 * Appends a 'continue' command for loop control.
-	 * 
+	 *
 	 * Skips to the next iteration of the innermost loop.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	continue(): this {
@@ -95,9 +95,9 @@ export class Commando_Programming
 
 	/**
 	 * Appends a 'break' command for loop control.
-	 * 
+	 *
 	 * Exits the innermost loop.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	break(): this {
@@ -107,9 +107,9 @@ export class Commando_Programming
 
 	/**
 	 * Appends a 'return' command for exiting a function or script.
-	 * 
+	 *
 	 * Exits the current function or script with optional exit code.
-	 * 
+	 *
 	 * @returns This instance for method chaining
 	 */
 	return(): this {

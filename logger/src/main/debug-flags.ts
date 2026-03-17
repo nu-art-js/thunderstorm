@@ -127,7 +127,7 @@ export class DebugFlag {
 	canLog(level: LogLevel) {
 		if (!this.isEnabled())
 			return false;
-		
+
 		return LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(this.minLogLevel);
 	}
 

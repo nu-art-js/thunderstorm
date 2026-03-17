@@ -11,16 +11,16 @@ const INNER_FILE_HEADER_REGEX = /^(\/\/)*?\/\/\/\/ file:/gm;
 
 /**
  * Creates test workspaces from fixture files.
- * 
+ *
  * Parses fixture files that contain multiple file definitions using the
  * `// file: path/to/file` syntax. Extracts each file and writes it to
  * the workspace directory, optionally applying template variable substitution.
- * 
+ *
  * **Fixture format**:
  * ```
  * // file: ./path/to/file1.ts
  * content of file1
- * 
+ *
  * // file: ./path/to/file2.ts
  * content of file2
  * ```
@@ -35,7 +35,7 @@ export class TestWorkspaceCreator
 
 	/**
 	 * Creates a TestWorkspaceCreator instance.
-	 * 
+	 *
 	 * @param pathToFixtures - Path to fixtures directory
 	 * @param pathToWorkspace - Path to workspace directory
 	 */
@@ -47,17 +47,17 @@ export class TestWorkspaceCreator
 
 	/**
 	 * Sets up a test workspace from fixture files.
-	 * 
+	 *
 	 * **Overloads**:
 	 * - `setupWorkspace(fixtures, relativePath?, clean?)` - No template params
 	 * - `setupWorkspace(fixtures, params, relativePath?, clean?)` - With template params
-	 * 
+	 *
 	 * **Behavior**:
 	 * - Optionally cleans the workspace before setup
 	 * - Reads fixture files and extracts multiple files from each
 	 * - Applies template variable substitution if params provided
 	 * - Writes files to workspace (optionally under a relative path)
-	 * 
+	 *
 	 * @param fixtures - Array of fixture file names (relative to pathToFixtures)
 	 * @param params - Optional template parameters or relative path (overloaded)
 	 * @param relativePath - Optional relative path in workspace or clean flag (overloaded)
@@ -96,7 +96,7 @@ export class TestWorkspaceCreator
 
 	/**
 	 * Clears (deletes) the workspace or a subdirectory.
-	 * 
+	 *
 	 * @param relativePathInWorkspace - Optional relative path within workspace to clear
 	 */
 	async clearWorkspace(relativePathInWorkspace = '') {
@@ -107,13 +107,13 @@ export class TestWorkspaceCreator
 
 	/**
 	 * Extracts files from a fixture file and writes them to the workspace.
-	 * 
+	 *
 	 * Parses the fixture file for `// file: path` headers and extracts each
 	 * file section. Applies template variable substitution and writes files.
-	 * 
+	 *
 	 * **File format**: Files are separated by `// file: ./path/to/file` headers.
 	 * Nested file headers (with extra slashes) are escaped to prevent conflicts.
-	 * 
+	 *
 	 * @param pathToFixture - Path to fixture file
 	 * @param relativePathInWorkspace - Optional relative path in workspace
 	 * @param params - Template parameters for variable substitution
@@ -154,10 +154,10 @@ export class TestWorkspaceCreator
 
 /**
  * Standalone function to set up a workspace from a single fixture file.
- * 
+ *
  * Synchronous version that reads a fixture file and extracts all files defined
  * within it. Does not support template variable substitution.
- * 
+ *
  * @param pathToWorkspaceFile - Path to fixture file
  * @param outputRootDir - Root directory for output files
  * @param clean - Whether to clean output directory first (default: true)

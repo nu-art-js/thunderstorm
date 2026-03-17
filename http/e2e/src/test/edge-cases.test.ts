@@ -20,12 +20,14 @@ describe('E2E edge cases', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/echo-query'};
+
 		class EchoQuery {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(params: Record<string, string>) {
 				return params ?? {};
 			}
 		}
+
 		new EchoQuery();
 		await server.startServer();
 		try {
@@ -44,12 +46,14 @@ describe('E2E edge cases', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'get' as const, path: '/echo-query'};
+
 		class EchoQuery {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async get(params: Record<string, string>) {
 				return params ?? {};
 			}
 		}
+
 		new EchoQuery();
 		await server.startServer();
 
@@ -64,12 +68,14 @@ describe('E2E edge cases', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'post' as const, path: '/echo-body'};
+
 		class EchoBody {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async post(body: { text: string }) {
 				return body;
 			}
 		}
+
 		new EchoBody();
 		await server.startServer();
 
@@ -101,12 +107,14 @@ describe('E2E edge cases', () => {
 		const server = createE2EServer();
 		await server.init();
 		const apiDef = {method: 'post' as const, path: '/echo-body'};
+
 		class EchoBody {
 			@ApiHandler(() => apiDef, {httpServer: () => server})
 			async post(body: { n: number }) {
 				return body;
 			}
 		}
+
 		new EchoBody();
 		await server.startServer();
 

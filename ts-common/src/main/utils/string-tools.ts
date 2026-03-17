@@ -18,9 +18,9 @@
 
 /**
  * Pads a number or string with leading zeros to reach the specified length.
- * 
+ *
  * Uses recursion to add zeros until the desired length is reached.
- * 
+ *
  * @param num - Number or string to pad
  * @param length - Target length
  * @returns Padded string with leading zeros
@@ -32,13 +32,13 @@ export function padNumber(num: number | string, length: number): string {
 
 /**
  * Converts a string to a hash code (integer).
- * 
+ *
  * Implements a simple hash function similar to Java's String.hashCode().
  * **Note**: This is not cryptographically secure and should not be used for
  * security purposes. It's suitable for hash tables and non-security use cases.
- * 
+ *
  * The hash is a 32-bit signed integer, so it can be negative.
- * 
+ *
  * @param stringToHash - String to hash
  * @returns 32-bit integer hash code
  */
@@ -57,10 +57,10 @@ export function stringToHashCode(stringToHash: string) {
 
 /**
  * Escapes special regex characters in a string.
- * 
+ *
  * Prepends a backslash to all regex metacharacters so the string can be
  * safely used in a RegExp constructor or pattern.
- * 
+ *
  * @param string - String to escape
  * @returns Escaped string safe for use in regex
  */
@@ -70,13 +70,13 @@ export function escape_RegExp(string: string) {
 
 /**
  * Truncates a string to a maximum byte length while preserving UTF-8 encoding.
- * 
+ *
  * Uses TextEncoder/TextDecoder to handle multi-byte characters correctly.
  * If the string exceeds maxBytes, it's truncated from the specified direction.
- * 
+ *
  * **Note**: The result may be slightly shorter than maxBytes if truncation
  * occurs in the middle of a multi-byte character sequence.
- * 
+ *
  * @param string - String to truncate
  * @param maxBytes - Maximum byte length
  * @param direction - Truncate from 'start' (keep beginning) or 'end' (keep end). Default: 'start'
@@ -127,14 +127,14 @@ export function getStringSize(str: string, unit: 'KB' | 'MB' | 'GB' = 'KB'): num
 
 /**
  * Formats a string by replacing placeholders with parameters.
- * 
+ *
  * Replaces `{0}`, `{1}`, `{2}`, etc. with corresponding parameters from the array.
  * Uses global regex replacement to handle multiple occurrences of the same placeholder.
- * 
+ *
  * @param input - String with placeholders like `{0}`, `{1}`, etc.
  * @param params - Array of replacement values
  * @returns Formatted string with placeholders replaced
- * 
+ *
  * @example
  * ```typescript
  * stringFormat('Hello {0}, you have {1} messages', ['Alice', '5'])
@@ -149,10 +149,10 @@ export function stringFormat(input: string, params: string[] = []) {
 
 /**
  * Replaces a substring at a specific index position.
- * 
+ *
  * Replaces the substring starting at `index` with `replacement`. The length
  * of the replacement determines how many characters are replaced.
- * 
+ *
  * @param origin - Original string
  * @param index - Starting index for replacement
  * @param replacement - Replacement string
@@ -166,10 +166,10 @@ export function replaceStringAt(origin: string, index: number, replacement: stri
 
 /**
  * Capitalizes the first letter of each word in a string.
- * 
+ *
  * Words are separated by spaces. The first letter of each word (and the
  * first character of the string) is converted to uppercase.
- * 
+ *
  * @param value - String to capitalize
  * @returns String with first letter of each word capitalized
  */
@@ -184,7 +184,7 @@ export function capitalizeAllFirstLetters(value: string) {
 
 /**
  * Capitalizes only the first letter of a string and lowercases the rest.
- * 
+ *
  * @param value - String to capitalize
  * @returns String with first letter uppercase and rest lowercase
  */
@@ -194,16 +194,16 @@ export function capitalizeFirstLetter(value: string) {
 
 /**
  * Creates the Levenshtein distance matrix for two strings.
- * 
+ *
  * The Levenshtein distance (edit distance) is the minimum number of single-character
  * edits (insertions, deletions, or substitutions) required to change one string into another.
- * 
+ *
  * This function builds the dynamic programming matrix used to calculate the distance.
  * The matrix[i][j] represents the edit distance between the first i characters of str1
  * and the first j characters of str2.
- * 
+ *
  * **Performance**: O(n*m) time and space complexity where n and m are string lengths.
- * 
+ *
  * @param str1 - First string
  * @param str2 - Second string
  * @returns 2D matrix with edit distances
@@ -233,13 +233,13 @@ export function createLevenshteinDistanceMatrix(str1: string, str2: string): num
 
 /**
  * Calculates the Levenshtein distance (edit distance) between two strings.
- * 
+ *
  * Returns the minimum number of single-character edits needed to transform
  * str1 into str2. Uses dynamic programming for efficient calculation.
- * 
+ *
  * **Performance**: O(n*m) time complexity. For very long strings, consider
  * using an optimized algorithm or approximate matching.
- * 
+ *
  * @param str1 - First string
  * @param str2 - Second string
  * @returns Edit distance (0 = identical strings, higher = more different)
@@ -258,14 +258,14 @@ export function levenshteinDistance(str1: string, str2: string): number {
 
 /**
  * Normalizes a string by cleaning up various formatting issues.
- * 
+ *
  * Performs the following transformations:
  * - Replaces en-dash (–) with hyphen (-)
  * - Removes newlines
  * - Collapses multiple whitespace into single space
  * - Replaces curly apostrophe (') with straight apostrophe (')
  * - Trims leading/trailing whitespace
- * 
+ *
  * @param string - String to normalize
  * @returns Normalized string
  */
@@ -275,13 +275,13 @@ export function normalizeString(string: string): string {
 
 /**
  * Converts UpperCamelCase or camelCase to a delimited string.
- * 
+ *
  * Inserts a delimiter between lowercase/number characters and uppercase characters.
- * 
+ *
  * @param upperCamelCase - CamelCase string to convert
  * @param delimiter - Delimiter to insert (default: space)
  * @returns String with delimiters inserted
- * 
+ *
  * @example
  * ```typescript
  * convertUpperCamelCase('MyClassName') // 'My Class Name'
