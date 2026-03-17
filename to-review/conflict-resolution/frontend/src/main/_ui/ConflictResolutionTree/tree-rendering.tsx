@@ -41,7 +41,9 @@ const renderTreeNode_ConflictingItem = (props: ConflictResolutionTree_RendererPr
 	return <Label
 		className={'conflict-resolution-tree__conflicting-item'}
 		tooltip={content}
-		onClick={() => { void navigator.clipboard.writeText(String(props.item.itemId)); }}
+		onClick={() => {
+			void navigator.clipboard.writeText(String(props.item.itemId));
+		}}
 	>{content}</Label>;
 };
 

@@ -51,7 +51,9 @@ function createFetchRequest<API extends GeneralApi>(apiDef: ApiDef<API>, baseUrl
 			return text ? JSON.parse(text) : undefined;
 		},
 		execute(cb: (response: unknown) => void) {
-			this.executeSync().then(cb).catch((e: unknown) => { throw e; });
+			this.executeSync().then(cb).catch((e: unknown) => {
+				throw e;
+			});
 		}
 	};
 }
@@ -123,7 +125,9 @@ export class ModuleBE_AssetUploader_Class
 				return res.json().catch(() => undefined);
 			},
 			execute(cb: (response: unknown) => void) {
-				this.executeSync().then(cb).catch((e: unknown) => { throw e; });
+				this.executeSync().then(cb).catch((e: unknown) => {
+					throw e;
+				});
 			}
 		};
 	}

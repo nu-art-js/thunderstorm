@@ -1,13 +1,13 @@
-import {randomBytes} from "crypto";
-import {generateHex, StaticLogger, TypedMap} from "../../main/index.js";
+import {randomBytes} from 'crypto';
+import {generateHex, StaticLogger, TypedMap} from '../../main/index.js';
 
 
 function createArray() {
-	const arr: string[] = []
+	const arr: string[] = [];
 	for (let i = 0; i < 1000000; i++) {
-		arr[i] = generateHex(100)
+		arr[i] = generateHex(100);
 	}
-	return arr
+	return arr;
 }
 
 function testObjectPerformance(array: string[]) {
@@ -21,7 +21,7 @@ function testObjectPerformance(array: string[]) {
 
 
 	for (let i = 0; i < 1000000; i++) {
-		const found = obj[array[i]]
+		const found = obj[array[i]];
 	}
 
 
@@ -45,7 +45,7 @@ function testMapPerformance(array: string[]) {
 
 
 	for (let i = 0; i < 1000000; i++) {
-		const found = map.get(array[i])
+		const found = map.get(array[i]);
 	}
 
 	for (let i = 0; i < 1000000; i++) {
@@ -56,13 +56,13 @@ function testMapPerformance(array: string[]) {
 	StaticLogger.logInfo(`Time to complete hashMap: ${endTime - startTime} milliseconds`);
 }
 
-StaticLogger.logInfo("starting")
-const arr: string[] = createArray()
+StaticLogger.logInfo('starting');
+const arr: string[] = createArray();
 testObjectPerformance(arr);
 testMapPerformance(arr);
 testObjectPerformance(arr);
 testMapPerformance(arr);
-StaticLogger.logInfo("---------------")
+StaticLogger.logInfo('---------------');
 
 testMapPerformance(arr);
 testMapPerformance(arr);
@@ -84,5 +84,5 @@ testObjectPerformance(arr);
 testObjectPerformance(arr);
 testObjectPerformance(arr);
 testObjectPerformance(arr);
-StaticLogger.logInfo("end")
+StaticLogger.logInfo('end');
 

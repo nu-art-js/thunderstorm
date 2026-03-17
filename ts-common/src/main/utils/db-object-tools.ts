@@ -12,11 +12,15 @@ export const DB_OBJECT_PROP__CREATED = '__created';
 /** Database object property name for update timestamp */
 export const DB_OBJECT_PROP__UPDATED = '__updated';
 /** Array of all database object metadata keys */
-export const KeysOfDB_Object: (keyof DB_Object)[] = [DB_OBJECT_PROP__ID, DB_OBJECT_PROP__VERSION, DB_OBJECT_PROP__CREATED, DB_OBJECT_PROP__UPDATED, '__metadata1'];
+export const KeysOfDB_Object: (keyof DB_Object)[] = [DB_OBJECT_PROP__ID,
+																										 DB_OBJECT_PROP__VERSION,
+																										 DB_OBJECT_PROP__CREATED,
+																										 DB_OBJECT_PROP__UPDATED,
+																										 '__metadata1'];
 
 /**
  * Extracts the ID from a database object.
- * 
+ *
  * @param i - Database object
  * @returns Object ID
  */
@@ -26,10 +30,10 @@ export function dbObjectToId(i: DB_Object) {
 
 /**
  * Removes database metadata keys from an object (returns a clone).
- * 
+ *
  * Creates a deep clone of the object and removes all DB metadata keys
  * (_id, _v, __created, __updated, __metadata1).
- * 
+ *
  * @template T - Database object type
  * @param instance - Database object
  * @returns New object without DB metadata keys
@@ -40,10 +44,10 @@ export function removeDBObjectKeys<T extends DB_Object>(instance: T): OmitDBObje
 
 /**
  * Removes database metadata keys from an object (mutates the original).
- * 
+ *
  * **Note**: Mutates the original object. Use `removeDBObjectKeys()` if you
  * need a clone instead.
- * 
+ *
  * @template T - Database object type
  * @param instance - Database object (will be mutated)
  * @returns Same object without DB metadata keys
@@ -54,10 +58,10 @@ export function removeDBObjectKeysFromInstance<T extends DB_Object>(instance: T)
 
 /**
  * Removes specified keys from an object.
- * 
+ *
  * By default, creates a deep clone before removing keys. If `keepInstance=true`,
  * mutates the original object instead.
- * 
+ *
  * @template T - Object type
  * @template Ks - Keys to remove
  * @param instance - Object to process
@@ -73,10 +77,10 @@ export function deleteKeysObject<T extends TS_Object, Ks extends keyof T>(instan
 
 /**
  * Keeps only database metadata keys from an object.
- * 
+ *
  * Returns a new object containing only the DB metadata keys
  * (_id, _v, __created, __updated, __metadata1).
- * 
+ *
  * @template T - Database object type
  * @param instance - Database object
  * @returns New object with only DB metadata keys
@@ -87,9 +91,9 @@ export function keepDBObjectKeys<T extends DB_Object>(instance: T): DB_Object {
 
 /**
  * Creates a new object containing only the specified keys.
- * 
+ *
  * Only includes keys that exist and are not null/undefined in the source object.
- * 
+ *
  * @template T - Object type
  * @template Ks - Keys to keep
  * @param instance - Source object

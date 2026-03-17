@@ -25,7 +25,11 @@ import {StorageEvent} from 'firebase-functions/storage';
 
 /** Local types (replaces thunderstorm-backend service-accounts). */
 export type ServiceAccountCredentials = { serviceAccount?: { accountId?: string } };
-export interface RequiresServiceAccount { __requiresServiceAccount(): DefaultDef_ServiceAccount }
+
+export interface RequiresServiceAccount {
+	__requiresServiceAccount(): DefaultDef_ServiceAccount;
+}
+
 export type DefaultDef_ServiceAccount = { moduleName: string; email: string; groupIds: string[] };
 
 export interface OnAssetUploaded {

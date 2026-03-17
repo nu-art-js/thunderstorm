@@ -16,17 +16,17 @@ export type Props_Button = ButtonProps & {
 
 export function Button(props: Props_Button): React.ReactElement {
 	const {
-		loader,
-		variant = 'tertiary',
-		innerRef,
-		onDisabledClick,
-		actionInProgress: controlledInProgress,
-		onClick,
-		disabled: disabledProp,
-		className,
-		children,
-		...rest
-	} = props;
+					loader,
+					variant = 'tertiary',
+					innerRef,
+					onDisabledClick,
+					actionInProgress: controlledInProgress,
+					onClick,
+					disabled: disabledProp,
+					className,
+					children,
+					...rest
+				} = props;
 	const [internalInProgress, setInternalInProgress] = React.useState(false);
 	const actionInProgress = exists(controlledInProgress) ? controlledInProgress : internalInProgress;
 	const disabled = !!disabledProp;

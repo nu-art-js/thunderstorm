@@ -23,14 +23,14 @@ import {ValidationException} from '../validator/validator-core.js';
 
 /**
  * String replacement utility with parameter substitution and loop support.
- * 
+ *
  * Provides template string processing with:
  * - Parameter substitution: `${param}` or `${${param}}` (nested)
  * - For-each loops: `{{foreach item in array}}...{{/foreach}}`
  * - Fallback replacer support (chain of replacers)
  * - Strict mode (throws on missing params) or non-strict mode
  * - Recursive replacement (processes replacements in replacement results)
- * 
+ *
  * **Parameter syntax**: `${param}` or `${${nested}}` for nested parameter access
  * **Loop syntax**: `{{foreach item in array}}...content...{{/foreach}}`
  */
@@ -86,10 +86,10 @@ export class Replacer
 
 	/**
 	 * Replaces parameters and loops in content recursively.
-	 * 
+	 *
 	 * Processes loops first, then parameters. If any replacements were made,
 	 * recursively processes again to handle nested replacements.
-	 * 
+	 *
 	 * @param _content - Template content to process
 	 * @param runtime - Optional runtime parameters (merged with input)
 	 * @returns Processed content with all replacements applied

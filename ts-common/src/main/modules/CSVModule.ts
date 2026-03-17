@@ -49,7 +49,7 @@ const DefaultConfig = {
 };
 /**
  * Options for reading CSV files.
- * 
+ *
  * @template T - Type of the resulting objects
  */
 export type ReadOptions<T extends Partial<StringMap> = {}> = {
@@ -79,7 +79,7 @@ export type WritePropsMap<T extends TS_Object = TS_Object> = {
 
 /**
  * Module for reading and writing CSV files.
- * 
+ *
  * Provides functionality to:
  * - Read CSV files and convert to objects
  * - Write objects to CSV files

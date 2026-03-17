@@ -113,18 +113,20 @@ test.describe('IDBManager - Browser Integration', () => {
 	});
 
 	test('should handle multiple stores in same database group', async ({page}) => {
-		type StoreItem = {_id: string; name: string; value: number};
+		type StoreItem = { _id: string; name: string; value: number };
 		const result = await page.evaluate(async () => {
 			const {getDatabase} = window.IDBFrontend;
 			const db = getDatabase('shared-db');
 			const store1 = db.createStore<StoreItem>({
 				name: 'store-1',
 				uniqueKeys: ['_id'],
-			}, async () => {});
+			}, async () => {
+			});
 			const store2 = db.createStore<StoreItem>({
 				name: 'store-2',
 				uniqueKeys: ['_id'],
-			}, async () => {});
+			}, async () => {
+			});
 			await db.open();
 
 			const inserted1 = await store1.insert({_id: '1', name: 'Store 1 Item', value: 100});

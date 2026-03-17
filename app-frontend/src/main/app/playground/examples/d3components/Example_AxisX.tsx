@@ -30,7 +30,9 @@ export class AxisLeft
 					x2={this.props.width}
 				/>}
 				<text style={{fontSize: 12}} x={-20} dy=".32em"
-							y={this.props.placeInMiddle ? this.props.yScale(d) + ((this.props.yScale(this.props.yScale.ticks(this.props.ticks)[i + 1]) - this.props.yScale(d)) / 2) : this.props.yScale(d)}>
+							y={this.props.placeInMiddle
+								? this.props.yScale(d) + ((this.props.yScale(this.props.yScale.ticks(this.props.ticks)[i + 1]) - this.props.yScale(d)) / 2)
+								: this.props.yScale(d)}>
 					{this.props.tickValues ? this.tspans(this.props.tickValues[d]) : this.tspans(d.toString())}
 					{/*{this.props.tickValues ? this.props.tickValues[d] : d}*/}
 				</text>

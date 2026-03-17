@@ -38,19 +38,19 @@ export type {
  */
 export function TS_InputV3(props: Props_TS_InputV2) {
 	const {
-		onAccept,
-		allowAccept,
-		showErrorTooltip,
-		error,
-		trim,
-		forceAcceptKeys = ['ctrlKey', 'metaKey'],
-		focus,
-		saveEvent,
-		value: controlledValue,
-		onChange,
-		onBlur,
-		...rest
-	} = props;
+					onAccept,
+					allowAccept,
+					showErrorTooltip,
+					error,
+					trim,
+					forceAcceptKeys = ['ctrlKey', 'metaKey'],
+					focus,
+					saveEvent,
+					value: controlledValue,
+					onChange,
+					onBlur,
+					...rest
+				} = props;
 
 	const [value, setValue] = useState(controlledValue ?? '');
 	const [focused, setFocused] = useState(false);

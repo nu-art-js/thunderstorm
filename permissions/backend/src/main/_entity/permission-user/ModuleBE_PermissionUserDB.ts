@@ -1,6 +1,15 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {MemKey_ServerApi} from '@nu-art/http-server';
-import {DB_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions, User_Group, toPermissionGroupId, type PerformProjectSetup, type ServiceAccountDef} from '@nu-art/permissions-shared';
+import {
+	DB_PermissionUser,
+	DBDef_PermissionUser,
+	DatabaseDef_PermissionUser,
+	Request_AssignPermissions,
+	User_Group,
+	toPermissionGroupId,
+	type PerformProjectSetup,
+	type ServiceAccountDef
+} from '@nu-art/permissions-shared';
 import {getGlobalEnvConfigRef, getServiceAccountsProvider} from '../../permissions-wire.js';
 import {
 	_keys,

@@ -2,12 +2,12 @@ import {BaiParams} from '../../core/params.js';
 
 /**
  * Phase definition for build system execution.
- * 
+ *
  * **Phase Structure**:
  * - Phases are grouped into phase groups (arrays of phases)
  * - Phases in a group can run in parallel
  * - Phase groups run sequentially
- * 
+ *
  * **Key Properties**:
  * - `key`: Unique identifier for the phase
  * - `method`: Method name that units must implement (e.g., 'compile', 'test')
@@ -15,12 +15,12 @@ import {BaiParams} from '../../core/params.js';
  * - `unitCategory`: Which units participate ('active' or 'project')
  * - `dependencyPhase`: Phases that must complete before this phase runs
  * - `terminateAfterPhase`: If true, stops execution after this phase completes
- * 
+ *
  * **Unit Participation**:
  * - Units must implement the phase method to participate
  * - Units must be in the correct category (active/project)
  * - Phase filter must pass (if present)
- * 
+ *
  * **Examples**: See `phase/consts.ts` for all phase definitions.
  */
 export type Phase<PhaseMethod extends string> = {
@@ -37,5 +37,5 @@ export type Phase<PhaseMethod extends string> = {
 	/** Phases that must complete before this phase runs */
 	dependencyPhase?: Phase<string>[];
 	/** Unit category: 'project' = all project units (active + dependencies), 'active' = only active units (default) */
-	unitCategory?: "project" | "active";
+	unitCategory?: 'project' | 'active';
 }

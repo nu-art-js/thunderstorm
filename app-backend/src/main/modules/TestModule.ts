@@ -18,7 +18,7 @@
 import {
 	generateHex,
 	Module
-} from "@nu-art/ts-common";
+} from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 
 type Type = {
@@ -40,7 +40,7 @@ export class TestModule_Class
 	private startTest() {
 		this.runAsync('Running test', async () => {
 			const fs = ModuleBE_Firebase.createAdminSession().getFirestore();
-			const col = fs.getCollection<Type>(testCollection, ["id"]);
+			const col = fs.getCollection<Type>(testCollection, ['id']);
 			await fs.deleteCollection(testCollection);
 
 			await col.insertAll([1, 2, 3, 4, 5].map(id => ({
@@ -49,8 +49,8 @@ export class TestModule_Class
 				other: `${generateHex(8)}_${id}`,
 			})));
 
-			await col.patch({id: 3, name: 'memeAlanBen'})
-		})
+			await col.patch({id: 3, name: 'memeAlanBen'});
+		});
 	}
 }
 

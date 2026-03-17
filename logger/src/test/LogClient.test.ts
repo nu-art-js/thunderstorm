@@ -9,13 +9,14 @@ import {BeLogged, LogClient, LogLevel, LogPrefixComposer} from '../main/index.js
 import {expect} from 'chai';
 
 // Create a testable LogClient implementation
-class TestLogClient extends LogClient {
+class TestLogClient
+	extends LogClient {
 	public loggedMessages: Array<{ level: LogLevel; bold: boolean; prefix: string; toLog: any[] }> = [];
 	public initialized = false;
 	public stopped = false;
 
 	protected logMessage(level: LogLevel, bold: boolean, prefix: string, toLog: any[]): void {
-		this.loggedMessages.push({ level, bold, prefix, toLog });
+		this.loggedMessages.push({level, bold, prefix, toLog});
 	}
 
 	init() {
@@ -38,9 +39,9 @@ const test_PrefixComposer = async (input: Input_PrefixComposer): Promise<Result_
 	const client = new TestLogClient();
 	client.setComposer(input.composer);
 	client.log(input.tag, input.level, false, ['test']);
-	
+
 	const prefix = client.loggedMessages[0].prefix;
-	return { prefix };
+	return {prefix};
 };
 
 const runTestCase_PrefixComposer = (testCase: TestCase_PrefixComposer) => () => runSingleTestCase(test_PrefixComposer, testCase);
@@ -52,7 +53,7 @@ describe('LogClient - Prefix Composer', () => {
 			tag: 'TestTag',
 			level: LogLevel.Info
 		},
-		result: { prefix: '[Info] TestTag: ' }
+		result: {prefix: '[Info] TestTag: '}
 	}));
 
 	it('should allow custom prefix composer', runTestCase_PrefixComposer({
@@ -61,7 +62,7 @@ describe('LogClient - Prefix Composer', () => {
 			tag: 'CustomTag',
 			level: LogLevel.Debug
 		},
-		result: { prefix: 'CUSTOM: CustomTag [Debug] ' }
+		result: {prefix: 'CUSTOM: CustomTag [Debug] '}
 	}));
 });
 
@@ -74,9 +75,9 @@ const test_ClientFilter = async (input: Input_ClientFilter): Promise<Result_Clie
 	const client = new TestLogClient();
 	client.setFilter(input.filter);
 	client.log(input.tag, input.level, false, ['test']);
-	
+
 	const logged = client.loggedMessages.length > 0;
-	return { logged };
+	return {logged};
 };
 
 const runTestCase_ClientFilter = (testCase: TestCase_ClientFilter) => () => runSingleTestCase(test_ClientFilter, testCase);
@@ -88,7 +89,7 @@ describe('LogClient - Filtering', () => {
 			level: LogLevel.Info,
 			tag: 'TestTag'
 		},
-		result: { logged: true }
+		result: {logged: true}
 	}));
 
 	it('should not log when filter returns false', runTestCase_ClientFilter({
@@ -97,7 +98,7 @@ describe('LogClient - Filtering', () => {
 			level: LogLevel.Info,
 			tag: 'TestTag'
 		},
-		result: { logged: false }
+		result: {logged: false}
 	}));
 
 	it('should filter by level', runTestCase_ClientFilter({
@@ -106,7 +107,7 @@ describe('LogClient - Filtering', () => {
 			level: LogLevel.Info,
 			tag: 'TestTag'
 		},
-		result: { logged: false }
+		result: {logged: false}
 	}));
 
 	it('should filter by tag', runTestCase_ClientFilter({
@@ -115,7 +116,7 @@ describe('LogClient - Filtering', () => {
 			level: LogLevel.Info,
 			tag: 'BlockedTag'
 		},
-		result: { logged: false }
+		result: {logged: false}
 	}));
 });
 
@@ -142,7 +143,7 @@ describe('LogClient - Log Method', () => {
 		const client = new TestLogClient();
 		client.setComposer((tag, level) => `[${level}] ${tag}: `);
 		client.log('TestTag', LogLevel.Warning, true, ['message1', 'message2']);
-		
+
 		expect(client.loggedMessages).to.have.length(1);
 		expect(client.loggedMessages[0].level).to.equal(LogLevel.Warning);
 		expect(client.loggedMessages[0].bold).to.be.true;
@@ -154,7 +155,7 @@ describe('LogClient - Log Method', () => {
 		const client = new TestLogClient();
 		client.setFilter(() => false);
 		client.log('TestTag', LogLevel.Info, false, ['message']);
-		
+
 		expect(client.loggedMessages).to.have.length(0);
 	});
 });

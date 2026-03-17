@@ -21,9 +21,16 @@ test.describe('BaseDB - dispatcher', () => {
 			const moduleEvents: { event: string; item: any }[] = [];
 			const uiEvents: { event: string; item: any }[] = [];
 			const spy = {
-				dispatchModule(event: string, item: any) { moduleEvents.push({event, item}); },
-				dispatchUI(event: string, item: any) { uiEvents.push({event, item}); },
-				dispatchAll(event: string, item: any) { moduleEvents.push({event, item}); uiEvents.push({event, item}); }
+				dispatchModule(event: string, item: any) {
+					moduleEvents.push({event, item});
+				},
+				dispatchUI(event: string, item: any) {
+					uiEvents.push({event, item});
+				},
+				dispatchAll(event: string, item: any) {
+					moduleEvents.push({event, item});
+					uiEvents.push({event, item});
+				}
 			};
 			const client = new HttpClient();
 			client.setConfig({origin: 'http://127.0.0.1'});
@@ -44,9 +51,14 @@ test.describe('BaseDB - dispatcher', () => {
 			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
 			const moduleEvents: { event: string }[] = [];
 			const spy = {
-				dispatchModule(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchUI(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchAll(_event: string, _item: any) {}
+				dispatchModule(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchUI(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchAll(_event: string, _item: any) {
+				}
 			};
 			const deleted = {_id: '1', name: 'a', __created: 1, __updated: 1, _v: 'v1'};
 			const client = new HttpClient();
@@ -68,9 +80,14 @@ test.describe('BaseDB - dispatcher', () => {
 			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
 			const moduleEvents: { event: string }[] = [];
 			const spy = {
-				dispatchModule(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchUI(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchAll(_event: string, _item: any) {}
+				dispatchModule(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchUI(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchAll(_event: string, _item: any) {
+				}
 			};
 			const response = [{_id: '1', name: 'a', __created: 1, __updated: 1, _v: 'v1'}];
 			const client = new HttpClient();
@@ -90,9 +107,14 @@ test.describe('BaseDB - dispatcher', () => {
 			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
 			const moduleEvents: { event: string }[] = [];
 			const spy = {
-				dispatchModule(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchUI(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchAll(_event: string, _item: any) {}
+				dispatchModule(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchUI(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchAll(_event: string, _item: any) {
+				}
 			};
 			const created = {_id: '1', name: 'new', __created: 1, __updated: 1, _v: 'v1'};
 			const client = new HttpClient();
@@ -112,9 +134,14 @@ test.describe('BaseDB - dispatcher', () => {
 			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
 			const moduleEvents: { event: string }[] = [];
 			const spy = {
-				dispatchModule(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchUI(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchAll(_event: string, _item: any) {}
+				dispatchModule(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchUI(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchAll(_event: string, _item: any) {
+				}
 			};
 			const updated = {_id: '1', name: 'updated', __created: 1, __updated: 2, _v: 'v1'};
 			const client = new HttpClient();
@@ -134,9 +161,14 @@ test.describe('BaseDB - dispatcher', () => {
 			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
 			const moduleEvents: { event: string }[] = [];
 			const spy = {
-				dispatchModule(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchUI(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchAll(_event: string, _item: any) {}
+				dispatchModule(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchUI(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchAll(_event: string, _item: any) {
+				}
 			};
 			const patched = {_id: '1', name: 'patched', __created: 1, __updated: 2, _v: 'v1'};
 			const client = new HttpClient();
@@ -156,9 +188,14 @@ test.describe('BaseDB - dispatcher', () => {
 			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
 			const moduleEvents: { event: string }[] = [];
 			const spy = {
-				dispatchModule(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchUI(event: string, _item: any) { moduleEvents.push({event}); },
-				dispatchAll(_event: string, _item: any) {}
+				dispatchModule(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchUI(event: string, _item: any) {
+					moduleEvents.push({event});
+				},
+				dispatchAll(_event: string, _item: any) {
+				}
 			};
 			const item = {_id: '1', name: 'unique', __created: 1, __updated: 1, _v: 'v1'};
 			const client = new HttpClient();

@@ -51,7 +51,7 @@ class ModuleFE_AppState_Class
 		this.pathRegistry[manager.route] = manager;
 	};
 
-	
+
 	public setPageState = (manager: PageStateManager<any>, state: TS_Object) => {
 		this.appState[manager.route] = state;
 		this.sessionStorage.set(this.appState);
@@ -60,7 +60,7 @@ class ModuleFE_AppState_Class
 
 	public getPageState = (manager: PageStateManager<any>) => this.appState[manager.route] ?? {};
 
-	
+
 	private deriveStateFromURLParam = () => {
 		const encoded = ModuleFE_Routing.getQueryParameter(URLParam_AppState);
 		if (!exists(encoded))
@@ -103,7 +103,7 @@ export class PageStateManager<PageState extends TS_Object>
 		ModuleFE_AppState.registerManager(this);
 	}
 
-	
+
 	public value = {
 		get: <K extends keyof PageState>(stateKey: K): PageState[K] => {
 			const pageState = this.state.get();
@@ -128,7 +128,7 @@ export class PageStateManager<PageState extends TS_Object>
 		}
 	};
 
-	
+
 	public getDispatchListenerCB = (cb: VoidFunction) => {
 		return (manager: PageStateManager<any>) => {
 			if (manager === this)

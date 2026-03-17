@@ -6,7 +6,7 @@
 
 /**
  * Log levels ordered from most verbose (lowest priority) to least verbose (highest priority).
- * 
+ *
  * Used for filtering and controlling log output granularity.
  */
 export enum LogLevel {
@@ -19,7 +19,7 @@ export enum LogLevel {
 
 /**
  * Array of log levels in ordinal order (least to most severe).
- * 
+ *
  * Used for comparisons and determining if a log level meets a threshold.
  */
 export const LogLevelOrdinal = [
@@ -32,9 +32,9 @@ export const LogLevelOrdinal = [
 
 /**
  * Function type that composes the prefix string for log messages.
- * 
+ *
  * The prefix typically includes timestamp, log level indicator, and tag.
- * 
+ *
  * @param tag - Logger tag/identifier
  * @param level - Log level
  * @returns Formatted prefix string

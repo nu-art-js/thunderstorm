@@ -35,10 +35,12 @@ const runTestCase = (testCase: TestCase_FirestoreV3_Set) => async () => {
 			const collection = firestore.getCollection<DatabaseDef_Type>(dbDef);
 			const sortedRemaining = sortArray((await collection.query.custom(_EmptyQuery)), item => item._uniqueId);
 			const expectedResult = await Promise.resolve((testCase.result as SetTestResult)());
-			const allResults = sortArray([...expectedResult.created ?? [], ...expectedResult.updated ?? [], ...expectedResult.notUpdated ?? []], item => item._uniqueId);
-			
+			const allResults = sortArray([...expectedResult.created ?? [],
+																		...expectedResult.updated ?? [],
+																		...expectedResult.notUpdated ?? []], item => item._uniqueId);
+
 			expect(compare(sortedRemaining.map(removeDBObjectKeys), (allResults as DB_Object[]).map(removeDBObjectKeys))).to.be.true;
-			
+
 			//assert timestamps correctly updated
 			const sortedInserted = sortArray(await collection.query.custom(_EmptyQuery), item => item._uniqueId);
 			expectedResult.updated?.forEach((_preDBUpdated: PreDB<DB_Type>) => {

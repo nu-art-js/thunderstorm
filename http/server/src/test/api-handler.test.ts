@@ -34,12 +34,13 @@ describe('ApiHandler initializer - route registration', () => {
 				return {};
 			}
 		}
+
 		new C();
 		expect(added).to.have.length(2);
 	});
 
 	it('registers query API for GET and body API for POST', () => {
-		const added: {api: unknown}[] = [];
+		const added: { api: unknown }[] = [];
 		const mockServer = {
 			addRoute(api: unknown) {
 				added.push({api});
@@ -57,6 +58,7 @@ describe('ApiHandler initializer - route registration', () => {
 				return {};
 			}
 		}
+
 		new C();
 		expect(added).to.have.length(2);
 		const queryApi = added.find(
@@ -70,7 +72,7 @@ describe('ApiHandler initializer - route registration', () => {
 	});
 
 	it('resolves apiDef from resolver with instance', async () => {
-		const added: {api: unknown}[] = [];
+		const added: { api: unknown }[] = [];
 		const mockServer = {
 			addRoute(api: unknown) {
 				added.push({api});
@@ -78,6 +80,7 @@ describe('ApiHandler initializer - route registration', () => {
 		};
 
 		const dynamicPath = '/dynamic-path';
+
 		class C {
 			getApiDef() {
 				return {method: 'get' as const, path: dynamicPath};
@@ -88,6 +91,7 @@ describe('ApiHandler initializer - route registration', () => {
 				return [];
 			}
 		}
+
 		new C();
 		await new Promise<void>(r => setImmediate(r));
 		expect(added).to.have.length(1);

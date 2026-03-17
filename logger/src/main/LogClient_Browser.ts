@@ -11,7 +11,7 @@ import {getLogStyle, LogStyle} from './get-log-style.js';
 
 /**
  * Log client implementation for browser console output with CSS styling.
- * 
+ *
  * Uses browser console's `%c` formatting to apply CSS styles to log messages.
  * Different log levels are styled with different colors for visual distinction.
  */
@@ -45,10 +45,10 @@ class LogClient_Browser_class
 
 	/**
 	 * Gets the CSS style string for a log level.
-	 * 
+	 *
 	 * Returns a CSS style string compatible with browser console's `%c` formatting
 	 * for the given log level. Combines base styles with level-specific colors.
-	 * 
+	 *
 	 * @param level - Log level
 	 * @param bold - Whether to apply bold formatting (not currently used)
 	 * @returns CSS style string for console.log formatting
@@ -72,11 +72,11 @@ class LogClient_Browser_class
 
 	/**
 	 * Outputs a log message to the browser console with CSS styling.
-	 * 
+	 *
 	 * Uses `%c` formatting to apply styles. Strings are concatenated with the prefix,
 	 * while objects are passed as separate arguments to preserve browser console's
 	 * object inspection capabilities.
-	 * 
+	 *
 	 * @param level - Log level
 	 * @param bold - Whether to apply bold formatting (not currently used in browser)
 	 * @param prefix - Composed prefix string

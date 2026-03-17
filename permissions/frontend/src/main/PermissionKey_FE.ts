@@ -38,7 +38,7 @@ export class PermissionKey_FE<K extends string = string> {
 	}
 }
 
-export type ModuleFE_PermissionMapper<Mapper> = {[key in keyof Mapper]: PermissionKey_FE};
+export type ModuleFE_PermissionMapper<Mapper> = { [key in keyof Mapper]: PermissionKey_FE };
 /**
  * Permission mapper type for ModuleFEs
  */

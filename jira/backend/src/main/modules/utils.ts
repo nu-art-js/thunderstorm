@@ -17,40 +17,40 @@
  * limitations under the License.
  */
 
-import {_keys} from "@nu-art/ts-common";
+import {_keys} from '@nu-art/ts-common';
 import {
 	JiraQuery,
 	QueryItemWithOperator
-} from "./JiraModule.js";
+} from './JiraModule.js';
 
 export type JiraIssueText = string | { href: string, text: string };
 
 function createText(...texts: JiraIssueText[]) {
 	return {
-		type: "doc",
+		type: 'doc',
 		version: 1,
 		content: [
 			{
-				type: "paragraph",
+				type: 'paragraph',
 				content: texts.map(text => {
-					if (typeof text === "string")
+					if (typeof text === 'string')
 						return {
-							type: "text",
+							type: 'text',
 							text
 						};
 
-					return  {
-						type: "text",
+					return {
+						type: 'text',
 						text: text.text,
 						marks: [
 							{
-								type: "link",
+								type: 'link',
 								attrs: {
 									href: text.href
 								}
 							}
 						]
-					}
+					};
 
 				})
 			}
@@ -63,21 +63,21 @@ function buildJQL(query: JiraQuery) {
 		let queryValue;
 		let operator = '=';
 		if (Array.isArray(query[key])) {
-			queryValue = (query[key] as string[]).map(value => `"${value}"`).join(",");
+			queryValue = (query[key] as string[]).map(value => `"${value}"`).join(',');
 			queryValue = `(${queryValue})`;
 		} else if (typeof query[key] === 'object') {
 			const queryItemWithOperator = query[key] as QueryItemWithOperator;
-			queryValue = `"${queryItemWithOperator.value}"`
+			queryValue = `"${queryItemWithOperator.value}"`;
 			operator = queryItemWithOperator.operator;
 		} else
 			queryValue = `"${query[key]}"`;
 
 		return `${key}${operator}${queryValue}`;
 	});
-	return params.join(" and ");
+	return params.join(' and ');
 }
 
 export const JiraUtils = {
 	createText,
 	buildJQL,
-}
+};

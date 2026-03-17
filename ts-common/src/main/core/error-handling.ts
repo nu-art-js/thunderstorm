@@ -55,14 +55,14 @@ export type ErrorMessage = {
 
 /**
  * Interface for modules that handle application notifications.
- * 
+ *
  * Modules implementing this interface will receive notifications about
  * application-level events (errors, warnings, etc.) via the dispatcher.
  */
 export interface OnApplicationNotification {
 	/**
 	 * Processes an application notification.
-	 * 
+	 *
 	 * @param errorLevel - Severity level of the notification
 	 * @param module - The module that generated the notification
 	 * @param message - Error message structure
@@ -72,7 +72,7 @@ export interface OnApplicationNotification {
 
 /**
  * Dispatcher for application notifications.
- * 
+ *
  * Use this to notify all modules that implement `OnApplicationNotification`
  * about application-level events.
  */
@@ -80,14 +80,14 @@ export const dispatch_onApplicationNotification = new Dispatcher<OnApplicationNo
 
 /**
  * Interface for modules that handle application exceptions.
- * 
+ *
  * Modules implementing this interface will receive exceptions that occur
  * at the application level via the dispatcher.
  */
 export interface OnApplicationException {
 	/**
 	 * Processes an application exception.
-	 * 
+	 *
 	 * @param e - The exception that occurred
 	 * @param module - The module where the exception occurred
 	 */
@@ -96,7 +96,7 @@ export interface OnApplicationException {
 
 /**
  * Dispatcher for application exceptions.
- * 
+ *
  * Use this to notify all modules that implement `OnApplicationException`
  * about exceptions that occur at the application level.
  */

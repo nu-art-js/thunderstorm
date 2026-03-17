@@ -25,8 +25,8 @@ import {createTestApiDef, createTestClient} from '../helpers.js';
 import {expect} from 'chai';
 
 // Test API types
-type GetApi = QueryApi<{url: string; args: any; headers: any}, {test?: string}>;
-type PostApi = BodyApi<{json: any; data?: string; url: string}, {test?: string}>;
+type GetApi = QueryApi<{ url: string; args: any; headers: any }, { test?: string }>;
+type PostApi = BodyApi<{ json: any; data?: string; url: string }, { test?: string }>;
 
 type Input = {
 	client: HttpClient;
@@ -49,11 +49,11 @@ const test = async (input: Input): Promise<Result> => {
 	const response = await configuredRequest.execute();
 	const status = configuredRequest.getStatus();
 	const contentType = configuredRequest.getResponseHeader('content-type');
-	
+
 	return {
 		status,
 		data: response,
-		headers: contentType ? { 'content-type': String(contentType) } : undefined
+		headers: contentType ? {'content-type': String(contentType)} : undefined
 	};
 };
 
@@ -66,7 +66,7 @@ describe('HttpRequest - Basic Methods', () => {
 		input: {
 			client,
 			apiDef: createTestApiDef<GetApi>(HttpMethod.GET, '/get'),
-			setup: (req) => req.setUrlParams({ test: 'value' })
+			setup: (req) => req.setUrlParams({test: 'value'})
 		},
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);
@@ -90,7 +90,7 @@ describe('HttpRequest - Basic Methods', () => {
 		input: {
 			client,
 			apiDef: createTestApiDef<PostApi>(HttpMethod.POST, '/post'),
-			setup: (req) => req.setBodyAsJson({ test: 'value' })
+			setup: (req) => req.setBodyAsJson({test: 'value'})
 		},
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);
@@ -115,7 +115,7 @@ describe('HttpRequest - Basic Methods', () => {
 		input: {
 			client,
 			apiDef: createTestApiDef<PostApi>(HttpMethod.PUT, '/put'),
-			setup: (req) => req.setBodyAsJson({ data: 'put-data' })
+			setup: (req) => req.setBodyAsJson({data: 'put-data'})
 		},
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);
@@ -127,7 +127,7 @@ describe('HttpRequest - Basic Methods', () => {
 		input: {
 			client,
 			apiDef: createTestApiDef<PostApi>(HttpMethod.PATCH, '/patch'),
-			setup: (req) => req.setBodyAsJson({ data: 'patch-data' })
+			setup: (req) => req.setBodyAsJson({data: 'patch-data'})
 		},
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);
@@ -186,8 +186,8 @@ describe('HttpRequest - Basic Methods', () => {
 			client,
 			apiDef: createTestApiDef<PostApi>(HttpMethod.POST, '/post'),
 			setup: (req) => req
-				.setUrlParams({ query: 'param' })
-				.setBodyAsJson({ body: 'data' })
+				.setUrlParams({query: 'param'})
+				.setBodyAsJson({body: 'data'})
 		},
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);

@@ -20,7 +20,8 @@ export const dispatch_onTopicsUpdated = Object.assign(
 	}
 );
 
-export class ModuleFE_topic_Class extends ModuleFE_BaseApi<DatabaseDef_Topic> {
+export class ModuleFE_topic_Class
+	extends ModuleFE_BaseApi<DatabaseDef_Topic> {
 
 	constructor() {
 		super({

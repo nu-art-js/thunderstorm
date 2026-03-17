@@ -131,7 +131,7 @@ class SP_Example_Tree_SingleType_Renderer
 	}
 }
 
-export const SP_Example_Tree_SingleType = {renderer: SP_Example_Tree_SingleType_Renderer, name: 'SP_Example_Tree_SingleType'}
+export const SP_Example_Tree_SingleType = {renderer: SP_Example_Tree_SingleType_Renderer, name: 'SP_Example_Tree_SingleType'};
 
 
 

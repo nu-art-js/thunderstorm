@@ -34,9 +34,9 @@ export function resolveEditableError<T>(errorHandler: ResolveEditableErrorParams
 	return undefined;
 }
 
-type ItemTypeOf<P> = P extends {editable: EditableItem<infer T>} ? T : never;
+type ItemTypeOf<P> = P extends { editable: EditableItem<infer T> } ? T : never;
 
-export function withEditableErrorProps<P extends {editable: EditableItem<any>; prop: PropertyKey}>(
+export function withEditableErrorProps<P extends { editable: EditableItem<any>; prop: PropertyKey }>(
 	props: P
 ): P & ResolveEditableErrorParams<ItemTypeOf<P>> {
 	return {

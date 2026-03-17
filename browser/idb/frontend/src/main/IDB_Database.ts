@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import { AsyncVoidFunction, currentTimeMillis, generateHex } from '@nu-art/ts-common';
-import { Logger, LogLevel } from '@nu-art/logger';
-import { IDB_Store, StoreConfig } from './IDB_Store.js';
+import {AsyncVoidFunction, currentTimeMillis, generateHex} from '@nu-art/ts-common';
+import {Logger, LogLevel} from '@nu-art/logger';
+import {IDB_Store, StoreConfig} from './IDB_Store.js';
 
 
 /** LocalStorage key prefix for database store registry */

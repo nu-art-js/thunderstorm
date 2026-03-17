@@ -17,24 +17,24 @@ type TestCase_StaticLog = TestModel<Input_StaticLog, Result_StaticLog>;
 const test_StaticLog = async (input: Input_StaticLog): Promise<Result_StaticLog> => {
 	const buffer = createTestBuffer();
 	BeLogged.addClient(buffer);
-	
+
 	// Set min level to Verbose to allow all levels
 	StaticLogger.setMinLevel(LogLevel.Verbose);
-	
+
 	StaticLogger.log(input.tag, input.level, false, [input.message]);
-	
+
 	const content = getBufferContent(buffer);
 	const logged = content.includes(input.message);
-	
+
 	BeLogged.removeClient(buffer);
-	return { logged, content };
+	return {logged, content};
 };
 
 const runTestCase_StaticLog = (testCase: TestCase_StaticLog) => () => runSingleTestCase(test_StaticLog, testCase);
 
 describe('StaticLogger - Log Levels', () => {
 	it('should log verbose message', runTestCase_StaticLog({
-		input: { tag: 'StaticTest', level: LogLevel.Verbose, message: 'static verbose' },
+		input: {tag: 'StaticTest', level: LogLevel.Verbose, message: 'static verbose'},
 		result: async (result) => {
 			expect(result.logged).to.be.true;
 			expect(result.content).to.include('static verbose');
@@ -42,7 +42,7 @@ describe('StaticLogger - Log Levels', () => {
 	}));
 
 	it('should log debug message', runTestCase_StaticLog({
-		input: { tag: 'StaticTest', level: LogLevel.Debug, message: 'static debug' },
+		input: {tag: 'StaticTest', level: LogLevel.Debug, message: 'static debug'},
 		result: async (result) => {
 			expect(result.logged).to.be.true;
 			expect(result.content).to.include('static debug');
@@ -50,7 +50,7 @@ describe('StaticLogger - Log Levels', () => {
 	}));
 
 	it('should log info message', runTestCase_StaticLog({
-		input: { tag: 'StaticTest', level: LogLevel.Info, message: 'static info' },
+		input: {tag: 'StaticTest', level: LogLevel.Info, message: 'static info'},
 		result: async (result) => {
 			expect(result.logged).to.be.true;
 			expect(result.content).to.include('static info');
@@ -58,7 +58,7 @@ describe('StaticLogger - Log Levels', () => {
 	}));
 
 	it('should log warning message', runTestCase_StaticLog({
-		input: { tag: 'StaticTest', level: LogLevel.Warning, message: 'static warning' },
+		input: {tag: 'StaticTest', level: LogLevel.Warning, message: 'static warning'},
 		result: async (result) => {
 			expect(result.logged).to.be.true;
 			expect(result.content).to.include('static warning');
@@ -66,7 +66,7 @@ describe('StaticLogger - Log Levels', () => {
 	}));
 
 	it('should log error message', runTestCase_StaticLog({
-		input: { tag: 'StaticTest', level: LogLevel.Error, message: 'static error' },
+		input: {tag: 'StaticTest', level: LogLevel.Error, message: 'static error'},
 		result: async (result) => {
 			expect(result.logged).to.be.true;
 			expect(result.content).to.include('static error');
@@ -133,28 +133,28 @@ describe('StaticLogger - Min Level', () => {
 	it('should respect min level setting', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
-		
+
 		StaticLogger.setMinLevel(LogLevel.Info);
 		StaticLogger.logDebug('Tag', 'debug message');
 		StaticLogger.logInfo('Tag', 'info message');
-		
+
 		const content = getBufferContent(buffer);
 		expect(content).not.to.include('debug message');
 		expect(content).to.include('info message');
-		
+
 		BeLogged.removeClient(buffer);
 	});
 
 	it('should filter by min level when disabled', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
-		
+
 		// @ts-ignore - access protected property for testing
 		StaticLogger._DEBUG_FLAG.enable(false);
 		StaticLogger.logInfo('Tag', 'should not log');
-		
+
 		expect(getBufferContent(buffer)).to.equal('');
-		
+
 		// @ts-ignore - access protected property for testing
 		StaticLogger._DEBUG_FLAG.enable(true);
 		BeLogged.removeClient(buffer);

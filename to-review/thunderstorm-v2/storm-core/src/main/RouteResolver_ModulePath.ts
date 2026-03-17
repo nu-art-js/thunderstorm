@@ -33,6 +33,7 @@ export type MiddlewareConfig = {
 
 interface UseRoutesModule {
 	getName(): string;
+
 	useRoutes(): ServerApi<any>[];
 }
 

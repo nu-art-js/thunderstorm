@@ -28,6 +28,7 @@ import {
 	Test_Setup3
 } from './_core/consts.js';
 import type {Test_Setup} from './_core/types.js';
+
 type CreatePermissionsSetup = {
 	setup: Test_Setup;
 	users: { accessLevels: { domain: string; levelName: string }[]; result: boolean }[];
@@ -79,11 +80,11 @@ describe('Permissions - Create Project (path-based assert)', () => {
 			input: {
 				setup: Test_Setup1,
 				users: [
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess }], result: false },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Read }], result: false },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Write }], result: false },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Delete }], result: true },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Admin }], result: true }
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess}], result: false},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Read}], result: false},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}], result: false},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Delete}], result: true},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Admin}], result: true}
 				],
 				check: async (projectId: UniqueId, path: string) => {
 					await ModuleBE_PermissionsAssert.assertPathPermissions(projectId, path);
@@ -99,11 +100,11 @@ describe('Permissions - Create Project (path-based assert)', () => {
 			input: {
 				setup: Test_Setup2,
 				users: [
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess }], result: false },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Read }], result: true },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Write }], result: true },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Delete }], result: true },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Admin }], result: true }
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess}], result: false},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Read}], result: true},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}], result: true},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Delete}], result: true},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Admin}], result: true}
 				],
 				check: async (projectId: UniqueId, path: string) => {
 					await ModuleBE_PermissionsAssert.assertPathPermissions(projectId, path);
@@ -119,11 +120,11 @@ describe('Permissions - Create Project (path-based assert)', () => {
 			input: {
 				setup: Test_Setup3,
 				users: [
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess }], result: false },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Read }], result: false },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Write }], result: true },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Delete }], result: true },
-					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Admin }], result: true }
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess}], result: false},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Read}], result: false},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}], result: true},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Delete}], result: true},
+					{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Admin}], result: true}
 				],
 				check: async (projectId: UniqueId, path: string) => {
 					await ModuleBE_PermissionsAssert.assertPathPermissions(projectId, path);

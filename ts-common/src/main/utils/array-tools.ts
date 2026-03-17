@@ -24,10 +24,10 @@ import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 /**
  * Splits an array into two arrays based on a filter condition.
- * 
+ *
  * More efficient than calling filter twice as it only iterates once, but note
  * that it still creates two new arrays. The original array is not modified.
- * 
+ *
  * @param input - Array to filter
  * @param filter - Function that returns true for items to include in filteredIn
  * @returns Object with filteredIn (matching items) and filteredOut (non-matching items)
@@ -41,9 +41,9 @@ export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { fi
 
 /**
  * Finds and removes the first instance of an item from an array (in-place).
- * 
+ *
  * Uses reference equality (===) to find the item. Only removes the first match.
- * 
+ *
  * @param array - Array to modify (modified in-place)
  * @param item - Item to remove
  * @returns The modified array (same instance)
@@ -55,10 +55,10 @@ export function removeItemFromArray<T>(array: T[], item: T) {
 
 /**
  * Removes the first item matching the condition from an array (in-place).
- * 
+ *
  * **Important**: This modifies the array in-place by clearing it and repopulating
  * it with the filtered items. Only the first matching item is removed.
- * 
+ *
  * @param array - Array to modify (modified in-place)
  * @param filter - Function that returns true for the item to remove
  * @returns The modified array (same instance)
@@ -83,7 +83,7 @@ export function removeFromArrayByIndex<T>(array: T[], index: number) {
 
 /**
  * Swaps two elements in an array by their indices (in-place).
- * 
+ *
  * @param array - Array to modify (modified in-place)
  * @param i1 - Index of first element
  * @param i2 - Index of second element
@@ -131,10 +131,10 @@ export function toggleElementInArray<T>(array: T[], item: T) {
 
 /**
  * Filters an array using an async filter function.
- * 
+ *
  * All filter operations are executed in parallel, then the results are applied
  * to create the filtered array. The original array is not modified.
- * 
+ *
  * @param arr - Array to filter
  * @param filter - Async or sync function that returns a boolean or Promise<boolean>
  * @returns Promise that resolves to the filtered array
@@ -158,13 +158,13 @@ const defaultMapper: <T>(item: T) => any = (item) => item;
 
 /**
  * Removes duplicate items from an array based on a key or mapper function.
- * 
+ *
  * When a mapper is provided, uniqueness is determined by the mapped value.
  * For objects, you can specify a property key or a custom mapper function.
- * 
+ *
  * **Note**: The implementation uses `Set.delete()` which modifies the Set.
  * This works because `delete()` returns true if the item was present, false otherwise.
- * 
+ *
  * @param source - Array to deduplicate
  * @param mapper - Optional property key or function to extract uniqueness key.
  *                 If not provided, uses reference equality (Set-based deduplication).
@@ -201,10 +201,10 @@ export function filterFalsy<T>(array?: (T | undefined | null | void)[]): T[] {
 
 /**
  * Converts an array to a map/object where keys are determined by a function.
- * 
+ *
  * Each array item becomes a value in the map. The key can be a single value
  * or an array of keys (in which case the same value is stored under multiple keys).
- * 
+ *
  * @param array - Array to convert
  * @param getKey - Function that returns a key or array of keys for each item
  * @param map - Optional existing map to merge into (modified in-place)
@@ -222,10 +222,10 @@ type Mapper<Input, Output = Input> = (item: Input, index: number, map: { [k: str
 
 /**
  * Reduces an array to a map/object with custom key resolution and value mapping.
- * 
+ *
  * More flexible than `arrayToMap` as it allows transforming values via the mapper.
  * Keys can be single values or arrays (for storing the same value under multiple keys).
- * 
+ *
  * @param array - Array to reduce
  * @param keyResolver - Function that returns key(s) for each item
  * @param mapper - Function that transforms each item into the output value
@@ -247,12 +247,12 @@ export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<In
 
 /**
  * Sorts an array by a key, array of keys, or custom mapper function.
- * 
+ *
  * **Important**: This modifies the array in-place (mutates the original array).
- * 
+ *
  * When multiple keys are provided, sorting is done hierarchically (first by
  * first key, then by second key, etc.). The `invert` parameter reverses the sort order.
- * 
+ *
  * @param array - Array to sort (modified in-place)
  * @param map - Property key(s) or function to extract sort value. Defaults to identity.
  * @param invert - If true, sorts in descending order
@@ -283,13 +283,13 @@ export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T)
 
 /**
  * Processes an array in batches sequentially, applying an async action to each batch.
- * 
+ *
  * Splits the array into chunks of the specified size and processes each chunk
  * one at a time (sequentially). The action can return a single value or an array
  * of values, which are all collected into the result array.
- * 
+ *
  * Use this when you need to limit concurrency or process items in order.
- * 
+ *
  * @param arr - Array to process
  * @param chunk - Size of each batch
  * @param action - Async function that processes a batch and returns result(s)
@@ -336,12 +336,12 @@ export async function Promise_all_sequentially<T>(promises: Array<() => Promise<
 
 /**
  * Processes an array in batches in parallel, applying an async action to each batch.
- * 
+ *
  * Splits the array into chunks and processes all chunks concurrently using Promise.all.
  * The action can return a single value or an array of values, which are all collected.
- * 
+ *
  * Use this when you want maximum concurrency and order doesn't matter.
- * 
+ *
  * @param arr - Array to process
  * @param chunk - Size of each batch
  * @param action - Async function that processes a batch and returns result(s)
@@ -369,10 +369,10 @@ export async function batchActionParallel<T = any, R = any>(arr: T[], chunk: num
 
 /**
  * Recursively flattens a nested array structure into a single-level array.
- * 
+ *
  * **Important**: The `result` parameter is modified in-place. If you don't want
  * to mutate an existing array, pass a new empty array or omit the parameter.
- * 
+ *
  * @param arr - Nested array to flatten
  * @param result - Array to accumulate results into (modified in-place, defaults to new array)
  * @returns Flattened array (same instance as result parameter)
@@ -395,10 +395,10 @@ export function filterFlatInstances<T extends any[], K = NestedArrayType<T>>(arr
 
 /**
  * Groups array items by a key extracted via a mapper function.
- * 
+ *
  * Creates an array of objects, each containing a key and the array of items
  * that map to that key.
- * 
+ *
  * @param arr - Array to group
  * @param mapper - Function that extracts the grouping key from each item
  * @returns Array of objects with `key` and `values` properties

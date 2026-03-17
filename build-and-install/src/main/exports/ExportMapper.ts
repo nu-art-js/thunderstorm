@@ -40,7 +40,7 @@ export class ExportMapper {
 
 	static async generateIndexFiles(projectRoot: string, packageName: string, exports: ExportSymbol[]): Promise<void> {
 		const indexPath = ExportMapper.getIndexPath(projectRoot, packageName);
-		
+
 		// Ensure directory exists
 		await FileSystemUtils.folder.create(indexPath);
 
@@ -75,7 +75,9 @@ export class ExportMapper {
 		await FileSystemUtils.file.write(byTypePath, __stringify(byType, true));
 	}
 
-	static async mapExports(projectRoot: string, packageRoot: string, packageName: string, sourceFiles: string[], retryErrors?: ExportError[]): Promise<{ exports: ExportSymbol[], errors: ExportError[] }> {
+	static async mapExports(projectRoot: string, packageRoot: string, packageName: string, sourceFiles: string[], retryErrors?: ExportError[]): Promise<{
+		exports: ExportSymbol[], errors: ExportError[]
+	}> {
 		const errors: ExportError[] = [];
 		const exports: ExportSymbol[] = [];
 
@@ -99,9 +101,9 @@ export class ExportMapper {
 				stack: error.stack,
 				timestamp: new Date().toISOString(),
 				retryable: true,
-				context: { operation: 'createProgram' }
+				context: {operation: 'createProgram'}
 			});
-			return { exports, errors };
+			return {exports, errors};
 		}
 
 		const checker = program.getTypeChecker();
@@ -149,7 +151,7 @@ export class ExportMapper {
 					stack: error.stack,
 					timestamp: new Date().toISOString(),
 					retryable: true,
-					context: { fileName: sourceFile.fileName }
+					context: {fileName: sourceFile.fileName}
 				});
 			}
 		}
@@ -159,7 +161,7 @@ export class ExportMapper {
 			errors.push(error);
 		}
 
-		return { exports, errors };
+		return {exports, errors};
 	}
 
 	static createProgram(sourceFiles: string[], packageRoot: string): ts.Program {
@@ -362,7 +364,7 @@ export class ExportMapper {
 					stack: error.stack,
 					timestamp: new Date().toISOString(),
 					retryable: true,
-					context: { symbolName: name, symbolType, operation: 'extractGenericSignatures' }
+					context: {symbolName: name, symbolType, operation: 'extractGenericSignatures'}
 				});
 			}
 
@@ -385,7 +387,7 @@ export class ExportMapper {
 						stack: error.stack,
 						timestamp: new Date().toISOString(),
 						retryable: true,
-						context: { symbolName: name, symbolType, operation: 'extractFunctionSignature' }
+						context: {symbolName: name, symbolType, operation: 'extractFunctionSignature'}
 					});
 				}
 			} else if (symbolType === 'class' && ts.isClassDeclaration(node)) {
@@ -416,7 +418,7 @@ export class ExportMapper {
 						stack: error.stack,
 						timestamp: new Date().toISOString(),
 						retryable: true,
-						context: { symbolName: name, symbolType, operation: 'extractClassMetadata' }
+						context: {symbolName: name, symbolType, operation: 'extractClassMetadata'}
 					});
 				}
 			} else if (symbolType === 'interface' && ts.isInterfaceDeclaration(node)) {
@@ -434,7 +436,7 @@ export class ExportMapper {
 						stack: error.stack,
 						timestamp: new Date().toISOString(),
 						retryable: true,
-						context: { symbolName: name, symbolType, operation: 'extractInterfaceTypeInfo' }
+						context: {symbolName: name, symbolType, operation: 'extractInterfaceTypeInfo'}
 					});
 				}
 			} else if (symbolType === 'type' && ts.isTypeAliasDeclaration(node)) {
@@ -452,7 +454,7 @@ export class ExportMapper {
 						stack: error.stack,
 						timestamp: new Date().toISOString(),
 						retryable: true,
-						context: { symbolName: name, symbolType, operation: 'extractTypeInfo' }
+						context: {symbolName: name, symbolType, operation: 'extractTypeInfo'}
 					});
 				}
 			} else if (symbolType === 'variable' || symbolType === 'constant') {
@@ -470,7 +472,7 @@ export class ExportMapper {
 						stack: error.stack,
 						timestamp: new Date().toISOString(),
 						retryable: true,
-						context: { symbolName: name, symbolType, operation: 'extractVariableTypeInfo' }
+						context: {symbolName: name, symbolType, operation: 'extractVariableTypeInfo'}
 					});
 				}
 			}
@@ -501,7 +503,7 @@ export class ExportMapper {
 				stack: error.stack,
 				timestamp: new Date().toISOString(),
 				retryable: true,
-				context: { symbolName: name, symbolType }
+				context: {symbolName: name, symbolType}
 			});
 			return null;
 		}
@@ -544,7 +546,7 @@ export class ExportMapper {
 		const interfaces: string[] = [];
 
 		if (!node.heritageClauses) {
-			return { parentClass, interfaces };
+			return {parentClass, interfaces};
 		}
 
 		for (const clause of node.heritageClauses) {
@@ -573,7 +575,7 @@ export class ExportMapper {
 			}
 		}
 
-		return { parentClass, interfaces };
+		return {parentClass, interfaces};
 	}
 
 	static hasExportModifier(node: ts.Node): boolean {
@@ -581,7 +583,7 @@ export class ExportMapper {
 	}
 
 	static getLineNumber(sourceFile: ts.SourceFile, node: ts.Node): number {
-		const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+		const {line} = sourceFile.getLineAndCharacterOfPosition(node.getStart());
 		return line + 1; // Convert to 1-based line number
 	}
 

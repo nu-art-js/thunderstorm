@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import {createTests_dbDef} from './create.js';
 import {DatabaseDef_Type} from '../../_entity/type/shared/index.js';
 
-const chai = await import("'chai'");
+const chai = await import('\'chai\'');
 chai.use(chaiAsPromised);
 
 export const TestCases_FB_CreateAll: CreateTest['testcases'] = [

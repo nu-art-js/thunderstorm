@@ -38,10 +38,10 @@ function getColor(level: LogLevel, bold = false): string {
 
 /**
  * Log client that stores logs in memory buffers with rotation support.
- * 
+ *
  * Maintains an array of string buffers that rotate when the current buffer exceeds maxBufferSize.
  * Useful for in-memory log aggregation, testing, or when you need programmatic access to logs.
- * 
+ *
  * Supports:
  * - Log transformation via `setLogTransformer()`
  * - Callbacks when logs are appended via `setLogAppendedListener()`
@@ -60,7 +60,7 @@ export class LogClient_MemBuffer
 
 	/**
 	 * Creates a new memory buffer log client.
-	 * 
+	 *
 	 * @param name - Identifier for this log client
 	 * @param maxBuffers - Maximum number of rotated buffers to keep (default: 10)
 	 * @param maxBufferSize - Maximum buffer size in bytes before rotation (default: 1MB)
@@ -71,10 +71,10 @@ export class LogClient_MemBuffer
 
 	/**
 	 * Sets a function to transform log strings before they are stored.
-	 * 
+	 *
 	 * The transformer receives the log content (without prefix) and can modify it.
 	 * Useful for sanitization, formatting, or filtering sensitive data.
-	 * 
+	 *
 	 * @param logTransformer - Function that transforms log strings
 	 */
 	setLogTransformer(logTransformer: (log: string) => string) {
@@ -83,9 +83,9 @@ export class LogClient_MemBuffer
 
 	/**
 	 * Sets a callback to be invoked whenever a log is appended to the buffer.
-	 * 
+	 *
 	 * Useful for real-time log monitoring or triggering actions when logs are written.
-	 * 
+	 *
 	 * @param onLogAppended - Function to call when a log is appended
 	 */
 	setLogAppendedListener(onLogAppended: VoidFunction) {
@@ -94,10 +94,10 @@ export class LogClient_MemBuffer
 
 	/**
 	 * Processes log message with color codes and optional transformation.
-	 * 
+	 *
 	 * Applies ANSI color codes, transforms the log if a transformer is set, and
 	 * formats with proper indentation.
-	 * 
+	 *
 	 * @param level - Log level
 	 * @param bold - Whether to apply bold formatting
 	 * @param prefix - Composed prefix string
@@ -117,7 +117,7 @@ export class LogClient_MemBuffer
 
 	/**
 	 * Appends a log message to the current buffer and invokes the callback.
-	 * 
+	 *
 	 * @param log - Formatted log string (includes newline)
 	 */
 	protected printLogMessage(log: string) {
@@ -133,7 +133,7 @@ export class LogClient_MemBuffer
 
 	/**
 	 * Rotates buffers by copying the source buffer to the destination index.
-	 * 
+	 *
 	 * @param fromIndex - Source buffer index
 	 * @param toIndex - Destination buffer index
 	 */
@@ -150,7 +150,7 @@ export class LogClient_MemBuffer
 
 	/**
 	 * Controls whether natural colors in log output are preserved.
-	 * 
+	 *
 	 * @param keepNaturalColors - If true, disables color codes. Defaults to true.
 	 */
 	public keepLogsNaturalColors(keepNaturalColors = true) {

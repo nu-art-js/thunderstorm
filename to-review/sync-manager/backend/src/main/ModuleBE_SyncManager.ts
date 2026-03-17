@@ -211,7 +211,9 @@ export class ModuleBE_SyncManager_Class
 			where: {...query.where, __collectionName: collectionName},
 		} as FirestoreQuery<DB_DeletedDoc>;
 		const deletedItems = await this.collection.query.custom(finalQuery);
-		deletedItems.forEach(_item => { _item._id = (_item.__docId ?? _item._id) as DB_DeletedDoc['_id']; });
+		deletedItems.forEach(_item => {
+			_item._id = (_item.__docId ?? _item._id) as DB_DeletedDoc['_id'];
+		});
 		return deletedItems;
 	};
 

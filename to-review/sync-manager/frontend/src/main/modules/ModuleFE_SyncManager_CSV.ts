@@ -6,119 +6,130 @@ import {Thunder} from '@nu-art/thunder-core';
 import {HeaderKey_ContentType} from '@nu-art/api-types';
 import {ModuleFE_CSVParser, type PapaparseConfig} from '../ModuleFE_CSVParser.js';
 
-export class ModuleFE_SyncManager_CSV_Class extends Module {
+export class ModuleFE_SyncManager_CSV_Class
+	extends Module {
 	constructor() {
 		super();
 	}
-	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseDB<any>>((module) => (module as ModuleFE_BaseDB<any> & { syncType?: ModuleSyncType }).syncType === ModuleSyncType.CSVSync);
+
+	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseDB<any>>((module) => (module as ModuleFE_BaseDB<any> & {
+		syncType?: ModuleSyncType
+	}).syncType === ModuleSyncType.CSVSync);
 	syncFromCSVUrl = async (url: string, config?: PapaparseConfig) => {
 		const modules = arrayToMap(this.getModulesToSync(), i => i.config.dbKey);
-        const start = performance.now();
-        const itemsToSync: any[] = [];
-        const errors: any[] = [];
-        await new Promise<void>(resolve => {
-            const isEmulator = Thunder.getInstance().getConfig().label?.toLowerCase() === 'local';
-            const downloadRequestHeaders = isEmulator ? undefined : { [HeaderKey_ContentType]: 'text/csv' };
-            const finalConfig = config ? mergeObject({ downloadRequestHeaders }, config) : { downloadRequestHeaders };
-            ModuleFE_CSVParser.fromURL(url, {
-                transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
-                step: async (results: { errors?: unknown[]; data?: unknown }) => {
-                    if (results.errors?.length)
-                        return errors.push(...results.errors);
-                    const item = results.data as {
-                        dbKey: string;
-                    };
-                    const module = modules[item.dbKey];
-                    if (!module)
-                        return;
-                    itemsToSync.push(item);
-                },
-                complete: async () => {
-                    for (const moduleKey of _keys(modules)) {
-                        const items = itemsToSync.filter(item => item.dbKey === moduleKey);
-                        const module = modules[moduleKey];
-                        // Get all docs to upsert
-                        const documents = items.map(i => i.document);
-                        // Run upgrade processors on them from the module
-                        await module.upgradeInstances(documents);
-                        // Upsert items to the idb
-                        await module.IDB.syncIndexDb(documents);
-                        await module.loadCache();
-                        module.setDataStatus(DataStatus.ContainsData);
-                    }
-                    const end = performance.now();
-                    this.logInfo(`sync took ${((end - start) / 1000).toFixed(3)} seconds`);
-                    if (errors.length)
-                        this.logError('Parsed with errors', ...errors);
-                    resolve();
-                },
-                ...finalConfig,
-                error: (error: Error) => {
-                    this.logError(`CSV Parsing failed`, error);
-                }
-            });
-        });
-    };
-    readyAllModules = async () => {
-        const modules = this.getModulesToSync();
-        this.logDebug('Readying modules', modules);
-        for (const module of modules) {
-            await module.loadCache();
-            module.setDataStatus(DataStatus.ContainsData);
-        }
-    };
-    syncFromBackupStream = async (stream: Readable) => {
-        const modules = this.getModulesToSync();
-        this.logInfo('Modules', modules);
-        const writer = new ModuleIDBWriter(modules);
-        await new Promise<void>((resolve, reject) => {
-            stream.pipe(writer)
-                .on('error', err => reject(err))
-                .on('close', () => {
-                modules.forEach(module => {
-                    module.setDataStatus(DataStatus.ContainsData);
-                });
-                resolve();
-            });
-        });
-    };
+		const start = performance.now();
+		const itemsToSync: any[] = [];
+		const errors: any[] = [];
+		await new Promise<void>(resolve => {
+			const isEmulator = Thunder.getInstance().getConfig().label?.toLowerCase() === 'local';
+			const downloadRequestHeaders = isEmulator ? undefined : {[HeaderKey_ContentType]: 'text/csv'};
+			const finalConfig = config ? mergeObject({downloadRequestHeaders}, config) : {downloadRequestHeaders};
+			ModuleFE_CSVParser.fromURL(url, {
+				transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
+				step: async (results: { errors?: unknown[]; data?: unknown }) => {
+					if (results.errors?.length)
+						return errors.push(...results.errors);
+					const item = results.data as {
+						dbKey: string;
+					};
+					const module = modules[item.dbKey];
+					if (!module)
+						return;
+					itemsToSync.push(item);
+				},
+				complete: async () => {
+					for (const moduleKey of _keys(modules)) {
+						const items = itemsToSync.filter(item => item.dbKey === moduleKey);
+						const module = modules[moduleKey];
+						// Get all docs to upsert
+						const documents = items.map(i => i.document);
+						// Run upgrade processors on them from the module
+						await module.upgradeInstances(documents);
+						// Upsert items to the idb
+						await module.IDB.syncIndexDb(documents);
+						await module.loadCache();
+						module.setDataStatus(DataStatus.ContainsData);
+					}
+					const end = performance.now();
+					this.logInfo(`sync took ${((end - start) / 1000).toFixed(3)} seconds`);
+					if (errors.length)
+						this.logError('Parsed with errors', ...errors);
+					resolve();
+				},
+				...finalConfig,
+				error: (error: Error) => {
+					this.logError(`CSV Parsing failed`, error);
+				}
+			});
+		});
+	};
+	readyAllModules = async () => {
+		const modules = this.getModulesToSync();
+		this.logDebug('Readying modules', modules);
+		for (const module of modules) {
+			await module.loadCache();
+			module.setDataStatus(DataStatus.ContainsData);
+		}
+	};
+	syncFromBackupStream = async (stream: Readable) => {
+		const modules = this.getModulesToSync();
+		this.logInfo('Modules', modules);
+		const writer = new ModuleIDBWriter(modules);
+		await new Promise<void>((resolve, reject) => {
+			stream.pipe(writer)
+				.on('error', err => reject(err))
+				.on('close', () => {
+					modules.forEach(module => {
+						module.setDataStatus(DataStatus.ContainsData);
+					});
+					resolve();
+				});
+		});
+	};
 }
+
 export const ModuleFE_SyncManager_CSV = new ModuleFE_SyncManager_CSV_Class();
-class ModuleIDBWriter extends Writable {
-    readonly modules: ModuleFE_BaseDB<any>[];
-    readonly moduleNameMap: TypedMap<ModuleFE_BaseDB<any>>;
-    readonly paginationSize: number;
-    private itemsToUpsert: any[] = [];
-    constructor(modules: ModuleFE_BaseDB<any>[], paginationSize: number = 1000) {
-        super();
-        this.modules = modules;
-        this.paginationSize = paginationSize;
+
+class ModuleIDBWriter
+	extends Writable {
+	readonly modules: ModuleFE_BaseDB<any>[];
+	readonly moduleNameMap: TypedMap<ModuleFE_BaseDB<any>>;
+	readonly paginationSize: number;
+	private itemsToUpsert: any[] = [];
+
+	constructor(modules: ModuleFE_BaseDB<any>[], paginationSize: number = 1000) {
+		super();
+		this.modules = modules;
+		this.paginationSize = paginationSize;
 		this.moduleNameMap = modules.reduce((acc, curr) => {
 			acc[curr.config.dbKey] = curr;
 			return acc;
 		}, {} as TypedMap<ModuleFE_BaseDB<any>>);
-    }
-    async _write(chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) {
-        console.log('WRITE');
-        this.itemsToUpsert.push(chunk);
-        await this.upsertItems();
-        callback();
-    }
-    async _final(callback: (error?: (Error | null)) => void) {
-        await this.upsertItems(true);
-        callback();
-    }
-    private upsertItems = async (force: boolean = false) => {
-        const itemCount = this.itemsToUpsert.length;
-        if ((itemCount < this.paginationSize) && !force)
-            return;
-        for (const item of this.itemsToUpsert) {
-            const module = this.moduleNameMap[item.dbKey];
-            if (!module)
-                continue;
-            const document = JSON.parse(item.document);
-            await module.IDB.upsert(document);
-        }
-        this.itemsToUpsert = [];
-    };
+	}
+
+	async _write(chunk: any, encoding: BufferEncoding, callback: (error?: (Error | null)) => void) {
+		console.log('WRITE');
+		this.itemsToUpsert.push(chunk);
+		await this.upsertItems();
+		callback();
+	}
+
+	async _final(callback: (error?: (Error | null)) => void) {
+		await this.upsertItems(true);
+		callback();
+	}
+
+	private upsertItems = async (force: boolean = false) => {
+		const itemCount = this.itemsToUpsert.length;
+		if ((itemCount < this.paginationSize) && !force)
+			return;
+		for (const item of this.itemsToUpsert) {
+			const module = this.moduleNameMap[item.dbKey];
+			if (!module)
+				continue;
+			const document = JSON.parse(item.document);
+			await module.IDB.upsert(document);
+		}
+		this.itemsToUpsert = [];
+	};
 }

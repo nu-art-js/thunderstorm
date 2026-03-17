@@ -21,25 +21,25 @@ export type UnitDependentNode = {
 
 /**
  * Manages unit dependency graph and provides dependency analysis operations.
- * 
+ *
  * **Key Operations**:
  * - **buildDependencyTree()**: Builds layers of units ordered by dependencies (dependencies first)
  * - **getTransitiveDependencies()**: Gets all transitive dependencies for given units
  * - **getReverseDependencies()**: Gets all units that depend on given units
  * - **filterDependencies()**: Filters dependency graph to only include specified units
- * 
+ *
  * **Dependency Graph**:
  * - Units are nodes, dependencies are edges
  * - Validates all dependencies exist (throws if unknown dependency)
  * - Supports pruning (removing non-participating units from graph)
- * 
+ *
  * **Tree Building Algorithm**:
  * 1. Builds reverse dependency map (who depends on whom)
  * 2. Finds leaf nodes (no dependents)
  * 3. Removes leaves and adds to current layer
  * 4. Repeats until all nodes processed
  * 5. Returns layers from bottom (dependencies) to top (dependents)
- * 
+ *
  * **Usage**: Used by Workspace to determine execution order and resolve transitive dependencies.
  */
 export class UnitsDependencyMapper

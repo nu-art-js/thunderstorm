@@ -96,4 +96,4 @@ export class ItemRenderer
 	}
 }
 
-export const Playground_DropdownSingleType = {name: 'Dropdown - Single Type',renderer: Example_Dropdown_SingleType}
+export const Playground_DropdownSingleType = {name: 'Dropdown - Single Type', renderer: Example_Dropdown_SingleType};

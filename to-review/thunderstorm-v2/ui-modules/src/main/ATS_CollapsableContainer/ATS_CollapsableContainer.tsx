@@ -34,7 +34,7 @@ class Component
 	private test_Controlled = () => {
 		return <TS_PropRenderer.Vertical label={'Singular Collapsable - Controlled'}>
 			<TS_CollapsableContainer headerRenderer={'I\'m a single container!'} containerRenderer={lorem} collapsed={this.state.collapsed}
-																 onCollapseToggle={collapsed => this.setState({collapsed: !collapsed})}/>
+															 onCollapseToggle={collapsed => this.setState({collapsed: !collapsed})}/>
 		</TS_PropRenderer.Vertical>;
 	};
 	private test_Animated = () => {

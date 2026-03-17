@@ -47,7 +47,7 @@ export function createMockFirestoreCollectionV3(): FirestoreCollectionV3<any> {
 	const runTransaction = async <T>(fn: (transaction?: Transaction) => Promise<T>): Promise<T> => fn(undefined);
 
 	const getDocWrapper = (id: string) => ({
-		ref: { id },
+		ref: {id},
 		get: async () => store.get(id),
 		update: async (partial: Partial<DB_Object> & { _id: string }) => {
 			const existing = store.get(id);
@@ -135,7 +135,8 @@ export function createMockFirestoreCollectionV3(): FirestoreCollectionV3<any> {
 		}
 	};
 
-	const upgradeInstances = async (_instances: DB_Object[]) => {};
+	const upgradeInstances = async (_instances: DB_Object[]) => {
+	};
 
 	const create = {
 		item: async (preDBItem: DB_Object & { _id?: string }) => set.item(preDBItem),

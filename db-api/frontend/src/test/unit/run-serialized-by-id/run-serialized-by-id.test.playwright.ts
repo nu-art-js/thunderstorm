@@ -108,7 +108,9 @@ test.describe('runSerializedById', () => {
 			await api.init();
 			const id = 'pending-1';
 			let resolveOp1: () => void;
-			const op1Promise = new Promise<void>((r) => { resolveOp1 = r; });
+			const op1Promise = new Promise<void>((r) => {
+				resolveOp1 = r;
+			});
 			const op1 = api.runSerializedByIdExposed(id, 'upsert', () => op1Promise);
 			const op2 = api.runSerializedByIdExposed(id, 'upsert', () => Promise.resolve(undefined));
 			let thirdRejected = false;

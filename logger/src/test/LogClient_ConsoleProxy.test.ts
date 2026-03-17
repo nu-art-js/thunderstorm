@@ -13,7 +13,8 @@ after(() => {
 });
 
 // Create a testable console proxy
-class TestConsoleProxy extends LogClient_ConsoleProxy {
+class TestConsoleProxy
+	extends LogClient_ConsoleProxy {
 	protected appName = 'TestApp';
 	public sentLogs: LogToStream[] = [];
 
@@ -38,10 +39,10 @@ describe('LogClient_ConsoleProxy - Initialization', () => {
 		const proxy = new TestConsoleProxy();
 		proxies.push(proxy);
 		const originalError = console.error;
-		
+
 		// BeLogged.addClient() automatically calls init()
 		BeLogged.addClient(proxy);
-		
+
 		expect(console.error).not.to.equal(originalError);
 		// @ts-ignore - access private property for testing
 		expect(proxy['originalConsoleError']).to.equal(originalError);
@@ -51,14 +52,14 @@ describe('LogClient_ConsoleProxy - Initialization', () => {
 		const proxy = new TestConsoleProxy();
 		proxies.push(proxy);
 		const originalError = console.error;
-		
+
 		// BeLogged.addClient() automatically calls init()
 		BeLogged.addClient(proxy);
-		
+
 		expect(console.error).not.to.equal(originalError);
-		
+
 		proxy.stop();
-		
+
 		expect(console.error).to.equal(originalError);
 	});
 });
@@ -78,12 +79,12 @@ describe('LogClient_ConsoleProxy - Error Interception', () => {
 		const proxy = new TestConsoleProxy();
 		proxies.push(proxy);
 		BeLogged.addClient(proxy);
-		
+
 		console.error('test error');
-		
+
 		// Give it time to process
 		await new Promise(resolve => setTimeout(resolve, 600));
-		
+
 		expect(proxy.sentLogs.length).to.be.greaterThan(0);
 		expect(proxy.sentLogs.some(log => log.logContent.includes('test error'))).to.be.true;
 	});
@@ -104,13 +105,13 @@ describe('LogClient_ConsoleProxy - Log Buffering', () => {
 		const proxy = new TestConsoleProxy();
 		proxies.push(proxy);
 		BeLogged.addClient(proxy);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('buffered message');
-		
+
 		// Logs should be buffered, not immediately sent
 		expect(proxy.sentLogs.length).to.equal(0);
-		
+
 		// Verify it's still buffered after a short wait (interval is 60 seconds)
 		await new Promise(resolve => setTimeout(resolve, 100));
 		expect(proxy.sentLogs.length).to.equal(0); // Should still be buffered
@@ -122,16 +123,16 @@ describe('LogClient_ConsoleProxy - Log Buffering', () => {
 		// @ts-ignore - access private property for testing
 		proxy.maxBuffers = 5;
 		BeLogged.addClient(proxy);
-		
+
 		const logger = new Logger('TestLogger');
 		// Write more than maxBuffers
 		for (let i = 0; i < 6; i++) {
 			logger.logInfo(`message ${i}`);
 		}
-		
+
 		// Should flush immediately
 		await new Promise(resolve => setTimeout(resolve, 100));
-		
+
 		expect(proxy.sentLogs.length).to.be.greaterThan(0);
 	});
 
@@ -139,13 +140,13 @@ describe('LogClient_ConsoleProxy - Log Buffering', () => {
 		const proxy = new TestConsoleProxy();
 		proxies.push(proxy);
 		BeLogged.addClient(proxy);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logError('error message');
-		
+
 		// Error logs should flush after 500ms
 		await new Promise(resolve => setTimeout(resolve, 600));
-		
+
 		expect(proxy.sentLogs.length).to.be.greaterThan(0);
 		expect(proxy.sentLogs.some(log => log.severity === LogLevel.Error)).to.be.true;
 	});
@@ -166,12 +167,12 @@ describe('LogClient_ConsoleProxy - Log Format', () => {
 		const proxy = new TestConsoleProxy();
 		proxies.push(proxy);
 		BeLogged.addClient(proxy);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logError('test message'); // Use error to trigger immediate flush after 500ms
-		
+
 		await new Promise(resolve => setTimeout(resolve, 600));
-		
+
 		if (proxy.sentLogs.length > 0) {
 			const log = proxy.sentLogs[0];
 			expect(log).to.have.property('severity');
@@ -200,13 +201,13 @@ describe('LogClient_ConsoleProxy - Cleanup', () => {
 		const proxy = new TestConsoleProxy();
 		proxies.push(proxy);
 		BeLogged.addClient(proxy);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logError('error message');
-		
+
 		// Stop before timeout fires
 		proxy.stop();
-		
+
 		// Should not throw and should have cleaned up
 		expect(proxy).to.exist;
 	});
@@ -215,11 +216,11 @@ describe('LogClient_ConsoleProxy - Cleanup', () => {
 		const proxy = new TestConsoleProxy();
 		proxies.push(proxy);
 		BeLogged.addClient(proxy);
-		
+
 		proxy.stop();
 		proxy.stop(); // Should not throw
 	});
-		
+
 	// Final cleanup to ensure no intervals remain
 	after(() => {
 		BeLogged.removeAllClients();

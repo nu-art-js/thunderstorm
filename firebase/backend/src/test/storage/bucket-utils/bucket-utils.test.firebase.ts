@@ -24,7 +24,7 @@ const getExpectedBucket = (tc: unknown): (() => Promise<{ bucketName: string } |
 const runTestCase_GetAdminBucket = (testCase: TestCase_GetAdminBucket) => () => {
 	if (!('result' in testCase))
 		throw new Error('GetAdminBucket test must have result');
-	const getExpected = getExpectedBucket(testCase) ?? (async () => ({ bucketName: '' }));
+	const getExpected = getExpectedBucket(testCase) ?? (async () => ({bucketName: ''}));
 	return runSingleTestCase(test_GetAdminBucket, {
 		...testCase,
 		result: async (actual: GetAdminBucketResult) => {

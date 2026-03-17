@@ -30,17 +30,17 @@ export type DependencyParam<T extends Primitive | Primitive[]> = {
 
 /**
  * Base CLI parameter definition (before processing).
- * 
+ *
  * Defines a command-line parameter with keys, type, and optional features.
  * Can be incomplete (missing name/process) and will be filled by CLIParamsResolver.
- * 
+ *
  * **Features**:
  * - Multiple keys (aliases): `['--help', '-h']`
  * - Type validation: `'string'`, `'number'`, `'boolean'`, `'string[]'`, etc.
  * - Options validation: Restrict values to specific options
  * - Dependencies: Set other params based on this param's value
  * - Array support: Collect multiple values
- * 
+ *
  * @template K - Key name type (string literal)
  * @template V - Value type (primitive or array)
  */

@@ -21,7 +21,7 @@ import {ExecException} from 'child_process';
 
 /**
  * Exception thrown when a shell command execution fails.
- * 
+ *
  * Contains the command output (stdout/stderr) and the underlying
  * ExecException from Node.js child_process.
  */
@@ -37,7 +37,7 @@ export class CliError
 
 	/**
 	 * Creates a CliError instance.
-	 * 
+	 *
 	 * @param message - Error message
 	 * @param stdout - Standard output from command
 	 * @param stderr - Standard error from command
@@ -53,10 +53,10 @@ export class CliError
 
 /**
  * Exception for commando-specific errors with exit code.
- * 
+ *
  * Similar to CliError but includes an explicit exit code rather than
  * extracting it from the ExecException.
- * 
+ *
  */
 export class CommandoException
 	extends CustomException {
@@ -70,7 +70,7 @@ export class CommandoException
 
 	/**
 	 * Creates a CommandoException instance.
-	 * 
+	 *
 	 * @param message - Error message
 	 * @param stdout - Standard output
 	 * @param stderr - Standard error

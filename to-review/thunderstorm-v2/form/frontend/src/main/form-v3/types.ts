@@ -29,7 +29,7 @@ type ObjectPropDef<EnclosingType, Prop extends keyof EnclosingType, EditingType 
 export type FormV3<EditingType> = {
 	editingType: EditingType;
 	validator: ValidatorTypeResolver<EditingType>;
-	properties: {[K in keyof EditingType]: ObjectPropDef<EditingType, K>};
+	properties: { [K in keyof EditingType]: ObjectPropDef<EditingType, K> };
 };
 
 export type FormRendererV2<Form extends FormV3<any>> = {

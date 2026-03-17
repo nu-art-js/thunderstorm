@@ -118,7 +118,6 @@ export const flatPlaguesWithTitles: TreeItem<Plague>[] = [
 ];
 
 
-
 export class ItemRenderer_Plague
 	extends BaseNodeRenderer<Plague> {
 

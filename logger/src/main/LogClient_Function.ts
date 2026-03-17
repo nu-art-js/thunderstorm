@@ -7,13 +7,13 @@
 import {
 	LogLevel,
 	LogParam
-} from "./types.js";
-import {LogClient} from "./LogClient.js";
-import {_logger_logException} from "./utils.js";
+} from './types.js';
+import {LogClient} from './LogClient.js';
+import {_logger_logException} from './utils.js';
 
 /**
  * Log client that outputs to console with special handling for different value types.
- * 
+ *
  * Uses a simplified prefix format and handles various JavaScript types appropriately:
  * - Errors: Extracts stack trace
  * - Objects: JSON stringification
@@ -24,18 +24,18 @@ class LogClient_Function_class
 	extends LogClient {
 	constructor() {
 		super();
-		this.setComposer((tag, level) => `${level} ${tag}: `)
+		this.setComposer((tag, level) => `${level} ${tag}: `);
 	}
 
 	/**
 	 * Outputs log messages with type-specific formatting.
-	 * 
+	 *
 	 * Handles different value types appropriately:
 	 * - Errors: Uses stack trace extraction
 	 * - Objects: JSON stringification
 	 * - Primitives: Direct string conversion
 	 * - Functions/Symbols/BigInt: Outputs type name only
-	 * 
+	 *
 	 * @param level - Log level
 	 * @param bold - Whether to apply bold formatting (not used in this implementation)
 	 * @param prefix - Composed prefix string
@@ -51,20 +51,20 @@ class LogClient_Function_class
 				}
 
 			switch (typeof logParam) {
-				case "undefined":
-				case "function":
-				case "symbol":
-				case "bigint":
+				case 'undefined':
+				case 'function':
+				case 'symbol':
+				case 'bigint':
 					console.log(`${prefix}${typeof logParam}`);
 					continue;
 
-				case "boolean":
-				case "number":
-				case "string":
+				case 'boolean':
+				case 'number':
+				case 'string':
 					console.log(`${prefix}${logParam}`);
 					continue;
 
-				case "object":
+				case 'object':
 					console.log(`${prefix}${JSON.stringify(logParam)}`);
 					continue;
 			}

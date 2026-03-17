@@ -67,6 +67,7 @@ function CheckboxV1Demo() {
 		</div>
 	);
 }
+
 function CheckboxV2Demo() {
 	const [checked, setChecked] = React.useState(false);
 	return (
@@ -75,6 +76,7 @@ function CheckboxV2Demo() {
 		</div>
 	);
 }
+
 function CheckboxV3Demo() {
 	const [checked, setChecked] = React.useState(false);
 	return (
@@ -148,22 +150,28 @@ function TestApp() {
 			<CheckboxGroupV1Demo/>
 			<CheckboxGroupV3Demo/>
 			<div data-testid="button-v1-container">
-				<ButtonV1 onClick={() => {}}>Button v1</ButtonV1>
+				<ButtonV1 onClick={() => {
+				}}>Button v1</ButtonV1>
 			</div>
 			<div data-testid="button-v3-container">
-				<ButtonV3 onClick={() => {}}>Button v3</ButtonV3>
+				<ButtonV3 onClick={() => {
+				}}>Button v3</ButtonV3>
 			</div>
 			<div data-testid="button-v1-disabled-container">
-				<ButtonV1 disabled onClick={() => {}}>Button v1 disabled</ButtonV1>
+				<ButtonV1 disabled onClick={() => {
+				}}>Button v1 disabled</ButtonV1>
 			</div>
 			<div data-testid="button-v3-disabled-container">
-				<ButtonV3 disabled onClick={() => {}}>Button v3 disabled</ButtonV3>
+				<ButtonV3 disabled onClick={() => {
+				}}>Button v3 disabled</ButtonV3>
 			</div>
 			<div data-testid="button-v1-loading-container">
-				<ButtonV1 actionInProgress={true} onClick={() => {}}>Button v1 loading</ButtonV1>
+				<ButtonV1 actionInProgress={true} onClick={() => {
+				}}>Button v1 loading</ButtonV1>
 			</div>
 			<div data-testid="button-v3-loading-container">
-				<ButtonV3 actionInProgress={true} onClick={() => {}}>Button v3 loading</ButtonV3>
+				<ButtonV3 actionInProgress={true} onClick={() => {
+				}}>Button v3 loading</ButtonV3>
 			</div>
 			<div data-testid="component-transition-v1-container">
 				<TS_ComponentTransitionV1 trigger={true} transitionTimeout={0}><span>Transition v1</span></TS_ComponentTransitionV1>
@@ -447,8 +455,14 @@ function ButtonGroupDemo() {
 				<TS_ButtonGroup
 					direction="horizontal"
 					buttons={{
-						left: {key: 'left', label: 'Left', onClick: () => {}},
-						right: {key: 'right', label: 'Right', onClick: () => {}},
+						left: {
+							key: 'left', label: 'Left', onClick: () => {
+							}
+						},
+						right: {
+							key: 'right', label: 'Right', onClick: () => {
+							}
+						},
 					}}
 					defaultButtonKey="left"
 				/>
@@ -513,6 +527,7 @@ function ToggleDemo() {
 		</>
 	);
 }
+
 function SliderDemo() {
 	return (
 		<>
@@ -525,6 +540,7 @@ function SliderDemo() {
 		</>
 	);
 }
+
 const LONG_TEXT = 'This is a long paragraph that should overflow the collapsed height so that the Read More and Read Less controls are visible. It contains multiple sentences to ensure the component has enough content to truncate. Keep adding more text until the read more link appears.';
 
 function ReadMoreDemo() {
@@ -539,6 +555,7 @@ function ReadMoreDemo() {
 		</>
 	);
 }
+
 function RadioDemo() {
 	const [val, setVal] = React.useState<string | undefined>('a');
 	return (
@@ -566,6 +583,7 @@ function CheckboxGroupV1Demo() {
 		</div>
 	);
 }
+
 function CheckboxGroupV3Demo() {
 	const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
 	return (

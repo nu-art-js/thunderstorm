@@ -14,19 +14,19 @@ export type {Props_TS_CollapsableContainerV2} from '../v2/TS_CollapsableContaine
  */
 export function TS_CollapsableContainerV3(props: Props_TS_CollapsableContainerV2) {
 	const {
-		headerRenderer,
-		containerRenderer,
-		customCaret,
-		onCollapseToggle,
-		collapsed: controlledCollapsed,
-		initialCollapsed = true,
-		className,
-		style,
-		id,
-		onHeaderRightClick,
-		animated = false,
-		innerRef
-	} = props;
+					headerRenderer,
+					containerRenderer,
+					customCaret,
+					onCollapseToggle,
+					collapsed: controlledCollapsed,
+					initialCollapsed = true,
+					className,
+					style,
+					id,
+					onHeaderRightClick,
+					animated         = false,
+					innerRef
+				} = props;
 	const [uncontrolledCollapsed, setUncontrolledCollapsed] = useState(initialCollapsed);
 	const collapsed = controlledCollapsed ?? uncontrolledCollapsed;
 	const toggleCollapse = useCallback((e: React.MouseEvent) => {
@@ -36,7 +36,8 @@ export function TS_CollapsableContainerV3(props: Props_TS_CollapsableContainerV2
 	}, [collapsed, onCollapseToggle]);
 	const headerCaret = exists(customCaret) ? resolveContent(customCaret) : <TS_Icons.treeCollapse.component/>;
 	return (
-		<LL_V_L id={id} className={_className('ts-collapsable-container-v2', collapsed && 'collapsed', animated && 'animated', className)} style={style} innerRef={innerRef}>
+		<LL_V_L id={id} className={_className('ts-collapsable-container-v2', collapsed && 'collapsed', animated && 'animated', className)} style={style}
+						innerRef={innerRef}>
 			<LL_H_C className="ts-collapsable-container-v2__header" onClick={toggleCollapse} onContextMenu={onHeaderRightClick}>
 				{headerCaret}
 				<div className="ts-collapsable-container-v2__header-content">{resolveContent(headerRenderer)}</div>

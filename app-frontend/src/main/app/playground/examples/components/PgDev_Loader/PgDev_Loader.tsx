@@ -1,4 +1,4 @@
-import { TS_Loader } from '@nu-art/thunderstorm-frontend/index';
+import {TS_Loader} from '@nu-art/thunderstorm-frontend/index';
 import * as React from 'react';
 import './PgDev_Loader.scss';
 

@@ -133,7 +133,7 @@ class WorkspaceTest
 				<TS_DropDown
 					adapter={SimpleListAdapter(configs, node => <div>{node.item.name}</div>)}
 					onSelected={(item) => {
-						this.setState({workspace:item});
+						this.setState({workspace: item});
 						this.forceUpdate();
 					}}/>
 			</div>

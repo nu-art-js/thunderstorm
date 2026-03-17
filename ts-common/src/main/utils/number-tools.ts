@@ -18,13 +18,13 @@
 
 /**
  * Rounds a number to a specified number of decimal places.
- * 
+ *
  * Uses the standard rounding algorithm (rounds to nearest, with .5 rounding up).
- * 
+ *
  * @param number - Number to round
  * @param digits - Number of decimal places
  * @returns Rounded number
- * 
+ *
  * @example
  * ```typescript
  * roundNumber(3.14159, 2) // 3.14
@@ -38,15 +38,15 @@ export const roundNumber = (number: number, digits: number) => {
 
 /**
  * Clamps a number between a minimum and maximum value.
- * 
+ *
  * If the number is less than min, returns min. If greater than max, returns max.
  * Otherwise returns the number unchanged.
- * 
+ *
  * @param min - Minimum value
  * @param num - Number to clamp
  * @param max - Maximum value
  * @returns Clamped number
- * 
+ *
  * @example
  * ```typescript
  * clamp(0, 5, 10) // 5
@@ -58,11 +58,11 @@ export const clamp = (min: number, num: number, max: number) => Math.min(Math.ma
 
 /**
  * Checks if a number is within a specified range (inclusive).
- * 
+ *
  * @param number - Number to check
  * @param range - Tuple [min, max] representing the range
  * @returns true if number is within range, false otherwise
- * 
+ *
  * @example
  * ```typescript
  * numberInRange(5, [0, 10]) // true

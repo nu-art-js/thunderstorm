@@ -13,12 +13,12 @@ describe('LogClient_Function - Type Handling', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Function);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('string message');
-		
+
 		expect(buffer.buffers[0]).to.include('string message');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Function);
 	});
@@ -27,12 +27,12 @@ describe('LogClient_Function - Type Handling', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Function);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo(42);
-		
+
 		expect(buffer.buffers[0]).to.include('42');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Function);
 	});
@@ -41,13 +41,13 @@ describe('LogClient_Function - Type Handling', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Function);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo(true, false);
-		
+
 		expect(buffer.buffers[0]).to.include('true');
 		expect(buffer.buffers[0]).to.include('false');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Function);
 	});
@@ -56,13 +56,13 @@ describe('LogClient_Function - Type Handling', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Function);
-		
+
 		const logger = new Logger('TestLogger');
-		logger.logInfo({ key: 'value' });
-		
+		logger.logInfo({key: 'value'});
+
 		expect(buffer.buffers[0]).to.include('key');
 		expect(buffer.buffers[0]).to.include('value');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Function);
 	});
@@ -71,15 +71,15 @@ describe('LogClient_Function - Type Handling', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Function);
-		
+
 		const error = new Error('Test error');
 		error.stack = 'Error: Test error\n    at test.js:1:1';
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logError(error);
-		
+
 		expect(buffer.buffers[0]).to.include('Test error');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Function);
 	});
@@ -88,16 +88,17 @@ describe('LogClient_Function - Type Handling', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Function);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo(undefined);
-		logger.logInfo(() => {});
+		logger.logInfo(() => {
+		});
 		logger.logInfo(Symbol('test'));
 		logger.logInfo(BigInt(123));
-		
+
 		// Should not throw and should log type names
 		expect(buffer.buffers[0]).to.be.a('string');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Function);
 	});
@@ -108,14 +109,14 @@ describe('LogClient_Function - Prefix Format', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Function);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('message');
-		
+
 		// Function client uses format: "Level Tag: " (may include ANSI codes from MemBuffer)
 		expect(buffer.buffers[0]).to.include('TestLogger');
 		expect(buffer.buffers[0]).to.include('message');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Function);
 	});

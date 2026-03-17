@@ -3,7 +3,7 @@ import {FreeForm_TestCase1} from './consts.js';
 import {TestModel_FreeForm} from './types.js';
 
 
-const chai = await import("'chai'");
+const chai = await import('\'chai\'');
 chai.use(chaiAsPromised);
 
 export const TestCases_FB_FreeForm: TestModel_FreeForm['testcases'] = [

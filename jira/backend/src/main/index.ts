@@ -17,6 +17,6 @@
  * limitations under the License.
  */
 
-export * from "./core/module-pack.js";
-export * from "./modules/JiraModule.js";
-export * from "./modules/utils.js";
+export * from './core/module-pack.js';
+export * from './modules/JiraModule.js';
+export * from './modules/utils.js';

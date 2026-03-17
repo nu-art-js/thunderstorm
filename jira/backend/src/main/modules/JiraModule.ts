@@ -318,19 +318,19 @@ export class ModuleBE_Jira_Class
 
 	private async executeRequest<T>(request: UriOptions & CoreOptions) {
 		const {uri, method, headers, body, json, formData} = request;
-		
+
 		// Ensure uri is a string
 		const url = typeof uri === 'string' ? uri : uri.toString();
-		
+
 		let fetchBody: BodyInit | undefined;
 		const fetchHeaders: HeadersInit = {...headers};
-		
+
 		if (formData) {
 			// Handle formData (for file uploads)
 			const form = new FormData();
 			for (const [key, value] of Object.entries(formData)) {
 				if (value && typeof value === 'object' && 'value' in value) {
-					const fileData = value as {value: Buffer; options?: {filename?: string}};
+					const fileData = value as { value: Buffer; options?: { filename?: string } };
 					// Convert Buffer to Uint8Array for Blob
 					const blob = new Blob([new Uint8Array(fileData.value)]);
 					form.append(key, blob, fileData.options?.filename);
@@ -346,13 +346,13 @@ export class ModuleBE_Jira_Class
 				fetchBody = body as BodyInit;
 			}
 		}
-		
+
 		const response = await fetch(url, {
 			method: method || HttpMethod.GET,
 			headers: fetchHeaders,
 			body: fetchBody
 		});
-		
+
 		return this.handleResponse<T>(response);
 	}
 }

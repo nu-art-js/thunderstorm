@@ -6,4 +6,6 @@
 
 export {ModuleFE_SyncManager_Class, ModuleFE_SyncManager} from './modules/ModuleFE_SyncManager.js';
 export {AwaitModules} from './components/AwaitModules/AwaitModules.js';
-export type {SyncManagerAPI_SmartSync, SyncDbData, NoNeedToSyncModule, DeltaSyncModule, FullSyncModule, SyncDataFirebaseState} from '@nu-art/sync-manager-shared';
+export type {
+	SyncManagerAPI_SmartSync, SyncDbData, NoNeedToSyncModule, DeltaSyncModule, FullSyncModule, SyncDataFirebaseState
+} from '@nu-art/sync-manager-shared';

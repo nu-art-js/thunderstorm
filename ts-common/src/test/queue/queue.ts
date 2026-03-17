@@ -44,8 +44,8 @@ export const testQueue = async (input: Input): Promise<undefined> => {
 		await sleep(item * 1000);
 		console.log(`Item: ${item} - End`);
 	}).setParallelCount(input.parallel ?? 1)
-	  .setSorter(input.sort)
-	  .setFilter(input.filter);
+		.setSorter(input.sort)
+		.setFilter(input.filter);
 	console.log('adding items');
 	input.items.forEach(item => queue.addItemImpl(item));
 	sleep(2000).then(() => {

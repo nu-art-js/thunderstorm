@@ -134,7 +134,7 @@ export class Thunder
 
 	public setMainApp<P extends Record<string, unknown>>(
 		mainApp: React.ElementType<P>,
-		props: P = {} as P,
+		props: P                                                          = {} as P,
 		renderFunc: (props: ThunderAppWrapperProps) => React.ReactElement = appWithJSX
 	): Thunder {
 		this.props = {

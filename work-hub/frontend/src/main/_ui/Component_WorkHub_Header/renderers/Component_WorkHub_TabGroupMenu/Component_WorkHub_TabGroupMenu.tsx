@@ -21,7 +21,7 @@ export class Component_WorkHub_TabGroupMenu
 
 	private inputRef = createRef<HTMLInputElement>();
 
-	
+
 	static show = (e: MouseEvent<HTMLDivElement>, groupKey: string) => {
 		const group = ModuleFE_WorkHub.group.get(groupKey);
 		if (!group)
@@ -38,7 +38,7 @@ export class Component_WorkHub_TabGroupMenu
 		ModuleFE_MouseInteractivity.showContent(model);
 	};
 
-	
+
 	protected deriveStateFromProps(nextProps: Props, state: State) {
 		state.group = this.getEditable(nextProps.group);
 		return state;
@@ -52,7 +52,7 @@ export class Component_WorkHub_TabGroupMenu
 		this.inputRef.current?.focus();
 	}
 
-	
+
 	private getEditable(group: WorkHubTabGroup) {
 		return new EditableItem(group)
 			.setOnChanged(async () => this.forceUpdate())
@@ -63,7 +63,7 @@ export class Component_WorkHub_TabGroupMenu
 			.setAutoSave(true);
 	}
 
-	
+
 	render() {
 		return <>
 			{this.render_Label()}

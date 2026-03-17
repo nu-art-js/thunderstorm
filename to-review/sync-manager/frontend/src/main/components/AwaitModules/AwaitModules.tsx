@@ -84,7 +84,9 @@ export class AwaitModules
 		const permissibleModules = ModuleFE_SyncManager.getPermissibleModuleNames();
 		if (!permissibleModules.length)
 			return [];
-		return this.state.validModules.filter(module => (module as ModuleFE_BaseDB<any> & { syncType?: ModuleSyncType }).syncType === ModuleSyncType.APISync && !permissibleModules.includes(module.config.dbKey));
+		return this.state.validModules.filter(module => (module as ModuleFE_BaseDB<any> & {
+			syncType?: ModuleSyncType
+		}).syncType === ModuleSyncType.APISync && !permissibleModules.includes(module.config.dbKey));
 	};
 	// ######################### Render #########################
 	protected renderMissingPermissions = () => {

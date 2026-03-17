@@ -67,6 +67,7 @@ export type RequestPairWithLevelsObj = { accessLevels: DB_PermissionAccessLevel[
 type Config = {
 	strictMode?: boolean
 }
+
 /**
  * [DomainId uniqueString]: accessLevel's numerical value
  */

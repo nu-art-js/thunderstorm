@@ -37,7 +37,18 @@ import {ApiHandler} from '@nu-art/http-server';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {OnAssetUploaded} from './ModuleBE_BucketListener.js';
 import {ModuleBE_AssetsStorage} from './ModuleBE_AssetsStorage.js';
-import {API_AssetUploader, ApiDef_AssetUploader, DB_Asset, DB_AssetDeleted, DB_AssetTemp, DBDef_Assets, DatabaseDef_Assets, FileStatus, TempSignedUrl, UI_Asset} from '@nu-art/file-upload-shared';
+import {
+	API_AssetUploader,
+	ApiDef_AssetUploader,
+	DB_Asset,
+	DB_AssetDeleted,
+	DB_AssetTemp,
+	DBDef_Assets,
+	DatabaseDef_Assets,
+	FileStatus,
+	TempSignedUrl,
+	UI_Asset
+} from '@nu-art/file-upload-shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
@@ -48,7 +59,10 @@ import {Transaction} from 'firebase-admin/firestore';
 
 /** Local type for cleanup scheduler (replaces thunderstorm-backend). */
 export type CleanupDetails = { moduleKey: string; interval: number; cleanup: () => Promise<void> };
-export interface OnCleanupSchedulerAct { __onCleanupSchedulerAct(): CleanupDetails }
+
+export interface OnCleanupSchedulerAct {
+	__onCleanupSchedulerAct(): CleanupDetails;
+}
 
 type MyConfig = {
 	authKey: string

@@ -18,7 +18,7 @@ export class WorkHubItem<Args extends any = void>
 	private tabTag: string | undefined;
 	private customMenuActionsResolver: MenuResolver;
 
-	
+
 	constructor(key: string) {
 		super(`WorkHubItem_${key}`);
 		this.key = key;
@@ -47,7 +47,7 @@ export class WorkHubItem<Args extends any = void>
 		return this;
 	};
 
-	
+
 	public openTab = (id: string, label: string, args: Args) => {
 		ModuleFE_WorkHub.tabs.add(this.prepareTab(id, label, args));
 	};
@@ -83,6 +83,6 @@ export class WorkHubItem<Args extends any = void>
 		if (currentGroupKey)
 			return ModuleFE_WorkHub.group.addTabs(currentGroupKey, newTabs);
 		else
-			ModuleFE_WorkHub.group.create(generateHex(4), tabId,newTabs, customGroupName ?? 'New Group');
+			ModuleFE_WorkHub.group.create(generateHex(4), tabId, newTabs, customGroupName ?? 'New Group');
 	};
 }

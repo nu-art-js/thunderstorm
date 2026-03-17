@@ -21,7 +21,7 @@ import {TS_Object} from '../utils/types.js';
 
 /**
  * Configuration options for CSV serialization.
- * 
+ *
  * @template T - Object type being serialized
  */
 export type CSVProps<T extends TS_Object = TS_Object> = {
@@ -43,16 +43,16 @@ export type CSVProps<T extends TS_Object = TS_Object> = {
 
 /**
  * Serializes an array of objects to CSV string format.
- * 
+ *
  * **Features**:
  * - Customizable separators and wrappers
  * - Automatic field escaping (wraps fields containing separators or line breaks)
  * - Column ordering via `columns` array
  * - Optional header row
- * 
+ *
  * **Escaping**: Fields containing the field separator or line separator are wrapped
  * in the field wrapper character. Field wrapper characters in values are escaped with backslash.
- * 
+ *
  * @template T - Object type
  * @param items - Array of objects to serialize
  * @param _csvProps - CSV configuration options

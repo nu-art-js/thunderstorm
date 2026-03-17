@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import * as React from "react";
+import * as React from 'react';
 
 type State = {
 	counter: number
@@ -44,9 +44,10 @@ export class Example_ErrorBoundary
 
 	render() {
 		return <div>
-			<p>click on the number to increase the counter. The counter is programmed to throw an error when it reaches 4, which will be caught by React's error boundaries.</p>
+			<p>click on the number to increase the counter. The counter is programmed to throw an error when it reaches 4, which will be caught by React's error
+				boundaries.</p>
 			<h1 onClick={this.handleClick}>{this.state.counter}</h1>
-		</div>
+		</div>;
 	}
 
 }

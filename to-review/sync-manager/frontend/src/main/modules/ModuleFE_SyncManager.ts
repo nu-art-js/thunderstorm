@@ -175,7 +175,9 @@ export class ModuleFE_SyncManager_Class
 
 	// ######################### Smart Sync #########################
 
-	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module) => (module as ModuleFE_BaseApi<any> & { syncType?: ModuleSyncType }).syncType === ModuleSyncType.APISync);
+	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseApi<any>>((module) => (module as ModuleFE_BaseApi<any> & {
+		syncType?: ModuleSyncType
+	}).syncType === ModuleSyncType.APISync);
 
 	private getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = this.getModulesToSync();

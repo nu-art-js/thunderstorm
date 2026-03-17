@@ -32,7 +32,9 @@ export type EnvConfigRef = {
 let envConfigRefByModule: Map<Module, EnvConfigRef> = new Map();
 let globalEnvConfigRef: EnvConfigRef | null = null;
 let createPermissionKeyDefaultsFn: ((module: Module) => Promise<void>) | null = null;
-let actionProcessor: { registerAction(opts: { key: string; group: string; description: string; processor: () => Promise<void> }, thisArg: unknown): void } | null = null;
+let actionProcessor: {
+	registerAction(opts: { key: string; group: string; description: string; processor: () => Promise<void> }, thisArg: unknown): void
+} | null = null;
 let serviceAccountsProvider: (() => Promise<ServiceAccountDef[]>) | null = null;
 
 export function setEnvConfigRefForModule(module: Module, ref: EnvConfigRef): void {
@@ -59,11 +61,15 @@ export function getCreatePermissionKeyDefaults(): ((module: Module) => Promise<v
 	return createPermissionKeyDefaultsFn;
 }
 
-export function setActionProcessor(proc: { registerAction(opts: { key: string; group: string; description: string; processor: () => Promise<void> }, thisArg: unknown): void } | null): void {
+export function setActionProcessor(proc: {
+	registerAction(opts: { key: string; group: string; description: string; processor: () => Promise<void> }, thisArg: unknown): void
+} | null): void {
 	actionProcessor = proc;
 }
 
-export function getActionProcessor(): { registerAction(opts: { key: string; group: string; description: string; processor: () => Promise<void> }, thisArg: unknown): void } | null {
+export function getActionProcessor(): {
+	registerAction(opts: { key: string; group: string; description: string; processor: () => Promise<void> }, thisArg: unknown): void
+} | null {
 	return actionProcessor;
 }
 

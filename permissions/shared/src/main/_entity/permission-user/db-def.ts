@@ -2,7 +2,7 @@ import {tsValidateArray, tsValidateStringAndNumbersWithDashes} from '@nu-art/ts-
 import {Database} from '@nu-art/db-api-shared';
 import {DatabaseDef_PermissionUser, PermissionUser_DbKey} from './types.js';
 import {PermissionDBGroup} from '../../consts.js';
-import { tsValidator_AuditableV2 } from '@nu-art/user-account-shared';
+import {tsValidator_AuditableV2} from '@nu-art/user-account-shared';
 
 const Validator_ModifiableProps: DatabaseDef_PermissionUser['modifiablePropsValidator'] = {
 	groups: tsValidateArray({

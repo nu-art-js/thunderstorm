@@ -32,14 +32,14 @@ describe('LogClient_Terminal - Logging', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Terminal);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('test message');
-		
+
 		// Terminal client should add color codes
 		// We can't easily test console output, but we can verify it doesn't throw
 		expect(buffer.buffers[0]).to.include('test message');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Terminal);
 	});
@@ -49,13 +49,13 @@ describe('LogClient_Terminal - Logging', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_Terminal);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('test');
-		
+
 		// Should not throw
 		expect(buffer.buffers[0]).to.be.a('string');
-		
+
 		LogClient_Terminal.keepLogsNaturalColors(false);
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_Terminal);

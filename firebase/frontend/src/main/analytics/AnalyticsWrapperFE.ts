@@ -20,13 +20,13 @@
 import {Logger} from '@nu-art/ts-common';
 import {FirebaseType_Analytics, FirebaseType_CallOptions, FirebaseType_EventNameString} from './types.js';
 import {
-    CustomParams,
-    getAnalytics,
-    logEvent,
-    setAnalyticsCollectionEnabled,
-    setCurrentScreen,
-    setUserId,
-    setUserProperties,
+	CustomParams,
+	getAnalytics,
+	logEvent,
+	setAnalyticsCollectionEnabled,
+	setCurrentScreen,
+	setUserId,
+	setUserProperties,
 } from 'firebase/analytics';
 import {FirebaseApp} from 'firebase/app';
 
@@ -36,51 +36,51 @@ import {FirebaseApp} from 'firebase/app';
  setting custom user properties, and logging events.
  */
 export class AnalyticsWrapperFE
-    extends Logger {
+	extends Logger {
 
-    private readonly analytics: FirebaseType_Analytics;
+	private readonly analytics: FirebaseType_Analytics;
 
-    constructor(app: FirebaseApp) {
-        super();
-        this.analytics = getAnalytics(app);
-    }
+	constructor(app: FirebaseApp) {
+		super();
+		this.analytics = getAnalytics(app);
+	}
 
-    setUserId(userId: string, options?: FirebaseType_CallOptions) {
-        setUserId(this.analytics, userId, options);
-    }
+	setUserId(userId: string, options?: FirebaseType_CallOptions) {
+		setUserId(this.analytics, userId, options);
+	}
 
-    /**
-     * Set the current screen for the user
-     * @param screenName
-     * @param options
-     */
-    setCurrentScreen(screenName: string, options?: FirebaseType_CallOptions) {
-        setCurrentScreen(this.analytics, screenName, options);
-    }
+	/**
+	 * Set the current screen for the user
+	 * @param screenName
+	 * @param options
+	 */
+	setCurrentScreen(screenName: string, options?: FirebaseType_CallOptions) {
+		setCurrentScreen(this.analytics, screenName, options);
+	}
 
-    /**
-     * Enable or disable analytics collection
-     * @param enabled
-     */
-    setAnalyticsCollectionEnabled(enabled: boolean) {
-        setAnalyticsCollectionEnabled(this.analytics, enabled);
-    }
+	/**
+	 * Enable or disable analytics collection
+	 * @param enabled
+	 */
+	setAnalyticsCollectionEnabled(enabled: boolean) {
+		setAnalyticsCollectionEnabled(this.analytics, enabled);
+	}
 
-    /**
-     * Set custom user properties for analytics
-     * @param properties
-     * @param options
-     */
-    setUserProperties(properties: CustomParams, options?: FirebaseType_CallOptions) {
-        setUserProperties(this.analytics, properties);
-    }
+	/**
+	 * Set custom user properties for analytics
+	 * @param properties
+	 * @param options
+	 */
+	setUserProperties(properties: CustomParams, options?: FirebaseType_CallOptions) {
+		setUserProperties(this.analytics, properties);
+	}
 
-    logEvent(
-        eventName: FirebaseType_EventNameString | string,
-        eventParams?: { [key: string]: any },
-        options?: FirebaseType_CallOptions
-    ) {
-        return logEvent(this.analytics, eventName, eventParams, options);
-    }
+	logEvent(
+		eventName: FirebaseType_EventNameString | string,
+		eventParams?: { [key: string]: any },
+		options?: FirebaseType_CallOptions
+	) {
+		return logEvent(this.analytics, eventName, eventParams, options);
+	}
 
 }

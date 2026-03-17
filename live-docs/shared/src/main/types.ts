@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-import {Auditable} from "@nu-art/ts-common";
+import {Auditable} from '@nu-art/ts-common';
 
 export type LiveDocReqParams = {
 	key: string
 }
 
 export type LiveDocHistoryReqParams = LiveDocReqParams & {
-	change: "undo" | "redo"
+	change: 'undo' | 'redo'
 }
 
 

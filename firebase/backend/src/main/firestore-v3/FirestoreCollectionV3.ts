@@ -147,7 +147,7 @@ export class FirestoreCollectionV3<Proto extends DB_Prototype>
 		this.hooks = hooks;
 	}
 
-		doc = Object.freeze({
+	doc = Object.freeze({
 		_: (ref: FirestoreType_DocumentReference<Proto['dbType']>, data?: Proto['dbType']): DocWrapperV3<Proto> => {
 			if (tsValidateResult(ref.id, tsValidateUniqueId)) throw new MUSTNeverHappenException(`Tackled a docRef with id that is an invalid UniqueId: '${ref.id}'`);
 			// @ts-ignore
@@ -183,7 +183,7 @@ export class FirestoreCollectionV3<Proto extends DB_Prototype>
 		},
 	});
 
-		private getAll = async (docs: DocWrapperV3<Proto>[], transaction?: Transaction): Promise<(Proto['dbType'] | undefined)[]> => {
+	private getAll = async (docs: DocWrapperV3<Proto>[], transaction?: Transaction): Promise<(Proto['dbType'] | undefined)[]> => {
 		if (docs.length === 0)
 			return [];
 
@@ -264,7 +264,7 @@ export class FirestoreCollectionV3<Proto extends DB_Prototype>
 		all: this._createAll,
 	});
 
-		private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType, performUpgrade = true) => {
+	private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType, performUpgrade = true) => {
 		//Get all items
 		const docs = this.doc.allItems(items);
 		const dbItems = await this.getAll(docs);
@@ -314,7 +314,7 @@ export class FirestoreCollectionV3<Proto extends DB_Prototype>
 		return this._setAll(items, undefined, defaultMultiWriteType, false);
 	};
 
-		protected _updateAll = async (updateData: UpdateObject<Proto['dbType']>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => {
+	protected _updateAll = async (updateData: UpdateObject<Proto['dbType']>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => {
 		const docs = this.doc.all(updateData.map(_data => _data._id));
 		const toUpdate: UpdateObject<Proto['dbType']>[] = await Promise.all(docs.map(async (_doc, i) => await _doc.prepareForUpdate(updateData[i])));
 		await this.multiWrite(multiWriteType, docs, 'update', toUpdate);
@@ -331,7 +331,7 @@ export class FirestoreCollectionV3<Proto extends DB_Prototype>
 	// 	all: this._updateAll,
 	// });
 
-		protected _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+	protected _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
@@ -445,7 +445,7 @@ export class FirestoreCollectionV3<Proto extends DB_Prototype>
 		yes: {iam: {sure: {iwant: {todelete: {the: {collection: {delete: this.deleteCollection}}}}}}}
 	});
 
-		/**
+	/**
 	 * @param writer Type of BulkWriter - can be Bulk writer or Batch writer
 	 * @param doc
 	 * @param operation create/update/set/delete
@@ -512,7 +512,7 @@ export class FirestoreCollectionV3<Proto extends DB_Prototype>
 		}
 	};
 
-	
+
 	/**
 	 * A firestore transaction is run globally on the firestore project and not specifically on any collection, locking specific documents in the project.
 	 * @param processor

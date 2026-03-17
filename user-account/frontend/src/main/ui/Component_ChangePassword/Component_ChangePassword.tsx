@@ -16,7 +16,7 @@ type State = {
 export class Component_ChangePassword
 	extends ComponentSync<Props, State> {
 
-	
+
 	protected deriveStateFromProps(nextProps: any, state: State): State {
 		const account = SessionKeyFE_Account.get();
 		if (!account)
@@ -25,7 +25,7 @@ export class Component_ChangePassword
 		return state;
 	}
 
-	
+
 	private submitNewPassword = async () => {
 		if (!this.state.newPassword || !this.state.newPasswordCheck) {
 			this.logError('No password or password check');
@@ -55,7 +55,7 @@ export class Component_ChangePassword
 		}
 	};
 
-		private renderCurrentPassword = () => {
+	private renderCurrentPassword = () => {
 		if (!this.state.shouldGiveCurrentPassword)
 			return '';
 

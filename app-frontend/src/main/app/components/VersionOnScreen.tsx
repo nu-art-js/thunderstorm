@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as React from "react";
+import * as React from 'react';
 
 
 export const VersionOnScreen = () => {
 	return <div className="full_screen">
-		<div className={`bottom right absolute`} style={{right:10, bottom:10}}>{`${process.env.appEnv}-${process.env.appVersion}`}</div>
+		<div className={`bottom right absolute`} style={{right: 10, bottom: 10}}>{`${process.env.appEnv}-${process.env.appVersion}`}</div>
 	</div>;
 };

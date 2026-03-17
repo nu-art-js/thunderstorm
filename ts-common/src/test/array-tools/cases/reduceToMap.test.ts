@@ -5,7 +5,7 @@ export type Input<T = any> = {
 	array: T[];
 	keyResolver: (item: T, index: number) => any;
 	mapper: (item: T, index: number) => any;
-	map?: {[key: string]: any};
+	map?: { [key: string]: any };
 };
 
 export type Result = any;

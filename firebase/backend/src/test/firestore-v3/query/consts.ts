@@ -175,9 +175,27 @@ export const queryComplexTestCases: TestModel<CollectionTestInput, TestInputValu
 export const queryWithPagination: QueryTest[] = [
 	{
 		description: 'all out of 10',
-		result: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+		result: [testInstance1,
+						 testInstance2,
+						 testInstance3,
+						 testInstance4,
+						 testInstance5,
+						 testInstance1,
+						 testInstance2,
+						 testInstance3,
+						 testInstance4,
+						 testInstance5],
 		input: {
-			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+			value: [testInstance1,
+							testInstance2,
+							testInstance3,
+							testInstance4,
+							testInstance5,
+							testInstance1,
+							testInstance2,
+							testInstance3,
+							testInstance4,
+							testInstance5],
 			check: async (collection, expectedResult) => {
 				const itemsPage0 = await collection.query.custom({
 					where: {},

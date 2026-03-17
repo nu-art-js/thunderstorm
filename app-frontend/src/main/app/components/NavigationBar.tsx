@@ -82,7 +82,7 @@ export const Route_Root: TS_Route = {
 	],
 };
 
-const PageLinkRoutes: Array<{route: TS_Route, label: string}> = [
+const PageLinkRoutes: Array<{ route: TS_Route, label: string }> = [
 	{route: Route_Home_Def, label: 'Home'},
 	{route: Route_Login_Def, label: 'Login'},
 	{route: Route_Dialog_Def, label: 'Dialog Examples'},

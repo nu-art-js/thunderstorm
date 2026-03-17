@@ -11,5 +11,5 @@ export type API_EditableTest = {
 };
 
 export const ApiDef_EditableTest: ApiDefResolver<API_EditableTest> = {
-	submit: { method: HttpMethod.POST, path: '/v1/editable-test' },
+	submit: {method: HttpMethod.POST, path: '/v1/editable-test'},
 };

@@ -28,10 +28,10 @@ import {
 	BadImplementationException,
 	StaticLogger
 } from '@nu-art/ts-common';
-import {read} from "fs";
+import {read} from 'fs';
 
 
-const PkgReader = await import("'isomorphic-apk-reader'");
+const PkgReader = await import('\'isomorphic-apk-reader\'');
 const ApkPath = 'files-temp/pah.apk';
 
 async function parseApkImpl(file: FileWrapper) {

@@ -15,39 +15,39 @@ type TestCase_ConvertParams = TestModel<Input_ConvertParams, Result_ConvertParam
 
 const test_ConvertParams = async (input: Input_ConvertParams): Promise<Result_ConvertParams> => {
 	const strings = _logger_convertLogParamsToStrings(input.params);
-	return { strings };
+	return {strings};
 };
 
 const runTestCase_ConvertParams = (testCase: TestCase_ConvertParams) => () => runSingleTestCase(test_ConvertParams, testCase);
 
 describe('Utils - Convert Log Params', () => {
 	it('should convert string to string', runTestCase_ConvertParams({
-		input: { params: ['hello'] },
-		result: { strings: ['hello'] }
+		input: {params: ['hello']},
+		result: {strings: ['hello']}
 	}));
 
 	it('should convert number to string', runTestCase_ConvertParams({
-		input: { params: [42] },
-		result: { strings: ['42'] }
+		input: {params: [42]},
+		result: {strings: ['42']}
 	}));
 
 	it('should convert boolean to string', runTestCase_ConvertParams({
-		input: { params: [true, false] },
-		result: { strings: ['true', 'false'] }
+		input: {params: [true, false]},
+		result: {strings: ['true', 'false']}
 	}));
 
 	it('should convert undefined to string', runTestCase_ConvertParams({
-		input: { params: [undefined] },
-		result: { strings: ['undefined'] }
+		input: {params: [undefined]},
+		result: {strings: ['undefined']}
 	}));
 
 	it('should convert null to string', runTestCase_ConvertParams({
-		input: { params: [null] },
-		result: { strings: ['null'] }
+		input: {params: [null]},
+		result: {strings: ['null']}
 	}));
 
 	it('should convert object to JSON string', runTestCase_ConvertParams({
-		input: { params: [{ a: 1, b: 'test' }] },
+		input: {params: [{a: 1, b: 'test'}]},
 		result: async (result) => {
 			// Source uses pretty-printed JSON (null, 2), so expect formatted output
 			expect(result.strings[0]).to.include('"a": 1');
@@ -56,7 +56,7 @@ describe('Utils - Convert Log Params', () => {
 	}));
 
 	it('should convert array to JSON string', runTestCase_ConvertParams({
-		input: { params: [[1, 2, 3]] },
+		input: {params: [[1, 2, 3]]},
 		result: async (result) => {
 			// Source uses pretty-printed JSON (null, 2), so expect formatted output
 			expect(result.strings[0]).to.include('1');
@@ -74,7 +74,7 @@ describe('Utils - Convert Log Params', () => {
 	});
 
 	it('should handle mixed types', runTestCase_ConvertParams({
-		input: { params: ['text', 42, true, { key: 'value' }] },
+		input: {params: ['text', 42, true, {key: 'value'}]},
 		result: async (result) => {
 			expect(result.strings[0]).to.equal('text');
 			expect(result.strings[1]).to.equal('42');
@@ -131,14 +131,14 @@ type TestCase_LogObject = TestModel<Input_LogObject, Result_LogObject>;
 
 const test_LogObject = async (input: Input_LogObject): Promise<Result_LogObject> => {
 	const stringified = _logger_logObject(input.obj);
-	return { stringified };
+	return {stringified};
 };
 
 const runTestCase_LogObject = (testCase: TestCase_LogObject) => () => runSingleTestCase(test_LogObject, testCase);
 
 describe('Utils - Log Object', () => {
 	it('should stringify simple object', runTestCase_LogObject({
-		input: { obj: { a: 1, b: 'test' } },
+		input: {obj: {a: 1, b: 'test'}},
 		result: async (result) => {
 			// Source uses pretty-printed JSON (null, 2), so expect formatted output
 			expect(result.stringified).to.include('"a": 1');
@@ -147,7 +147,7 @@ describe('Utils - Log Object', () => {
 	}));
 
 	it('should stringify nested object', runTestCase_LogObject({
-		input: { obj: { a: { b: { c: 1 } } } },
+		input: {obj: {a: {b: {c: 1}}}},
 		result: async (result) => {
 			// Source uses pretty-printed JSON (null, 2), so expect formatted output
 			expect(result.stringified).to.include('"a"');
@@ -157,7 +157,7 @@ describe('Utils - Log Object', () => {
 	}));
 
 	it('should stringify array', runTestCase_LogObject({
-		input: { obj: [1, 2, 3] as any },
+		input: {obj: [1, 2, 3] as any},
 		result: async (result) => {
 			// Source uses pretty-printed JSON (null, 2), so expect formatted output
 			expect(result.stringified).to.include('1');
@@ -174,29 +174,29 @@ type TestCase_IndentNewLine = TestModel<Input_IndentNewLine, Result_IndentNewLin
 
 const test_IndentNewLine = async (input: Input_IndentNewLine): Promise<Result_IndentNewLine> => {
 	const indented = _logger_indentNewLineBy(input.prefix, input.input);
-	return { indented };
+	return {indented};
 };
 
 const runTestCase_IndentNewLine = (testCase: TestCase_IndentNewLine) => () => runSingleTestCase(test_IndentNewLine, testCase);
 
 describe('Utils - Indent New Line', () => {
 	it('should add prefix to single line', runTestCase_IndentNewLine({
-		input: { prefix: '  ', input: 'test' },
-		result: { indented: '  test' }
+		input: {prefix: '  ', input: 'test'},
+		result: {indented: '  test'}
 	}));
 
 	it('should add prefix to each line', runTestCase_IndentNewLine({
-		input: { prefix: '  ', input: 'line1\nline2\nline3' },
-		result: { indented: '  line1\n  line2\n  line3' }
+		input: {prefix: '  ', input: 'line1\nline2\nline3'},
+		result: {indented: '  line1\n  line2\n  line3'}
 	}));
 
 	it('should handle empty string', runTestCase_IndentNewLine({
-		input: { prefix: '  ', input: '' },
-		result: { indented: '  ' }
+		input: {prefix: '  ', input: ''},
+		result: {indented: '  '}
 	}));
 
 	it('should handle multiple consecutive newlines', runTestCase_IndentNewLine({
-		input: { prefix: '  ', input: 'line1\n\nline2' },
-		result: { indented: '  line1\n  \n  line2' }
+		input: {prefix: '  ', input: 'line1\n\nline2'},
+		result: {indented: '  line1\n  \n  line2'}
 	}));
 });

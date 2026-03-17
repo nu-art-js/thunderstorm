@@ -18,7 +18,9 @@ export function TS_Printable(props: Props): React.ReactElement {
 			return;
 		ref.current = el;
 		done.current = true;
-		printable(el).then(() => { done.current = false; });
+		printable(el).then(() => {
+			done.current = false;
+		});
 	}, [printable]);
 	return (
 		<div

@@ -16,35 +16,35 @@ type TestCase_LogLevel = TestModel<Input_LogLevel, Result_LogLevel>;
 const test_LogLevel = async (input: Input_LogLevel): Promise<Result_LogLevel> => {
 	const prefix = _logger_getPrefix(input.level);
 	const ordinal = LogLevelOrdinal.indexOf(input.level);
-	return { prefix, ordinal };
+	return {prefix, ordinal};
 };
 
 const runTestCase_LogLevel = (testCase: TestCase_LogLevel) => () => runSingleTestCase(test_LogLevel, testCase);
 
 describe('LogLevel Types', () => {
 	it('should map Verbose to correct prefix and ordinal', runTestCase_LogLevel({
-		input: { level: LogLevel.Verbose },
-		result: { prefix: '-V-', ordinal: 0 }
+		input: {level: LogLevel.Verbose},
+		result: {prefix: '-V-', ordinal: 0}
 	}));
 
 	it('should map Debug to correct prefix and ordinal', runTestCase_LogLevel({
-		input: { level: LogLevel.Debug },
-		result: { prefix: '-D-', ordinal: 1 }
+		input: {level: LogLevel.Debug},
+		result: {prefix: '-D-', ordinal: 1}
 	}));
 
 	it('should map Info to correct prefix and ordinal', runTestCase_LogLevel({
-		input: { level: LogLevel.Info },
-		result: { prefix: '-I-', ordinal: 2 }
+		input: {level: LogLevel.Info},
+		result: {prefix: '-I-', ordinal: 2}
 	}));
 
 	it('should map Warning to correct prefix and ordinal', runTestCase_LogLevel({
-		input: { level: LogLevel.Warning },
-		result: { prefix: '-W-', ordinal: 3 }
+		input: {level: LogLevel.Warning},
+		result: {prefix: '-W-', ordinal: 3}
 	}));
 
 	it('should map Error to correct prefix and ordinal', runTestCase_LogLevel({
-		input: { level: LogLevel.Error },
-		result: { prefix: '-E-', ordinal: 4 }
+		input: {level: LogLevel.Error},
+		result: {prefix: '-E-', ordinal: 4}
 	}));
 
 	it('should have LogLevelOrdinal in correct order', () => {

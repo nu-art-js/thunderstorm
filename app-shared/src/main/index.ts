@@ -17,4 +17,4 @@
  * limitations under the License.
  */
 
-export * from "./shared.js"
+export * from './shared.js';

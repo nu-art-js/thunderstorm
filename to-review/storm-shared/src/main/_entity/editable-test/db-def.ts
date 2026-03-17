@@ -23,6 +23,6 @@ export const DBDef_EditableTest: Database<DatabaseDef_EditableTest> = {
 	versions: ['1.0.0'],
 	dbKey: 'editable-test',
 	entityName: 'editable-test',
-	frontend: { group: 'test', name: 'editable-test' },
-	backend: { name: 'editable-test' },
+	frontend: {group: 'test', name: 'editable-test'},
+	backend: {name: 'editable-test'},
 };

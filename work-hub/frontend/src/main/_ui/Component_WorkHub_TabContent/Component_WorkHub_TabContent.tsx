@@ -23,7 +23,7 @@ export class Component_WorkHub_TabContent
 
 	private ref = createRef<HTMLDivElement>();
 
-	
+
 	__onWorkHubTabsUpdated = () => {
 		this.reDeriveState();
 	};
@@ -46,7 +46,7 @@ export class Component_WorkHub_TabContent
 		this.ref.current?.focus();
 	}
 
-	
+
 	// Await-modules is up-level per user-account pattern (Component_AccountThumbnail); no AwaitModules wrapper here.
 	render() {
 		const item = this.state.item;

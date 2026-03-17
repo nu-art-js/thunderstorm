@@ -31,4 +31,4 @@ export type JiraVersion = JiraVersion_Create & {
 	id: string
 }
 
-export type JiraVersion_Update = Omit<JiraVersion, "self">
+export type JiraVersion_Update = Omit<JiraVersion, 'self'>

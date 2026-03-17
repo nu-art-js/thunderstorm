@@ -1,8 +1,8 @@
 /**
  * Finds conflicts between three versions of data (three-way merge).
- * 
+ *
  * **Note**: This function is currently not implemented (empty body).
- * 
+ *
  * @template T - Type of data being merged
  * @param origin - Original/base version
  * @param ours - Our version (current changes)

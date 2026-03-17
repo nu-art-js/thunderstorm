@@ -20,12 +20,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/echo-query'};
+
 			class EchoQuery {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(params: Record<string, string>) {
 					return params ?? {};
 				}
 			}
+
 			new EchoQuery();
 
 			const res = await request(server.getExpress())
@@ -40,12 +42,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'delete' as const, path: '/echo-query-delete'};
+
 			class EchoQueryDelete {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async delete(params: Record<string, string>) {
 					return params ?? {};
 				}
 			}
+
 			new EchoQueryDelete();
 
 			const res = await request(server.getExpress())
@@ -60,12 +64,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'post' as const, path: '/echo-body'};
+
 			class EchoBody {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async post(body: { x: number }) {
 					return body;
 				}
 			}
+
 			new EchoBody();
 
 			const res = await request(server.getExpress())
@@ -81,12 +87,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'put' as const, path: '/echo-put'};
+
 			class EchoPut {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async put(body: { key: string }) {
 					return body;
 				}
 			}
+
 			new EchoPut();
 
 			const res = await request(server.getExpress())
@@ -102,12 +110,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'post' as const, path: '/echo-text-body'};
+
 			class EchoTextBody {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async post(body: unknown) {
 					return {raw: typeof body === 'string' ? body : ''};
 				}
 			}
+
 			new EchoTextBody();
 
 			const res = await request(server.getExpress())
@@ -123,6 +133,7 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'patch' as const, path: '/patch-empty'};
+
 			class PatchEmpty {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async patch(body: unknown) {
@@ -131,6 +142,7 @@ describe('ServerApi - Supertest permutations', () => {
 					return {received: body, empty};
 				}
 			}
+
 			new PatchEmpty();
 
 			const res = await request(server.getExpress())
@@ -146,12 +158,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/json'};
+
 			class JsonApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					return {ok: true};
 				}
 			}
+
 			new JsonApi();
 
 			await request(server.getExpress())
@@ -165,12 +179,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/text'};
+
 			class TextApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					return 'hello';
 				}
 			}
+
 			new TextApi();
 
 			const res = await request(server.getExpress()).get('/text').expect(200).expect('Content-Type', /text\/plain/);
@@ -181,12 +197,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/html'};
+
 			class HtmlApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					return '<html><body>hi</body></html>';
 				}
 			}
+
 			new HtmlApi();
 
 			const res = await request(server.getExpress()).get('/html').expect(200).expect('Content-Type', /text\/html/);
@@ -197,12 +215,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/empty'};
+
 			class EmptyApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					MemKey_HttpResponse.get().code(204);
 				}
 			}
+
 			new EmptyApi();
 
 			const res = await request(server.getExpress()).get('/empty').expect(204);
@@ -214,12 +234,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/redirect'};
+
 			class RedirectApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					MemKey_HttpResponse.get().redirect(302, '/target');
 				}
 			}
+
 			new RedirectApi();
 
 			const res = await request(server.getExpress()).get('/redirect').expect(302);
@@ -230,16 +252,21 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/stream'};
+
 			class StreamApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
-					const s = new Readable({read() {}});
+					const s = new Readable({
+						read() {
+						}
+					});
 					s.push('chunk1');
 					s.push('chunk2');
 					s.push(null);
 					MemKey_HttpResponse.get().stream(200, s);
 				}
 			}
+
 			new StreamApi();
 
 			const res = await request(server.getExpress()).get('/stream').expect(200);
@@ -252,6 +279,7 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/echo-header'};
+
 			class EchoHeader {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
@@ -259,6 +287,7 @@ describe('ServerApi - Supertest permutations', () => {
 					return {value: headers['x-custom'] ?? ''};
 				}
 			}
+
 			new EchoHeader();
 
 			const res = await request(server.getExpress())
@@ -273,6 +302,7 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/res-header'};
+
 			class ResHeaderApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
@@ -280,6 +310,7 @@ describe('ServerApi - Supertest permutations', () => {
 					return {ok: true};
 				}
 			}
+
 			new ResHeaderApi();
 
 			const res = await request(server.getExpress()).get('/res-header').expect(200);
@@ -293,12 +324,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/err400'};
+
 			class Err400Api {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					throw new ApiException(400, 'bad request');
 				}
 			}
+
 			new Err400Api();
 
 			const res = await request(server.getExpress()).get('/err400').expect(400).expect('Content-Type', /json/);
@@ -312,12 +345,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/err500'};
+
 			class Err500Api {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					throw new Error('server error');
 				}
 			}
+
 			new Err500Api();
 
 			const res = await request(server.getExpress()).get('/err500').expect(500);
@@ -330,6 +365,7 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/middleware'};
+
 			class MiddlewareApi {
 				@ApiHandler(() => apiDef, {
 					httpServer: () => server,
@@ -343,6 +379,7 @@ describe('ServerApi - Supertest permutations', () => {
 					return {ok: true};
 				}
 			}
+
 			new MiddlewareApi();
 
 			const res = await request(server.getExpress()).get('/middleware').expect(200);
@@ -354,6 +391,7 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/multi-mw'};
+
 			class MultiMiddlewareApi {
 				@ApiHandler(() => apiDef, {
 					httpServer: () => server,
@@ -370,6 +408,7 @@ describe('ServerApi - Supertest permutations', () => {
 					return {ok: true};
 				}
 			}
+
 			new MultiMiddlewareApi();
 
 			const res = await request(server.getExpress()).get('/multi-mw').expect(200);
@@ -382,6 +421,7 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/forbidden'};
+
 			class ForbiddenApi {
 				@ApiHandler(() => apiDef, {
 					httpServer: () => server,
@@ -395,6 +435,7 @@ describe('ServerApi - Supertest permutations', () => {
 					return {shouldNotAppear: true};
 				}
 			}
+
 			new ForbiddenApi();
 
 			const res = await request(server.getExpress()).get('/forbidden').expect(403);
@@ -412,12 +453,14 @@ describe('ServerApi - Supertest permutations', () => {
 			});
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/any'};
+
 			class AnyApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					return {ok: true};
 				}
 			}
+
 			new AnyApi();
 
 			const res = await request(server.getExpress()).get('/any').expect(200);
@@ -433,6 +476,7 @@ describe('ServerApi - Supertest permutations', () => {
 			});
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/order'};
+
 			class OrderApi {
 				@ApiHandler(() => apiDef, {
 					httpServer: () => server,
@@ -447,6 +491,7 @@ describe('ServerApi - Supertest permutations', () => {
 					return {ok: true};
 				}
 			}
+
 			new OrderApi();
 
 			const res = await request(server.getExpress()).get('/order').expect(200);
@@ -458,24 +503,28 @@ describe('ServerApi - Supertest permutations', () => {
 		it('One server with multiple routes responds correctly to each', async () => {
 			const server = createTestServer();
 			await server.init();
+
 			class AlphaApi {
 				@ApiHandler(() => ({method: 'get' as const, path: '/alpha'}), {httpServer: () => server})
 				async get(_params: unknown) {
 					return {name: 'alpha'};
 				}
 			}
+
 			class BetaApi {
 				@ApiHandler(() => ({method: 'get' as const, path: '/beta'}), {httpServer: () => server})
 				async get(_params: unknown) {
 					return {name: 'beta'};
 				}
 			}
+
 			class GammaApi {
 				@ApiHandler(() => ({method: 'post' as const, path: '/gamma'}), {httpServer: () => server})
 				async post(body: { id: number }) {
 					return {name: 'gamma', id: body?.id};
 				}
 			}
+
 			new AlphaApi();
 			new BetaApi();
 			new GammaApi();
@@ -496,12 +545,14 @@ describe('ServerApi - Supertest permutations', () => {
 		it('Unknown path returns 404 when other APIs are registered', async () => {
 			const server = createTestServer();
 			await server.init();
+
 			class OnlyPingApi {
 				@ApiHandler(() => ({method: 'get' as const, path: '/ping'}), {httpServer: () => server})
 				async get(_params: unknown) {
 					return {ok: true};
 				}
 			}
+
 			new OnlyPingApi();
 
 			await request(server.getExpress()).get('/ping').expect(200);
@@ -515,18 +566,21 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/duplicate-path'};
+
 			class FirstApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					return {first: true};
 				}
 			}
+
 			class SecondApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					return {second: true};
 				}
 			}
+
 			new FirstApi();
 			expect(() => new SecondApi()).to.throw(Error, /Duplicate API path: \/duplicate-path/);
 		});
@@ -535,12 +589,14 @@ describe('ServerApi - Supertest permutations', () => {
 			const server = createTestServer();
 			await server.init();
 			const apiDef = {method: 'get' as const, path: '/only-one'};
+
 			class OnlyOneApi {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
 					return {winner: true};
 				}
 			}
+
 			new OnlyOneApi();
 			try {
 				class OtherApi {
@@ -549,6 +605,7 @@ describe('ServerApi - Supertest permutations', () => {
 						return {winner: false};
 					}
 				}
+
 				new OtherApi();
 				expect.fail('should have thrown');
 			} catch (e) {

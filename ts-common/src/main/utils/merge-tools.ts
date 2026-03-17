@@ -23,7 +23,7 @@ import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 /**
  * Type helper for merged object types.
- * 
+ *
  * Creates a type that represents the result of merging two object types,
  * with proper handling of overlapping and distinct keys.
  */
@@ -37,7 +37,7 @@ type MergedType<O, U> = {
 
 /**
  * Type-safe version of mergeObject that preserves TypeScript types.
- * 
+ *
  * @param original - Original object
  * @param override - Override object
  * @param unsafe - If true, allows merging different types (default: false)
@@ -49,15 +49,15 @@ export function mergeObjectTyped<Ori, Ove>(original: Ori, override: Ove, unsafe:
 
 /**
  * Deep merges two objects, recursively merging nested objects.
- * 
+ *
  * **Behavior**:
  * - Deep clones the original object
  * - Recursively merges nested objects
  * - Removes keys with undefined values from the result
  * - If original is null/undefined, returns a filtered clone of override
- * 
+ *
  * **Note**: Arrays are not deeply merged - see `mergeArray()` for array handling.
- * 
+ *
  * @param original - Original object to merge into
  * @param override - Override object (takes precedence)
  * @param unsafe - If true, allows merging different types (default: false)
@@ -84,11 +84,11 @@ export function mergeObject(original: any, override: any, unsafe: boolean = fals
 
 /**
  * Merges two arrays.
- * 
+ *
  * **Current implementation**: Simply returns the override array.
  * The commented code suggests a future implementation that would merge
  * array items based on some identifier (e.g., `id` field).
- * 
+ *
  * @param original - Original array
  * @param override - Override array
  * @returns Override array (original is currently ignored)
@@ -119,7 +119,7 @@ export function mergeArray(original: any[], override: any[]) {
 
 /**
  * Recursively merges two values (objects, arrays, or primitives).
- * 
+ *
  * **Merging rules**:
  * - If override is null/undefined, returns override
  * - If original is null/undefined, returns filtered override (if object) or override
@@ -127,10 +127,10 @@ export function mergeArray(original: any[], override: any[]) {
  * - Arrays: Uses `mergeArray()` (currently returns override)
  * - Objects: Deep merges recursively
  * - Primitives: Returns override
- * 
+ *
  * **Type safety**: By default, throws `BadImplementationException` if trying to merge
  * different types (e.g., object with array, string with number). Set `unsafe=true` to allow.
- * 
+ *
  * @param original - Original value
  * @param override - Override value (takes precedence)
  * @param unsafe - If true, allows merging different types (default: false)

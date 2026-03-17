@@ -5,20 +5,20 @@ import {DB_Asset} from './types.js';
 export const PushKey_FileUploaded = 'file-uploaded';
 
 export enum FileStatus {
-	Idle = 'Idle',
-	ObtainingUrl = 'ObtainingUrl',
-	UrlObtained = 'UrlObtained',
-	UploadingFile = 'UploadingFile',
-	WaitingForProcessing = 'WaitingForProcessing',
-	Processing = 'Processing',
-	PostProcessing = 'PostProcessing',
-	Completed = 'Completed',
-	ErrorWhileProcessing = 'ErrorWhileProcessing',
-	ErrorMakingPublic = 'ErrorMakingPublic',
-	ErrorNoValidator = 'ErrorNoValidator',
-	ErrorNoConfig = 'ErrorNoConfig',
+	Idle                    = 'Idle',
+	ObtainingUrl            = 'ObtainingUrl',
+	UrlObtained             = 'UrlObtained',
+	UploadingFile           = 'UploadingFile',
+	WaitingForProcessing    = 'WaitingForProcessing',
+	Processing              = 'Processing',
+	PostProcessing          = 'PostProcessing',
+	Completed               = 'Completed',
+	ErrorWhileProcessing    = 'ErrorWhileProcessing',
+	ErrorMakingPublic       = 'ErrorMakingPublic',
+	ErrorNoValidator        = 'ErrorNoValidator',
+	ErrorNoConfig           = 'ErrorNoConfig',
 	ErrorRetrievingMetadata = 'ErrorRetrievingMetadata',
-	Error = 'Error'
+	Error                   = 'Error'
 }
 
 type FileUploadResult = { status: FileStatus, asset: DB_Asset };

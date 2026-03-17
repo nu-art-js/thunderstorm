@@ -20,11 +20,11 @@ import {randomBytes} from 'crypto';
 
 /**
  * Generates a cryptographically secure random hexadecimal string.
- * 
+ *
  * Uses `crypto.randomBytes()` for secure random generation. The length may be
  * slightly longer than requested if an odd length is specified (due to hex
  * encoding), so the result is sliced to the exact length.
- * 
+ *
  * @param length - Desired length of hex string
  * @returns Lowercase hexadecimal string of the specified length
  */
@@ -36,26 +36,27 @@ export function generateHex(length: number) {
 
 /**
  * Generates a UUID v4 (random UUID).
- * 
+ *
  * **Security Warning**: Uses `Math.random()` which is not cryptographically secure.
  * For security-sensitive use cases, use a library that generates cryptographically
  * secure UUIDs (e.g., `crypto.randomUUID()` in Node.js 14.17+).
- * 
+ *
  * @returns UUID string in format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
  */
 export function generateUUID() {
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-		const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+		const r = Math.random() * 16 | 0,
+					v = c === 'x' ? r : (r & 0x3 | 0x8);
 		return v.toString(16);
 	});
 }
 
 /**
  * Generates an 8-character string suitable for short URL usage.
- * 
+ *
  * Uses cryptographically secure random bytes to generate a URL-safe identifier.
  * Character set includes alphanumeric characters plus dash and underscore.
- * 
+ *
  * @returns 8-character string for short URL
  */
 export function generateShortURL(): string {

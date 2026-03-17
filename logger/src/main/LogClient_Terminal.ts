@@ -17,14 +17,14 @@ import {
 
 /**
  * ANSI escape code to reset terminal color formatting.
- * 
+ *
  * Used to reset color codes after applying colored log output.
  */
 export const NoColor = '\x1b[0m';
 
 /**
  * Log client implementation for terminal/console output with ANSI color codes.
- * 
+ *
  * Outputs colored log messages to the console using ANSI escape sequences.
  * Different log levels are displayed in different colors for visual distinction.
  */
@@ -36,7 +36,7 @@ class LogClient_Terminal_class
 
 	/**
 	 * Gets the ANSI color code for a log level.
-	 * 
+	 *
 	 * @param level - Log level
 	 * @param bold - Whether to apply bold formatting
 	 * @returns ANSI escape sequence for the color
@@ -69,10 +69,10 @@ class LogClient_Terminal_class
 
 	/**
 	 * Outputs a log message to the terminal with color formatting.
-	 * 
+	 *
 	 * Converts all log parameters to strings, applies color codes, and outputs
 	 * to console.log. Always resets color at the end of the line.
-	 * 
+	 *
 	 * @param level - Log level
 	 * @param bold - Whether to apply bold formatting
 	 * @param prefix - Composed prefix string
@@ -88,10 +88,10 @@ class LogClient_Terminal_class
 
 	/**
 	 * Controls whether natural colors in log output are preserved.
-	 * 
+	 *
 	 * When enabled, disables ANSI color codes to preserve any colors that might
 	 * be present in the log content itself.
-	 * 
+	 *
 	 * @param keepNaturalColors - If true, disables color codes. Defaults to true.
 	 */
 	public keepLogsNaturalColors(keepNaturalColors = true) {

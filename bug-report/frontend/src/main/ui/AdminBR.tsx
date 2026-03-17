@@ -33,7 +33,8 @@ export class AdminBR
 				<button onClick={async () => {
 					await ModuleFE_BugReportAdmin.retrieveLogs();
 					this.forceUpdate();
-				}}>click to display logs</button>
+				}}>click to display logs
+				</button>
 				<div>
 					<table style={{width: '100%'}}>{logs.map(this.createRow)}</table>
 				</div>

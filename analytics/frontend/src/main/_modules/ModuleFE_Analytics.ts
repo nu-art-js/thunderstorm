@@ -14,15 +14,15 @@ class ModuleFE_Analytics_Class
 	extends Module<Config> {
 
 	sendEvent(payload: Analytics_SendEvent['request']): { executeSync: () => Promise<Analytics_SendEvent['response']> } {
-		return { executeSync: () => this.runSendEvent(payload) };
+		return {executeSync: () => this.runSendEvent(payload)};
 	}
 
 	updateUser(payload: Analytics_UpdateUser['request']): { executeSync: () => Promise<Analytics_UpdateUser['response']> } {
-		return { executeSync: () => this.runUpdateUser(payload) };
+		return {executeSync: () => this.runUpdateUser(payload)};
 	}
 
 	updateLexicon(payload: Analytics_UpdateLexicon['request']): { executeSync: () => Promise<Analytics_UpdateLexicon['response']> } {
-		return { executeSync: () => this.runUpdateLexicon(payload) };
+		return {executeSync: () => this.runUpdateLexicon(payload)};
 	}
 
 	@ApiCaller((m: ModuleFE_Analytics_Class) => ApiDef_Analytics(m.config.baseURL).sendEvent)

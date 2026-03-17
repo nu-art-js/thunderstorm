@@ -24,10 +24,34 @@ test.describe('Integration - full CRUD flow', () => {
 			(client as any).sendRequest = async (req: any) => {
 				callCount++;
 				const path = req?.url ?? '';
-				if (path.includes('query')) return {data: [{_id: '1', name: 'a', __created: 1, __updated: 1, _v: 'v1'}], status: 200, statusText: 'OK', headers: {}, config: {}};
-				if (path.includes('upsert')) return {data: {_id: '1', name: 'upserted', __created: 1, __updated: 2, _v: 'v1'}, status: 200, statusText: 'OK', headers: {}, config: {}};
-				if (path.includes('patch')) return {data: {_id: '1', name: 'patched', __created: 1, __updated: 3, _v: 'v1'}, status: 200, statusText: 'OK', headers: {}, config: {}};
-				if (path.includes('delete-unique')) return {data: {_id: '1', name: 'patched', __created: 1, __updated: 3, _v: 'v1'}, status: 200, statusText: 'OK', headers: {}, config: {}};
+				if (path.includes('query')) return {
+					data: [{_id: '1', name: 'a', __created: 1, __updated: 1, _v: 'v1'}],
+					status: 200,
+					statusText: 'OK',
+					headers: {},
+					config: {}
+				};
+				if (path.includes('upsert')) return {
+					data: {_id: '1', name: 'upserted', __created: 1, __updated: 2, _v: 'v1'},
+					status: 200,
+					statusText: 'OK',
+					headers: {},
+					config: {}
+				};
+				if (path.includes('patch')) return {
+					data: {_id: '1', name: 'patched', __created: 1, __updated: 3, _v: 'v1'},
+					status: 200,
+					statusText: 'OK',
+					headers: {},
+					config: {}
+				};
+				if (path.includes('delete-unique')) return {
+					data: {_id: '1', name: 'patched', __created: 1, __updated: 3, _v: 'v1'},
+					status: 200,
+					statusText: 'OK',
+					headers: {},
+					config: {}
+				};
 				return {data: null, status: 200, statusText: 'OK', headers: {}, config: {}};
 			};
 			const api = new TestBaseApi(client);

@@ -18,7 +18,7 @@
  */
 
 export enum ServiceKey {
-	DialogFlow = "dialogflow.googleapis.com"
+	DialogFlow = 'dialogflow.googleapis.com'
 }
 
 export enum GCPScope {

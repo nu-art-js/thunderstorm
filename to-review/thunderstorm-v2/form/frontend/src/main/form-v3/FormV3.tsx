@@ -53,7 +53,7 @@ export class Component_FormV3<T>
 		const Editor = renderer.editor;
 		return (
 			<TS_PropRenderer.Vertical key={String(prop)} label={renderer.label}>
-				<Editor editable={editable} prop={prop} />
+				<Editor editable={editable} prop={prop}/>
 			</TS_PropRenderer.Vertical>
 		);
 	}

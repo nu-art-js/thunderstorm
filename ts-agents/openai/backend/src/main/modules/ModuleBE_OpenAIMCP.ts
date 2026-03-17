@@ -8,7 +8,7 @@ import {
 	ChatCompletionUserMessageParam
 } from 'openai/resources';
 import {OpenAI} from 'openai';
-import { ModuleBE_AgentTools } from '@nu-art/ts-agent-tools-backend';
+import {ModuleBE_AgentTools} from '@nu-art/ts-agent-tools-backend';
 
 type AgentInputMessage = ChatCompletionSystemMessageParam
 	| ChatCompletionUserMessageParam

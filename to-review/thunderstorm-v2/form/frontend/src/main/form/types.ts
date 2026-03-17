@@ -15,8 +15,8 @@ export type InputField<T, K extends keyof T = keyof T> = {
 	hint?: string;
 };
 
-export type Form<T extends TS_Object> = {[K in keyof T]: InputField<T, K>};
-export type FormRenderer<T extends TS_Object> = {[K in keyof T]: (value: Form_FieldProps<T, K>) => React.ReactNode};
+export type Form<T extends TS_Object> = { [K in keyof T]: InputField<T, K> };
+export type FormRenderer<T extends TS_Object> = { [K in keyof T]: (value: Form_FieldProps<T, K>) => React.ReactNode };
 
 export type Form_FieldProps<T extends TS_Object = TS_Object, K extends keyof T = keyof T> = {
 	key: K;

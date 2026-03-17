@@ -24,9 +24,9 @@ import {exists} from './tools.js';
 
 /**
  * Retrieves a value from an object using dot notation (e.g., "user.profile.name").
- * 
+ *
  * **Warning**: No error handling for missing properties - will throw if path is invalid.
- * 
+ *
  * @param key - Dot-notation path (e.g., "user.profile.name")
  * @param dotNotatedObject - Object to traverse
  * @returns The value at the specified path
@@ -40,14 +40,14 @@ export function getDotNotatedValue<T extends object>(key: DotNotation<T>, dotNot
 
 /**
  * Creates a deep clone of an object, recursively cloning all nested objects and arrays.
- * 
+ *
  * Primitive values (string, number, boolean, null, undefined) are returned as-is.
  * Arrays and objects are recursively cloned. Functions and other non-POJO types are
  * not properly cloned (they are copied by reference).
- * 
+ *
  * **Note**: This does not handle circular references and will cause a stack overflow
  * if the object contains cycles.
- * 
+ *
  * @param obj - Object to clone
  * @returns Deep clone of the object
  */
@@ -97,11 +97,11 @@ export function cloneObj<T extends TS_Object>(obj: T): T {
 
 /**
  * Compares two objects after removing specified keys from both.
- * 
+ *
  * Useful for comparing objects while ignoring certain fields (e.g., timestamps,
  * IDs, or computed properties). Both objects are deep-cloned before comparison
  * to avoid mutating the originals.
- * 
+ *
  * @param one - First object to compare
  * @param two - Second object to compare
  * @param keysToFilterOut - Optional array of keys to exclude from comparison
@@ -129,18 +129,18 @@ const compareRegExp = (a: RegExp, b: RegExp): boolean =>
 
 /**
  * Deep equality comparison for objects, arrays, and primitives.
- * 
+ *
  * Performs recursive deep comparison with special handling for:
  * - **RegExp**: Compares source, flags, and lastIndex
  * - **Date**: Compares epoch time (getTime())
  * - **Arrays**: Element-by-element comparison
  * - **Objects**: Key-by-key comparison (optionally limited to specified keys)
- * 
+ *
  * **Limitations**:
  * - Functions are not compared (throws BadImplementationException)
  * - Circular references are not handled (will cause stack overflow)
  * - Only enumerable own properties are compared
- * 
+ *
  * @param one - First value to compare
  * @param two - Second value to compare
  * @param keys - Optional array of keys to compare (only these keys are checked for objects)
@@ -224,9 +224,9 @@ export function assert<T>(message: string, expected: T, actual: T) {
 
 /**
  * Removes keys from an object based on a filter function (in-place).
- * 
+ *
  * **Important**: This modifies the object in-place by deleting matching keys.
- * 
+ *
  * @param obj - Object to filter (modified in-place)
  * @param keys - Key(s) to check. Defaults to all keys in the object.
  * @param filter - Function that returns true for keys to remove. Defaults to removing
@@ -264,17 +264,17 @@ const defaultScrubConfig: ScrubConfig = {
 
 /**
  * Recursively removes "empty" values from objects and arrays.
- * 
+ *
  * Scrubs an object/array by removing empty values based on configuration:
  * - Empty strings (if `emptyStrings: true`)
  * - Empty arrays (if `emptyArrays: true`)
  * - Empty objects (if `emptyObjects: true`)
- * 
+ *
  * The scrubbing is recursive - nested objects and arrays are also scrubbed.
  * By default, returns a copy (`returnCopy: true`), but can modify in-place.
- * 
+ *
  * **Note**: Booleans and numbers are never removed, even if falsy (0, false).
- * 
+ *
  * @param item - Object or array to scrub
  * @param config - Configuration for what to scrub
  * @returns Scrubbed object/array, or undefined if the entire item was scrubbed
@@ -338,14 +338,14 @@ export function reduceObject<ACC, T extends TypedMap<any>>(object: T, acc: ACC, 
 
 /**
  * Recursively freezes an object and all its nested properties.
- * 
+ *
  * Makes an object and all its nested objects/arrays immutable by calling
  * `Object.freeze()` recursively. Once frozen, properties cannot be added,
  * modified, or deleted.
- * 
+ *
  * **Note**: Does not handle circular references - will cause stack overflow
  * if the object contains cycles.
- * 
+ *
  * @param object - Object to freeze
  * @returns The frozen object (same instance)
  */

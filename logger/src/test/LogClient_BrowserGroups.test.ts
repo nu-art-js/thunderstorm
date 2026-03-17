@@ -14,14 +14,14 @@ describe('LogClient_BrowserGroups - Logging', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_BrowserGroups);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('test message');
-		
+
 		// BrowserGroups uses console.groupCollapsed which is hard to test without browser
 		// But we can verify it doesn't throw and buffer receives the message
 		expect(buffer.buffers[0]).to.include('test message');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_BrowserGroups);
 	});
@@ -30,13 +30,13 @@ describe('LogClient_BrowserGroups - Logging', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_BrowserGroups);
-		
+
 		const logger = new Logger('TestLogger');
-		logger.logInfo('primitive message', { object: 'data' });
-		
+		logger.logInfo('primitive message', {object: 'data'});
+
 		// Should not throw
 		expect(buffer.buffers[0]).to.be.a('string');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_BrowserGroups);
 	});
@@ -45,13 +45,13 @@ describe('LogClient_BrowserGroups - Logging', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_BrowserGroups);
-		
+
 		const logger = new Logger('TestLogger');
-		logger.logInfo({ key: 'value' }, 'additional message');
-		
+		logger.logInfo({key: 'value'}, 'additional message');
+
 		// Should not throw
 		expect(buffer.buffers[0]).to.be.a('string');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_BrowserGroups);
 	});
@@ -62,14 +62,14 @@ describe('LogClient_BrowserGroups - Styling', () => {
 		const buffer = createTestBuffer();
 		BeLogged.addClient(buffer);
 		BeLogged.addClient(LogClient_BrowserGroups);
-		
+
 		const logger = new Logger('TestLogger');
 		logger.logInfo('styled message');
-		
+
 		// BrowserGroups composer includes %c markers for styling
 		// The prefix should contain level, timestamp, and tag markers
 		expect(buffer.buffers[0]).to.include('TestLogger');
-		
+
 		BeLogged.removeClient(buffer);
 		BeLogged.removeClient(LogClient_BrowserGroups);
 	});

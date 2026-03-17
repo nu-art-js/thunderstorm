@@ -32,7 +32,9 @@ export class AxisYBorder
 				<text
 					style={{textAnchor: 'middle', fontSize: 12}}
 					dy=".71em"
-					x={this.props.placeInMiddle ? this.props.xScale(d) + ((this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d)) / 2) : this.props.xScale(d)}
+					x={this.props.placeInMiddle
+						? this.props.xScale(d) + ((this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d)) / 2)
+						: this.props.xScale(d)}
 					y={this.props.height + textPaddingY}
 				>
 					{this.props.tickValues ? this.props.tickValues[d] : d}

@@ -7,7 +7,7 @@ import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-ar
 export const Message_DbKey = 'messages';
 type DBKey = typeof Message_DbKey;
 
-type VersionTypes_Message = {'1.0.0': DB_Message};
+type VersionTypes_Message = { '1.0.0': DB_Message };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_Message>;
 type UniqueKeys = '_id';
 type GeneratedKeys = '_auditorId';

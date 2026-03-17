@@ -17,35 +17,35 @@
  * limitations under the License.
  */
 
-import * as fs from "fs";
-import {AppTester} from "@nu-art/testelot";
+import * as fs from 'fs';
+import {AppTester} from '@nu-art/testelot';
 import {
 	ModuleBE_Firebase,
 	ModuleBE_Firebase_Class
-} from "@nu-art/firebase-backend";
-import {ImplementationMissingException} from "@nu-art/ts-common";
+} from '@nu-art/firebase-backend';
+import {ImplementationMissingException} from '@nu-art/ts-common';
 
 export class MyTester
 	extends AppTester {
 
 	prepare() {
-		ModuleBE_Firebase_Class.localAdminConfigId = "test-permissions";
+		ModuleBE_Firebase_Class.localAdminConfigId = 'test-permissions';
 
 		const serviceAccount = this.resolveServiceAccount();
 
-		ModuleBE_Firebase.setDefaultConfig({"test-permissions": serviceAccount});
+		ModuleBE_Firebase.setDefaultConfig({'test-permissions': serviceAccount});
 	}
 
 	private resolveServiceAccount() {
-		let pathToServiceAccount = process.env.npm_config_service_account || process.argv.find((arg: string) => arg.startsWith("--service-account="));
+		let pathToServiceAccount = process.env.npm_config_service_account || process.argv.find((arg: string) => arg.startsWith('--service-account='));
 		if (!pathToServiceAccount)
-			throw new ImplementationMissingException("could not find path to service account!!!");
+			throw new ImplementationMissingException('could not find path to service account!!!');
 
-		pathToServiceAccount = pathToServiceAccount.replace("--service-account=", "");
-		return JSON.parse(fs.readFileSync(pathToServiceAccount, "utf8"))
+		pathToServiceAccount = pathToServiceAccount.replace('--service-account=', '');
+		return JSON.parse(fs.readFileSync(pathToServiceAccount, 'utf8'));
 	}
 
 	build(): void {
-		super.build()
+		super.build();
 	}
 }

@@ -36,37 +36,50 @@ export class Grid
 	}
 }
 
-export class LL_V_L extends LinearLayout {
+export class LL_V_L
+	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
 		super(props, 'll_v_l');
 	}
 }
-export class LL_V_C extends LinearLayout {
+
+export class LL_V_C
+	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
 		super(props, 'll_v_c');
 	}
 }
-export class LL_V_R extends LinearLayout {
+
+export class LL_V_R
+	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
 		super(props, 'll_v_r');
 	}
 }
-export class LL_H_T extends LinearLayout {
+
+export class LL_H_T
+	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
 		super(props, 'll_h_t');
 	}
 }
-export class LL_H_C extends LinearLayout {
+
+export class LL_H_C
+	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
 		super(props, 'll_h_c');
 	}
 }
-export class LL_H_B extends LinearLayout {
+
+export class LL_H_B
+	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
 		super(props, 'll_h_b');
 	}
 }
-export class LL_VH_C extends LinearLayout {
+
+export class LL_VH_C
+	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
 		super(props, 'll_vh_c');
 	}

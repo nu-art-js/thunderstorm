@@ -20,7 +20,7 @@
 import * as React from 'react';
 import {ICONS} from '@app/common/frontend/icons/index';
 import {BaseNodeRenderer,} from '@nu-art/thunderstorm-frontend/index';
-import { Plague} from './consts.js';
+import {Plague} from './consts.js';
 import {Playground_DropdownSingleAndMulti} from './Example_Dropdown_SingleAndMulti.js';
 import {Playground_DropdownMultiType} from './Example_Dropdown_MultiType.js';
 import {Playground_DropdownSingleType} from './Example_Dropdown_SingleType.js';
@@ -57,7 +57,7 @@ export class Example_AllDropDowns_Renderer
 	}
 }
 
-export const Example_AllDropDowns = {renderer: Example_AllDropDowns_Renderer, name: 'ALL DropDown Examples'}
+export const Example_AllDropDowns = {renderer: Example_AllDropDowns_Renderer, name: 'ALL DropDown Examples'};
 
 export class _ItemRenderer
 	extends React.Component<Props> {
