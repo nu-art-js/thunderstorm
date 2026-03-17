@@ -5,98 +5,274 @@ alwaysApply: false
 
 # How to use http
 
-The http lib provides type-safe HTTP client (for calling APIs) and server (for exposing APIs). You can use client only (e.g. frontend or service calling an existing API), server only (e.g. backend exposing an API to external clients), or both (full-stack typed API).
+The http lib provides type-safe HTTP client (for calling APIs) and server (for exposing APIs). Three packages form the stack:
 
-## Domain matrix
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/api-types` | API type definitions, `ApiDef`, `ApiDefResolver`, `HttpMethod` |
+| `@nu-art/http-client` | Type-safe HTTP client, `@ApiCaller` decorator |
+| `@nu-art/http-server` | Express HTTP server, `@ApiHandler` decorator |
 
-| Scenario | Packages to use |
-|----------|-----------------|
-| Call backend APIs (frontend, another service) | client (+ api-types) |
-| Expose HTTP APIs (backend) | server (+ api-types) |
-| Full-stack typed API | client + server (+ api-types) |
-
-api-types is used by both client and server for ApiDef, BodyApi, QueryApi. Each section below is self-contained for that domain.
+api-types is always required. Client and server are independent of each other.
 
 ---
 
-## Client (@nu-art/http-client)
+## api-types (`@nu-art/api-types`)
 
-Use for type-safe HTTP client for calling backend APIs (e.g. from frontend or another backend).
+### File structure
 
-### Dependency
+API definitions live in the shared package of a library:
 
-Add `@nu-art/http-client` and `@nu-art/api-types` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
+```
+<lib>/shared/src/main/
+  api-def.ts          -- API_<Domain> type + ApiDef_<Domain> constant
+```
 
-### HttpClient
+For entity-scoped APIs, place under the entity directory:
 
-Create `new HttpClient()`, `setDefaultConfig({ origin, timeout, ... })`, then `init()`. Use `createRequest(apiDef)` to get a typed `HttpRequest`. Alternatively use the shared `HttpClient.default` (used by ApiCaller when no client is passed).
+```
+<lib>/shared/src/main/_entity/<entity-name>/
+  api-def.ts
+```
 
-### HttpRequest (fluent)
+### Step 1 — Define the API struct
 
-For GET/DELETE use `setUrlParams(params)`; for POST/PUT/PATCH use `setBodyAsJson(body)`. Then `execute()` for typed response. Supports `addHeader`, `setTimeout`, `setOnError`, `setOnCompleted`, `abort()`.
+The `API_<Domain>` type is the **source of truth** for all request/response types across the package. Use `BodyApi` for POST/PUT/PATCH and `QueryApi` for GET/DELETE:
 
-### ApiCaller decorator (preferred for module methods)
+```typescript
+import {BodyApi, QueryApi, ApiDefResolver, HttpMethod} from '@nu-art/api-types';
 
-`@ApiCaller(apiDef, options)`. `apiDef` is `ApiDef<API>` or `ResolvableContent<ApiDef<API>, [Module]>`. Options: `httpClient` (default `HttpClient.default`), `onComplete(module, ctx)`. The decorated method receives `(payload, userCallback?)`; the decorator performs the HTTP call and returns the typed result. GET/DELETE → params; POST/PUT/PATCH → body.
+export type API_<Domain> = {
+	<actionA>: BodyApi<ResponseType, BodyType>;
+	<actionB>: QueryApi<ResponseType, ParamsType>;
+	<actionC>: QueryApi<ResponseType>;
+};
+```
 
-### Types
+To reference any request or response type elsewhere in the codebase:
 
-Define APIs with `BodyApi<R, B, IB>`, `QueryApi<R, P, IP>`, `TypedApi`, etc. from `@nu-art/api-types` (or re-exported from client). Use `ApiDef<API>` for `createRequest` / decorators.
+```typescript
+API_<Domain>['<actionA>']['Body']
+API_<Domain>['<actionA>']['Response']
+API_<Domain>['<actionB>']['Params']
+```
 
-### Errors
+**Always use the full named keys** (`Response`, `Body`, `Params`, `Method`, `Error`). The single-letter aliases (`R`, `B`, `P`, `M`, `E`) are **deprecated**.
 
-Catch `HttpException`; it exposes `responseCode`, `errorResponse`, `request`.
+### Step 2 — Define the API def resolver
 
-### Full API
+`ApiDefResolver` maps the API struct to `ApiDef` at each leaf — method, path, and optional timeout:
 
-See package [README](README.md) for HttpClient/HttpRequest methods, callbacks, logging, and cancellation.
+```typescript
+export const ApiDef_<Domain>: ApiDefResolver<API_<Domain>> = {
+	<actionA>: {method: HttpMethod.POST, path: '/v1/<domain>/<action-a>'},
+	<actionB>: {method: HttpMethod.GET, path: '/v1/<domain>/<action-b>'},
+	<actionC>: {method: HttpMethod.GET, path: '/v1/<domain>/<action-c>'},
+};
+```
+
+Optional `timeout` field (in ms) overrides the default request timeout for that endpoint.
+
+### Nested API structs
+
+For versioned or grouped APIs, nest the struct:
+
+```typescript
+export type API_<Domain> = {
+	vv1: {
+		<actionA>: BodyApi<ResponseType, BodyType>;
+		<actionB>: QueryApi<ResponseType, ParamsType>;
+	};
+};
+
+export const ApiDef_<Domain>: ApiDefResolver<API_<Domain>> = {
+	vv1: {
+		<actionA>: {method: HttpMethod.POST, path: '/v1/<domain>/<action-a>'},
+		<actionB>: {method: HttpMethod.GET, path: '/v1/<domain>/<action-b>'},
+	},
+};
+```
+
+Reference nested defs: `ApiDef_<Domain>.vv1.<actionA>`, types: `API_<Domain>['vv1']['<actionA>']['Body']`.
 
 ---
 
-## Server (@nu-art/http-server)
-
-Use for backend HTTP APIs in Thunderstorm: Express server with typed routes and request/response handling.
+## Server (`@nu-art/http-server`)
 
 ### Dependency
 
 Add `@nu-art/http-server` and `@nu-art/api-types` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
 
+### @ApiHandler decorator (preferred)
+
+Decorate methods with `@ApiHandler` to register them as HTTP route handlers. The decorator handles route registration internally — no manual route wiring required. The endpoint is associated with the server provided in the decorator options, or the default server.
+
+**Direct ApiDef reference** (most common):
+
+```typescript
+@ApiHandler(ApiDef_<Domain>.<actionA>)
+async handle<ActionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	// implementation
+}
+```
+
+**Resolver form** (for generic/base classes where the apiDef is instance-specific):
+
+```typescript
+@ApiHandler(
+	(m: MyModule_Class) => m.apiDef.<actionA>,
+	{httpServer: m => resolveContent(m.httpServer)}
+)
+async handle<ActionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	// implementation
+}
+```
+
+**Options:**
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `httpServer` | `HttpServer.getDefault()` | Server instance to register the route on |
+| `middlewares` | `[]` | `ServerApi_Middleware[]` to run before the handler |
+
+- GET/DELETE → handler receives query params.
+- POST/PUT/PATCH → handler receives body.
+- Registration runs at instance creation via the decorator initializer.
+
 ### HttpServer
 
-- `HttpServer.getDefault()` or custom `new HttpServer(config)`.
-- Configure `port`, `baseUrl`, `pathPrefix`, `cors`, optional `ssl`.
-- Call `addRoute(serverApi)` to register routes, then `start()`.
+`HttpServer.getDefault()` returns (or creates) the default server instance. Configuration is done through the Module wrapper via `setDefaultConfig({port, ...})`. `init()` is called automatically by the module manager.
 
-### ApiHandler decorator (preferred)
-
-TC39 Stage 3 method decorator. Use `@ApiHandler(apiDef, options)` where:
-
-- **apiDef:** `ApiDef<API>` or `ResolvableContent<ApiDef<API>, [Module]>` (e.g. getter `(m) => m.crudApiDef.query`).
-- **Options:** `httpServer` (default `HttpServer.getDefault()`), `middlewares`.
-- **Method signature:** `(payload: API['B'] | API['P']) => Promise<API['R']>`.
-- GET/DELETE → query params; POST/PUT/PATCH → body.
-- Registration runs at instance creation via decorator initializer.
-
-### Custom ServerApi
-
-Extend `ServerApi<API>`, `ServerApi_Get<API>`, or `ServerApi_Post<API>`; implement `process()`; pass `ApiDef` to super. Use `_ServerQueryApi` / `_ServerBodyApi` only when not using the decorator (e.g. api-handler uses them internally).
+- `addMiddleware(middleware)` — register global Express middleware, returns `this` for chaining.
 
 ### Request context (inside handler)
 
-MemKeys from `consts.js`: `MemKey_HttpRequest`, `MemKey_HttpRequestBody`, `MemKey_HttpRequestQuery`, `MemKey_HttpResponse`, `MemKey_HttpRequestHeaders`, etc. Use within the same request scope (MemStorage).
+MemKeys from `consts.ts` provide access to the current request scope via `MemStorage` (Async Local Storage):
 
-### Request headers
+| MemKey | Value |
+|--------|-------|
+| `MemKey_HttpRequest` | Express request object |
+| `MemKey_HttpResponse` | `ApiResponse` (see below) |
+| `MemKey_HttpRequestBody` | Parsed request body |
+| `MemKey_HttpRequestQuery` | Parsed query params |
+| `MemKey_HttpRequestHeaders` | Request headers |
+| `MemKey_HttpRequestUrl` | Full request URL |
+| `MemKey_HttpRequestPath` | Request path |
+| `MemKey_HttpRequestMethod` | HTTP method string |
 
-Use `HeaderKey` from this package to read and validate request headers (optional processor and response code). It uses `MemKey_HttpRequest` internally. Example: `new HeaderKey(headerNameConstant, 403).setProcessor((v) => v.trim())` then `.get()` in a handler.
+### HeaderKey
 
-### Sending responses
+Read and validate request headers with optional processing:
 
-Use `MemKey_HttpResponse.get()` to get `ApiResponse`: `.json(200, body)`, `.text()`, `.html()`, `.redirect()`, `.exception(apiException)`, `.serverError(error)`. Call exactly one "send" method per request (response is consumed).
+```typescript
+new HeaderKey('<header-name>', 403)
+	.setProcessor((v) => v.trim())
+	.get()
+```
+
+Uses `MemKey_HttpRequest` internally. The response code (e.g. 403) is returned when the header is missing.
+
+### ApiResponse (sending responses)
+
+Use `MemKey_HttpResponse.get()` to access the `ApiResponse`. Send methods:
+
+- `.json(statusCode, body)` — JSON response
+- `.text(statusCode, text)` — plain text
+- `.html(statusCode, html)` — HTML
+- `.redirect(url)` — HTTP redirect
+- `.stream()` — streaming response
+- `.exception(apiException)` — structured error
+- `.serverError(error)` — 500 error
+
+Call exactly one send method per request (response is consumed).
 
 ### Errors
 
-Throw `ApiException` (from `@nu-art/ts-common`) with status and body; server turns it into JSON response. Other errors become 500.
+Throw `ApiException` (from `@nu-art/ts-common`) with status and body; the server turns it into a JSON response. Unhandled errors become 500.
 
-### Reference
+---
 
-Real usage: db-api/backend `ModuleBE_BaseApi` — `@ApiHandler` with resolver for `apiDef` and `httpServer`.
+## Client (`@nu-art/http-client`)
+
+### Dependency
+
+Add `@nu-art/http-client` and `@nu-art/api-types` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
+
+### @ApiCaller decorator (preferred)
+
+Decorate methods with `@ApiCaller` to bind them to an HTTP call. The decorator performs the request and returns the typed result — the method body is a placeholder.
+
+**Direct ApiDef reference** (most common):
+
+```typescript
+@ApiCaller(ApiDef_<Domain>.<actionA>)
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	void body;
+	return undefined as unknown as API_<Domain>['<actionA>']['Response'];
+}
+```
+
+**With onComplete callback:**
+
+```typescript
+@ApiCaller(ApiDef_<Domain>.<actionA>, {
+	onComplete: (m: MyModule_Class, ctx: ApiCallContext<API_<Domain>['<actionA>']>) => m.onActionCompleted(ctx)
+})
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	void body;
+	return undefined as unknown as API_<Domain>['<actionA>']['Response'];
+}
+```
+
+**Resolver form** (for generic/base classes):
+
+```typescript
+@ApiCaller(
+	(m: MyModule_Class) => m.apiDef.<actionA>,
+	{httpClient: m => resolveContent(m.httpClient), onComplete: (m, ctx) => m.onCompleted(ctx)}
+)
+```
+
+**Options:**
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `httpClient` | `HttpClient.default` | Client instance to use for the request |
+| `onComplete` | — | `(module, ctx) => void` callback after successful response |
+
+- GET/DELETE → decorator sends params.
+- POST/PUT/PATCH → decorator sends body.
+
+### HttpClient
+
+`HttpClient.default` is the shared client instance used by `@ApiCaller` when no client is specified. Configuration is done through the Module wrapper via `setDefaultConfig({origin, ...})`. `init()` is called automatically by the module manager.
+
+- `addDefaultHeader(key, value)` — set a header sent with every request (value can be a string or `() => string`).
+
+### HttpRequest (manual usage)
+
+When not using the decorator, create requests directly via the client:
+
+```typescript
+HttpClient.default.createRequest(ApiDef_<Domain>.<actionA>)
+	.setBodyAsJson(body)
+	.execute();
+```
+
+Fluent methods: `setUrlParams`, `setBodyAsJson`, `addHeader`, `setTimeout`, `setOnError`, `setOnCompleted`, `abort()`.
+
+### Errors
+
+Catch `HttpException`; it exposes `responseCode`, `errorResponse`, `request`.
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| API struct type | `API_<Domain>` |
+| API def resolver constant | `ApiDef_<Domain>` |
+| Backend handler method | `handle<ActionName>` |
+| Frontend caller method | `<actionName>` (matches API struct key) |
+| File name | `api-def.ts` |
