@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {buildConfigFromDBDef, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
 import {ApiCallerEventType, CrudApiDef} from '@nu-art/db-api-shared';
 import {
@@ -42,20 +42,6 @@ export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatus
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
 const StorageKey_PasswordAssertionConfig = new StorageKey<PasswordAssertionConfig | undefined>('account__password-assertion-config', false);
 
-const accountBaseConfig = {
-	dbKey: DBDef_Accounts.dbKey,
-	validator: DBDef_Accounts.modifiablePropsValidator,
-	uniqueKeys: (DBDef_Accounts.uniqueKeys ?? ['_id']),
-	versions: DBDef_Accounts.versions,
-	dbConfig: {
-		name: DBDef_Accounts.frontend?.name ?? DBDef_Accounts.dbKey,
-		group: DBDef_Accounts.frontend?.group ?? 'default',
-		version: DBDef_Accounts.versions[0],
-		uniqueKeys: (DBDef_Accounts.uniqueKeys ?? ['_id']) as (keyof DB_Account)[]
-	}
-};
-
-
 class ModuleFE_Account_Class
 	extends ModuleFE_BaseApi<DatabaseDef_Account>
 	implements OnLoginStatusUpdated, OnSessionUpdated {
@@ -69,10 +55,9 @@ class ModuleFE_Account_Class
 
 	constructor() {
 		super({
-			config: accountBaseConfig,
+			config: buildConfigFromDBDef<DatabaseDef_Account>(DBDef_Accounts),
 			crudApiDef: CrudApiDef<DatabaseDef_Account>(DBDef_Accounts.dbKey),
-			dispatcher: () => {
-			}
+			dispatcher: (...args) => dispatch_onAccountsUpdated.dispatchAll(...args)
 		});
 	}
 
@@ -200,8 +185,7 @@ class ModuleFE_Account_Class
 		this.status = newStatus;
 
 		this.logInfo(`Login status changes: ${LoggedStatus[pervStatus]} => ${LoggedStatus[newStatus]}`);
-		dispatch_onLoginStatusChanged.dispatchUI();
-		dispatch_onLoginStatusChanged.dispatchModule();
+		dispatch_onLoginStatusChanged.dispatchAll();
 	};
 
 	public composeSAMLUrl = () => {

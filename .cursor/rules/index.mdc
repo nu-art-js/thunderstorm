@@ -1,0 +1,53 @@
+---
+description: When working with thunderstorm infrastructure, understanding capabilities, or building features using thunderstorm — routing table to all rules
+alwaysApply: false
+---
+
+# Thunderstorm rules index
+
+Read [vocabulary](_thunderstorm/.rules/vocabulary.mdc) first for the core mental model. Then use this table to find the right rule by intent.
+
+Paths are relative to the project root (monorepo root).
+
+---
+
+## Operational (how to operate in a thunderstorm project)
+
+| Want to… | Read |
+|-----------|------|
+| Understand what BAI is (entities, flow) | [_thunderstorm/.rules/operational/bai-overview.mdc](_thunderstorm/.rules/operational/bai-overview.mdc) |
+| Run BAI (build, test, install, flags) | [_thunderstorm/.rules/operational/bai-cli.mdc](_thunderstorm/.rules/operational/bai-cli.mdc) |
+| Understand monorepo layout, configs, ESM | [_thunderstorm/.rules/operational/project-structure.mdc](_thunderstorm/.rules/operational/project-structure.mdc) |
+| Understand package vs library, domains, layout | [_thunderstorm/.rules/operational/package-and-libraries.mdc](_thunderstorm/.rules/operational/package-and-libraries.mdc) |
+| Add a missing dependency to a package | [_thunderstorm/.rules/operational/missing-dependency.mdc](_thunderstorm/.rules/operational/missing-dependency.mdc) |
+
+---
+
+## Contributing (working ON thunderstorm packages)
+
+| Want to… | Read |
+|-----------|------|
+| Bring a package to standard (full checklist) | [_thunderstorm/.rules/contributing/package-standard.mdc](_thunderstorm/.rules/contributing/package-standard.mdc) |
+| Exports and re-export policy | [_thunderstorm/.rules/contributing/exports.mdc](_thunderstorm/.rules/contributing/exports.mdc) |
+| Copyright headers in source files | [_thunderstorm/.rules/contributing/copyright.mdc](_thunderstorm/.rules/contributing/copyright.mdc) |
+| License and LICENSE file | [_thunderstorm/.rules/contributing/license.mdc](_thunderstorm/.rules/contributing/license.mdc) |
+| Documentation (JSDoc, when to document) | [_thunderstorm/.rules/contributing/documentation.mdc](_thunderstorm/.rules/contributing/documentation.mdc) |
+| README format for packages | [_thunderstorm/.rules/contributing/readme.mdc](_thunderstorm/.rules/contributing/readme.mdc) |
+| File system fixture format (batch file trees) | [_thunderstorm/.rules/contributing/file-system-fixture.mdc](_thunderstorm/.rules/contributing/file-system-fixture.mdc) |
+| Test types and patterns (overview) | [_thunderstorm/.rules/contributing/tests/index.mdc](_thunderstorm/.rules/contributing/tests/index.mdc) |
+| Common test patterns, errors, results | [_thunderstorm/.rules/contributing/tests/common-patterns.mdc](_thunderstorm/.rules/contributing/tests/common-patterns.mdc) |
+| Unit (pure) tests | [_thunderstorm/.rules/contributing/tests/unit-tests.mdc](_thunderstorm/.rules/contributing/tests/unit-tests.mdc) |
+| Workspace / file system tests | [_thunderstorm/.rules/contributing/tests/workspace-tests.mdc](_thunderstorm/.rules/contributing/tests/workspace-tests.mdc) |
+| Firebase / Storm module tests | [_thunderstorm/.rules/contributing/tests/firebase-tests.mdc](_thunderstorm/.rules/contributing/tests/firebase-tests.mdc) |
+| Playwright browser tests | [_thunderstorm/.rules/contributing/tests/playwright-tests.mdc](_thunderstorm/.rules/contributing/tests/playwright-tests.mdc) |
+| How to run tests with BAI | [_thunderstorm/.rules/contributing/tests/running-tests.mdc](_thunderstorm/.rules/contributing/tests/running-tests.mdc) |
+
+---
+
+## Consuming (working WITH thunderstorm in a project)
+
+| Want to… | Read |
+|-----------|------|
+| Use db-api (CRUD, shared + backend + frontend) | [_thunderstorm/db-api/.rules/how-to-use.mdc](_thunderstorm/db-api/.rules/how-to-use.mdc) |
+| Use http (client and/or server) | [_thunderstorm/http/.rules/how-to-use.mdc](_thunderstorm/http/.rules/how-to-use.mdc) |
+| Edit DB entities in UI (EditableItem, EditableDBItemV3) | [_thunderstorm/.rules/consuming/editable-item-pattern.mdc](_thunderstorm/.rules/consuming/editable-item-pattern.mdc) |

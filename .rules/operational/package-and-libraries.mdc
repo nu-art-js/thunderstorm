@@ -6,7 +6,7 @@ alwaysApply: false
 # Package and Library Structure
 
 This document describes the structure of packages and libraries in the thunderstorm monorepo.
-must read the project-standard too to understand better the context of this document.
+must read the project-structure rule too to understand better the context of this document.
 
 ## Package Type Standards
 

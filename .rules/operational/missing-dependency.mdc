@@ -1,5 +1,6 @@
 ---
-alwaysApply: true
+description: Steps to add a missing dependency to a package (package-level or root-level)
+alwaysApply: false
 ---
 
 # Missing Dependency in Package

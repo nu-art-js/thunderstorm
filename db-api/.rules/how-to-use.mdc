@@ -1,0 +1,421 @@
+---
+description: How to use db-api: type-safe CRUD over Firestore with shared contract, backend modules, and frontend cache/API
+alwaysApply: false
+---
+
+# How to use db-api
+
+db-api provides type-safe CRUD persistence over Firestore with a shared FE/BE contract across three packages:
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/db-api-shared` | Types, proto definitions, validators, `Database` constant, CRUD API defs |
+| `@nu-art/db-api-backend` | Firestore collection module + HTTP CRUD routes |
+| `@nu-art/db-api-frontend` | In-memory cache, IndexedDB persistence, HTTP CRUD client |
+
+Shared is always required. Backend and frontend are independent of each other.
+
+---
+
+## Shared (`@nu-art/db-api-shared`)
+
+### File structure
+
+Every entity lives under an `_entity/<entity-name>/` directory inside the shared package:
+
+```
+<lib>/shared/src/main/_entity/<entity-name>/
+  types.ts          -- DB type, DatabaseDef proto, UI type, DbKey const
+  validators.ts     -- modifiablePropsValidator, generatedPropsValidator
+  db-def.ts         -- Database<DatabaseDef_*> constant (the runtime definition)
+  index.ts          -- re-exports all of the above
+```
+
+When an entity has **multiple versions**, each version gets its own file for its type definition and upgrade processor (e.g. `types-v1.ts`, `types-v2.ts`).
+
+### Step 1 — types.ts
+
+Define the DB key constant, the DB type (extends `DB_Object<DBKey>`), the `DatabaseDef_*` prototype, and the `UI_*` type.
+
+```typescript
+import {DB_Object, DB_Prototype, DB_ProtoSeed, VersionsDeclaration} from '@nu-art/db-api-shared';
+
+export const Organization_DbKey = 'organization';
+type DBKey = typeof Organization_DbKey;
+type VersionTypes = { '1.0.0': DB_Organization };
+type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>;
+type UniqueKeys = '_id';
+type GeneratedProps = never;
+type Dependencies = {};
+
+export type DB_Organization = DB_Object<DBKey> & {
+	label: string;
+	domain: string;
+};
+
+export type DatabaseDef_Organization = DB_Prototype<DB_ProtoSeed<DB_Organization, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>>;
+export type UI_Organization = DatabaseDef_Organization['uiType'];
+```
+
+**Key rules:**
+
+- `DB_Object<DBKey>` provides the base fields (`_id`, `_v`, `__created`, `__updated`, `__dbKey`).
+- `GeneratedProps` is `never` when there are no entity-specific generated props. When there **are** generated props, use a union of the entity-specific keys (never list `DB_Object` keys — those are a given).
+- `UniqueKeys` defaults to `'_id'`; add others if the entity has a composite unique constraint.
+- `Dependencies` maps field names to `DatabaseDef_*` of referenced entities. Use `never` or `{}` when there are none.
+
+**With dependencies** (tag-assignment referencing tag):
+
+```typescript
+import {DatabaseDef_Tag} from '../tag/types.js';
+
+type Dependencies = { tagId: DatabaseDef_Tag };
+
+export type DatabaseDef_TagAssignment = DB_Prototype<
+	DB_ProtoSeed<DB_TagAssignment, 'tag-assignments', never, Versions_TagAssignment, '_id', Dependencies>
+>;
+```
+
+### Step 2 — validators.ts
+
+Extract validators into their own file. The validator types are derived from the `DatabaseDef_*`:
+
+```typescript
+import {tsValidateString, tsValidateRegexp} from '@nu-art/ts-common';
+import {DatabaseDef_Organization} from './types.js';
+
+const subDomainRegex = /^(?!-)[a-zA-Z0-9-]{1,63}(?<!-)$/;
+
+export const Organization_modifiablePropsValidator: DatabaseDef_Organization['modifiablePropsValidator'] = {
+	label: tsValidateString(),
+	domain: tsValidateRegexp(subDomainRegex),
+};
+
+export const Organization_generatedPropsValidator: DatabaseDef_Organization['generatedPropsValidator'] = {};
+```
+
+When the validator is **complex** (e.g. runtime-dependent, cross-field), use a function validator:
+
+```typescript
+export const TaskComponent_modifiablePropsValidator: DatabaseDef_TaskComponent['modifiablePropsValidator'] =
+	(component?: OmitDBObject<DB_TaskComponent>): InvalidResult<DB_TaskComponent> => {
+		if (!component)
+			return 'Missing entity DB_TaskComponent';
+
+		switch (component.type) {
+			case taskComponentPrototypeType_String:
+				return tsValidateResult(component as TaskComponentPrototype_String, Validator_TaskComponentPrototype_String);
+			// ... other cases
+			default:
+				return {type: 'Unknown value'};
+		}
+	};
+```
+
+### Step 3 — db-def.ts
+
+Define the `Database<DatabaseDef_*>` constant that wires everything together:
+
+```typescript
+import {Database} from '@nu-art/db-api-shared';
+import {DatabaseDef_Organization} from './types.js';
+import {Organization_modifiablePropsValidator, Organization_generatedPropsValidator} from './validators.js';
+
+export const DBDef_Organization: Database<DatabaseDef_Organization> = {
+	dbKey: 'organization',
+	entityName: 'organization',
+	frontend: {
+		group: 'beamz',
+		name: 'organization',
+	},
+	backend: {
+		name: 'organization',
+	},
+	versions: ['1.0.0'],
+	modifiablePropsValidator: Organization_modifiablePropsValidator,
+	generatedPropsValidator: Organization_generatedPropsValidator,
+};
+```
+
+**Optional fields on `Database`:**
+
+| Field | When to use |
+|-------|-------------|
+| `uniqueKeys` | Entity has a unique constraint default is `_id`, otherwise its and md5(uniqueKeys) |
+| `lockKeys` | Fields that cannot change after creation (e.g. `['organizationId', 'accountId']`) |
+| `dependencies` | Entity references other entities by ID |
+| `generatedProps` | Required when `GeneratedProps` is not `never` — lists the generated key names |
+| `indices` | IDB index definitions for the frontend |
+| `TTL` | Time-to-live in ms for backend cache |
+
+**With dependencies:**
+
+```typescript
+export const DBDef_TagAssignment: Database<DatabaseDef_TagAssignment> = {
+	dbKey: 'tag-assignments',
+	entityName: 'tag-assignment',
+	frontend: {name: 'tag-assignments', group: 'beamz'},
+	backend: {name: 'tag-assignments'},
+	versions: ['1.0.0'],
+	modifiablePropsValidator: TagAssignment_modifiablePropsValidator,
+	generatedPropsValidator: TagAssignment_generatedPropsValidator,
+	dependencies: {
+		tagId: {dbKey: 'tags', fieldType: 'string'},
+	},
+};
+```
+
+### Step 4 — index.ts
+
+Re-export everything:
+
+```typescript
+export * from './types.js';
+export * from './validators.js';
+export * from './db-def.js';
+```
+
+### CRUD API definitions
+
+`CrudApiDef<Proto>(dbKey, version?)` generates typed API defs for all standard CRUD operations. Both FE and BE use the same `dbKey` and `version` to stay in sync. Custom (non-CRUD) APIs are defined separately using `ApiDefResolver` from `@nu-art/api-types`.
+
+---
+
+## Backend (`@nu-art/db-api-backend`)
+
+### File structure
+
+```
+<lib>/backend/src/main/_entity/<entity-name>/
+  ModuleBE_<Entity>DB.ts   -- DB module class + singleton + optional module pack
+  index.ts                 -- re-exports
+```
+
+### Simple entity (CRUD only)
+
+For entities that only need standard CRUD, extend `ModuleBE_BaseDB` and use the `createApisForDBModule` factory:
+
+```typescript
+import {createApisForDBModule, ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {DBDef_Tag, DatabaseDef_Tag} from '@app/tagging-shared';
+
+export class ModuleBE_TagDB_Class
+	extends ModuleBE_BaseDB<DatabaseDef_Tag> {
+
+	constructor() {
+		super(DBDef_Tag);
+	}
+}
+
+export const ModuleBE_TagDB = new ModuleBE_TagDB_Class();
+export const ModulePackBE_Tag = [ModuleBE_TagDB, createApisForDBModule(ModuleBE_TagDB)];
+```
+
+`createApisForDBModule` instantiates `ModuleBE_BaseApi_Class` which registers HTTP routes for query, queryUnique, upsert, upsertAll, deleteUnique, deleteQuery, deleteAll — all delegating to the dbModule.
+
+### Complex entity (custom logic)
+
+For entities that need custom APIs, query manipulation, or write hooks, extend `ModuleBE_BaseDB` with a Config type and add custom logic:
+
+```typescript
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {ApiHandler} from '@nu-art/http-server';
+import {DBDef_Organization, DatabaseDef_Organization} from '@app/organization-shared';
+import {FirestoreQuery} from '@nu-art/firebase-shared';
+
+type Config = {
+	inviteUrl: string;
+};
+
+export class ModuleBE_OrganizationDB_Class
+	extends ModuleBE_BaseDB<DatabaseDef_Organization, Config> {
+
+	constructor() {
+		super(DBDef_Organization);
+
+		this.manipulateQuery = (query): FirestoreQuery<DatabaseDef_Organization['dbType']> => {
+			// inject scoping (e.g. org-level isolation) into every query
+			return { ...query, where: { ...query.where, _id: {$in: allowedIds} } };
+		};
+	}
+
+	// Custom API endpoint alongside the standard CRUD
+	@ApiHandler(ApiDef_Organization.create)
+	private async api_Create(request: API_Organization['create']['B']): Promise<API_Organization['create']['R']> {
+		return this.runTransaction(async t => {
+			const organization = await this.create.item({...}, t);
+			// ... additional logic
+			return organization;
+		});
+	}
+}
+
+export const ModuleBE_OrganizationDB = new ModuleBE_OrganizationDB_Class();
+```
+
+### Key APIs on `ModuleBE_BaseDB`
+
+**Query:**
+- `this.query.where(firestoreQuery)` — query with `manipulateQuery` applied
+- `this.query.unique(id)` — get by `_id`
+- `this.query.uniqueWhere({field: value})` — get by unique field combination
+- `this.query.unManipulatedQuery(firestoreQuery)` — bypasses `manipulateQuery`
+
+**Write:**
+- `this.create.item(preDbItem, transaction?)` — insert a new item
+- `this.set.item(uiItem, transaction?)` — upsert (create or update)
+- `this.set.all(uiItems, transaction?)` — upsert multiple items
+
+**Delete:**
+- `this.delete.unique(id)` — delete by `_id`
+- `this.delete.query(firestoreQuery)` — delete matching items
+
+**Transaction:**
+- `this.runTransaction(async (transaction) => { ... })` — Firestore transaction
+
+**Overridable hooks:**
+
+| Hook | Purpose |
+|------|---------|
+| `manipulateQuery(query)` | Inject scoping/filtering into every query (e.g. org isolation) |
+| `preWriteProcessing(dbItem, original, transaction?)` | Validate or transform before write |
+| `postWriteProcessing(data, actionType, transaction?)` | Side effects after write (sync, notify) |
+| `canDeleteItems(dbItems, transaction?)` | Assert deletion is allowed; throws if dependencies exist |
+| `upgradeInstances(instances, force?)` | Run version upgrade processors |
+
+**Version upgrades:**
+- `registerVersionUpgradeProcessor(version, processor)` — register a function to migrate items from one version to the next
+- `upgradeCollection(force?)` — process the entire collection through registered upgrade processors
+
+### Module packs
+
+Assemble per-entity packs into a library-level pack:
+
+```typescript
+export const ModulePackBE_ProjectRepo = [
+	...ModulePackBE_Project,
+	...ModulePackBE_Repo,
+	...ModulePackBE_BlobRef,
+];
+```
+
+Register the library pack in the app's backend module init.
+
+---
+
+## Frontend (`@nu-art/db-api-frontend`)
+
+### File structure
+
+```
+<lib>/frontend/src/main/_entity/<entity-name>/
+  ModuleFE_<Entity>.ts     -- FE module class + singleton + ThunderDispatcher
+  index.ts                 -- re-exports
+```
+
+### Config helper
+
+`buildConfigFromDBDef` is provided by `@nu-art/db-api-frontend`. It bridges `Database<Proto>` to `DBConfig_ModuleFE<Proto>`:
+
+```typescript
+import {buildConfigFromDBDef} from '@nu-art/db-api-frontend';
+```
+
+### Standard frontend module
+
+Extend `ModuleFE_BaseApi<DatabaseDef_*>` with a `ThunderDispatcher` for event dispatching:
+
+```typescript
+import {CrudApiDef, type ApiCallerEventType} from '@nu-art/db-api-shared';
+import {buildConfigFromDBDef, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
+import {DBDef_Tag, DatabaseDef_Tag} from '@app/tagging-shared';
+
+export interface OnTagUpdated {
+	__onTagUpdated: (...params: ApiCallerEventType<DatabaseDef_Tag['dbType']>) => void;
+}
+
+export const dispatch_onTagChanged = new ThunderDispatcher<OnTagUpdated, '__onTagUpdated'>('__onTagUpdated');
+
+export class ModuleFE_Tag_Class
+	extends ModuleFE_BaseApi<DatabaseDef_Tag> {
+
+	constructor() {
+		super({
+			config: buildConfigFromDBDef<DatabaseDef_Tag>(DBDef_Tag),
+			crudApiDef: CrudApiDef<DatabaseDef_Tag>(DBDef_Tag.dbKey),
+			dispatcher: (...args) => dispatch_onTagChanged.dispatchAll(...args),
+		});
+	}
+}
+
+export const ModuleFE_Tag = new ModuleFE_Tag_Class();
+```
+
+Each module defines:
+1. A listener interface (`On<Entity>Updated`) with a method (`__on<Entity>Updated`) typed with `ApiCallerEventType`
+2. A `ThunderDispatcher` instance (`dispatch_on<Entity>Changed`) that dispatches to both UI and module listeners via `dispatchAll`
+3. The dispatcher is passed to `super()` as a lambda wrapping `dispatchAll`
+
+### Key APIs on `ModuleFE_BaseApi`
+
+**CRUD (all return Promises):**
+- `query(crudQuery)` — query items from backend, updates cache
+- `queryUnique(baseObject)` — get a single item by `_id`
+- `upsert(uiItem)` — create or update
+- `upsertAll(uiItems)` — bulk upsert
+- `delete(baseObject)` — delete by `_id`
+- `deleteQuery(crudQuery)` — delete by query
+- `deleteAll()` — delete all items
+
+**Cache and persistence:**
+- `this.cache` — `MemCache` for synchronous in-memory access
+- `this.IDB` — `IDB_Store` for IndexedDB persistence
+
+**Event callbacks (override in subclass if needed):**
+
+| Callback | Trigger |
+|----------|---------|
+| `onEntriesUpdated(items)` | After multiple items upserted/queried |
+| `onEntryUpdated(item)` | After a single item upserted |
+| `onEntriesDeleted(items)` | After multiple items deleted |
+| `onEntryDeleted(item)` | After a single item deleted |
+
+**Overridable:**
+- `cleanUp(toUpsert)` — transform data before sending to the API (e.g. strip local-only fields)
+
+**Serialization:**
+- `runSerializedById(id, requestType, fn)` — ensures only one write operation per document ID runs at a time, preventing races
+
+### Module packs
+
+Same pattern as backend:
+
+```typescript
+export const ModulePackFE_PromptTagging = [
+	ModuleFE_Tag,
+	ModuleFE_TagAssignment,
+];
+```
+
+Register in the app's frontend module init.
+
+---
+
+## Naming conventions
+
+| Artifact | Convention | Example |
+|----------|-----------|---------|
+| DB key constant | `<Entity>_DbKey` | `Organization_DbKey` |
+| DB type | `DB_<Entity>` | `DB_Organization` |
+| Prototype type | `DatabaseDef_<Entity>` | `DatabaseDef_Organization` |
+| UI type | `UI_<Entity>` | `UI_Organization` |
+| Database constant | `DBDef_<Entity>` | `DBDef_Organization` |
+| Modifiable validator | `<Entity>_modifiablePropsValidator` | `Organization_modifiablePropsValidator` |
+| Generated validator | `<Entity>_generatedPropsValidator` | `Organization_generatedPropsValidator` |
+| BE module class | `ModuleBE_<Entity>DB_Class` | `ModuleBE_OrganizationDB_Class` |
+| BE module singleton | `ModuleBE_<Entity>DB` | `ModuleBE_OrganizationDB` |
+| BE module pack | `ModulePackBE_<Entity>` | `ModulePackBE_Tag` |
+| FE module class | `ModuleFE_<Entity>_Class` | `ModuleFE_Tag_Class` |
+| FE module singleton | `ModuleFE_<Entity>` | `ModuleFE_Tag` |
+| FE module pack | `ModulePackFE_<LibName>` | `ModulePackFE_PromptTagging` |

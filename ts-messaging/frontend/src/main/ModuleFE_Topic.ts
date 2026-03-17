@@ -3,7 +3,7 @@
  */
 
 import {CrudApiDef, type ApiCallerEventType} from '@nu-art/ts-messaging-shared';
-import {DBConfig_ModuleFE, EventDispatcher, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {buildConfigFromDBDef, EventDispatcher, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {DBDef_Topic, DatabaseDef_Topic, UI_Topic} from '@nu-art/ts-messaging-shared';
 
 export type DispatcherType_Topic = `__onTopicsUpdated`;
@@ -20,25 +20,11 @@ export const dispatch_onTopicsUpdated = Object.assign(
 	}
 );
 
-function topicConfig(): DBConfig_ModuleFE<DatabaseDef_Topic> {
-	return {
-		dbKey: DBDef_Topic.dbKey,
-		validator: DBDef_Topic.modifiablePropsValidator,
-		uniqueKeys: DBDef_Topic.uniqueKeys ?? [],
-		versions: DBDef_Topic.versions,
-		dbConfig: {
-			...DBDef_Topic.frontend,
-			version: DBDef_Topic.versions[0] ?? '1.0.0',
-			uniqueKeys: DBDef_Topic.uniqueKeys ?? ['_id'],
-		},
-	};
-}
-
 export class ModuleFE_topic_Class extends ModuleFE_BaseApi<DatabaseDef_Topic> {
 
 	constructor() {
 		super({
-			config: topicConfig(),
+			config: buildConfigFromDBDef<DatabaseDef_Topic>(DBDef_Topic),
 			crudApiDef: CrudApiDef<DatabaseDef_Topic>(DBDef_Topic.dbKey),
 			dispatcher: dispatch_onTopicsUpdated,
 		});

@@ -1,0 +1,102 @@
+---
+description: How to use http lib: type-safe HTTP client and server for Thunderstorm APIs
+alwaysApply: false
+---
+
+# How to use http
+
+The http lib provides type-safe HTTP client (for calling APIs) and server (for exposing APIs). You can use client only (e.g. frontend or service calling an existing API), server only (e.g. backend exposing an API to external clients), or both (full-stack typed API).
+
+## Domain matrix
+
+| Scenario | Packages to use |
+|----------|-----------------|
+| Call backend APIs (frontend, another service) | client (+ api-types) |
+| Expose HTTP APIs (backend) | server (+ api-types) |
+| Full-stack typed API | client + server (+ api-types) |
+
+api-types is used by both client and server for ApiDef, BodyApi, QueryApi. Each section below is self-contained for that domain.
+
+---
+
+## Client (@nu-art/http-client)
+
+Use for type-safe HTTP client for calling backend APIs (e.g. from frontend or another backend).
+
+### Dependency
+
+Add `@nu-art/http-client` and `@nu-art/api-types` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
+
+### HttpClient
+
+Create `new HttpClient()`, `setDefaultConfig({ origin, timeout, ... })`, then `init()`. Use `createRequest(apiDef)` to get a typed `HttpRequest`. Alternatively use the shared `HttpClient.default` (used by ApiCaller when no client is passed).
+
+### HttpRequest (fluent)
+
+For GET/DELETE use `setUrlParams(params)`; for POST/PUT/PATCH use `setBodyAsJson(body)`. Then `execute()` for typed response. Supports `addHeader`, `setTimeout`, `setOnError`, `setOnCompleted`, `abort()`.
+
+### ApiCaller decorator (preferred for module methods)
+
+`@ApiCaller(apiDef, options)`. `apiDef` is `ApiDef<API>` or `ResolvableContent<ApiDef<API>, [Module]>`. Options: `httpClient` (default `HttpClient.default`), `onComplete(module, ctx)`. The decorated method receives `(payload, userCallback?)`; the decorator performs the HTTP call and returns the typed result. GET/DELETE → params; POST/PUT/PATCH → body.
+
+### Types
+
+Define APIs with `BodyApi<R, B, IB>`, `QueryApi<R, P, IP>`, `TypedApi`, etc. from `@nu-art/api-types` (or re-exported from client). Use `ApiDef<API>` for `createRequest` / decorators.
+
+### Errors
+
+Catch `HttpException`; it exposes `responseCode`, `errorResponse`, `request`.
+
+### Full API
+
+See package [README](README.md) for HttpClient/HttpRequest methods, callbacks, logging, and cancellation.
+
+---
+
+## Server (@nu-art/http-server)
+
+Use for backend HTTP APIs in Thunderstorm: Express server with typed routes and request/response handling.
+
+### Dependency
+
+Add `@nu-art/http-server` and `@nu-art/api-types` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
+
+### HttpServer
+
+- `HttpServer.getDefault()` or custom `new HttpServer(config)`.
+- Configure `port`, `baseUrl`, `pathPrefix`, `cors`, optional `ssl`.
+- Call `addRoute(serverApi)` to register routes, then `start()`.
+
+### ApiHandler decorator (preferred)
+
+TC39 Stage 3 method decorator. Use `@ApiHandler(apiDef, options)` where:
+
+- **apiDef:** `ApiDef<API>` or `ResolvableContent<ApiDef<API>, [Module]>` (e.g. getter `(m) => m.crudApiDef.query`).
+- **Options:** `httpServer` (default `HttpServer.getDefault()`), `middlewares`.
+- **Method signature:** `(payload: API['B'] | API['P']) => Promise<API['R']>`.
+- GET/DELETE → query params; POST/PUT/PATCH → body.
+- Registration runs at instance creation via decorator initializer.
+
+### Custom ServerApi
+
+Extend `ServerApi<API>`, `ServerApi_Get<API>`, or `ServerApi_Post<API>`; implement `process()`; pass `ApiDef` to super. Use `_ServerQueryApi` / `_ServerBodyApi` only when not using the decorator (e.g. api-handler uses them internally).
+
+### Request context (inside handler)
+
+MemKeys from `consts.js`: `MemKey_HttpRequest`, `MemKey_HttpRequestBody`, `MemKey_HttpRequestQuery`, `MemKey_HttpResponse`, `MemKey_HttpRequestHeaders`, etc. Use within the same request scope (MemStorage).
+
+### Request headers
+
+Use `HeaderKey` from this package to read and validate request headers (optional processor and response code). It uses `MemKey_HttpRequest` internally. Example: `new HeaderKey(headerNameConstant, 403).setProcessor((v) => v.trim())` then `.get()` in a handler.
+
+### Sending responses
+
+Use `MemKey_HttpResponse.get()` to get `ApiResponse`: `.json(200, body)`, `.text()`, `.html()`, `.redirect()`, `.exception(apiException)`, `.serverError(error)`. Call exactly one "send" method per request (response is consumed).
+
+### Errors
+
+Throw `ApiException` (from `@nu-art/ts-common`) with status and body; server turns it into JSON response. Other errors become 500.
+
+### Reference
+
+Real usage: db-api/backend `ModuleBE_BaseApi` — `@ApiHandler` with resolver for `apiDef` and `httpServer`.
