@@ -107,7 +107,7 @@ export class PermissionGroupsEditor
 				label: 'Delete Group',
 				action: async (state: State_ItemsEditor<DatabaseDef_PermissionGroup>) => {
 					try {
-						await ModuleFE_PermissionGroup.delete({_id: state.editable.item._id!});
+						await ModuleFE_PermissionGroup.deleteUnique({_id: state.editable.item._id!});
 						return true;
 					} catch (err: any) {
 						StaticLogger.logError({...err});

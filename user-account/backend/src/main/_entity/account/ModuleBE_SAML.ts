@@ -93,7 +93,7 @@ export class ModuleBE_SAML_Class
 	}
 
 	@ApiHandler(ApiDef_SAML.assertSAML)
-	async assertSaml(body: API_SAML['assertSAML']['Body']): Promise<API_SAML['assertSAML']['Response']> {
+	async assertSAML(body: API_SAML['assertSAML']['Body']): Promise<API_SAML['assertSAML']['Response']> {
 		try {
 			this.logDebug('assertion called with body:', body);
 			const data = await this.assertImpl(body);
@@ -116,7 +116,7 @@ export class ModuleBE_SAML_Class
 	}
 
 	@ApiHandler(ApiDef_SAML.loginSaml)
-	async loginRequest(loginContext: API_SAML['loginSaml']['Params']) {
+	async loginSaml(loginContext: API_SAML['loginSaml']['Params']) {
 		return new Promise<API_SAML['loginSaml']['Response']>((resolve, rejected) => {
 			const sp = new ServiceProvider(this.config.spConfig);
 			const options = {

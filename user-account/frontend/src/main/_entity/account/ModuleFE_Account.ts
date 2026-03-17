@@ -91,7 +91,7 @@ class ModuleFE_Account_Class
 	}
 
 	@ApiCaller(ApiDef_UserAccount.logout)
-	async logoutApi(_params?: API_UserAccount['logout']['Params']): Promise<API_UserAccount['logout']['Response']> {
+	async logout(_params?: API_UserAccount['logout']['Params']): Promise<API_UserAccount['logout']['Response']> {
 		return undefined as unknown as API_UserAccount['logout']['Response'];
 	}
 
@@ -202,8 +202,8 @@ class ModuleFE_Account_Class
 	};
 
 
-	logout = async (url?: string) => {
-		await this.logoutApi({});
+	performLogout = async (url?: string) => {
+		await this.logout({});
 		dispatcher_onAuthRequired.dispatchModule();
 		if (url)
 			return window.location.href = url;

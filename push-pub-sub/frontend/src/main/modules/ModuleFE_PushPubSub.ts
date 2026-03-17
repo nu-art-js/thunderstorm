@@ -21,13 +21,13 @@ import {ApiCaller} from '@nu-art/http-client';
 import {StorageKey, ThunderDispatcher} from '@nu-art/thunder-core';
 import {MessagingWrapperFE} from '@nu-art/firebase-frontend/index';
 import {
+	API_PushMessages,
 	ApiDef_PushMessages,
 	BaseSubscriptionData,
 	OnPushMessageReceived,
 	PushMessage_Payload,
 	PushMessage_PayloadWrapper,
 	Request_PushRegister,
-	Request_PushTest
 } from '@nu-art/push-pub-sub-shared';
 
 
@@ -69,33 +69,31 @@ export class ModuleFE_PushPubSub_Class
 		this.pushSessionId = pushSessionId.set(window.name);
 	}
 
-	test(params: Request_PushTest): { executeSync: () => Promise<unknown> } {
-		return { executeSync: () => this.runTest(params) };
-	}
-
-	register(subscription: BaseSubscriptionData): { executeSync: () => Promise<unknown> } {
+	subscribe(subscription: BaseSubscriptionData): { executeSync: () => Promise<API_PushMessages['register']['Response']> } {
 		this.subscribeImpl(subscription);
-		return { executeSync: () => this._register(this.composeRegisterRequest()) };
+		return {executeSync: () => this.register(this.composeRegisterRequest())};
 	}
 
-	unregister(subscription: BaseSubscriptionData): { executeSync: () => Promise<unknown> } {
+	unsubscribe(subscription: BaseSubscriptionData): { executeSync: () => Promise<API_PushMessages['register']['Response']> } {
 		removeFromArray(this.subscriptions, d => d.topic === subscription.topic && compare(subscription.filter, d.filter));
-		return { executeSync: () => this._register(this.composeRegisterRequest()) };
+		return {executeSync: () => this.register(this.composeRegisterRequest())};
 	}
 
-	registerAll(subscriptions: BaseSubscriptionData[]): { executeSync: () => Promise<unknown> } {
+	subscribeAll(subscriptions: BaseSubscriptionData[]): { executeSync: () => Promise<API_PushMessages['register']['Response']> } {
 		subscriptions.forEach(subscription => this.subscribeImpl(subscription));
-		return { executeSync: () => this._register(this.composeRegisterRequest()) };
+		return {executeSync: () => this.register(this.composeRegisterRequest())};
 	}
 
 	@ApiCaller(ApiDef_PushMessages.test)
-	async runTest(_body: Request_PushTest): Promise<void> {
-		void _body;
+	async test(body: API_PushMessages['test']['Body']): Promise<API_PushMessages['test']['Response']> {
+		void body;
+		return undefined as unknown as API_PushMessages['test']['Response'];
 	}
 
 	@ApiCaller(ApiDef_PushMessages.register)
-	async _register(_body: Request_PushRegister): Promise<BaseSubscriptionData> {
-		return undefined as unknown as BaseSubscriptionData;
+	async register(body: API_PushMessages['register']['Body']): Promise<API_PushMessages['register']['Response']> {
+		void body;
+		return undefined as unknown as API_PushMessages['register']['Response'];
 	}
 
 	private composeRegisterRequest(): Request_PushRegister {

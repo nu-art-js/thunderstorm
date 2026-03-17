@@ -38,7 +38,7 @@ export class ModuleBE_OpenAI_Class
 	}
 
 	@ApiHandler(ApiDef_OpenAI.test)
-	async test(body: Request_ChatGPT): Promise<API_OpenAI['test']['Response']> {
+	async test(body: API_OpenAI['test']['Body']): Promise<API_OpenAI['test']['Response']> {
 		return this.simpleQuery(body);
 	}
 

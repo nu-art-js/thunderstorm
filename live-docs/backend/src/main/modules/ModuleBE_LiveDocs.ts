@@ -62,17 +62,17 @@ export class ModuleBE_LiveDocs_Class
 	}
 
 	@ApiHandler(ApiDef_LiveDoc.get)
-	async getLiveDocHandler(params: API_LiveDoc['get']['Params']): Promise<API_LiveDoc['get']['Response']> {
+	async get(params: API_LiveDoc['get']['Params']): Promise<API_LiveDoc['get']['Response']> {
 		return this.getLiveDoc(params);
 	}
 
 	@ApiHandler(ApiDef_LiveDoc.upsert)
-	async updateLiveDocHandler(document: API_LiveDoc['upsert']['Body']): Promise<API_LiveDoc['upsert']['Response']> {
+	async upsert(document: API_LiveDoc['upsert']['Body']): Promise<API_LiveDoc['upsert']['Response']> {
 		return this.updateLiveDoc(document);
 	}
 
 	@ApiHandler(ApiDef_LiveDoc.history)
-	async changeHistoryHandler(params: API_LiveDoc['history']['Params']): Promise<API_LiveDoc['history']['Response']> {
+	async history(params: API_LiveDoc['history']['Params']): Promise<API_LiveDoc['history']['Response']> {
 		return this.changeHistory(params);
 	}
 

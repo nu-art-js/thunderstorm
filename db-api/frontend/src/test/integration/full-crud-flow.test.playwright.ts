@@ -38,7 +38,7 @@ test.describe('Integration - full CRUD flow', () => {
 			const afterUpsert = api.cache.all().find((x: any) => x._id === '1')?.name;
 			await api.patch({_id: '1', name: 'patched'});
 			const afterPatch = api.cache.all().find((x: any) => x._id === '1')?.name;
-			await api.delete({_id: '1'});
+			await api.deleteUnique({_id: '1'});
 			const afterDelete = api.cache.all().length;
 			return {afterQuery, afterUpsert, afterPatch, afterDelete, callCount};
 		});

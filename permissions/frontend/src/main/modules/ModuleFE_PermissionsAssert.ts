@@ -23,7 +23,7 @@ import {PermissionKey_FE} from '../PermissionKey_FE.js';
 import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts.js';
 import {RendererKey_AccountMenu_SubHeader} from '@nu-art/user-account-frontend/consts';
 import {Renderer_RoleNames} from '../ui/Renderer_RoleNames.js';
-import {ApiDef_Permissions} from '@nu-art/permissions-shared';
+import {API_Permissions, ApiDef_Permissions} from '@nu-art/permissions-shared';
 import {getRendererRegistry} from '../permissions-wire.js';
 
 
@@ -55,13 +55,15 @@ export class ModuleFE_PermissionsAssert_Class
 	}
 
 	@ApiCaller(ApiDef_Permissions.toggleStrictMode)
-	async toggleStrictMode(_params?: unknown): Promise<void> {
-		return undefined;
+	async toggleStrictMode(_params?: API_Permissions['toggleStrictMode']['Params']): Promise<API_Permissions['toggleStrictMode']['Response']> {
+		void _params;
+		return undefined as unknown as API_Permissions['toggleStrictMode']['Response'];
 	}
 
 	@ApiCaller(ApiDef_Permissions.createProject)
-	async createProject(_params?: unknown): Promise<void> {
-		return undefined;
+	async createProject(_params?: API_Permissions['createProject']['Params']): Promise<API_Permissions['createProject']['Response']> {
+		void _params;
+		return undefined as unknown as API_Permissions['createProject']['Response'];
 	}
 
 	protected init() {

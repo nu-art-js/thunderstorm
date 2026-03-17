@@ -106,7 +106,7 @@ test.describe('BaseApi - error handling', () => {
 			const beforeLength = api.cache.all().length;
 			let thrown = false;
 			try {
-				await api.delete({_id: '1'});
+				await api.deleteUnique({_id: '1'});
 			} catch (_e) {
 				thrown = true;
 			}

@@ -1,7 +1,7 @@
 import {CrudApiDef} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseApi_Class} from '@nu-art/db-api-backend';
 import {ApiHandler} from '@nu-art/http-server';
-import {ApiDef_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser, Request_AssignPermissions} from '@nu-art/permissions-shared';
+import {API_PermissionUser, ApiDef_PermissionUser, DBDef_PermissionUser, DatabaseDef_PermissionUser} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB.js';
 
 class ModuleBE_PermissionUserAPI_Class
@@ -19,7 +19,7 @@ class ModuleBE_PermissionUserAPI_Class
 	}
 
 	@ApiHandler(ApiDef_PermissionUser.assignPermissions)
-	async handleAssignPermissions(body: Request_AssignPermissions): Promise<void> {
+	async assignPermissions(body: API_PermissionUser['assignPermissions']['Body']): Promise<void> {
 		await ModuleBE_PermissionUserDB.assignPermissions(body);
 	}
 }

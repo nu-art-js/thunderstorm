@@ -21,7 +21,7 @@ import type {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {DB_BaseObject} from '@nu-art/db-api-shared';
 import {ApiHandler} from '@nu-art/http-server';
-import {ApiDef_Archiving, RequestBody_HardDeleteUnique, RequestQuery_DeleteAll, RequestQuery_GetHistory} from '@nu-art/archiving-shared';
+import {ApiDef_Archiving, type ApiStruct_Archiving} from '@nu-art/archiving-shared';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 
 type Params = { collectionName: string; docId: string };
@@ -60,7 +60,7 @@ export class ModuleBE_ArchiveModule_Class
 	}
 
 	@ApiHandler(ApiDef_Archiving.vv1.hardDeleteUnique)
-	async hardDeleteUnique(body: RequestBody_HardDeleteUnique) {
+	async hardDeleteUnique(body: ApiStruct_Archiving['vv1']['hardDeleteUnique']['Body']) {
 		const {_id, collectionName, dbInstance} = body;
 		const dbModule = this.moduleMapper[collectionName];
 
@@ -80,7 +80,7 @@ export class ModuleBE_ArchiveModule_Class
 	}
 
 	@ApiHandler(ApiDef_Archiving.vv1.hardDeleteAll)
-	async hardDeleteAll(queryParams: RequestQuery_DeleteAll) {
+	async hardDeleteAll(queryParams: ApiStruct_Archiving['vv1']['hardDeleteAll']['Params']) {
 		const dbModule = this.moduleMapper[queryParams.collectionName];
 
 		if (!dbModule)
@@ -95,7 +95,7 @@ export class ModuleBE_ArchiveModule_Class
 	}
 
 	@ApiHandler(ApiDef_Archiving.vv1.getDocumentHistory)
-	async getDocumentHistory(queryParams: RequestQuery_GetHistory): Promise<DB_Object[]> {
+	async getDocumentHistory(queryParams: ApiStruct_Archiving['vv1']['getDocumentHistory']['Params']): Promise<ApiStruct_Archiving['vv1']['getDocumentHistory']['Response']> {
 		const {collectionName, _id} = queryParams;
 		const dbModule = this.moduleMapper[collectionName];
 

@@ -18,7 +18,7 @@
 
 import {addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal, Module} from '@nu-art/ts-common';
 import {ApiCaller} from '@nu-art/http-client';
-import {ApiDef_BugReport, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared/api';
+import {API_BugReport, ApiDef_BugReport} from '@nu-art/bug-report-shared/api';
 
 
 export const RequestKey_BugReportApi = 'BugReport';
@@ -40,9 +40,9 @@ export class ModuleFE_BugReport_Class
 	}
 
 	@ApiCaller(ApiDef_BugReport.sendBugReport)
-	async sendBugReport(body: Request_BugReport): Promise<TicketDetails[]> {
+	async sendBugReport(body: API_BugReport['sendBugReport']['Body']): Promise<API_BugReport['sendBugReport']['Response']> {
 		void body;
-		return [];
+		return undefined as unknown as API_BugReport['sendBugReport']['Response'];
 	}
 }
 

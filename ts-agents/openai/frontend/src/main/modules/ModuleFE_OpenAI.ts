@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import {ApiCaller} from '@nu-art/http-client';
-import {API_OpenAI, ApiDef_OpenAI, Request_ChatGPT} from '@nu-art/ts-openai-shared/api-def';
+import {API_OpenAI, ApiDef_OpenAI} from '@nu-art/ts-openai-shared/api-def';
 
 type Config = Record<string, never>;
 
@@ -15,7 +15,7 @@ export class ModuleFE_OpenAI_Class
 	}
 
 	@ApiCaller(ApiDef_OpenAI.test)
-	async test(body: Request_ChatGPT): Promise<API_OpenAI['test']['Response']> {
+	async test(body: API_OpenAI['test']['Body']): Promise<API_OpenAI['test']['Response']> {
 		void body;
 		return undefined as unknown as API_OpenAI['test']['Response'];
 	}

@@ -186,7 +186,7 @@ export class PermissionDomainsEditor
 				label: 'Delete Domain',
 				action: async (state: State_ItemsEditor<DatabaseDef_PermissionDomain>) => {
 					try {
-						await ModuleFE_PermissionDomain.delete({_id: state.editable.item._id!});
+						await ModuleFE_PermissionDomain.deleteUnique({_id: state.editable.item._id!});
 						return true;
 					} catch (err: any) {
 						StaticLogger.logError(err);

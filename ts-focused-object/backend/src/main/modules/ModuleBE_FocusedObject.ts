@@ -29,13 +29,13 @@ export class ModuleBE_FocusedObject_Class
 	}
 
 	@ApiHandler(() => ApiDef_FocusedObject.update)
-	async update(body: API_FocusedObject['update']['B']): Promise<API_FocusedObject['update']['R']> {
+	async update(body: API_FocusedObject['update']['Body']): Promise<API_FocusedObject['update']['Response']> {
 		await this.updateFocusData(body);
-		return undefined as API_FocusedObject['update']['R'];
+		return undefined as API_FocusedObject['update']['Response'];
 	}
 
 	
-	private updateFocusData = async (request: API_FocusedObject['update']['B']) => {
+	private updateFocusData = async (request: API_FocusedObject['update']['Body']) => {
 		const tabId = Header_TabId.get();
 		const oldFocusMap = await this.getFocusMap();
 		const newFocusMap = cloneObj(oldFocusMap);

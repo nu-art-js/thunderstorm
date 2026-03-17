@@ -4,11 +4,10 @@
  */
 
 import {
+	API_ShortUrl,
 	ApiDef_ShortUrl,
 	DBDef_ShortUrl,
 	DatabaseDef_ShortUrl,
-	GetShortUrlRequest,
-	GetShortUrlResponse
 } from '@nu-art/ts-short-url-shared';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import {ApiCaller} from '@nu-art/http-client';
@@ -40,9 +39,9 @@ export class ModuleFE_ShortUrl_Class extends ModuleFE_BaseApi<DatabaseDef_ShortU
 	}
 
 	@ApiCaller(ApiDef_ShortUrl.getShortUrl)
-	async getShortUrl(params: GetShortUrlRequest): Promise<GetShortUrlResponse> {
+	async getShortUrl(params: API_ShortUrl['getShortUrl']['Params']): Promise<API_ShortUrl['getShortUrl']['Response']> {
 		void params;
-		return undefined as unknown as GetShortUrlResponse;
+		return undefined as unknown as API_ShortUrl['getShortUrl']['Response'];
 	}
 }
 

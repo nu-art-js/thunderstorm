@@ -62,7 +62,7 @@ test.describe('BaseApi - edge cases', () => {
 			await api.onEntriesUpdated([existing]);
 			await api.loadCache();
 			const beforeLength = api.cache.all().length;
-			await api.delete({_id: '1'});
+			await api.deleteUnique({_id: '1'});
 			const afterLength = api.cache.all().length;
 			const stillHas = api.cache.all().some((x: any) => x._id === '1');
 			return {beforeLength, afterLength, stillHas};

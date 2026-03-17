@@ -20,7 +20,7 @@ export class SlackReporter
 				return this.sendReportToChannel(channel);
 
 			const dmId = await ModuleBE_Slack.openDM([userId]);
-			await ModuleBE_Slack.postMessage(this.report, dmId);
+			await ModuleBE_Slack.sendText(this.report, dmId);
 		} catch (err: any) {
 			this.logError('Failed to send report to user.\nSending to channel instead.\n', err);
 			return this.sendReportToChannel(channel);
@@ -28,6 +28,6 @@ export class SlackReporter
 	};
 
 	public sendReportToChannel = async (channel?: string) => {
-		await ModuleBE_Slack.postMessage(this.report, channel ?? this.fallbackChannel);
+		await ModuleBE_Slack.sendText(this.report, channel ?? this.fallbackChannel);
 	};
 }

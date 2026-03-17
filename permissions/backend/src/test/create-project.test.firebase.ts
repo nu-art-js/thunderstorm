@@ -86,7 +86,7 @@ describe('Permissions - Create Project (path-based assert)', () => {
 					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Admin }], result: true }
 				],
 				check: async (projectId: UniqueId, path: string) => {
-					await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
+					await ModuleBE_PermissionsAssert.assertPathPermissions(projectId, path);
 				}
 			},
 			result: true
@@ -106,7 +106,7 @@ describe('Permissions - Create Project (path-based assert)', () => {
 					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Admin }], result: true }
 				],
 				check: async (projectId: UniqueId, path: string) => {
-					await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
+					await ModuleBE_PermissionsAssert.assertPathPermissions(projectId, path);
 				}
 			},
 			result: true
@@ -126,7 +126,7 @@ describe('Permissions - Create Project (path-based assert)', () => {
 					{ accessLevels: [{ domain: Test_Domain1, levelName: Test_AccessLevel_Admin }], result: true }
 				],
 				check: async (projectId: UniqueId, path: string) => {
-					await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
+					await ModuleBE_PermissionsAssert.assertPathPermissions(projectId, path);
 				}
 			},
 			result: true

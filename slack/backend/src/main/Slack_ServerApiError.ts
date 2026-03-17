@@ -92,7 +92,7 @@ export class Slack_ServerApiError_Class
 				return;
 		}
 
-		return ModuleBE_Slack.postMessage(message, undefined, threadPointer);
+		return ModuleBE_Slack.sendText(message, undefined, threadPointer);
 	}
 }
 

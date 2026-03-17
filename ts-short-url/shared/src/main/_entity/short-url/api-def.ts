@@ -10,5 +10,5 @@ export type API_ShortUrl = {
 };
 
 export const ApiDef_ShortUrl: ApiDefResolver<API_ShortUrl> = {
-	getShortUrl: {method: HttpMethod.GET, path: 'v1/short-url/get-short-url', timeout: Minute}
+	getShortUrl: {method: HttpMethod.GET, path: '/v1/short-url/get-short-url', timeout: Minute}
 };

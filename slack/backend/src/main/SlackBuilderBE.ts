@@ -39,7 +39,7 @@ export class SlackBuilderBE
 
 	protected sendMessage = async () => {
 		this.convertLongSectionBlocks();
-		return ModuleBE_Slack.postStructuredMessage({
+		return ModuleBE_Slack.sendStructured({
 			channel: this.channel,
 			blocks: this.blocks
 		} as PreSendSlackStructuredMessage);
@@ -55,7 +55,7 @@ export class SlackBuilderBE
 
 	protected sendReplies = async (tp: ThreadPointer) => {
 		for (const reply of this.replies) {
-			await ModuleBE_Slack.postStructuredMessage({
+			await ModuleBE_Slack.sendStructured({
 				blocks: reply
 			} as PreSendSlackStructuredMessage, tp);
 		}

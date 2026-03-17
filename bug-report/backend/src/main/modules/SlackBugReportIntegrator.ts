@@ -42,7 +42,7 @@ export class SlackBugReportIntegrator_Class
 		if (reporter)
 			description += '\nReported by: ' + reporter;
 
-		await ModuleBE_Slack.postMessage(description, this.config.channel);
+		await ModuleBE_Slack.sendText(description, this.config.channel);
 		return {platform: Platform_Slack, issueId: generateHex(32)};
 	};
 }

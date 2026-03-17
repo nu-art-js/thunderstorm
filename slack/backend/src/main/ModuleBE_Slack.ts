@@ -88,27 +88,27 @@ export class ModuleBE_Slack_Class
 	}
 
 	@ApiHandler(ApiDef_Slack.postMessage)
-	async postMessageHandler(request: API_Slack['postMessage']['Body']): Promise<void> {
-		await this.postMessage(request.message, request.channel);
+	async postMessage(request: API_Slack['postMessage']['Body']): Promise<void> {
+		await this.sendText(request.message, request.channel);
 	}
 
 	@ApiHandler(ApiDef_Slack.postStructuredMessage)
-	async postStructuredMessageHandler(request: API_Slack['postStructuredMessage']['Body']): Promise<API_Slack['postStructuredMessage']['Response']> {
-		return {threadPointer: await this.postStructuredMessage(request.message, request.thread)};
+	async postStructuredMessage(request: API_Slack['postStructuredMessage']['Body']): Promise<API_Slack['postStructuredMessage']['Response']> {
+		return {threadPointer: await this.sendStructured(request.message, request.thread)};
 	}
 
 	@ApiHandler(ApiDef_Slack.sendFEMessage)
-	async sendFEMessageHandler(request: API_Slack['sendFEMessage']['Body']): Promise<void> {
+	async sendFEMessage(request: API_Slack['sendFEMessage']['Body']): Promise<void> {
 		const slackMessage = new SlackBuilderBE(request.channel, request.messageBlocks, request.messageReplies);
 		await slackMessage.send();
 	}
 
 	@ApiHandler(ApiDef_Slack.postFiles)
-	async postFilesHandler(request: API_Slack['postFiles']['Body']): Promise<API_Slack['postFiles']['Response']> {
+	async postFiles(request: API_Slack['postFiles']['Body']): Promise<API_Slack['postFiles']['Response']> {
 		return this.postFile(request.file, request.name, request.thread);
 	}
 
-	public async postMessage(text: string, channel?: string, thread?: ThreadPointer) {
+	public async sendText(text: string, channel?: string, thread?: ThreadPointer) {
 		const message: PreSendSlackStructuredMessage = {
 			channel: channel ?? this.config.defaultChannel,
 		};
@@ -162,7 +162,7 @@ export class ModuleBE_Slack_Class
 		return completeResponse;
 	}
 
-	public async postStructuredMessage(message: PreSendSlackStructuredMessage, thread?: ThreadPointer) {
+	public async sendStructured(message: PreSendSlackStructuredMessage, thread?: ThreadPointer) {
 		message.channel ??= this.config.defaultChannel;
 
 		return await this.postMessageImpl(message as ChatPostMessageArguments, thread);

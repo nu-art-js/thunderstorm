@@ -21,7 +21,7 @@ import {
 	SmartSync_FullSync,
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState,
-	SyncManagerAPI_SmartSync
+	type ApiStruct_SyncManager,
 } from '@nu-art/sync-manager-shared';
 import {
 	__stringify,
@@ -71,7 +71,7 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	@ApiHandler(() => ApiDef_SyncManager.smartSync)
-	async calculateSmartSync(body: SyncManagerAPI_SmartSync['request']): Promise<SyncManagerAPI_SmartSync['response']> {
+	async smartSync(body: ApiStruct_SyncManager['smartSync']['Body']): Promise<ApiStruct_SyncManager['smartSync']['Response']> {
 		const frontendCollectionNames = body.modules.map(item => item.dbKey);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 

@@ -78,8 +78,8 @@ export class ModuleFE_FocusedObject_Class
 	}
 
 	@ApiCaller(ApiDef_FocusedObject.update)
-	async update(body: API_FocusedObject['update']['B']): Promise<API_FocusedObject['update']['R']> {
-		return undefined as unknown as Promise<API_FocusedObject['update']['R']>;
+	async update(body: API_FocusedObject['update']['Body']): Promise<API_FocusedObject['update']['Response']> {
+		return undefined as unknown as Promise<API_FocusedObject['update']['Response']>;
 	}
 	
 	private initFirebaseListening = () => {
