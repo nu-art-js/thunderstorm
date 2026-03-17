@@ -27,9 +27,9 @@ export type StaticProps_TS_MultiSelect_V2<ItemType> = {
 	selectionFilter?: (item: ItemType) => boolean; // for the shown list
 	itemFilter?: (item: ItemType) => boolean; // for the selection dropdown
 	sort?: (items: ItemType[]) => ItemType[];
-	getItemKey?: (item: ItemType, indexInList: number) => string | number;
+	getItemKey?: (item: ItemType, itemIndex: number) => string | number;
 	// mandatory
-	itemRenderer: (item: ItemType, onDelete: () => Promise<void>, disabled: boolean, rowIndex: number, listEditable: EditableItem<ItemType[]>) => ReactNode
+	itemRenderer: (item: ItemType, onDelete: () => Promise<void>, disabled: boolean, itemIndex: number, listEditable: EditableItem<ItemType[]>) => ReactNode
 	selectionRenderer: React.ComponentType<MultiSelect_Selector<ItemType>>,
 }
 
