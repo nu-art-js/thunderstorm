@@ -12,34 +12,28 @@ import {
 	DBDef_AppConfig,
 	RequestBody_GetResolverByKey
 } from '@nu-art/app-config-shared';
-import {DBConfig_ModuleFE, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {buildConfigFromDBDef, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import {ApiCaller, HttpClient} from '@nu-art/http-client';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
 import {BadImplementationException, cloneObj} from '@nu-art/ts-common';
 
 type InferType<T> = T extends AppConfigKey_FE<infer V> ? V : never;
 
-const config: DBConfig_ModuleFE<DatabaseDef_AppConfig> = {
-	dbKey: DBDef_AppConfig.dbKey,
-	validator: DBDef_AppConfig.modifiablePropsValidator,
-	uniqueKeys: (DBDef_AppConfig.uniqueKeys ?? ['_id']),
-	versions: ['1.0.0'],
-	dbConfig: {
-		name: DBDef_AppConfig.frontend?.name ?? DBDef_AppConfig.dbKey,
-		group: DBDef_AppConfig.frontend?.group ?? 'default',
-		version: DBDef_AppConfig.versions[0],
-		uniqueKeys: (DBDef_AppConfig.uniqueKeys ?? ['_id'])
-	},
-};
+export interface OnAppConfigUpdated {
+	__onAppConfigUpdated: (...params: ApiCallerEventType<DatabaseDef_AppConfig['dbType']>) => void;
+}
+
+export const dispatch_onAppConfigChanged = new ThunderDispatcher<OnAppConfigUpdated, '__onAppConfigUpdated'>('__onAppConfigUpdated');
 
 export class ModuleFE_AppConfig_Class
 	extends ModuleFE_BaseApi<DatabaseDef_AppConfig> {
 
 	constructor() {
 		super({
-			config,
+			config: buildConfigFromDBDef<DatabaseDef_AppConfig>(DBDef_AppConfig),
 			crudApiDef: ApiDef_CRUD_AppConfig,
-			dispatcher: () => {
-			}
+			dispatcher: (...args) => dispatch_onAppConfigChanged.dispatchAll(...args)
 		});
 	}
 

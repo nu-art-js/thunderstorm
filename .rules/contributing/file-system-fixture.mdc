@@ -13,7 +13,7 @@ Core Syntax
 - In case of nested fixtures within fixtures, the escaping of the file header line would have an additional leading //
   // file: ./relative/path/from/repo/root.ext
   //// file: ./i/am/a/file/in/the/inner/fixture.ext
-- Immediately after the header, the file’s exact contents follow until the next header or end of document.
+- Immediately after the header, the file's exact contents follow until the next header or end of document.
 - Paths are POSIX-style and MUST begin with ./
 - Empty files are represented by a header followed by nothing (or a single newline).
 - By default, a fixture describes the full content of the files that should be created/updated. Files not listed are left untouched.
@@ -26,14 +26,14 @@ Core Syntax
 Comments & Prose
 - The canvas itself is the source-of-truth; include only the headers and file contents.
 - Do NOT wrap with Markdown fences.
-- Do NOT add explanatory comments inside code files unless they are part of the file’s actual content.
+- Do NOT add explanatory comments inside code files unless they are part of the file's actual content.
 
-Common Mistakes (don’t)
-- Don’t include Markdown fences (``` … ```).
-- Don’t omit ./ in paths.
-- Don’t use Windows backslashes in paths.
-- Don’t place prose between file blocks.
-- Don’t add canvas comments; discuss in chat.
+Common Mistakes (don't)
+- Don't include Markdown fences (``` … ```).
+- Don't omit ./ in paths.
+- Don't use Windows backslashes in paths.
+- Don't place prose between file blocks.
+- Don't add canvas comments; discuss in chat.
 
 Versioning Note
 

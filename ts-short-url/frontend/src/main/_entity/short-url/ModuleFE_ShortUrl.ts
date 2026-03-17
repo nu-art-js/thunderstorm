@@ -13,7 +13,7 @@ import {
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import {ApiCaller} from '@nu-art/http-client';
 import {CrudApiDef} from '@nu-art/db-api-shared';
-import {DBConfig_ModuleFE, EventDispatcher, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {buildConfigFromDBDef, EventDispatcher, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 
 export type DispatcherType_ShortUrl = `__onShortUrlsUpdated`;
 
@@ -29,25 +29,11 @@ export const dispatch_onShortUrlsUpdated = Object.assign(
 	}
 );
 
-function shortUrlConfig(): DBConfig_ModuleFE<DatabaseDef_ShortUrl> {
-	return {
-		dbKey: DBDef_ShortUrl.dbKey,
-		validator: DBDef_ShortUrl.modifiablePropsValidator,
-		uniqueKeys: DBDef_ShortUrl.uniqueKeys ?? [],
-		versions: DBDef_ShortUrl.versions,
-		dbConfig: {
-			...DBDef_ShortUrl.frontend,
-			version: DBDef_ShortUrl.versions[0] ?? '1.0.0',
-			uniqueKeys: DBDef_ShortUrl.uniqueKeys ?? ['_id']
-		}
-	};
-}
-
 export class ModuleFE_ShortUrl_Class extends ModuleFE_BaseApi<DatabaseDef_ShortUrl> {
 
 	constructor() {
 		super({
-			config: shortUrlConfig(),
+			config: buildConfigFromDBDef<DatabaseDef_ShortUrl>(DBDef_ShortUrl),
 			crudApiDef: CrudApiDef<DatabaseDef_ShortUrl>(DBDef_ShortUrl.dbKey),
 			dispatcher: dispatch_onShortUrlsUpdated
 		});

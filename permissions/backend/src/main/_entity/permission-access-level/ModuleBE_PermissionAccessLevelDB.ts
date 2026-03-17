@@ -1,5 +1,4 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {Clause_Where} from '@nu-art/firebase-shared';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
 import {Transaction} from 'firebase-admin/firestore';
 import {ModuleBE_PermissionAPIDB} from '../permission-api/index.js';
@@ -19,11 +18,6 @@ export class ModuleBE_PermissionAccessLevelDB_Class
 	constructor() {
 		super(DBDef_PermissionAccessLevel);
 		this.registerVersionUpgradeProcessor('1.0.0', this.upgrade_100_101);
-	}
-
-	protected internalFilter(item: DB_PermissionAccessLevel): Clause_Where<DB_PermissionAccessLevel>[] {
-		const {domainId, name, value} = item;
-		return [{domainId, name}, {domainId, value}];
 	}
 
 	protected async preWriteProcessing(dbInstance: DB_PermissionAccessLevel, originalDbInstance: DatabaseDef_PermissionAccessLevel['dbType'], transaction?: Transaction) {

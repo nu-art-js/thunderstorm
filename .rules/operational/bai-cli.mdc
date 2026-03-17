@@ -1,6 +1,6 @@
 ---
 description: Minimal BAI CLI guide for agents — which commands to run for build, install, and tests. Read before running or suggesting BAI commands.
-alwaysApply: true
+alwaysApply: false
 ---
 
 # BAI CLI – Minimal agent guide (read first)

@@ -1,0 +1,38 @@
+---
+description: Core mental model of Thunderstorm — key abstractions, package map, naming. Read first when working in a thunderstorm project.
+alwaysApply: false
+---
+
+# Thunderstorm vocabulary
+
+## What Thunderstorm is
+
+Thunderstorm is a TypeScript ESM monorepo framework. Build, test, and deploy are handled by **BAI** (Build and Install). All packages use `"type": "module"`, `module: "NodeNext"`, and `moduleResolution: "NodeNext"`. Never edit generated `package.json` or `pnpm-workspace.yaml` — edit `__package.json` templates and run BAI.
+
+## Key abstractions
+
+- **Package** — Single-domain unit: one folder, one `__package.json`, `src/main/`, `src/test/`. Domain is either shared, frontend, or backend.
+- **Library** — Multi-domain capability: one root folder containing multiple packages (e.g. `shared/`, `frontend/`, `backend/`). Each subfolder is a package; together they form one lib (e.g. db-api, http).
+- **Unit** — BAI’s executable entity: maps to a package. Unit types include `node-project`, `typescript-lib`, `firebase-hosting`, `firebase-function`.
+- **Module** — Runtime singleton that provides a capability. Backend modules: `ModuleBE_*`; frontend modules: `ModuleFE_*`. Classes that are singletons and participate in module manager pack use the `_Class` suffix; the exported instance has no suffix (e.g. `ModuleFE_BaseApi` is the instance, `ModuleFE_BaseApi_Class` is the type).
+
+## Package map (one-liner per lib)
+
+| Lib | Purpose |
+|-----|---------|
+| **db-api** | Type-safe CRUD over Firestore; shared types + backend (ModuleBE_BaseDB, ModuleBE_BaseApi) + frontend (ModuleFE_BaseDB, ModuleFE_BaseApi). |
+| **http** | Type-safe HTTP client (HttpClient, ApiCaller) and server (HttpServer, ApiHandler). |
+| **build-and-install (BAI)** | Monorepo build system: units, dependency graph, phases (prepare, compile, test, deploy). CLI: build, test, install; use `-up=<regex>` for specific packages. |
+| **ts-common** | Shared utilities, exceptions (ApiException, CustomException), types. |
+| **firebase-*** | Firebase backend/frontend/shared integration. |
+
+## Naming conventions
+
+- `ModuleBE_*` / `ModuleFE_*` — Backend / frontend module.
+- `*_Class` — Class type for singleton modules (config resolution, module pack).
+- `CrudTypes`, `CrudApiDef`, `Database`, `DB_Prototype` — db-api shared types.
+- `ApiDef`, `BodyApi`, `QueryApi` — api-types / http API shapes.
+
+## Where to go next
+
+For operational how-to (BAI, project structure, deps), contributing (package standard, tests, exports), or consuming (db-api, http, editable-item), read the **routing index**: `_thunderstorm/.cursor/rules/index.mdc`. It points to every rule by intent.

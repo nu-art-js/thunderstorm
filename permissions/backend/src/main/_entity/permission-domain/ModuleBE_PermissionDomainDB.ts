@@ -1,5 +1,5 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {DB_PermissionDomain, DBDef_PermissionDomain, DatabaseDef_PermissionDomain} from '@nu-art/permissions-shared';
+import {DatabaseDef_PermissionDomain, DB_PermissionDomain, DBDef_PermissionDomain} from '@nu-art/permissions-shared';
 import {ApiException} from '@nu-art/ts-common';
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
@@ -18,10 +18,6 @@ export class ModuleBE_PermissionDomainDB_Class
 		if (accessLevels.length) {
 			throw new ApiException(403, 'You trying delete domain that associated with accessLevels, you need delete the accessLevels first');
 		}
-	}
-
-	internalFilter(item: DB_PermissionDomain) {
-		return [{namespace: item.namespace, projectId: item.projectId}];
 	}
 
 	protected async preWriteProcessing(dbInstance: DB_PermissionDomain, originalDbInstance: DatabaseDef_PermissionDomain['dbType'], t?: Transaction) {
