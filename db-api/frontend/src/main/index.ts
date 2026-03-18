@@ -22,3 +22,4 @@
 export * from './ModuleFE_BaseApi.js';
 export * from './ModuleFE_BaseDB.js';
 export * from './buildConfigFromDBDef.js';
+export * from './ModuleFE_CollectionActions.js';

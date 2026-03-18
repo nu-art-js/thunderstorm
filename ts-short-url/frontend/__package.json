@@ -40,7 +40,6 @@
     "@nu-art/firebase-shared": "?",
     "@nu-art/permissions-frontend": "?",
     "@nu-art/permissions-shared": "?",
-    "@nu-art/storm-shared": "?",
     "@nu-art/thunder-core": "?",
     "@nu-art/thunder-routing": "?",
     "@nu-art/thunder-ui-modules": "?",

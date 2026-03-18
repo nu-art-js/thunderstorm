@@ -37,7 +37,6 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/storm-shared": "?",
     "@nu-art/thunder-notifications": "?",
     "@nu-art/thunder-widgets": "?",
     "@nu-art/thunder-routing": "?",

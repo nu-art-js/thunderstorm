@@ -1,4 +1,5 @@
 import {DB_Object} from './db-object.js';
+import {DB_Prototype} from './types.js';
 
 /**
  * Single-item API event types.
@@ -32,4 +33,11 @@ export type ApiCallerEventType<DBType extends DB_Object> =
 	| [SingleApiEvent, DBType]
 	| [MultiApiEvent, DBType[]];
 
+export type DispatcherDef<Proto extends DB_Prototype, MethodName extends `${string}`> = {
+	eventName: MethodName;
+	method: (...params: ApiCallerEventType<Proto['dbType']>) => void;
+};
 
+export type DispatcherInterface<Def extends DispatcherDef<any, any>> = {
+	[K in Def['eventName']]: Def['method'];
+};

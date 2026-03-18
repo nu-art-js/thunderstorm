@@ -23,3 +23,5 @@ export * from './utils.js';
 export * from './db-object.js';
 export * from './query-types.js';
 export * from './db-api-dispatcher.js';
+export * from './entity-dependencies.js';
+export * from './collection-actions.js';
