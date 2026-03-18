@@ -7,7 +7,8 @@
 import {filterDuplicates, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_ConflictResolution.scss';
 import {Button, ComponentSync, LL_V_L, SimpleListAdapter, TS_DropDown, TS_Input, TS_PropRenderer} from '@nu-art/thunder-widgets';
-import {AppToolsScreen, ATS_Backend, ModuleFE_CollectionActions} from '@nu-art/thunder-ui-modules';
+import {AppToolsScreen, ATS_Backend} from '@nu-art/thunder-ui-modules';
+import {ModuleFE_CollectionActions} from '@nu-art/db-api-frontend';
 import type {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
 import {ModuleFE_ConflictResolution} from '../../_modules/ModuleFE_ConflictResolution.js';

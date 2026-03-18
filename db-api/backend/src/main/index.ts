@@ -23,3 +23,4 @@ export {ModuleBE_BaseDB, BaseDBApiConfig, DBApiConfig} from './ModuleBE_BaseDB.j
 export {ModuleBE_BaseApi_Class, createApisForDBModule, RuntimeBE_Modules} from './ModuleBE_BaseApi.js';
 export type {DBApiBEConfig, DBEntityDependencies, DBEntityDependencyError, EntityDependencyCollection} from './storm-stubs.js';
 export {getModuleBEConfig, dispatch_CollectEntityDependencies} from './storm-stubs.js';
+export {ModuleBE_CollectionActions} from './ModuleBE_CollectionActions.js';

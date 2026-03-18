@@ -5,11 +5,10 @@
  */
 
 import {Const_UniqueKeys, Day, Hour} from '@nu-art/ts-common';
-import type {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
-import type {UniqueId} from '@nu-art/ts-common';
 import {Dispatcher} from '@nu-art/ts-common';
 import type {Transaction} from 'firebase-admin/firestore';
 import type {BaseDBDefBE, DBApiBEConfigShape} from './backend-types.js';
+import type {DBEntityDependencies} from '@nu-art/db-api-shared';
 
 export type {DBApiBEConfigShape as DBApiBEConfig};
 
@@ -24,18 +23,7 @@ export const getModuleBEConfig = (dbDef: BaseDBDefBE): DBApiBEConfigShape => {
 	};
 };
 
-export type DBEntityDependencyResult = { [dbKey: string]: UniqueId[] };
-
-export type DBEntityDependencies = {
-	dbKey: string;
-	dependencyMap: {
-		[entityId: UniqueId]: DBEntityDependencyResult;
-	};
-};
-
-export const DBEntityDependencyErrorType = 'entity-has-dependencies';
-
-export type DBEntityDependencyError = ResponseError<typeof DBEntityDependencyErrorType, DBEntityDependencies>;
+export {DBEntityDependencyErrorType, type DBEntityDependencies, type DBEntityDependencyError, type DBEntityDependencyResult} from '@nu-art/db-api-shared';
 
 export interface EntityDependencyCollection {
 	__collectEntityDependencies: (type: string, itemIds: string[], transaction?: Transaction) => Promise<DBEntityDependencies | undefined>;
