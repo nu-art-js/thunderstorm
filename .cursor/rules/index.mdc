@@ -5,7 +5,9 @@ alwaysApply: false
 
 # Thunderstorm rules index
 
-Read [vocabulary](_thunderstorm/.rules/vocabulary.mdc) first for the core mental model. Then use this table to find the right rule by intent.
+Non-negotiable principles are in [project-for-any-project.mdc](project-for-any-project.mdc) (lighthouse). This file is the **single routing table** to all thunderstorm rules.
+
+Read [vocabulary](_thunderstorm/.rules/vocabulary.mdc) first for the core mental model. Then use the table below to find the right rule by intent.
 
 Paths are relative to the project root (monorepo root).
 
@@ -28,6 +30,7 @@ Paths are relative to the project root (monorepo root).
 | Want to… | Read |
 |-----------|------|
 | Bring a package to standard (full checklist) | [_thunderstorm/.rules/contributing/package-standard.mdc](_thunderstorm/.rules/contributing/package-standard.mdc) |
+| __package.json rules (common, infra, app) | [_thunderstorm/.rules/contributing/package.json/index.mdc](_thunderstorm/.rules/contributing/package.json/index.mdc) |
 | Exports and re-export policy | [_thunderstorm/.rules/contributing/exports.mdc](_thunderstorm/.rules/contributing/exports.mdc) |
 | Copyright headers in source files | [_thunderstorm/.rules/contributing/copyright.mdc](_thunderstorm/.rules/contributing/copyright.mdc) |
 | License and LICENSE file | [_thunderstorm/.rules/contributing/license.mdc](_thunderstorm/.rules/contributing/license.mdc) |

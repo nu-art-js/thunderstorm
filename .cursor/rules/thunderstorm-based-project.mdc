@@ -1,0 +1,18 @@
+---
+description: Non-negotiable principles and final rules — always obey
+alwaysApply: true
+---
+
+## Principles (where to find rules: [rules index](index.mdc))
+
+- **API / server or client:** Use the **http** lib patterns (`ApiDef`, decorators). See index → Consuming.
+- **DB / CRUD entities:** Use the **db-api** lib patterns. See index → Consuming.
+- **Build, test, install:** Use **BAI** only; never use pnpm. BAI is a CLI, not run via pnpm. See index → Operational for commands and project structure.
+
+---
+
+## Final rule (veto)
+
+**It violates the lighthouse** — do not do it - and prompt the user for confirmation.
+
+---
