@@ -95,30 +95,32 @@ export class Thunder
 		return this;
 	}
 
+
 	private async fetchConfig() {
+		const envUrl = this.innerConfig.configUrl;
+		const defaultUrl = this.innerConfig.defaultConfigUrl;
 		try {
 			this.config = {};
-			const defaultUrl = this.innerConfig.defaultConfigUrl;
 			const defaultRes = defaultUrl ? await fetch(defaultUrl) : null;
 			const defaultData = defaultRes ? (await defaultRes.json()) as TS_Object : {};
-			const envRes = await fetch(this.innerConfig.configUrl);
+			const envRes = await fetch(envUrl);
 			const envData = (await envRes.json()) as TS_Object;
 
 			if (!exists(defaultData))
-				return this.logWarning('Could not resolve default config');
+				return this.logError(`Default config resolved to ${String(defaultData)} from "${defaultUrl}" — all modules will init without config`);
 
 			if (!exists(envData))
-				return this.logWarning('Could not resolve env config');
+				return this.logError(`Env config resolved to ${String(envData)} from "${envUrl}" — all modules will init without config. Is the RTDB emulator seeded? (run deploy-config)`);
 
 			if (typeof defaultData !== 'object')
-				return this.logWarning('default config is not an object');
+				return this.logError(`Default config from "${defaultUrl}" is not an object (got ${typeof defaultData}: ${JSON.stringify(defaultData)})`);
 
 			if (typeof envData !== 'object')
-				return this.logWarning('env config is not an object');
+				return this.logError(`Env config from "${envUrl}" is not an object (got ${typeof envData}: ${JSON.stringify(envData)})`);
 
 			this.config = merge(merge(this.config, defaultData), envData);
 		} catch (err: unknown) {
-			this.logError('failed loading config with error', String(err));
+			this.logError(`Failed to fetch config from "${envUrl}"${defaultUrl ? ` / "${defaultUrl}"` : ''}: ${String(err)}`);
 		}
 	}
 
