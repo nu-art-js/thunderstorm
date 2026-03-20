@@ -6,6 +6,7 @@
 
 import {FirestoreQuery} from '@nu-art/firebase-shared';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import type {DatabaseDef_DeletedDoc, SyncableCollectionBE, SyncPostWriteData, SyncPostWriteOptions} from '@nu-art/sync-manager-shared';
 import {
@@ -35,12 +36,43 @@ import {
 	Module,
 	PreDB,
 	ResolvableContent,
-	resolveContent
+	resolveContent,
+	RuntimeModules
 } from '@nu-art/ts-common';
 import {ApiHandler} from '@nu-art/http-server';
 import type {Transaction} from 'firebase-admin/firestore';
 
-import {syncableCollectionsFromRuntimeBaseDbModules} from './baseDbAsSyncableCollection.js';
+function syncableCollectionFromBaseDb(dbModule: ModuleBE_BaseDB<any>): SyncableCollectionBE {
+	const queryApi = dbModule.query;
+
+	return {
+		get dbKey() {
+			return dbModule.dbDef.dbKey;
+		},
+
+		queryUpdatedSince: async (since: number): Promise<DB_Object[]> => {
+			return queryApi.where({__updated: {$gte: since}});
+		},
+
+		getNewestTimestamp: async (): Promise<number> => {
+			const query: FirestoreQuery<DB_Object> = {
+				limit: 1,
+				orderBy: [{key: '__updated', order: 'desc'}],
+			};
+			const rows = await queryApi.unManipulatedQuery(query);
+			const first = rows[0];
+
+			return first?.__updated ?? 0;
+		},
+	};
+}
+
+function syncableCollectionsFromRuntimeBaseDbModules(): SyncableCollectionBE[] {
+	const baseDbModules = RuntimeModules().all.filter((m): m is ModuleBE_BaseDB<any> =>
+		m.isInstanceOf(ModuleBE_BaseDB));
+
+	return baseDbModules.map(m => syncableCollectionFromBaseDb(m));
+}
 
 export type SyncManagerBEConfig = {
 	retainDeletedCount: number;
@@ -49,7 +81,7 @@ export type SyncManagerBEConfig = {
 /**
  * Sync manager backend: exposes onPostWrite (app calls it after writes) and smartSync API.
  * Discovers `ModuleBE_BaseDB` instances at runtime and orchestrates sync via their public query surface;
- * db-api has no sync types — the adapter lives in this package only.
+ * db-api has no sync types; BaseDB modules are wrapped to SyncableCollectionBE via file-local helpers below.
  */
 export class ModuleBE_SyncManager_Class
 	extends Module<SyncManagerBEConfig> {
