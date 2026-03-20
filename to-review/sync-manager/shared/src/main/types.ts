@@ -18,7 +18,10 @@ export type SyncPostWriteOptions = {
 	transaction?: unknown;
 };
 
-/** One collection the sync-manager backend can query for delta/full sync. App supplies an array of these (e.g. by wrapping ModuleBE_BaseDB). */
+/**
+ * Contract for collections the sync-manager can drive delta/full sync against.
+ * Backend fills this by adapting each registered BaseDB module's public `query` / `dbDef` surface; db-api does not implement or import this type.
+ */
 export interface SyncableCollectionBE {
 	readonly dbKey: string;
 

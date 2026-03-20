@@ -40,13 +40,16 @@ import {
 import {ApiHandler} from '@nu-art/http-server';
 import type {Transaction} from 'firebase-admin/firestore';
 
+import {syncableCollectionsFromRuntimeBaseDbModules} from './baseDbAsSyncableCollection.js';
+
 export type SyncManagerBEConfig = {
 	retainDeletedCount: number;
 };
 
 /**
  * Sync manager backend: exposes onPostWrite (app calls it after writes) and smartSync API.
- * App supplies getSyncableCollections so this package does not depend on db-api or Storm/RuntimeModules.
+ * Discovers `ModuleBE_BaseDB` instances at runtime and orchestrates sync via their public query surface;
+ * db-api has no sync types — the adapter lives in this package only.
  */
 export class ModuleBE_SyncManager_Class
 	extends Module<SyncManagerBEConfig> {
@@ -57,7 +60,7 @@ export class ModuleBE_SyncManager_Class
 	private syncableCollections!: SyncableCollectionBE[];
 	private resolvableFirebaseBasePath: ResolvableContent<string> = `/state/${this.getName()}`;
 
-	constructor(private readonly getSyncableCollections: () => SyncableCollectionBE[]) {
+	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
 		this.setDefaultConfig({retainDeletedCount: 1000});
@@ -66,7 +69,7 @@ export class ModuleBE_SyncManager_Class
 	init(): void {
 		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV3();
 		this.collection = firestore.getCollection(DBDef_DeletedDoc);
-		this.syncableCollections = this.getSyncableCollections();
+		this.syncableCollections = syncableCollectionsFromRuntimeBaseDbModules();
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 	}
 
