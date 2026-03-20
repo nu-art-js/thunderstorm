@@ -4,6 +4,10 @@ import {GoogleAuth} from 'google-auth-library';
 
 type Config = { printEnvVars: boolean, printIdentity: boolean };
 const defaultConfig: Config = {printEnvVars: false, printIdentity: true};
+const configValidator = {
+	printEnvVars: tsValidateMandatoryBoolean,
+	printIdentity: tsValidateMandatoryBoolean
+};
 
 export class ModuleBE_WhoAmI_GCP_Class
 	extends Module<Config> {
@@ -11,10 +15,7 @@ export class ModuleBE_WhoAmI_GCP_Class
 	constructor() {
 		super();
 		this.setDefaultConfig(defaultConfig);
-		this.setConfigValidator({
-			printEnvVars: tsValidateMandatoryBoolean,
-			printIdentity: tsValidateMandatoryBoolean
-		});
+		this.setConfigValidator(configValidator);
 	}
 
 
