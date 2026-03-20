@@ -221,6 +221,8 @@ export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 						return `Input is not a boolean! \nvalue: ${input}\ntype: ${typeof input}`;
 					}];
 };
+export const tsValidateOptionalBoolean = tsValidateBoolean(false);
+export const tsValidateMandatoryBoolean = tsValidateBoolean();
 
 export const tsValidateValue = <T>(values: T[] | ReadonlyArray<T>, mandatory = true): Validator<any> => {
 	return [tsValidateExists(mandatory),

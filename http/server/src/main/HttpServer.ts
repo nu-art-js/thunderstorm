@@ -213,6 +213,11 @@ export class HttpServer
 	}
 
 	public async startServer(): Promise<void> {
+		if (process.env.FUNCTIONS_EMULATOR) {
+			this.logDebug('Running in Firebase emulator — skipping port listen');
+			return;
+		}
+
 		return new Promise<void>((resolve, reject) => {
 			this.server = this.createServer();
 			this.server.listen(this.config.port);

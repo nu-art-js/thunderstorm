@@ -24,9 +24,13 @@ import {ModuleManager} from './module-manager.js';
 import {BadImplementationException} from './exceptions/exceptions.js';
 import {merge} from '../utils/merge-tools.js';
 import {Logger, LogLevel} from './logger/index.js';
-import {ValidatorTypeResolver} from '../validator/validator-core.js';
+import {TypeValidator} from '../validator/validator-core.js';
 import {lastElement} from '../utils/array-tools.js';
+import {TS_Object} from '../utils/types.js';
+import {tsValidateEnum} from '../validator/type-validators.js';
 
+
+type _ModuleConfig<C extends TS_Object> = C & { minLogLevel?: LogLevel };
 
 /**
  * Base abstract class for all modules in the nu-art ecosystem.
@@ -44,9 +48,8 @@ import {lastElement} from '../utils/array-tools.js';
  * 3. `init()` - Override to perform initialization logic
  * 4. `validate()` - Override to validate module state after initialization
  *
- * @template Config - The configuration type for this module
- * @template ModuleConfig - Extended config type that includes optional `minLogLevel`
- * @template ConfigValidator - Validator type resolver for config validation
+ * @template Config - The user-facing configuration type for this module.
+ *   Internal fields (e.g. minLogLevel) are computed from Config and hidden from consumers.
  *
  * @example
  * ```typescript
@@ -63,22 +66,20 @@ import {lastElement} from '../utils/array-tools.js';
  * export const MyModule = new MyModule_Class();
  * ```
  */
-export abstract class Module<Config = any,
-	ModuleConfig extends Config & { minLogLevel?: LogLevel } = Config & { minLogLevel?: LogLevel },
-	ConfigValidator extends ValidatorTypeResolver<ModuleConfig> = ValidatorTypeResolver<ModuleConfig>>
+export abstract class Module<Config extends TS_Object = any>
 	extends Logger {
 
 	private readonly classStack: string[] = [];
 
 	private name: string;
 	/** Module configuration, merged from default config and ModuleManager-provided config */
-	public readonly config: ModuleConfig = {} as ModuleConfig;
+	protected config = {} as _ModuleConfig<Config>;
 	/** Reference to the ModuleManager instance, injected during initialization */
 	protected readonly manager!: ModuleManager;
 	/** Flag indicating whether the module has been initialized (set by ModuleManager) */
 	protected readonly initiated = false;
 	/** Optional config validator, set via setConfigValidator() */
-	protected readonly configValidator?: ConfigValidator;
+	protected configValidator?: TypeValidator<_ModuleConfig<Config>>;
 
 
 	/**
@@ -120,9 +121,8 @@ export abstract class Module<Config = any,
 	 *
 	 * @param validator - Validator instance that implements ValidatorTypeResolver
 	 */
-	public setConfigValidator(validator: ConfigValidator) {
-		// @ts-ignore
-		this.configValidator = validator;
+	public setConfigValidator(validator: TypeValidator<Config>) {
+		this.configValidator = {...validator, minLogLevel: tsValidateEnum(LogLevel, false)};
 	}
 
 	/**
@@ -134,9 +134,8 @@ export abstract class Module<Config = any,
 	 *
 	 * @param config - Partial config object to merge with existing config
 	 */
-	public setDefaultConfig(config: Partial<ModuleConfig>) {
-		// @ts-ignore
-		this.config = merge(this.config, config);
+	public setDefaultConfig(config: Partial<_ModuleConfig<Config>>) {
+		this.config = merge(this.config, config) as _ModuleConfig<Config>;
 	}
 
 	/**
@@ -164,9 +163,8 @@ export abstract class Module<Config = any,
 	 * @param config - Configuration object to merge
 	 */
 	// @ts-ignore
-	private setConfig(config: ModuleConfig): void {
-		// @ts-ignore
-		this.config = this.config ? merge(this.config, config) : config;
+	private setConfig(config: _ModuleConfig<Config>): void {
+		this.config = (this.config ? merge(this.config, config) : config) as _ModuleConfig<Config>;
 		this.config.minLogLevel && this.setMinLevel(this.config.minLogLevel);
 	}
 
@@ -181,7 +179,7 @@ export abstract class Module<Config = any,
 	// @ts-ignore
 	private setManager(manager: ModuleManager): void {
 		// @ts-ignore
-		this.manager = manager;
+		this['manager'] = manager;
 	}
 
 	/**

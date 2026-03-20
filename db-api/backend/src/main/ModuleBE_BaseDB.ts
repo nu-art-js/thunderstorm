@@ -32,7 +32,7 @@ import {
 	filterInstances,
 	getDotNotatedValue,
 	merge,
-	Module,
+	Module, TS_Object,
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
@@ -66,7 +66,7 @@ const CONST_DefaultWriteChunkSize = 200;
  *
  * Typed by ModuleTypesBE (symmetric to FE ModuleTypes); no Proto in the base.
  */
-export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config extends object = object>
+export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config extends TS_Object = any>
 	extends Module<Config & DBApiConfig>
 	implements EntityDependencyCollection {
 

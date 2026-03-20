@@ -40,7 +40,7 @@ interface ChatPostMessageResult
 	};
 }
 
-export type ConfigType_ModuleBE_Slack = {
+type Config = {
 	token: string
 	defaultChannel: string
 	throttlingTime?: number
@@ -66,7 +66,7 @@ type MessageMap = {
 export type ThreadPointer = { ts?: string, channel: string };
 
 export class ModuleBE_Slack_Class
-	extends Module<ConfigType_ModuleBE_Slack, any> {
+	extends Module<Config> {
 	private web!: WebClient;
 	private messageMap: MessageMap = {};
 

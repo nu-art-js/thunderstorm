@@ -1,7 +1,7 @@
-import {addItemToArray, dispatch_onApplicationNotification, Module, ServerErrorSeverity} from '@nu-art/ts-common';
+import {addItemToArray, dispatch_onApplicationNotification, Module, ServerErrorSeverity, TS_Object} from '@nu-art/ts-common';
 import {FirebaseFunctionInterface} from '../functions/firebase-function.js';
 
-export abstract class ModuleBE_BaseFunction<Config = any>
+export abstract class ModuleBE_BaseFunction<Config extends TS_Object = any>
 	extends Module<Config>
 	implements FirebaseFunctionInterface {
 	protected isReady: boolean = false;

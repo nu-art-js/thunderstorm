@@ -36,6 +36,7 @@ import {
 	sortArray,
 	TimerHandler
 } from '@nu-art/ts-common';
+import { Thunder } from '@nu-art/thunder-core';
 
 
 let instances = 0;
@@ -66,8 +67,7 @@ export abstract class BaseComponent<P = any, State = any>
 
 		const __componentDidMount = this.componentDidMount?.bind(this);
 		this.componentDidMount = () => {
-			// @ts-ignore
-			Thunder.getInstance().addUIListener(this);
+			Thunder.getInstance()["addUIListener"](this);
 
 			this.mounted = true;
 			__componentDidMount?.();
@@ -76,8 +76,7 @@ export abstract class BaseComponent<P = any, State = any>
 		const __componentWillUnmount = this.componentWillUnmount?.bind(this);
 		this.componentWillUnmount = () => {
 			__componentWillUnmount?.();
-			// @ts-ignore
-			Thunder.getInstance().removeUIListener(this);
+			Thunder.getInstance()["removeUIListener"](this);
 			this.mounted = false;
 		};
 
