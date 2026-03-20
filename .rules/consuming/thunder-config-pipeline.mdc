@@ -7,7 +7,7 @@ alwaysApply: false
 
 Thunder modules (backend and frontend) receive runtime configuration from **Firebase Realtime Database (RTDB)**. Config is stored under `_config/` in RTDB, keyed by **module class name**. Without the correct RTDB entries, modules initialize with empty config and silently fail.
 
-For the full pipeline explanation and project bootstrap checklist, see [thunder-config-pipeline.md](_thunderstorm/thunder-core/_docs/thunder-config-pipeline.md).
+For the full pipeline explanation and project bootstrap checklist, see [thunder-config-pipeline.md](_thunderstorm/to-review/thunderstorm-v2/thunder-core/_docs/thunder-config-pipeline.md).
 
 ---
 

@@ -54,4 +54,6 @@ Paths are relative to the project root (monorepo root).
 | Use db-api (CRUD, shared + backend + frontend) | [_thunderstorm/db-api/.rules/how-to-use.mdc](_thunderstorm/db-api/.rules/how-to-use.mdc) |
 | Use http (client and/or server) | [_thunderstorm/http/.rules/how-to-use.mdc](_thunderstorm/http/.rules/how-to-use.mdc) |
 | Edit DB entities in UI (EditableItem, EditableDBItemV3) | [_thunderstorm/.rules/consuming/editable-item-pattern.mdc](_thunderstorm/.rules/consuming/editable-item-pattern.mdc) |
+| Use module config (type, defaults, validator) | [_thunderstorm/ts-common/_docs/how-to-use-module-config.md](_thunderstorm/ts-common/_docs/how-to-use-module-config.md) |
+| Use validators (runtime type checking) | [_thunderstorm/ts-common/_docs/how-to-use-validators.md](_thunderstorm/ts-common/_docs/how-to-use-validators.md) |
 | Module config from RTDB (config pipeline, seed data) | [_thunderstorm/.rules/consuming/thunder-config-pipeline.mdc](_thunderstorm/.rules/consuming/thunder-config-pipeline.mdc) |
