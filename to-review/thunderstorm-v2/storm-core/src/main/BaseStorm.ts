@@ -86,7 +86,7 @@ export abstract class BaseStorm
 		this.setConfig(merge(merge1, this.override) as object || {});
 	};
 
-	getEnvConfigRef<Config>(module: Module<Config>) {
+	getEnvConfigRef<Config extends TS_Object>(module: Module<Config>) {
 		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<Config>(`/${this.innerConfig.pathToEnvOverrideConfig}/${module.getName()}`);
 	}
 

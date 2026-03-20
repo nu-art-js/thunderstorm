@@ -1,17 +1,33 @@
-import {Module} from '@nu-art/ts-common';
+import {Module, tsValidateMandatoryBoolean} from '@nu-art/ts-common';
 import {GoogleAuth} from 'google-auth-library';
 
 
+type Config = { printEnvVars: boolean, printIdentity: boolean };
+const defaultConfig: Config = {printEnvVars: false, printIdentity: true};
+
 export class ModuleBE_WhoAmI_GCP_Class
-	extends Module {
+	extends Module<Config> {
+
+	constructor() {
+		super();
+		this.setDefaultConfig(defaultConfig);
+		this.setConfigValidator({
+			printEnvVars: tsValidateMandatoryBoolean,
+			printIdentity: tsValidateMandatoryBoolean
+		});
+	}
+
 
 	init() {
-
 		this.printCallerIdentity().then(({projectId, info}) => {
-			this.logInfo('env: ', process.env);
-			this.logInfo('GOOGLE_APPLICATION_CREDENTIALS: ', process.env.GOOGLE_APPLICATION_CREDENTIALS ?? 'not set');
-			this.logInfo(`🔐 GCP Caller Identity: ${info.email || info.sub}`);
-			this.logInfo(`🏗️ GCP Project ID: ${projectId}`);
+			if (this.config.printEnvVars)
+				this.logInfo('env: ', process.env);
+
+			if (this.config.printIdentity) {
+				this.logInfo('GOOGLE_APPLICATION_CREDENTIALS: ', process.env.GOOGLE_APPLICATION_CREDENTIALS ?? 'not set');
+				this.logInfo(`🔐 GCP Caller Identity: ${info.email || info.sub}`);
+				this.logInfo(`🏗️ GCP Project ID: ${projectId}`);
+			}
 		}).catch(err => {
 			this.logError('error: ', err);
 		});

@@ -1,0 +1,77 @@
+---
+description: when creating modules with runtime config, or bootstrapping a new Thunder project — RTDB config pipeline
+alwaysApply: false
+---
+
+# Thunder RTDB Config Pipeline
+
+Thunder modules (backend and frontend) receive runtime configuration from **Firebase Realtime Database (RTDB)**. Config is stored under `_config/` in RTDB, keyed by **module class name**. Without the correct RTDB entries, modules initialize with empty config and silently fail.
+
+For the full pipeline explanation and project bootstrap checklist, see [thunder-config-pipeline.md](_thunderstorm/thunder-core/_docs/thunder-config-pipeline.md).
+
+---
+
+## Non-negotiable: when you create a module with config, seed the RTDB
+
+When creating or modifying a module that declares a config type (e.g. `extends Module<Config>`), you **must** also add its config entry to the RTDB seed file.
+
+### RTDB paths
+
+| Domain | RTDB path | Example |
+|---------|-----------|---------|
+| Backend (default) | `_config/default/<ClassName>` | `_config/default/ModuleBE_AlertEngine` |
+| Backend (env override) | `_config/<envKey>/<ClassName>` | `_config/local/ModuleBE_AlertEngine` |
+| Frontend | `_config/frontend/<appLabel>/<ClassName>` | `_config/frontend/manager/ModuleFE_App` |
+
+The key **must match the module class name exactly** (i.e. the name used when constructing the singleton, not the `_Class` suffix name).
+
+### Seed file location
+
+The RTDB seed file is the JSON export used by the Firebase emulator:
+
+```
+app/backend/.trash/data/database_export/<projectId>.json
+```
+
+For example: `app/backend/.trash/data/database_export/nu-art-newsly-local.json`.
+
+### What to add
+
+Add a JSON object under the correct RTDB path with all config properties the module's config type requires:
+
+```json
+{
+  "_config": {
+    "default": {
+      "ModuleBE_MyModule": {
+        "someKey": "someValue"
+      }
+    },
+    "frontend": {
+      "manager": {
+        "ModuleFE_MyModule": {
+          "serverUrl": "http://localhost:8002"
+        }
+      }
+    }
+  }
+}
+```
+
+### Checklist
+
+- [ ] Module declares `extends Module<Config>` with a config type
+- [ ] RTDB seed file has an entry under the correct path, keyed by class name
+- [ ] All required config properties are present in the seed entry
+- [ ] For frontend modules that call the backend: `serverUrl` (or equivalent) points to the correct backend origin
+
+---
+
+## Project bootstrap
+
+A new Thunder project **will not work** without:
+
+1. An RTDB seed file with at least the `_config` structure
+2. The frontend `__package.json` must have a `configUrl` under `unitConfig.envs.<env>.config` pointing to the RTDB path (e.g. `http://127.0.0.1:8004/_config/frontend/manager.json?ns=<projectId>`)
+3. The backend `config.ts` must declare `pathToDefaultConfig` and `pathToEnvOverrideConfig` (RTDB paths)
+4. The Firebase emulator must be seeded with the export data (including the RTDB JSON)

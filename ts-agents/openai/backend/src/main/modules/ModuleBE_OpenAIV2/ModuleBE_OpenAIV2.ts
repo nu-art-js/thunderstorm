@@ -1,4 +1,4 @@
-import {LogLevel, Module, tsValidate, tsValidateString, tsValidateValue} from '@nu-art/ts-common';
+import {Module, tsValidate, tsValidateString, tsValidateValue} from '@nu-art/ts-common';
 import {OpenAI} from 'openai';
 import {OpenAIClient_Assistant_Class} from './clients/OpenAIClient_Assistant.js';
 import {OpenAIClient_Chat_Class} from './clients/OpenAIClient_Chat.js';
@@ -22,7 +22,6 @@ class ModuleBE_OpenAIV2_Class
 			apiKey: tsValidateString(),
 			orgId: tsValidateString(),
 			openAIModel: tsValidateValue([...GPT_Model]),
-			minLogLevel: tsValidateValue([LogLevel.Debug, LogLevel.Info, LogLevel.Warning, LogLevel.Error])
 		});
 	}
 

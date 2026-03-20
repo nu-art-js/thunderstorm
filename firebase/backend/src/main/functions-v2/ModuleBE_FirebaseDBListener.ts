@@ -1,10 +1,10 @@
-import {deepClone} from '@nu-art/ts-common';
+import {deepClone, TS_Object} from '@nu-art/ts-common';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
 import {onValueWritten} from 'firebase-functions/v2/database';
 
 type TypeOf_onValueWritten = typeof onValueWritten;
 
-export abstract class ModuleBE_FirebaseDBListener<DataType = any, ConfigType = any>
+export abstract class ModuleBE_FirebaseDBListener<DataType = any, ConfigType extends TS_Object = any>
 	extends ModuleBE_BaseFunction<ConfigType> {
 
 	private readonly listeningPath: string;

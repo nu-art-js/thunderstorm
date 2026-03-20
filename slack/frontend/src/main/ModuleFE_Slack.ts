@@ -3,7 +3,7 @@ import {ApiCaller} from '@nu-art/http-client';
 import {ApiDef_Slack, API_Slack} from '@nu-art/slack-shared';
 
 export class ModuleFE_Slack_Class
-	extends Module<any, any> {
+	extends Module {
 
 	constructor() {
 		super();
