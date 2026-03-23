@@ -5,15 +5,16 @@ import {HttpsFunction, HttpsOptions, onRequest} from 'firebase-functions/v2/http
 
 export type ExpressResolver = () => Express;
 
-export class ModuleBE_ExpressFunction<Config = {}>
-	extends ModuleBE_BaseFunction<{ options: HttpsOptions } & Config> {
+export class ModuleBE_ExpressFunction_Class
+	extends ModuleBE_BaseFunction<{ options: HttpsOptions }> {
 	private function!: HttpsFunction;
 	private readonly expressResolver: ExpressResolver;
 
 	constructor(name: string = 'api', expressResolver?: ExpressResolver) {
 		super(name);
+		this.setName(name);
 		this.expressResolver = expressResolver ?? (() => express());
-		this.addToClassStack(ModuleBE_ExpressFunction);
+		this.addToClassStack(ModuleBE_ExpressFunction_Class);
 	}
 
 	getFunction = () => {

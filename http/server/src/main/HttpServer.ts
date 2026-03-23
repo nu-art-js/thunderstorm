@@ -62,10 +62,11 @@ export class HttpServer
 	private readonly instanceMiddleware: ExpressRequestHandler[] = [];
 	private readonly apiMiddlewares: ApiDefMiddlewareConfig[] = [];
 	private readonly routes: ServerApi<any>[] = [];
+	private readonly apiRouter: ExpressRouter = express.Router();
 	readonly express!: Express;
 	private server!: Server;
 	private socketId: number = 0;
-	private customCorsOriginValidator: CustomOrigin | undefined;
+	// private customCorsOriginValidator: CustomOrigin | undefined;
 	private finalized = false;
 	private initialized = false;
 	private config: HttpServerConfig;
@@ -73,6 +74,7 @@ export class HttpServer
 	constructor(config: HttpServerConfig) {
 		super(config.tag ?? 'http-server');
 		this.config = config;
+		this.setMinLevel(LogLevel.Debug);
 	}
 
 	getExpress(): Express {
@@ -102,6 +104,7 @@ export class HttpServer
 	}
 
 	addRoute(api: ServerApi<any>): void {
+		this.logDebug(`Adding route: ${api.apiDef.method.toUpperCase().padEnd(7)} ${api.apiDef.path}`);
 		if (this.routes.some(r => r.apiDef.path === api.apiDef.path))
 			throw new Error(`Duplicate API path: ${api.apiDef.path}`);
 
@@ -112,7 +115,7 @@ export class HttpServer
 		this.routes.push(api);
 		const pathPrefix = this.config.pathPrefix ?? '';
 		const baseUrl = this.getBaseUrl();
-		api.route(this.getExpress() as unknown as ExpressRouter, pathPrefix, baseUrl);
+		api.route(this.apiRouter, pathPrefix, baseUrl);
 	}
 
 	finalize(): void {
@@ -131,10 +134,10 @@ export class HttpServer
 			this.logInfo(`${api.apiDef.method.toUpperCase().padEnd(7)} ${api.getUrl()}`);
 	}
 
-	setCustomCorsOriginValidator(validator: CustomOrigin): this {
-		this.customCorsOriginValidator = validator;
-		return this;
-	}
+	// setCustomCorsOriginValidator(validator: CustomOrigin): this {
+	// 	this.customCorsOriginValidator = validator;
+	// 	return this;
+	// }
 
 	/** Deep-merge partial config into this instance (port, baseUrl, cors, ssl, bodyParserLimit). */
 	mergeRuntimeConfig(partial: Partial<HttpServerConfig>): this {
@@ -144,8 +147,9 @@ export class HttpServer
 
 	public init() {
 		if (this.initialized)
-			return;
+			return this;
 
+		this.logDebug('Initializing');
 		this.initialized = true;
 		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 		let baseUrl = this.config.baseUrl ?? '';
@@ -159,6 +163,7 @@ export class HttpServer
 		this.getExpress().use((req, res, next) => {
 			if (req)
 				(req as { url: string }).url = req.url.replace(/\/\//g, '/');
+			this.logDebug(`MW1: ${req.url}`);
 			next();
 		});
 
@@ -186,27 +191,19 @@ export class HttpServer
 			return undefined;
 		};
 
-		this.logInfo(`_cors: `, _cors);
-		this.getExpress().use(cors({
-			origin: async (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => {
-				if (!origin)
-					return callback(null);
-
-				const resolvedOrigin = resolveCorsOrigin(origin);
-				if (!resolvedOrigin)
-					return callback(new Error(`CORS: Origin '${origin}' not in config: ${JSON.stringify(_cors.origins)}`), undefined);
-
-				if (this.customCorsOriginValidator && !(await this.customCorsOriginValidator(origin, callback)))
-					return callback(new Error(`CORS: Origin '${origin}' not valid`), undefined);
-
-				callback(null, resolvedOrigin);
-			},
-			methods: _cors.methods ?? ALL_Methods,
-			allowedHeaders: _cors.headers,
-			exposedHeaders: _cors.responseHeaders ?? [],
+		this.getExpress().use(cors((req, callback) => {
+			const _cors = this.config.cors ?? {headers: [], responseHeaders: []};
+			this.logDebug(`MW2 (CORS): ${req.url}`);
+			callback(null, {
+				origin: resolveCorsOrigin(req.headers.origin),
+				methods: _cors.methods ?? ALL_Methods,
+				allowedHeaders: [...DefaultHeaders, ...(_cors.headers ?? [])],
+				exposedHeaders: _cors.responseHeaders ?? [],
+			});
 		}));
 
 		this.getExpress().options('*', (_req: ExpressRequest, res: ExpressResponse) => {
+			this.logDebug(`MW3: ${_req.url}`);
 			res.end();
 		});
 
@@ -235,6 +232,10 @@ export class HttpServer
 			this.getExpress().use(middleware);
 		for (const middleware of this.instanceMiddleware)
 			this.getExpress().use(middleware);
+
+		this.getExpress().use(this.apiRouter);
+
+		return this;
 	}
 
 	private createServer(): Server {

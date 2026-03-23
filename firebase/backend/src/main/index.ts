@@ -35,7 +35,7 @@ export * from './push/types.js';
 export * from './storage/StorageWrapperBE.js';
 
 export * from './functions/ModuleBE_BaseFunction.js';
-export * from './functions/ModuleBE_ExpressFunction.js';
+export * from './functions/ModuleBE_ExpressFunction_Class.js';
 export * from './functions/ModuleBE_FirebaseDBListener.js';
 export * from './functions/ModuleBE_FirebaseScheduler.js';
 export * from './functions/ModuleBE_FirestoreListener.js';
