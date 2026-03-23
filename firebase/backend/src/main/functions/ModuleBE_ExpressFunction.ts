@@ -3,24 +3,23 @@ import {addItemToArray} from '@nu-art/ts-common';
 import express, {Express} from 'express';
 import {HttpsFunction, HttpsOptions, onRequest} from 'firebase-functions/v2/https';
 
+export type ExpressResolver = () => Express;
 
-export abstract class ModuleBE_ExpressFunction<Config = {}>
+export class ModuleBE_ExpressFunction<Config = {}>
 	extends ModuleBE_BaseFunction<{ options: HttpsOptions } & Config> {
 	private function!: HttpsFunction;
+	private readonly expressResolver: ExpressResolver;
 
-	protected constructor(name: string = 'api') {
+	constructor(name: string = 'api', expressResolver?: ExpressResolver) {
 		super(name);
+		this.expressResolver = expressResolver ?? (() => express());
 		this.addToClassStack(ModuleBE_ExpressFunction);
-	}
-
-	protected resolveExpress(): Express {
-		return express();
 	}
 
 	getFunction = () => {
 		if (this.function)
 			return this.function;
-		const _express = this.resolveExpress();
+		const _express = this.expressResolver();
 		const realFunction = this.createFunction(_express);
 		return this.function = onRequest(this.config.options, (req, res) => {
 			if (this.isReady) { // @ts-ignore
