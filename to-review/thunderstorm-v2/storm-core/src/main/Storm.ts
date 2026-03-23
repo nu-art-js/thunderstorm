@@ -18,13 +18,12 @@
 
 import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
 import {HttpServer, ServerApi} from '@nu-art/http-server';
-import {ModuleBE_BaseFunction, ModuleBE_Firebase, ModuleBE_FirebaseApiFunction} from '@nu-art/firebase-backend';
+import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import type {StormConfig} from './BaseStorm.js';
 import {BaseStorm} from './BaseStorm.js';
 
 const modules: Module[] = [
 	ModuleBE_Firebase,
-	ModuleBE_FirebaseApiFunction,
 ];
 
 export class Storm
