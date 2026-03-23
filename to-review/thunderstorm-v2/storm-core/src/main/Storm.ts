@@ -76,7 +76,6 @@ export class Storm
 		await this.resolveConfig();
 		console.timeEnd(label);
 		this.init();
-		await HttpServer.getDefault().init();
 
 		// Deferred @ApiHandler routes (instance-getter apiDefs) register via setImmediate;
 		// yield so they land on Express before the 404 catch-all.
