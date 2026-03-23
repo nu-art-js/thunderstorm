@@ -22,6 +22,7 @@ export abstract class ModuleBE_FirebaseScheduler<ConfigType = any>
 	protected constructor(name?: string, tag?: string) {
 		super(tag);
 		name && this.setName(name);
+		this.addToClassStack(ModuleBE_FirebaseScheduler);
 	}
 
 	/**

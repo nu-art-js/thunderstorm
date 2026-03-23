@@ -4,7 +4,7 @@ import {Database} from '@nu-art/db-api-shared';
 import {deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import {DatabaseDef_Type} from '../../../_entity/type/shared/index.js';
-import {FirestoreCollectionV3} from '../../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../../main/backend/firestore/FirestoreCollection.js';
 
 const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,
@@ -22,7 +22,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 };
 
 //firestore getAll performing much better
-const asyncGetAll = async (_ids: UniqueId[], collection: FirestoreCollectionV3<any>) => {
+const asyncGetAll = async (_ids: UniqueId[], collection: FirestoreCollection<any>) => {
 	const docs = collection.doc.all(_ids);
 	return await Promise.all(docs.map(_doc => _doc.get()));
 };

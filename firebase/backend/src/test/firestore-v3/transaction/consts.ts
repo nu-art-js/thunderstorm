@@ -11,11 +11,11 @@ import {
 } from '../../_entity/_core/consts.js';
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
-import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/index.js';
 
 
-const transaction_addInner4 = (collectionOuter: FirestoreCollectionV3<DatabaseDef_Type_Complex>, now: number) => {
+const transaction_addInner4 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
 	return firestore.firestore.runTransaction(async (transaction) => {
 		console.log(`pah1 ${currentTimeMillis() - now}`);
 
@@ -29,7 +29,7 @@ const transaction_addInner4 = (collectionOuter: FirestoreCollectionV3<DatabaseDe
 	});
 };
 
-const transaction_removeInner2 = (collectionOuter: FirestoreCollectionV3<DatabaseDef_Type_Complex>, now: number) => {
+const transaction_removeInner2 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
 	return firestore.firestore.runTransaction(async (transaction) => {
 		console.log(`pah2 ${currentTimeMillis() - now}`);
 
@@ -43,7 +43,7 @@ const transaction_removeInner2 = (collectionOuter: FirestoreCollectionV3<Databas
 	});
 
 };
-const transaction_removeInner3 = (collectionOuter: FirestoreCollectionV3<DatabaseDef_Type_Complex>, now: number) => {
+const transaction_removeInner3 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
 	return firestore.firestore.runTransaction(async (transaction) => {
 		console.log(`pah3 ${currentTimeMillis() - now}`);
 

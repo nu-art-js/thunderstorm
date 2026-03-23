@@ -631,7 +631,7 @@ await editable.update('name', 'New Name');
 ## Backend Implementation
 
 The backend concurrency check is in:
-- **Location**: `firebase/backend/src/main/firestore-v3/DocWrapperV3.ts`
+- **Location**: `firebase/backend/src/main/firestore/DocWrapper.ts`
 - **Check**: `if ((currDBItem?.__updated || 0) > ((item as DB_Object).__updated || currentTimeMillis()))`
 - **Error**: `HttpCodes._4XX.ENTITY_IS_OUTDATED` (461)
 
@@ -639,7 +639,7 @@ The backend concurrency check is in:
 
 - `_thunderstorm/thunderstorm/frontend/src/main/utils/EditableItem.ts` - Core implementation
 - `_thunderstorm/thunderstorm/frontend/src/main/components/TS_EditableItemController/` - React wrapper (legacy)
-- `_thunderstorm/firebase/backend/src/main/firestore-v3/DocWrapperV3.ts` - Backend concurrency check
+- `_thunderstorm/firebase/backend/src/main/firestore/DocWrapper.ts` - Backend concurrency check
 - `_thunderstorm/ts-common/src/main/core/exceptions/http-codes.ts` - HTTP error codes (461)
 
 ## Summary

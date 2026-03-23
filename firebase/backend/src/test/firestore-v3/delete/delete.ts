@@ -16,13 +16,13 @@ import {
 import {Database} from '@nu-art/db-api-shared';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {DB_Type, DatabaseDef_Type} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 
 chai.use(chaiAsPromised);
 
 
 export type DeleteTestInput = {
-	deleteAction: (collection: FirestoreCollectionV3<DatabaseDef_Type>, inserted: DB_Type[]) => Promise<void>
+	deleteAction: (collection: FirestoreCollection<DatabaseDef_Type>, inserted: DB_Type[]) => Promise<void>
 	toInsert: PreDB<DB_Type>[]
 }
 

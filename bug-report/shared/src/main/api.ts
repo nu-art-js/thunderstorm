@@ -17,7 +17,8 @@
  */
 
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
-import {Auditable, DB_Object} from '@nu-art/ts-common';
+import {Auditable, tsValidateMustExist} from '@nu-art/ts-common';
+import {DB_Object, DB_ProtoSeed, DB_Prototype, Database, VersionsDeclaration} from '@nu-art/db-api-shared';
 
 export type TicketDetails = {
 	platform: string
@@ -44,12 +45,29 @@ export type ReportMetaData = {
 	path: string,
 	minPath: string
 }
-export type DB_BugReport = DB_Object & Auditable & {
+
+export const BugReport_DbKey = 'bug-report';
+type DBKey = typeof BugReport_DbKey;
+type Versions = VersionsDeclaration<['1.0.0'], { '1.0.0': DB_BugReport }>;
+
+export type DB_BugReport = DB_Object<DBKey> & Auditable & {
 	subject: string;
 	description: string
 	reports: ReportLogFile[]
 	bucket?: string
 	tickets?: TicketDetails[]
+};
+
+export type DatabaseDef_BugReport = DB_Prototype<DB_ProtoSeed<DB_BugReport, DBKey, never, Versions>>;
+
+export const DBDef_BugReport: Database<DatabaseDef_BugReport> = {
+	dbKey: BugReport_DbKey,
+	entityName: 'BugReport',
+	backend: {name: 'bug-report'},
+	frontend: {group: 'ts-default', name: 'bug-report'},
+	versions: ['1.0.0'],
+	modifiablePropsValidator: tsValidateMustExist,
+	generatedPropsValidator: {},
 };
 
 export type ReportLogFile = {

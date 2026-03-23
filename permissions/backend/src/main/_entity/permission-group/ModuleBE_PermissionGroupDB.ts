@@ -6,7 +6,7 @@ import {ModuleBE_PermissionAccessLevelDB} from '../permission-access-level/index
 import {Transaction} from 'firebase-admin/firestore';
 import {MemKey_AccountId, SlackReporter} from '@nu-art/user-account-backend';
 import {ModuleBE_PermissionUserDB} from '../permission-user/index.js';
-import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 
 export class ModuleBE_PermissionGroupDB_Class

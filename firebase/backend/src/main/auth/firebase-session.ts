@@ -24,9 +24,8 @@ import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE.js';
 import {StorageWrapperBE} from '../storage/StorageWrapperBE.js';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE.js';
 import {App} from 'firebase-admin/app';
-import {FirestoreWrapperBEV3} from '../firestore-v3/FirestoreWrapperBEV3.js';
-import {FirebaseConfig} from '@nu-art/firebase-shared';
 import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE.js';
+import {FirebaseConfig} from '@nu-art/firebase-shared';
 
 
 /**
@@ -50,9 +49,8 @@ export abstract class FirebaseSession<Config>
 	app!: App;
 	protected databases: TypedMap<DatabaseWrapperBE> = {};
 	protected storage?: StorageWrapperBE;
-	protected firestoresV3: TypedMap<FirestoreWrapperBEV3> = {};
-	protected messaging?: PushMessagesWrapperBE;
 	protected firestores: TypedMap<FirestoreWrapperBE> = {};
+	protected messaging?: PushMessagesWrapperBE;
 
 
 	protected config: Config;
@@ -97,22 +95,11 @@ export abstract class FirebaseSession<Config>
 		return this.storage = new StorageWrapperBE(this);
 	}
 
-	/**
-	 * Returns an instance of the FirestoreWrapperBE object, which provides access to the Firestore database service.
-	 */
 	public getFirestore(dbName?: string): FirestoreWrapperBE {
 		if (!this.firestores[dbName ?? 'default'])
 			this.firestores[dbName ?? 'default'] = new FirestoreWrapperBE(this, dbName);
 
 		return this.firestores[dbName ?? 'default'];
-	}
-
-
-	public getFirestoreV3(dbName?: string): FirestoreWrapperBEV3 {
-		if (!this.firestoresV3[dbName ?? 'default'])
-			this.firestoresV3[dbName ?? 'default'] = new FirestoreWrapperBEV3(this, dbName);
-
-		return this.firestoresV3[dbName ?? 'default'];
 	}
 
 	/**

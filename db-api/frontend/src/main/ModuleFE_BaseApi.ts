@@ -6,7 +6,7 @@
 
 import {DBConfig_ModuleFE, EventDispatcher, ModuleFE_BaseDB} from './ModuleFE_BaseDB.js';
 import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
-import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
+import {ResolvableContent, resolveContent, RuntimeModules} from '@nu-art/ts-common';
 import {CrudApiDef_Type, CrudApiTypes, DB_Prototype} from '@nu-art/db-api-shared';
 
 
@@ -260,3 +260,7 @@ export abstract class ModuleFE_BaseApi<Proto extends DB_Prototype<any>>
 		await this.onGotUnique(ctx.response);
 	};
 }
+
+export const RuntimeFE_ModulesAPI = () => RuntimeModules().all
+	.filter((m) => m.isInstanceOf(ModuleFE_BaseApi))
+	.map(m => m as unknown as ModuleFE_BaseApi<any>);

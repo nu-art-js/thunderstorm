@@ -1,68 +1,76 @@
 import {_keys, arrayToMap, mergeObject, Module, RuntimeModules, TypedMap} from '@nu-art/ts-common';
 import {Readable, Writable} from 'stream';
 import {DataStatus, ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
-import {ModuleSyncType} from '@nu-art/sync-manager-shared';
+import {ParseStepResult} from 'papaparse';
+import {ModuleFE_CSVParser, PapaparseConfig} from '../ModuleFE_CSVParser.js';
+import {ModuleSyncType} from '../types.js';
 import {Thunder} from '@nu-art/thunder-core';
 import {HeaderKey_ContentType} from '@nu-art/api-types';
-import {ModuleFE_CSVParser, type PapaparseConfig} from '../ModuleFE_CSVParser.js';
+
+type CSVSyncableModule = ModuleFE_BaseDB<any> & { syncType?: ModuleSyncType };
 
 export class ModuleFE_SyncManager_CSV_Class
 	extends Module {
+
 	constructor() {
 		super();
 	}
 
-	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseDB<any>>((module) => (module as ModuleFE_BaseDB<any> & {
-		syncType?: ModuleSyncType
-	}).syncType === ModuleSyncType.CSVSync);
+	private getModulesToSync = () => RuntimeModules().filter<ModuleFE_BaseDB<any>>((module) => (module as CSVSyncableModule).syncType === ModuleSyncType.CSVSync);
+
 	syncFromCSVUrl = async (url: string, config?: PapaparseConfig) => {
 		const modules = arrayToMap(this.getModulesToSync(), i => i.config.dbKey);
 		const start = performance.now();
 		const itemsToSync: any[] = [];
 		const errors: any[] = [];
+
 		await new Promise<void>(resolve => {
 			const isEmulator = Thunder.getInstance().getConfig().label?.toLowerCase() === 'local';
 			const downloadRequestHeaders = isEmulator ? undefined : {[HeaderKey_ContentType]: 'text/csv'};
 			const finalConfig = config ? mergeObject({downloadRequestHeaders}, config) : {downloadRequestHeaders};
-			ModuleFE_CSVParser.fromURL(url, {
-				transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
-				step: async (results: { errors?: unknown[]; data?: unknown }) => {
-					if (results.errors?.length)
-						return errors.push(...results.errors);
-					const item = results.data as {
-						dbKey: string;
-					};
-					const module = modules[item.dbKey];
-					if (!module)
-						return;
-					itemsToSync.push(item);
-				},
-				complete: async () => {
-					for (const moduleKey of _keys(modules)) {
-						const items = itemsToSync.filter(item => item.dbKey === moduleKey);
-						const module = modules[moduleKey];
-						// Get all docs to upsert
-						const documents = items.map(i => i.document);
-						// Run upgrade processors on them from the module
-						await module.upgradeInstances(documents);
-						// Upsert items to the idb
-						await module.IDB.syncIndexDb(documents);
-						await module.loadCache();
-						module.setDataStatus(DataStatus.ContainsData);
+			ModuleFE_CSVParser.fromURL(
+				url,
+				{
+					transform: (value: string, field: string | number) => field === 'document' ? JSON.parse(value) : value,
+					step: async (results: ParseStepResult<any>) => {
+						if (results.errors?.length)
+							return errors.push(...results.errors);
+
+						const item = results.data;
+						const module = modules[item.dbKey];
+						if (!module)
+							return;
+
+						itemsToSync.push(item);
+					},
+
+					complete: async () => {
+						for (const moduleKey of _keys(modules)) {
+							const items = itemsToSync.filter(item => item.dbKey === moduleKey);
+							const module = modules[moduleKey];
+
+							const documents = items.map(i => i.document);
+
+							await module.upgradeInstances(documents);
+
+							await module.IDB.syncIndexDb(documents);
+							await module.loadCache();
+							module.setDataStatus(DataStatus.ContainsData);
+						}
+						const end = performance.now();
+						this.logInfo(`sync took ${((end - start) / 1000).toFixed(3)} seconds`);
+						if (errors.length)
+							this.logError('Parsed with errors', ...errors);
+						resolve();
+					},
+					...finalConfig,
+					error: (error: Error) => {
+						this.logError(`CSV Parsing failed`, error);
 					}
-					const end = performance.now();
-					this.logInfo(`sync took ${((end - start) / 1000).toFixed(3)} seconds`);
-					if (errors.length)
-						this.logError('Parsed with errors', ...errors);
-					resolve();
-				},
-				...finalConfig,
-				error: (error: Error) => {
-					this.logError(`CSV Parsing failed`, error);
-				}
-			});
+				});
 		});
 	};
+
 	readyAllModules = async () => {
 		const modules = this.getModulesToSync();
 		this.logDebug('Readying modules', modules);
@@ -71,6 +79,7 @@ export class ModuleFE_SyncManager_CSV_Class
 			module.setDataStatus(DataStatus.ContainsData);
 		}
 	};
+
 	syncFromBackupStream = async (stream: Readable) => {
 		const modules = this.getModulesToSync();
 		this.logInfo('Modules', modules);
@@ -92,6 +101,7 @@ export const ModuleFE_SyncManager_CSV = new ModuleFE_SyncManager_CSV_Class();
 
 class ModuleIDBWriter
 	extends Writable {
+
 	readonly modules: ModuleFE_BaseDB<any>[];
 	readonly moduleNameMap: TypedMap<ModuleFE_BaseDB<any>>;
 	readonly paginationSize: number;
@@ -123,13 +133,16 @@ class ModuleIDBWriter
 		const itemCount = this.itemsToUpsert.length;
 		if ((itemCount < this.paginationSize) && !force)
 			return;
+
 		for (const item of this.itemsToUpsert) {
 			const module = this.moduleNameMap[item.dbKey];
 			if (!module)
 				continue;
+
 			const document = JSON.parse(item.document);
 			await module.IDB.upsert(document);
 		}
+
 		this.itemsToUpsert = [];
 	};
 }

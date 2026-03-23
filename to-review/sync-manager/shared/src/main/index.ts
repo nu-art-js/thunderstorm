@@ -6,4 +6,3 @@
 
 export * from './types.js';
 export * from './apis.js';
-export * from './deleted-doc/index.js';

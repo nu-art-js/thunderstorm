@@ -1,5 +1,5 @@
 /*
- * @nu-art/sync-manager-shared - Deleted-doc entity definition (sync-manager replica)
+ * @nu-art/sync-manager-backend - Deleted-doc entity definition
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */

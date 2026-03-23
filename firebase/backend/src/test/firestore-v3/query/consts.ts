@@ -18,13 +18,13 @@ import {
 	testInstance5
 } from '../../_entity/_core/consts.js';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
-import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 import {DatabaseDef_Type, DB_Type, TestInputValue} from '../_entity.js';
 
 export type QueryTestInput = {
 	value: TestInputValue;
 	expectQueryToThrow?: boolean;
-	check: (collection: FirestoreCollectionV3<DatabaseDef_Type>, expectedItem: TestInputValue, expectedIds?: string[]) => Promise<void>
+	check: (collection: FirestoreCollection<DatabaseDef_Type>, expectedItem: TestInputValue, expectedIds?: string[]) => Promise<void>
 }
 
 export type QueryTest = TestModel<QueryTestInput, TestInputValue>;

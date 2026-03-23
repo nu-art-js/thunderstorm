@@ -4,8 +4,11 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-export {ModuleFE_SyncManager_Class, ModuleFE_SyncManager} from './modules/ModuleFE_SyncManager.js';
+export {ModuleFE_SyncManager_Class, ModuleFE_SyncManager, Default_SyncManagerNodePath} from './modules/ModuleFE_SyncManager.js';
+export type {PermissibleModulesUpdated} from './modules/ModuleFE_SyncManager.js';
+export {ModuleFE_SyncManager_CSV_Class, ModuleFE_SyncManager_CSV} from './modules/ModuleFE_SyncManager_CSV.js';
 export {AwaitModules} from './components/AwaitModules/AwaitModules.js';
+export {ModuleSyncType} from './types.js';
 export type {
 	SyncManagerAPI_SmartSync, SyncDbData, NoNeedToSyncModule, DeltaSyncModule, FullSyncModule, SyncDataFirebaseState
 } from '@nu-art/sync-manager-shared';

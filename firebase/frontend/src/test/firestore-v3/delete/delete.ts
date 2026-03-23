@@ -16,13 +16,13 @@ import {
 import {Database} from '@nu-art/db-api-shared';
 import {_EmptyQuery} from '../../../main/index.js';
 import {DB_Type, DatabaseDef_Type} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 
 chai.use(require('chai-as-promised'));
 
 
 type Input = {
-	deleteAction: (collection: FirestoreCollectionV3<DatabaseDef_Type>, inserted: DB_Type[]) => Promise<void>
+	deleteAction: (collection: FirestoreCollection<DatabaseDef_Type>, inserted: DB_Type[]) => Promise<void>
 	toInsert: PreDB<DB_Type>[]
 }
 

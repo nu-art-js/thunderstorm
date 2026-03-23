@@ -11,7 +11,7 @@
 ### 1.1 Who uses Firestore today
 
 - **db-api (ModuleBE_BaseDB)**  
-  - Gets a `FirestoreCollectionV3` from `ModuleBE_Firebase.createAdminSession().getFirestoreV3().getCollection(dbDef, hooks)`.  
+  - Gets a `FirestoreCollection` from `ModuleBE_Firebase.createAdminSession().getFirestore().getCollection(dbDef, hooks)`.  
   - Uses: `collection.query`, `collection.create`, `collection.set`, `collection.delete`, `collection.doc`, `collection.runTransaction`.  
   - Passes **hooks** into the collection: `canDeleteItems`, `preWriteProcessing`, `postWriteProcessing`, `upgradeInstances`, `manipulateQuery`.
 
@@ -20,7 +20,7 @@
   - Request/response types use **CrudQuery / CrudClause_Where** from `db-api-shared` (already db-agnostic).  
   - Still **casts** body to `FirestoreQuery<T>` when calling the DB module (e.g. `queryBody as FirestoreQuery<T>`). So the API is conceptually db-agnostic but the implementation is Firestore-typed.
 
-- **FirestoreCollectionV3**  
+- **FirestoreCollection**  
   - Exposes: `query` (where, unique, uniqueAssert, custom), `create` (item, all), `set` (item, all), `delete` (unique, item, all, query, unManipulatedQuery), `doc`, `runTransaction`.  
   - Uses **FirestoreCollectionHooks** for validation, lifecycle, and query shaping.
 
@@ -43,7 +43,7 @@ Transactions and “run in chunks” are Firestore implementation details; the i
 
 One object per collection with methods: `query`, `create`, `set`, `delete`, `getById`, and optionally `runTransaction(fn)`.
 
-- **Pros**: Mirrors current FirestoreCollectionV3 usage; one place to pass hooks/callbacks.  
+- **Pros**: Mirrors current FirestoreCollection usage; one place to pass hooks/callbacks.  
 - **Cons**: Big interface; some DBs may not support transactions or batch writes the same way.
 
 ### Option B: Split by concern (Query / Write / Delete)
@@ -106,7 +106,7 @@ Today **FirestoreCollectionHooks** are: `canDeleteItems`, `preWriteProcessing`, 
 
 ### 5.2 Batch / chunking
 
-- Firestore has limits (e.g. 500 ops per batch). FirestoreCollectionV3 does `runTransactionInChunks` for large deletes/writes.  
+- Firestore has limits (e.g. 500 ops per batch). FirestoreCollection does `runTransactionInChunks` for large deletes/writes.  
 - This can stay **inside** the Firestore wrapper: the interface can say “deleteByQuery(query)” and the Firestore implementation chunks internally. So chunking is not part of the generic interface.
 
 ### 5.3 “withDeleted” and soft delete

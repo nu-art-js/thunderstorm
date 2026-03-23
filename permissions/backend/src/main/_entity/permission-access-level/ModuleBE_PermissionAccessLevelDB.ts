@@ -4,7 +4,7 @@ import {Transaction} from 'firebase-admin/firestore';
 import {ModuleBE_PermissionAPIDB} from '../permission-api/index.js';
 import {ModuleBE_PermissionDomainDB} from '../permission-domain/index.js';
 import {ModuleBE_PermissionGroupDB} from '../permission-group/index.js';
-import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {
 	DatabaseDef_PermissionAccessLevel,
 	DB_PermissionAccessLevel,

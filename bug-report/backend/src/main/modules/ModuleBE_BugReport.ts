@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 
-import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend/v1';
+import {addItemToArray, auditBy, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import JSZip from 'jszip';
-import {API_BugReport, ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared';
+import {API_BugReport, ApiDef_BugReport, BugReport, BugReport_DbKey, DatabaseDef_BugReport, DBDef_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
+import {stringToUniqueId} from '@nu-art/db-api-shared';
 
 type Config = {
 	projectId?: string,
@@ -33,7 +34,7 @@ type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[], em
 export class ModuleBE_BugReport_Class
 	extends Module<Config> {
 
-	private bugReport!: FirestoreCollection<DB_BugReport>;
+	private bugReport!: FirestoreCollection<DatabaseDef_BugReport>;
 	private storage!: StorageWrapperBE;
 	private ticketCreatorApis: TicketCreatorApi[] = [];
 
@@ -44,7 +45,7 @@ export class ModuleBE_BugReport_Class
 	protected init(): void {
 		const sessionAdmin = ModuleBE_Firebase.createAdminSession();
 		const firestore = sessionAdmin.getFirestore();
-		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
+		this.bugReport = firestore.getCollection(DBDef_BugReport);
 		this.storage = sessionAdmin.getStorage();
 	}
 
@@ -75,15 +76,11 @@ export class ModuleBE_BugReport_Class
 
 	saveFile = async (bugReport: Request_BugReport, email?: string) => {
 
-		const _id = generateHex(16);
+		const _id = stringToUniqueId<typeof BugReport_DbKey>(generateHex(16));
 		const logs: ReportLogFile[] = await Promise.all(bugReport.reports.map(report => this.saveLog(report, _id)));
 
-		const now = currentTimeMillis();
-		const instance: DB_BugReport = {
+		const instance: DatabaseDef_BugReport['uiType'] = {
 			_id,
-			__created: now,
-			__updated: now,
-
 			subject: bugReport.subject,
 			description: bugReport.description,
 			reports: logs,
@@ -95,7 +92,7 @@ export class ModuleBE_BugReport_Class
 
 		const tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs, email)));
 		instance.tickets = filterInstances(tickets);
-		await this.bugReport.insert(instance);
+		await this.bugReport.create.item(instance);
 		return instance.tickets;
 	};
 }

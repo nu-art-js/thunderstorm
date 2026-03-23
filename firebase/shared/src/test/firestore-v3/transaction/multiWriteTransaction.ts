@@ -3,11 +3,11 @@ import {Database} from '@nu-art/db-api-shared';
 import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {firestore, testInstance1} from '../_core/consts.js';
 import {expect} from 'chai';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 import {DB_Type, DatabaseDef_Type} from '../_entity.js';
 
 type Input = {
-	action: (collection: FirestoreCollectionV3<DatabaseDef_Type>, items: PreDB<DB_Type>[]) => Promise<void>
+	action: (collection: FirestoreCollection<DatabaseDef_Type>, items: PreDB<DB_Type>[]) => Promise<void>
 	numberOfItemsToCreate: number
 }
 
@@ -34,7 +34,7 @@ export const TestSuite_FirestoreV3_Transaction_MultiWrite: TestSuite<Input, {}> 
 			result: [],
 			input: {
 				numberOfItemsToCreate: 510,
-				action: async (collection: FirestoreCollectionV3<DatabaseDef_Type>, items: PreDB<DB_Type>[]) => {
+				action: async (collection: FirestoreCollection<DatabaseDef_Type>, items: PreDB<DB_Type>[]) => {
 					await collection.set.all(items);
 				}
 			},

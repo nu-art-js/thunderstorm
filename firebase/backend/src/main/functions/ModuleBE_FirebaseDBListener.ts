@@ -14,6 +14,8 @@ export abstract class ModuleBE_FirebaseDBListener<DataType = any, ConfigType ext
 		super();
 		if (name)
 			this.setName(name);
+
+		this.addToClassStack(ModuleBE_FirebaseDBListener);
 		this.listeningPath = listeningPath;
 	}
 

@@ -6,7 +6,7 @@ import chaiAsPromised from 'chai-as-promised';
 import {createTestCases, CreateTestInput} from './consts.js';
 import {expect} from 'chai';
 import {DB_Type, DatabaseDef_Type, TestInputValue} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 import {TestModel} from '@nu-art/testalot';
 
 chai.use(chaiAsPromised);
@@ -90,13 +90,13 @@ const test = async (input: CreateTestInput): Promise<TestInputValue> => {
 export const TestCases_FirestoreV3_Create = TestCases_FB_Create;
 export const test_FirestoreV3_Create = test;
 
-async function createImpl(toCreate: TestInputValue, collection: FirestoreCollectionV3<DatabaseDef_Type>) {
+async function createImpl(toCreate: TestInputValue, collection: FirestoreCollection<DatabaseDef_Type>) {
 	if (Array.isArray(toCreate))
 		await createMultiple(toCreate, collection);
 	else
 		await collection.create.item(toCreate);
 }
 
-async function createMultiple(toCreate: PreDB<DB_Type>[], collection: FirestoreCollectionV3<DatabaseDef_Type>) {
+async function createMultiple(toCreate: PreDB<DB_Type>[], collection: FirestoreCollection<DatabaseDef_Type>) {
 	await Promise.all(toCreate.map(item => collection.create.item(item)));
 }

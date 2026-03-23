@@ -8,20 +8,25 @@ import {createServer as createHttpServer, Server} from 'http';
 import {createServer as createHttpsServer} from 'https';
 import type {Socket} from 'net';
 import * as fs from 'fs';
-import {addItemToArray, LogLevel} from '@nu-art/ts-common';
+import {addItemToArray, LogLevel, merge} from '@nu-art/ts-common';
+import type {ApiDef} from '@nu-art/api-types';
 import express from 'express';
-import type {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, ExpressRouter} from './types.js';
+import type {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, ExpressRouter, ServerApi_Middleware} from './types.js';
 import {ServerApi} from './ServerApi.js';
 import compression from 'compression';
 import cors from 'cors';
 import {Logger} from '@nu-art/logger';
+
+export type ApiDefMiddlewareConfig = {
+	filter: (apiDef: ApiDef<any>) => boolean;
+	middlewares: ServerApi_Middleware[];
+};
 
 const ALL_Methods: string[] = ['GET', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'];
 const DefaultHeaders: string[] = ['content-type', 'content-encoding'];
 
 export type HttpServerConfig = {
 	tag: string
-	port: number;
 	baseUrl: string;
 	pathPrefix?: string;
 	cors: {
@@ -38,7 +43,6 @@ export type CustomOrigin = (origin: string | undefined, callback: (err: Error | 
 
 const DefaultHttpServerConfig: HttpServerConfig = {
 	tag: 'http-server-default',
-	port: 3000,
 	baseUrl: '',
 	cors: {headers: [], responseHeaders: []}
 };
@@ -56,11 +60,14 @@ export class HttpServer
 
 	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
 	private readonly instanceMiddleware: ExpressRequestHandler[] = [];
+	private readonly apiMiddlewares: ApiDefMiddlewareConfig[] = [];
 	private readonly routes: ServerApi<any>[] = [];
 	readonly express!: Express;
 	private server!: Server;
 	private socketId: number = 0;
 	private customCorsOriginValidator: CustomOrigin | undefined;
+	private finalized = false;
+	private initialized = false;
 	private config: HttpServerConfig;
 
 	constructor(config: HttpServerConfig) {
@@ -89,13 +96,39 @@ export class HttpServer
 		return this.config.baseUrl ?? '';
 	}
 
+	addApiMiddleware(filter: (apiDef: ApiDef<any>) => boolean, ...middlewares: ServerApi_Middleware[]): this {
+		this.apiMiddlewares.push({filter, middlewares});
+		return this;
+	}
+
 	addRoute(api: ServerApi<any>): void {
 		if (this.routes.some(r => r.apiDef.path === api.apiDef.path))
 			throw new Error(`Duplicate API path: ${api.apiDef.path}`);
+
+		for (const config of this.apiMiddlewares)
+			if (config.filter(api.apiDef))
+				api.addMiddlewares(...config.middlewares);
+
 		this.routes.push(api);
 		const pathPrefix = this.config.pathPrefix ?? '';
 		const baseUrl = this.getBaseUrl();
 		api.route(this.getExpress() as unknown as ExpressRouter, pathPrefix, baseUrl);
+	}
+
+	finalize(): void {
+		if (this.finalized)
+			return;
+
+		this.finalized = true;
+		this.getExpress().all('*', (req: ExpressRequest, res: ExpressResponse) => {
+			this.logErrorBold(`Received unknown url with path: '${req.path}' - url: '${req.url}'`);
+			res.status(404).send(`The requested URL '${req.url}' was not found on this server.`);
+		});
+	}
+
+	printRoutes(): void {
+		for (const api of this.routes)
+			this.logInfo(`${api.apiDef.method.toUpperCase().padEnd(7)} ${api.getUrl()}`);
 	}
 
 	setCustomCorsOriginValidator(validator: CustomOrigin): this {
@@ -103,7 +136,17 @@ export class HttpServer
 		return this;
 	}
 
-	public async init(): Promise<void> {
+	/** Deep-merge partial config into this instance (port, baseUrl, cors, ssl, bodyParserLimit). */
+	mergeRuntimeConfig(partial: Partial<HttpServerConfig>): this {
+		this.config = merge(this.config, partial, true) as HttpServerConfig;
+		return this;
+	}
+
+	public init() {
+		if (this.initialized)
+			return;
+
+		this.initialized = true;
 		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 		let baseUrl = this.config.baseUrl ?? '';
 		if (baseUrl) {
@@ -117,6 +160,54 @@ export class HttpServer
 			if (req)
 				(req as { url: string }).url = req.url.replace(/\/\//g, '/');
 			next();
+		});
+
+		const _cors = this.config.cors ?? {headers: [], responseHeaders: []};
+		_cors.headers = DefaultHeaders.reduce<string[]>((toRet, item) => {
+			if (!toRet.includes(item))
+				addItemToArray(toRet, item);
+
+			return toRet;
+		}, _cors.headers ?? []);
+
+		const resolveCorsOrigin = (origin?: string | string[]): string | undefined => {
+			const _origin = typeof origin === 'string' ? origin : origin?.[0];
+			if (!_origin)
+				return undefined;
+
+			if (!_cors.origins)
+				return _origin;
+
+			for (const allowedOrigin of _cors.origins) {
+				if (allowedOrigin === _origin.toLowerCase() ||
+					(allowedOrigin.includes('*') && new RegExp(`^${allowedOrigin.replace(/\*/g, '.*')}$`).test(_origin.toLowerCase())))
+					return _origin;
+			}
+			return undefined;
+		};
+
+		this.logInfo(`_cors: `, _cors);
+		this.getExpress().use(cors({
+			origin: async (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => {
+				if (!origin)
+					return callback(null);
+
+				const resolvedOrigin = resolveCorsOrigin(origin);
+				if (!resolvedOrigin)
+					return callback(new Error(`CORS: Origin '${origin}' not in config: ${JSON.stringify(_cors.origins)}`), undefined);
+
+				if (this.customCorsOriginValidator && !(await this.customCorsOriginValidator(origin, callback)))
+					return callback(new Error(`CORS: Origin '${origin}' not valid`), undefined);
+
+				callback(null, resolvedOrigin);
+			},
+			methods: _cors.methods ?? ALL_Methods,
+			allowedHeaders: _cors.headers,
+			exposedHeaders: _cors.responseHeaders ?? [],
+		}));
+
+		this.getExpress().options('*', (_req: ExpressRequest, res: ExpressResponse) => {
+			res.end();
 		});
 
 		const parserLimit = this.config.bodyParserLimit;
@@ -144,53 +235,6 @@ export class HttpServer
 			this.getExpress().use(middleware);
 		for (const middleware of this.instanceMiddleware)
 			this.getExpress().use(middleware);
-
-		const _cors = this.config.cors ?? {headers: [], responseHeaders: []};
-		_cors.headers = DefaultHeaders.reduce<string[]>((toRet, item) => {
-			if (!toRet.includes(item))
-				addItemToArray(toRet, item);
-
-			return toRet;
-		}, _cors.headers ?? []);
-
-		const resolveCorsOrigin = (origin?: string | string[]): string | undefined => {
-			const _origin = typeof origin === 'string' ? origin : origin?.[0];
-			if (!_origin)
-				return undefined;
-
-			if (!_cors.origins)
-				return _origin;
-
-			for (const allowedOrigin of _cors.origins) {
-				if (allowedOrigin === _origin.toLowerCase() ||
-					(allowedOrigin.includes('*') && new RegExp(`^${allowedOrigin.replace(/\*/g, '.*')}$`).test(_origin.toLowerCase())))
-					return _origin;
-			}
-			return undefined;
-		};
-
-		this.getExpress().use(cors({
-			origin: async (origin: string | undefined, callback: (err: Error | null, origin?: string) => void) => {
-				if (!origin)
-					return callback(null);
-
-				const resolvedOrigin = resolveCorsOrigin(origin);
-				if (!resolvedOrigin)
-					return callback(new Error(`CORS: Origin '${origin}' not in config: ${JSON.stringify(_cors.origins)}`), undefined);
-
-				if (this.customCorsOriginValidator && !(await this.customCorsOriginValidator(origin, callback)))
-					return callback(new Error(`CORS: Origin '${origin}' not valid`), undefined);
-
-				callback(null, resolvedOrigin);
-			},
-			methods: _cors.methods ?? ALL_Methods,
-			allowedHeaders: _cors.headers,
-			exposedHeaders: _cors.responseHeaders ?? [],
-		}));
-
-		this.getExpress().options('*', (_req: ExpressRequest, res: ExpressResponse) => {
-			res.end();
-		});
 	}
 
 	private createServer(): Server {
@@ -213,14 +257,9 @@ export class HttpServer
 	}
 
 	public async startServer(): Promise<void> {
-		if (process.env.FUNCTIONS_EMULATOR) {
-			this.logDebug('Running in Firebase emulator — skipping port listen');
-			return;
-		}
-
 		return new Promise<void>((resolve, reject) => {
 			this.server = this.createServer();
-			this.server.listen(this.config.port);
+			this.server.listen();
 			this.server.on('connection', (socket: Socket) => {
 				this.logInfo(`New connection (${this.socketId++}): ${socket}`);
 			});
@@ -228,12 +267,12 @@ export class HttpServer
 			this.server.on('error', (error: NodeJS.ErrnoException) => {
 				switch (error.code) {
 					case 'EACCES':
-						this.logErrorBold(`Port ${this.config.port} requires elevated privileges`);
+						this.logErrorBold(`requires elevated privileges`);
 						process.exit(1);
 						break;
 
 					case 'EADDRINUSE':
-						this.logErrorBold(`Port ${this.config.port} already in use`);
+						this.logErrorBold(`Port already in use`);
 						reject(error);
 						break;
 

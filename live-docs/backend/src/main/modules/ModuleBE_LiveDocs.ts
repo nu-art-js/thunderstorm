@@ -27,19 +27,18 @@ import {
 
 import {
 	DB_Document,
-	DB_DocumentHistory,
+	DBDef_DocumentHistory,
 	LiveDocHistoryReqParams,
 	LiveDocReqParams,
+	Proto_DocumentHistory,
 	Request_UpdateDocument,
 } from '@nu-art/live-docs-shared';
 
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend/v1';
+import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 
 import {ApiHandler} from '@nu-art/http-server';
 import {ApiDef_LiveDoc, API_LiveDoc} from '@nu-art/live-docs-shared/api';
 
-
-export const CollectionName_LiveDocs = 'live-docs';
 
 type Config = {
 	projectId: string
@@ -48,7 +47,7 @@ type Config = {
 export class ModuleBE_LiveDocs_Class
 	extends Module<Config> {
 
-	private livedocs!: FirestoreCollection<DB_DocumentHistory>;
+	private livedocs!: FirestoreCollection<Proto_DocumentHistory>;
 
 	constructor() {
 		super();
@@ -58,7 +57,7 @@ export class ModuleBE_LiveDocs_Class
 		super.init();
 		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
-		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);
+		this.livedocs = firestore.getCollection<Proto_DocumentHistory>(DBDef_DocumentHistory);
 	}
 
 	@ApiHandler(ApiDef_LiveDoc.get)
@@ -78,8 +77,9 @@ export class ModuleBE_LiveDocs_Class
 
 	async changeHistory(params: LiveDocHistoryReqParams) {
 		const key = params.key;
-		return await this.livedocs.runInTransaction(async (transaction) => {
-			const docsHistory = await transaction.queryUnique(this.livedocs, {where: {key}});
+		return await this.livedocs.runTransaction(async (transaction) => {
+			const results = await this.livedocs.query.custom({where: {key}}, transaction);
+			const docsHistory = results[0];
 			if (!docsHistory)
 				throw new BadImplementationException(`Cannot change history of an non-existing doc with key: ${key}`);
 
@@ -100,13 +100,13 @@ export class ModuleBE_LiveDocs_Class
 			}
 
 			docsHistory._audit = auditBy('temp-no-user');
-			await transaction.upsert(this.livedocs, docsHistory);
+			await this.livedocs.set.item(docsHistory, transaction);
 			return docsHistory.docs[docsHistory.index];
 		});
 	}
 
 	async updateLiveDoc(document: Request_UpdateDocument) {
-		const liveDocHistory: DB_DocumentHistory = await this.getLiveDocHistory(document.key);
+		const liveDocHistory = await this.getLiveDocHistory(document.key);
 		const docDB: DB_Document = {
 			...document,
 			_audit: auditBy('user.userId')
@@ -128,7 +128,6 @@ export class ModuleBE_LiveDocs_Class
 
 		if (liveDocHistory.index > 0) {
 			this.logDebug(`Rewriting history, current index ${liveDocHistory.index}`);
-			// this.logDebug(`Rewriting history, current history ${JSON.stringify(liveDocHistory.docs, null, 2)}`);
 			liveDocHistory.docs.splice(0, liveDocHistory.index);
 		}
 
@@ -138,13 +137,13 @@ export class ModuleBE_LiveDocs_Class
 		if (liveDocHistory.docs.length > 30)
 			removeItemFromArray(liveDocHistory.docs, liveDocHistory.docs[liveDocHistory.docs.length - 1]);
 
-		await this.livedocs.upsert(liveDocHistory);
+		await this.livedocs.set.item(liveDocHistory);
 		return docDB;
 	}
 
-	private async getLiveDocHistory(docKey: string): Promise<DB_DocumentHistory> {
-		const docFromDB = await this.livedocs.queryUnique({where: {key: docKey}});
-		return docFromDB || {docs: [], key: docKey, index: 0};
+	private async getLiveDocHistory(docKey: string): Promise<Proto_DocumentHistory['uiType']> {
+		const results = await this.livedocs.query.custom({where: {key: docKey}});
+		return results[0] || {docs: [], key: docKey, index: 0};
 	}
 
 	async getLiveDoc(params: LiveDocReqParams): Promise<DB_Document> {
@@ -156,8 +155,6 @@ export class ModuleBE_LiveDocs_Class
 		if (liveDocHistory.docs && liveDocHistory.docs.length > 0 && liveDocHistory.docs[liveDocHistory.index]) {
 			this.logDebug(`Getting live doc from index: ${liveDocHistory.index}`);
 			liveDoc = liveDocHistory.docs[liveDocHistory.index];
-			//@ts-ignore
-			delete liveDoc.key;
 		}
 
 		return liveDoc;

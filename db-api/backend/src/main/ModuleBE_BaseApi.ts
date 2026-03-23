@@ -47,6 +47,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype, Config extend
 
 	constructor(params: Params<Database>) {
 		super(`GenApi(${params.dbModule.getName()})`);
+		this.addToClassStack(ModuleBE_BaseApi_Class);
 		if (!params.crudApiDef)
 			throw new Error('ModuleBE_BaseApi: crudApiDef is required');
 
@@ -136,6 +137,6 @@ export const createApisForDBModule = <Database extends DB_Prototype>(dbModule: M
 	return new ModuleBE_BaseApi_Class<Database>({dbModule, crudApiDef: CrudApiDef<Database>(dbModule.dbDef.dbKey, version)});
 };
 
-export const RuntimeBE_Modules = () => RuntimeModules().all
+export const RuntimeBE_ModulesAPI = () => RuntimeModules().all
 	.filter((m) => m.isInstanceOf(ModuleBE_BaseApi_Class))
 	.map(m => m as unknown as ModuleBE_BaseApi_Class<any>);

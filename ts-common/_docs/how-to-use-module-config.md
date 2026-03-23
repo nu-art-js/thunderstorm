@@ -55,21 +55,8 @@ export const ModuleBE_Example = new ModuleBE_Example_Class();
 ## How config flows
 
 1. **Constructor** — `setDefaultConfig(defaultConfig)` seeds `this.config` with your defaults.
-2. **ModuleManager.init()** — The manager looks up `config[moduleName]` (where `moduleName` is the class name minus `_Class`, e.g. `ModuleBE_Example`) and deep-merges it into `this.config`.
+2. **ModuleManager.init()** — The manager looks up external config by module name (class name minus `_Class`, e.g. `ModuleBE_Example`) and deep-merges it into `this.config`. Only the keys provided externally override the defaults — deep merge handles the rest. How external config is fed to `ModuleManager` is outside the scope of `ts-common` — that is the responsibility of the project or framework layer above.
 3. **init()** — By the time `init()` runs, `this.config` is the merged result. If a config validator was set, the merged config is validated and invalid values will throw at startup.
-
-External config (e.g. from a JSON file or environment) is passed to `ModuleManager.setConfig()` keyed by module name:
-
-```typescript
-manager.setConfig({
-	ModuleBE_Example: {
-		endpoint: 'https://api.production.com',
-		maxRetries: 5,
-	}
-});
-```
-
-Only the keys you provide externally override the defaults — deep merge handles the rest.
 
 ## minLogLevel
 

@@ -35,7 +35,7 @@ import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {TestModel, TestSuite} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {DB_Type, DB_Type_Complex, DatabaseDef_Type_Complex, TestInputValue} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 import {FB_ArrayType} from './types.js';
 
 const config = {
@@ -44,7 +44,7 @@ const config = {
 	isEmulator: true
 };
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
-export const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV3();
+export const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
 
 export const getSingleItem = (item: TestInputValue): PreDB<DB_Type> => {
 	return Array.isArray(item) ? item[0] : item;
@@ -153,7 +153,7 @@ export type CollectionTestInput = {
 	innerCollection: PreDB<DB_Type_Complex>[];
 	outerId?: string,
 	innerId?: string
-	check: (collectionOuter: FirestoreCollectionV3<DatabaseDef_Type_Complex>, collectionInner: FirestoreCollectionV3<DatabaseDef_Type_Complex>) => Promise<void>
+	check: (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, collectionInner: FirestoreCollection<DatabaseDef_Type_Complex>) => Promise<void>
 }
 export type CollectionTest = TestSuite<CollectionTestInput, TestInputValue>;
 

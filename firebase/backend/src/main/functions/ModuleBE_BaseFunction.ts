@@ -1,15 +1,22 @@
 import {addItemToArray, dispatch_onApplicationNotification, Module, ServerErrorSeverity, TS_Object} from '@nu-art/ts-common';
-import {FirebaseFunctionInterface} from '../functions/firebase-function.js';
+
+export interface FirebaseFunctionInterface {
+	getFunction(): any;
+
+	onFunctionReady(): Promise<void>;
+}
 
 export abstract class ModuleBE_BaseFunction<Config extends TS_Object = any>
 	extends Module<Config>
 	implements FirebaseFunctionInterface {
+
 	protected isReady: boolean = false;
 	protected toBeExecuted: (() => Promise<any>)[] = [];
 	protected toBeResolved!: (value?: (PromiseLike<any>)) => void;
 
 	protected constructor(tag?: string) {
 		super(tag);
+		this.addToClassStack(ModuleBE_BaseFunction);
 		this.onFunctionReady = this.onFunctionReady.bind(this);
 	}
 

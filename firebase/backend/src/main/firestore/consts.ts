@@ -3,7 +3,7 @@ import {CanDeleteDBEntitiesProto} from './types.js';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {PotentialDependenciesToDelete} from '@nu-art/firebase-shared';
 
-export const canDeleteDispatcherV3 = new Dispatcher<CanDeleteDBEntitiesProto, '__canDeleteEntitiesProto'>('__canDeleteEntitiesProto');
+export const canDeleteDispatcher = new Dispatcher<CanDeleteDBEntitiesProto, '__canDeleteEntitiesProto'>('__canDeleteEntitiesProto');
 
 export type MemKey_DeletedDocs_Type = {
 	transaction: FirebaseFirestore.Transaction;

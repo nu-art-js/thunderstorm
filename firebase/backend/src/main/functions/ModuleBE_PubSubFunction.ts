@@ -1,6 +1,7 @@
-import {__stringify, dispatch_onApplicationNotification, ImplementationMissingException, ServerErrorSeverity, TS_Object} from '@nu-art/ts-common';
+import {__stringify, dispatch_onApplicationNotification, ImplementationMissingException, ServerErrorSeverity, StringMap, TS_Object} from '@nu-art/ts-common';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
-import {TopicMessage} from '../functions/firebase-function.js';
+
+export type TopicMessage = { data: string; attributes: StringMap };
 import {CloudEvent, CloudFunction} from 'firebase-functions/v2';
 import {MessagePublishedData, onMessagePublished, PubSubOptions} from 'firebase-functions/v2/pubsub';
 
@@ -13,6 +14,7 @@ export abstract class ModuleBE_PubSubFunction<T extends TS_Object>
 	protected constructor(topic: string, tag?: string) {
 		super(tag);
 		this.topic = topic;
+		this.addToClassStack(ModuleBE_PubSubFunction);
 	}
 
 	abstract onPublish(object: T | undefined, originalMessage: TopicMessage, event: CloudEvent<MessagePublishedData>): Promise<any>;
