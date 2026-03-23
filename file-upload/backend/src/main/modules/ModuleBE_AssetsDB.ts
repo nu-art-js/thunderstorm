@@ -50,7 +50,7 @@ import {
 	UI_Asset
 } from '@nu-art/file-upload-shared';
 import {PushMessageBE_FileUploadStatus} from '../core/messages.js';
-import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
 import {FileMetadata} from '@google-cloud/storage';
 import {fileTypeFromBuffer} from 'file-type';

@@ -4,14 +4,14 @@ import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../../_entity/_core/consts.js';
 import {DatabaseDef_Type, DB_Type, TestInputValue} from '../../_entity/type/index.js';
-import {FirestoreCollectionV3} from '../../_main.js';
+import {FirestoreCollection} from '../../_main.js';
 
 export type {TestInputValue};
 
 export type CreateTestInput = {
 	value: TestInputValue;
 	expectCreateToThrow?: boolean;
-	check?: (collection: FirestoreCollectionV3<DatabaseDef_Type>, expectedItem: TestInputValue) => Promise<void>
+	check?: (collection: FirestoreCollection<DatabaseDef_Type>, expectedItem: TestInputValue) => Promise<void>
 }
 const items: PreDB<DB_Type>[] = [
 	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,

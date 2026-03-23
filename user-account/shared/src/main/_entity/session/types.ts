@@ -3,7 +3,7 @@ import {DatabaseDef_Account} from '../account/index.js';
 
 type VersionTypes = { '1.0.0': DB_Session };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>;
-type UniqueIds = '_id' | 'accountId' | 'deviceId';
+type UniqueIds = '_id';
 type DBKey = 'user-account--sessions';
 type GeneratedKeys = never;
 type Dependencies = {};

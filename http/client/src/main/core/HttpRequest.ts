@@ -569,7 +569,20 @@ export class HttpRequest<API extends GeneralApi>
 
 	_getResponseHeader(headerKey: string): string | string[] | undefined {
 		if (!this.response) throw new BadImplementationException(`axios didn't return yet`);
-		return this.response.headers?.[headerKey as keyof typeof this.response.headers] as any;
+		const headers = this.response.headers;
+		if (!headers)
+			return undefined;
+
+		const direct = (headers as Record<string, string | string[] | undefined>)[headerKey];
+		if (direct !== undefined)
+			return direct;
+
+		const lower = headerKey.toLowerCase();
+		const matchKey = Object.keys(headers).find(k => k.toLowerCase() === lower);
+		if (!matchKey)
+			return undefined;
+
+		return (headers as Record<string, string | string[] | undefined>)[matchKey];
 	}
 
 	getResponseHeader(headerKey: string): string | string[] | undefined {

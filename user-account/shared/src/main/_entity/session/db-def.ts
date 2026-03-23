@@ -20,7 +20,6 @@ export const DBDef_Session: Database<DatabaseDef_Session> = {
 	dbKey: 'user-account--sessions',
 	entityName: 'Session',
 	versions: ['1.0.0'],
-	uniqueKeys: ['_id', 'accountId', 'deviceId'],
 	frontend: {
 		group: accountGroupName,
 		name: 'session',

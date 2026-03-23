@@ -3,7 +3,7 @@ import {Database} from '@nu-art/db-api-shared';
 import {deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import {DatabaseDef_Type} from '../../../_entity/type/index.js';
-import {FirestoreCollectionV3} from '../../../../main/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../../main/firestore/FirestoreCollection.js';
 
 type TestCase_GetAll = { description?: string; input: {}; result: {} };
 type Test_GetAll = { label: string; testcases: TestCase_GetAll[]; processor: (testCase: TestCase_GetAll) => Promise<void> };
@@ -24,7 +24,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 };
 
 //firestore getAll performing much better
-const asyncGetAll = async (_ids: UniqueId[], collection: FirestoreCollectionV3<any>) => {
+const asyncGetAll = async (_ids: UniqueId[], collection: FirestoreCollection<any>) => {
 	const docs = collection.doc.all(_ids);
 	return await Promise.all(docs.map(_doc => _doc.get()));
 };

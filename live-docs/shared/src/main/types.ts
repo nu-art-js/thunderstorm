@@ -17,7 +17,8 @@
  * limitations under the License.
  */
 
-import {Auditable} from '@nu-art/ts-common';
+import {Auditable, tsValidateMustExist} from '@nu-art/ts-common';
+import {Database, DB_Object, DB_Prototype, DB_ProtoSeed, VersionsDeclaration} from '@nu-art/db-api-shared';
 
 export type LiveDocReqParams = {
 	key: string
@@ -32,11 +33,37 @@ type Document = {
 	document: string
 }
 
-export type DB_DocumentHistory = Auditable & {
+export const LiveDocs_DbKey = 'live-docs';
+type DBKey = typeof LiveDocs_DbKey;
+type VersionTypes_LiveDocs = { '1.0.0': DB_DocumentHistory };
+type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_LiveDocs>;
+type Dependencies = {};
+type UniqueKeys = 'key';
+type GeneratedProps = never;
+
+export type DB_DocumentHistory = DB_Object<DBKey> & Auditable & {
 	docs: DB_Document[]
 	key: string
 	index: number
 }
+
+export type Proto_DocumentHistory = DB_Prototype<DB_ProtoSeed<DB_DocumentHistory, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>>;
+
+export const DBDef_DocumentHistory: Database<Proto_DocumentHistory> = {
+	dbKey: LiveDocs_DbKey,
+	entityName: 'DocumentHistory',
+	versions: ['1.0.0'],
+	modifiablePropsValidator: tsValidateMustExist,
+	generatedPropsValidator: {},
+	uniqueKeys: ['key'],
+	frontend: {
+		group: 'live-docs',
+		name: 'live-docs',
+	},
+	backend: {
+		name: 'live-docs',
+	},
+};
 
 export type DB_Document = Auditable & Document & {}
 

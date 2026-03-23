@@ -12,7 +12,6 @@ import {
 	TypedMap,
 } from '@nu-art/ts-common';
 import {ApiHandler, MemKey_ServerApi} from '@nu-art/http-server';
-import {RuntimeBE_Modules} from '@nu-art/db-api-backend';
 import type {PerformProjectSetup} from '@nu-art/permissions-shared';
 import {
 	ApiDef_Permissions,
@@ -58,6 +57,7 @@ import {
 	ModuleBE_PermissionUserDB
 } from '../_entity.js';
 import {DefaultDef_Project} from '../types.js';
+import {RuntimeBE_ModulesAPI} from '@nu-art/db-api-backend';
 
 
 export interface CollectPermissionsProjects {
@@ -431,7 +431,7 @@ class ModuleBE_Permissions_Class
 					accessLevelIds: [domainNameToLevelNameToDBAccessLevel[api.domainId ?? domain._id][api.accessLevel]._id]
 				})));
 
-				const apiModules = RuntimeBE_Modules();
+				const apiModules = RuntimeBE_ModulesAPI();
 
 				const apiModulesMap = arrayToMap(apiModules, m => m.dbModule.dbDef.dbKey);
 

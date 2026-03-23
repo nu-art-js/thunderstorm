@@ -29,7 +29,7 @@ import {
 	Request_PushRegister
 } from '@nu-art/push-pub-sub-shared';
 
-import {ApiHandler, HttpServer} from '@nu-art/http-server';
+import {ApiHandler} from '@nu-art/http-server';
 
 export type CleanupDetails = {
 	cleanup: () => Promise<void>;
@@ -80,24 +80,24 @@ export class ModuleBE_PushPubSub_Class
 		this.messaging = session.getMessaging();
 	}
 
-	@ApiHandler(ApiDef_PushMessages.test, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_PushMessages.test)
 	async test(body: { message: PushMessage<any, any, any> }): Promise<void> {
 		await this.pushToKey(body.message);
 	}
 
-	@ApiHandler(ApiDef_PushMessages.register, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_PushMessages.register)
 	async register(body: API_PushMessages['register']['Body']): Promise<API_PushMessages['register']['Response']> {
 		await this.processRegistration(body);
 		return body.subscriptions?.[0] ?? {topic: '', filter: undefined};
 	}
 
-	@ApiHandler(ApiDef_PushMessages.unregister, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_PushMessages.unregister)
 	async unregister(body: API_PushMessages['unregister']['Body']): Promise<API_PushMessages['unregister']['Response']> {
 		await this.processRegistration(body);
 		return body.subscriptions?.[0] ?? {topic: '', filter: undefined};
 	}
 
-	@ApiHandler(ApiDef_PushMessages.registerAll, {httpServer: () => HttpServer.getDefault()})
+	@ApiHandler(ApiDef_PushMessages.registerAll)
 	async registerAll(body: API_PushMessages['registerAll']['Body']): Promise<API_PushMessages['registerAll']['Response']> {
 		await this.processRegistration(body);
 		return body.subscriptions ?? [];

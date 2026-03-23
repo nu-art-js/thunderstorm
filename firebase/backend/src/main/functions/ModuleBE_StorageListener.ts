@@ -16,6 +16,7 @@ export abstract class ModuleBE_StorageListener<ConfigType>
 		if (path)
 			this.setDefaultConfig({path: path, timeoutSeconds: 300, memory: '2GB'} as ConfigType & Created);
 
+		this.addToClassStack(ModuleBE_StorageListener);
 		name && this.setName(name);
 	}
 

@@ -24,7 +24,7 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import type {FirestoreCollectionV3} from '@nu-art/firebase-backend';
+import type {FirestoreCollection} from '@nu-art/firebase-backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {Readable} from 'stream';
@@ -48,7 +48,7 @@ const KeepIntervalDefault = 7 * Day;
 export class ModuleBE_BackupDocDB_Class
 	extends Module<BackupDocDBConfig> {
 
-	public collection!: FirestoreCollectionV3<DatabaseDef_BackupDoc>;
+	public collection!: FirestoreCollection<DatabaseDef_BackupDoc>;
 	private resolvedConfig!: BackupDocDBConfig;
 
 	constructor(config?: BackupDocDBConfig) {
@@ -75,10 +75,10 @@ export class ModuleBE_BackupDocDB_Class
 		this.collection = this.getBackupStatusCollection();
 	}
 
-	public getBackupStatusCollection = (): FirestoreCollectionV3<DatabaseDef_BackupDoc> => {
+	public getBackupStatusCollection = (): FirestoreCollection<DatabaseDef_BackupDoc> => {
 		return ModuleBE_Firebase
 			.createAdminSession()
-			.getFirestoreV3()
+			.getFirestore()
 			.getCollection(DBDef_BackupDoc);
 	};
 

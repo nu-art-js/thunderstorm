@@ -34,7 +34,7 @@ import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegis
 import {Transaction} from 'firebase-admin/firestore';
 import {UI_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserPermissions} from '../../consts.js';
-import {CollectionActionType} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 
 

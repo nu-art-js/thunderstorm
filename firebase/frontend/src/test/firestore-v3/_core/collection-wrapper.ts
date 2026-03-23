@@ -20,7 +20,7 @@ import {FilterKeys, ModuleBE_Firebase} from '../../_main.js';
 import {Database, DB_Prototype} from '@nu-art/db-api-shared';
 
 
-export class FirestoreCollectionV3_Tester<Proto extends DB_Prototype> {
+export class FirestoreCollection_Tester<Proto extends DB_Prototype> {
 	readonly dbDef: Database<Proto>;
 	readonly externalUniqueFilter?: FilterKeys<Proto['dbType']>;
 
@@ -30,7 +30,7 @@ export class FirestoreCollectionV3_Tester<Proto extends DB_Prototype> {
 	}
 
 	getCollection() {
-		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV3();
+		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
 		return firestore.getCollection<Proto>(this.dbDef);
 	}
 }

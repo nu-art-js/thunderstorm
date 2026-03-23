@@ -1,6 +1,11 @@
 import {deepClone, TS_Object} from '@nu-art/ts-common';
-import {FirestoreConfigs} from '../functions/firebase-function.js';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
+import {HttpsOptions} from 'firebase-functions/v2/https';
+
+export type FirestoreConfigs = {
+	runTimeOptions?: HttpsOptions,
+	configs: any
+};
 import {DocumentOptions, DocumentSnapshot, FirestoreEvent, onDocumentWritten} from 'firebase-functions/v2/firestore';
 import {ParamsOf, Change, CloudFunction} from 'firebase-functions/v2';
 
@@ -13,6 +18,7 @@ export abstract class ModuleBE_FirestoreListener<DataType extends TS_Object, Con
 	protected constructor(collectionName: string, name?: string, tag?: string) {
 		super(tag);
 		name && this.setName(name);
+		this.addToClassStack(ModuleBE_FirestoreListener);
 		this.setDefaultConfig({document: `${collectionName}/{docId}`} as ConfigType & DocumentOptions);
 	}
 

@@ -4,5 +4,6 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-export {ModuleBE_SyncManager_Class} from './ModuleBE_SyncManager.js';
-export type {SyncManagerBEConfig} from './ModuleBE_SyncManager.js';
+export {ModuleBE_SyncManager_Class, ModuleBE_SyncManager} from './ModuleBE_SyncManager.js';
+export type {SyncManagerBEConfig, OnSyncEnvCompleted, OnModuleCleanupV2} from './ModuleBE_SyncManager.js';
+export * from './deleted-doc/index.js';

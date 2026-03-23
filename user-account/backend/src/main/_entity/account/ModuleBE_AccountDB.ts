@@ -18,7 +18,7 @@ import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import {FirestoreQuery} from '@nu-art/firebase-shared';
-import {FirestoreInterfaceV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreInterfaceV3';
+import {FirestoreInterface} from '@nu-art/firebase-backend/firestore/FirestoreInterface';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {
 	_SessionKey_Account,
@@ -225,7 +225,7 @@ export class ModuleBE_AccountDB_Class
 			await dispatch_onAccountLogin.dispatchModuleAsync(account, transaction);
 		},
 		queryUnsafeAccount: async (credentials: AccountEmail, transaction?: Transaction) => {
-			const firestoreQuery = FirestoreInterfaceV3.buildQuery(this.collection as any, {where: {email: credentials.email}});
+			const firestoreQuery = FirestoreInterface.buildQuery(this.collection as any, {where: {email: credentials.email}});
 			let results;
 			if (transaction)
 				results = (await transaction.get(firestoreQuery)).docs as QueryDocumentSnapshot<DB_Account>[];

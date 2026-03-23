@@ -6,11 +6,11 @@ import {Database} from '@nu-art/db-api-shared';
 import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery, composeDbObjectUniqueId} from '@nu-art/firebase-shared';
 import {DB_Type_MultiKey, DatabaseDef_Type_MultiKey} from '../../_entity/type-multi-key/index.js';
-import {FirestoreCollectionV3} from '../../../main/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 
 chai.use(chaiAsPromised);
 
-type Input = (collection: FirestoreCollectionV3<DatabaseDef_Type_MultiKey>) => Promise<any>;
+type Input = (collection: FirestoreCollection<DatabaseDef_Type_MultiKey>) => Promise<any>;
 
 type TestCase_MultiKeys = {
 	description?: string | ((tc: TestCase_MultiKeys) => string);
@@ -49,7 +49,7 @@ export const TestCases_FB_MultiKeys: TestCase_MultiKeys[] = [
 	{
 		description: 'create one item',
 		result: [sampleDoc1],
-		input: async (collection: FirestoreCollectionV3<DatabaseDef_Type_MultiKey>) => {
+		input: async (collection: FirestoreCollection<DatabaseDef_Type_MultiKey>) => {
 			const dbItem = await collection.create.item(deepClone(sampleDoc1));
 			compareId(sampleDoc1, dbItem);
 			validateDBObject(dbItem);
@@ -58,7 +58,7 @@ export const TestCases_FB_MultiKeys: TestCase_MultiKeys[] = [
 	{
 		description: 'create duplicate item',
 		result: [sampleDoc1],
-		input: async (collection: FirestoreCollectionV3<DatabaseDef_Type_MultiKey>) => {
+		input: async (collection: FirestoreCollection<DatabaseDef_Type_MultiKey>) => {
 			const toOverrideWith = {...sampleDoc1, content: 'content2'};
 			await collection.create.item(deepClone(sampleDoc1));
 			await expect(collection.create.item(deepClone(toOverrideWith))).to.be.rejectedWith(Error);
@@ -67,7 +67,7 @@ export const TestCases_FB_MultiKeys: TestCase_MultiKeys[] = [
 	{
 		description: 'set one item',
 		result: [sampleDoc1],
-		input: async (collection: FirestoreCollectionV3<DatabaseDef_Type_MultiKey>) => {
+		input: async (collection: FirestoreCollection<DatabaseDef_Type_MultiKey>) => {
 			const dbItem = await collection.set.item(deepClone(sampleDoc1));
 			compareId(sampleDoc1, dbItem);
 		}
@@ -75,7 +75,7 @@ export const TestCases_FB_MultiKeys: TestCase_MultiKeys[] = [
 	{
 		description: 'set and re-set an item',
 		result: [sampleDoc1],
-		input: async (collection: FirestoreCollectionV3<DatabaseDef_Type_MultiKey>) => {
+		input: async (collection: FirestoreCollection<DatabaseDef_Type_MultiKey>) => {
 			const toOverrideWith = {...sampleDoc1, content: 'content2'};
 
 			const dbItem1 = await collection.create.item(deepClone(sampleDoc1));
@@ -86,7 +86,7 @@ export const TestCases_FB_MultiKeys: TestCase_MultiKeys[] = [
 	{
 		description: 'create same two items',
 		result: [sampleDoc1],
-		input: async (collection: FirestoreCollectionV3<DatabaseDef_Type_MultiKey>) => {
+		input: async (collection: FirestoreCollection<DatabaseDef_Type_MultiKey>) => {
 			const item1 = deepClone(sampleDoc1);
 			const item2 = {...sampleDoc1, content: 'content2'};
 			await expect(collection.create.all([item1, item2])).to.be.rejectedWith(Error);
@@ -95,7 +95,7 @@ export const TestCases_FB_MultiKeys: TestCase_MultiKeys[] = [
 	{
 		description: 'set same two items',
 		result: [sampleDoc1],
-		input: async (collection: FirestoreCollectionV3<DatabaseDef_Type_MultiKey>) => {
+		input: async (collection: FirestoreCollection<DatabaseDef_Type_MultiKey>) => {
 			const item1 = deepClone(sampleDoc1);
 			const item2 = {...sampleDoc1, content: 'content2'};
 			await collection.create.item(deepClone(sampleDoc1));

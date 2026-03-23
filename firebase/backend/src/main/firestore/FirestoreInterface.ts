@@ -19,13 +19,14 @@
 import {ComparatorMap, FirestoreQuery, QueryComparator} from '@nu-art/firebase-shared';
 import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types.js';
 import {FirestoreCollection} from './FirestoreCollection.js';
-import {__stringify, BadImplementationException, ImplementationMissingException, StaticLogger, TS_Object} from '@nu-art/ts-common';
+import {DB_Prototype} from '@nu-art/db-api-shared';
+import {__stringify, BadImplementationException, ImplementationMissingException, StaticLogger} from '@nu-art/ts-common';
 import {Query} from 'firebase-admin/firestore';
 
 
 export class FirestoreInterface {
 
-	static buildQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>) {
+	static buildQuery<Proto extends DB_Prototype>(collection: FirestoreCollection<Proto>, query?: FirestoreQuery<Proto['dbType']>) {
 		try {
 			let myQuery: FirestoreType_Query = collection.collection;
 			if (query && query.select)
@@ -35,7 +36,7 @@ export class FirestoreInterface {
 				const whereClause = query.where;
 				myQuery = Object.keys(whereClause).reduce((_query: FirestoreType_Query, _whereField) => {
 					const whereField = _whereField;
-					const whereValue: any = whereClause[whereField as keyof Type];
+					const whereValue: any = whereClause[whereField as keyof Proto['dbType']];
 					if (whereValue === undefined || whereValue === null)
 						return _query;
 
@@ -98,7 +99,7 @@ export class FirestoreInterface {
 
 					// console.log(`limit: ${query.limit.itemsCount} * ${page}`);
 					if (page > 0)
-						myQuery = myQuery.offset(query.limit.itemsCount * page + 1);
+						myQuery = myQuery.offset(query.limit.itemsCount * page);
 
 					myQuery = myQuery.limit(query.limit.itemsCount);
 				}
@@ -134,10 +135,5 @@ export class FirestoreInterface {
 			return;
 
 		return results[0];
-	}
-
-	static buildUniqueQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type): FirestoreQuery<Type> {
-		const where = collection.externalUniqueFilter(instance);
-		return {where};
 	}
 }

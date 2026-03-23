@@ -94,22 +94,9 @@ The RTDB key is `ModuleFE_App` (the config key is resolved from the class name; 
 
 ## Adding config for a new module
 
-1. Define the config type in the module:
-   ```typescript
-   type Config = { serverUrl: string };
+1. Define the Config type, defaults, and validator in the module — see [how-to-use-module-config.md](_thunderstorm/ts-common/_docs/how-to-use-module-config.md) for the full pattern.
 
-   export class ModuleFE_MyModule_Class
-     extends Module<Config> {
-
-     protected init() {
-       HttpClient.setDefault({origin: this.config.serverUrl});
-     }
-   }
-
-   export const ModuleFE_MyModule = new ModuleFE_MyModule_Class();
-   ```
-
-2. Add the config entry to the RTDB seed file under the correct path:
+2. Add the config entry to the RTDB seed file under the correct path (key must match the module class name minus `_Class`):
    ```json
    {
      "_config": {

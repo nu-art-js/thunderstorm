@@ -17,13 +17,13 @@ import {
 	testInstance5
 } from '../_core/consts.js';
 import {_EmptyQuery} from '../../../main/index.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 import {DatabaseDef_Type, DB_Type, TestInputValue} from '../_entity.js';
 
 export type QueryTestInput = {
 	value: TestInputValue;
 	expectQueryToThrow?: boolean;
-	check: (collection: FirestoreCollectionV3<DatabaseDef_Type>, expectedItem: TestInputValue, expectedIds?: string[]) => Promise<void>
+	check: (collection: FirestoreCollection<DatabaseDef_Type>, expectedItem: TestInputValue, expectedIds?: string[]) => Promise<void>
 }
 
 export type QueryTest = TestSuite<QueryTestInput, TestInputValue>;

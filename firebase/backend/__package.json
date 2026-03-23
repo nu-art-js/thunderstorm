@@ -43,6 +43,7 @@
     "@google-cloud/storage": "?",
     "@nu-art/google-services-backend": "?",
     "@nu-art/ts-common": "?",
+    "@nu-art/http-server": "?",
     "express": "?",
     "firebase": "?",
     "firebase-admin": "?",

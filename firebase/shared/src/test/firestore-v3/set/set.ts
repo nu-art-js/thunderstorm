@@ -6,7 +6,7 @@ import {Database} from '@nu-art/db-api-shared';
 import {asArray, compare, DB_Object, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery} from '../../../main/index.js';
 import {DB_Type, DatabaseDef_Type} from '../_entity.js';
-import {FirestoreCollectionV3} from '../../../main/backend/firestore-v3/FirestoreCollectionV3.js';
+import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 
 
 chai.use(require('chai-as-promised'));
@@ -29,7 +29,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 };
 
 type Input = {
-	setAction: (collection: FirestoreCollectionV3<DatabaseDef_Type>, inserted: DB_Type[]) => Promise<void>
+	setAction: (collection: FirestoreCollection<DatabaseDef_Type>, inserted: DB_Type[]) => Promise<void>
 	toCreate: PreDB<DB_Type>[]
 }
 

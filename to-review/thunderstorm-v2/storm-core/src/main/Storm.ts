@@ -17,27 +17,19 @@
  */
 
 import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
-import {Firebase_ExpressFunction} from '@nu-art/firebase-backend/v1';
 import {HttpServer, ServerApi} from '@nu-art/http-server';
-import {ModuleBE_BaseFunction, ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import type {HttpRoute} from './RouteResolver_ModulePath.js';
+import {ModuleBE_BaseFunction, ModuleBE_Firebase, ModuleBE_FirebaseApiFunction} from '@nu-art/firebase-backend';
 import type {StormConfig} from './BaseStorm.js';
 import {BaseStorm} from './BaseStorm.js';
 
-type RouteResolver = {
-	resolveApi: (urlPrefix?: string) => void;
-	printRoutes: (urlPrefix?: string) => void;
-	resolveRoutes: (urlPrefix?: string) => HttpRoute[];
-};
-
 const modules: Module[] = [
-	ModuleBE_Firebase
+	ModuleBE_Firebase,
+	ModuleBE_FirebaseApiFunction,
 ];
 
 export class Storm
 	extends BaseStorm {
 
-	private routeResolver!: RouteResolver;
 	private functions: unknown[] = [];
 
 	constructor(config: StormConfig | string) {
@@ -50,20 +42,16 @@ export class Storm
 	init() {
 		ServerApi.isDebug = this.config.isDebug === true;
 		super.init();
-		this.routeResolver.resolveApi();
-		if (this.config.printRoutes === true)
-			this.routeResolver.printRoutes();
 		return this;
 	}
 
-	setInitialRouteResolver(routeResolver: RouteResolver) {
-		this.routeResolver = routeResolver;
+	/** @deprecated RouteResolver is no longer used; middleware and 404 live on HttpServer. No-op for backward compat. */
+	setInitialRouteResolver(_routeResolver: unknown) {
 		return this;
 	}
 
 	startServer(onStarted?: () => Promise<void>) {
-		const modulesAsFunction = this.modules.filter((m): m is ModuleBE_BaseFunction => m instanceof ModuleBE_BaseFunction);
-		this.functions = [new Firebase_ExpressFunction(HttpServer.getDefault().getExpress()), ...modulesAsFunction];
+		this.functions = this.modules.filter((m): m is ModuleBE_BaseFunction => m instanceof ModuleBE_BaseFunction);
 
 		this.startServerImpl(onStarted)
 			.then(() => this.logInfo('Server Started!!'))
@@ -79,10 +67,6 @@ export class Storm
 		}, {});
 	}
 
-	getRoutes(): HttpRoute[] {
-		return this.routeResolver.resolveRoutes();
-	}
-
 	build(onStarted?: () => Promise<void>) {
 		return this.startServer(onStarted);
 	}
@@ -93,7 +77,18 @@ export class Storm
 		await this.resolveConfig();
 		console.timeEnd(label);
 		this.init();
-		await HttpServer.getDefault().startServer();
+		await HttpServer.getDefault().init();
+
+		// Deferred @ApiHandler routes (instance-getter apiDefs) register via setImmediate;
+		// yield so they land on Express before the 404 catch-all.
+		await new Promise(resolve => setImmediate(resolve));
+
+		const httpServer = HttpServer.getDefault();
+		httpServer.finalize();
+		if (this.config.printRoutes === true)
+			httpServer.printRoutes();
+
+		await httpServer.startServer();
 		await Promise.all(this.functions.map((fn) => (fn as ModuleBE_BaseFunction).onFunctionReady()));
 		await onStarted?.();
 	}

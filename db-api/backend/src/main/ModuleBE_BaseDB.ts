@@ -32,14 +32,14 @@ import {
 	filterInstances,
 	getDotNotatedValue,
 	merge,
-	Module, TS_Object,
+	Module, RuntimeModules, TS_Object,
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {CollectionActionType, FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
-import {DocWrapperV3} from '@nu-art/firebase-backend/firestore-v3/DocWrapperV3';
+import {CollectionActionType, FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
+import {DocWrapper} from '@nu-art/firebase-backend/firestore/DocWrapper';
 import {Transaction} from 'firebase-admin/firestore';
-import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore-v3/consts';
+import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore/consts';
 import {
 	DBApiBEConfig,
 	DBEntityDependencies,
@@ -73,17 +73,18 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
 
-	public collection!: FirestoreCollectionV3<Database>;
+	public collection!: FirestoreCollection<Database>;
 	public readonly dbDef: BaseDBDefBE;
-	public query!: FirestoreCollectionV3<Database>['query'];
-	public create!: FirestoreCollectionV3<Database>['create'];
-	public set!: FirestoreCollectionV3<Database>['set'];
-	public delete!: FirestoreCollectionV3<Database>['delete'];
-	public doc!: FirestoreCollectionV3<Database>['doc'];
-	public runTransaction!: FirestoreCollectionV3<Database>['runTransaction'];
+	public query!: FirestoreCollection<Database>['query'];
+	public create!: FirestoreCollection<Database>['create'];
+	public set!: FirestoreCollection<Database>['set'];
+	public delete!: FirestoreCollection<Database>['delete'];
+	public doc!: FirestoreCollection<Database>['doc'];
+	public runTransaction!: FirestoreCollection<Database>['runTransaction'];
 
 	protected constructor(dbDef: BaseDBDefBE, appConfig?: BaseDBApiConfig) {
 		super();
+		this.addToClassStack(ModuleBE_BaseDB);
 
 		const config = getModuleBEConfig(dbDef);
 
@@ -203,7 +204,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	}
 
 	protected resolveCollection() {
-		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV3();
+		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestore();
 		this.collection = firestore.getCollection(this.dbDef as any, {
 			canDeleteItems: this.canDeleteItems.bind(this),
 			preWriteProcessing: this._preWriteProcessing.bind(this),
@@ -301,7 +302,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	};
 
 	processCollection = async (processInstances: (instances: Database['dbType'][]) => Promise<void>) => {
-		let docs: DocWrapperV3<any>[];
+		let docs: DocWrapper<any>[];
 		const itemsCount = this.config.chunksSize ?? CONST_DefaultWriteChunkSize;
 
 		const query = {
@@ -358,3 +359,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 		return force ? instances : instancesToSave;
 	}
 }
+
+export const RuntimeBE_ModulesDB = () => RuntimeModules().all
+	.filter((m) => m.isInstanceOf(ModuleBE_BaseDB))
+	.map(m => m as unknown as ModuleBE_BaseDB<any>);

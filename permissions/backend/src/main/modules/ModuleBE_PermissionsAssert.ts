@@ -31,8 +31,8 @@ import {
 	StringMap,
 	TypedMap
 } from '@nu-art/ts-common';
-import {ApiHandler} from '@nu-art/http-server';
 import type {ServerApi_Middleware} from '@nu-art/http-server';
+import {ApiHandler, MemKey_HttpRequestBody, MemKey_HttpRequestMethod, MemKey_HttpRequestQuery, MemKey_HttpRequestUrl} from '@nu-art/http-server';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseApi_Class, ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {HttpMethod} from '@nu-art/api-types';
@@ -47,17 +47,11 @@ import {
 	Request_AssertApiForUser,
 	SessionData_StrictMode
 } from '@nu-art/permissions-shared';
-import {
-	MemKey_HttpRequestBody,
-	MemKey_HttpRequestMethod,
-	MemKey_HttpRequestQuery,
-	MemKey_HttpRequestUrl
-} from '@nu-art/http-server';
 import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
 import {PermissionKey_BE} from '../PermissionKey_BE.js';
 import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity.js';
 import type {FunctionPermissionDef} from '../core/function-permission-registry.js';
-import {RuntimeBE_Modules} from '@nu-art/db-api-backend';
+import {RuntimeBE_ModulesAPI} from '@nu-art/db-api-backend';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -152,7 +146,7 @@ export class ModuleBE_PermissionsAssert_Class
 		const assert = this;
 		return async (dbModules: (ModuleBE_BaseDB<any>)[]) => {
 			const userPermissions = MemKey_UserPermissions.get();
-			const mapDbNameToApiModules = arrayToMap(RuntimeBE_Modules(), (item: ModuleBE_BaseApi_Class<DB_Prototype>) => item.dbModule.dbDef.dbKey);
+			const mapDbNameToApiModules = arrayToMap(RuntimeBE_ModulesAPI(), (item: ModuleBE_BaseApi_Class<DB_Prototype>) => item.dbModule.dbDef.dbKey);
 
 			const paths = dbModules.map(module => {
 				const apiModule = mapDbNameToApiModules[module.dbDef.dbKey] as ModuleBE_BaseApi_Class<DB_Prototype> | undefined;

@@ -55,7 +55,7 @@ function createCollectionBatchWriter(
 	logWarning: (msg: string) => void
 ): Writable {
 	const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-	const firestoreDb = firebaseSessionAdmin.getFirestoreV3().firestore;
+	const firestoreDb = firebaseSessionAdmin.getFirestore().firestore;
 
 	return new class CollectionBatchWriter
 		extends Writable {

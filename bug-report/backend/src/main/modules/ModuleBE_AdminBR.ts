@@ -18,9 +18,10 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {API_AdminBugReport, ApiDef_AdminBugReport, DB_BugReport, Paths} from '@nu-art/bug-report-shared/api';
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend/v1';
+import {API_AdminBugReport, ApiDef_AdminBugReport, DatabaseDef_BugReport, DBDef_BugReport, Paths} from '@nu-art/bug-report-shared/api';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend';
 import {ApiHandler} from '@nu-art/http-server';
+import {_EmptyQuery} from '@nu-art/firebase-shared';
 
 
 type Config = {
@@ -31,25 +32,24 @@ type Config = {
 export class ModuleBE_AdminBR_Class
 	extends Module<Config> {
 
-	private bugReport!: FirestoreCollection<DB_BugReport>;
+	private bugReport!: FirestoreCollection<DatabaseDef_BugReport>;
 	private storage!: StorageWrapperBE;
 
 	constructor() {
 		super();
-
 	}
 
 	protected init(): void {
 		super.init();
 		const sessAdmin = ModuleBE_Firebase.createAdminSession();
 		const firestore = sessAdmin.getFirestore();
-		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
+		this.bugReport = firestore.getCollection(DBDef_BugReport);
 		this.storage = sessAdmin.getStorage();
 	}
 
 	@ApiHandler(ApiDef_AdminBugReport.retrieveLogs)
 	async retrieveLogs(_params?: API_AdminBugReport['retrieveLogs']['Params']): Promise<API_AdminBugReport['retrieveLogs']['Response']> {
-		return this.bugReport.getAll();
+		return this.bugReport.query.custom(_EmptyQuery);
 	}
 
 	@ApiHandler(ApiDef_AdminBugReport.downloadLogs)
@@ -57,7 +57,7 @@ export class ModuleBE_AdminBR_Class
 		return ModuleBE_AdminBR.downloadFiles(body);
 	}
 
-	getFilesFirebase = async () => this.bugReport.getAll();
+	getFilesFirebase = async () => this.bugReport.query.custom(_EmptyQuery);
 
 	downloadFiles = async (path: Paths) => {
 		const bucket = await this.storage.getOrCreateBucket(this.config?.bucket);

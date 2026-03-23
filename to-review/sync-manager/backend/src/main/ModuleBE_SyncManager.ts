@@ -1,95 +1,93 @@
 /*
- * @nu-art/sync-manager-backend - Sync manager backend (onPostWrite + smartSync API)
- * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
- * Licensed under the Apache License, Version 2.0
+ * Database API Generator is a utility library for Thunderstorm.
+ *
+ * Given proper configurations it will dynamically generate APIs to your Firestore
+ * collections, will assert uniqueness and restrict deletion... and more
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-import {FirestoreQuery} from '@nu-art/firebase-shared';
+import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
-import type {DatabaseDef_DeletedDoc, SyncableCollectionBE, SyncPostWriteData, SyncPostWriteOptions} from '@nu-art/sync-manager-shared';
-import {
-	ApiDef_SyncManager,
-	DB_DeletedDoc,
-	DBDef_DeletedDoc,
-	DeltaSyncModule,
-	FullSyncModule,
-	LastUpdated,
-	NoNeedToSyncModule,
-	Response_DBSync,
-	SmartSync_DeltaSync,
-	SmartSync_FullSync,
-	SmartSync_UpToDateSync,
-	SyncDataFirebaseState,
-	type ApiStruct_SyncManager,
-} from '@nu-art/sync-manager-shared';
+import {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {
 	__stringify,
 	arrayToMap,
-	asArray,
 	currentTimeMillis,
 	DB_Object,
+	dispatch_onApplicationException,
 	exists,
+	filterDuplicates,
 	filterInstances,
 	LogLevel,
 	Module,
 	PreDB,
 	ResolvableContent,
 	resolveContent,
-	RuntimeModules
+	TypedMap
 } from '@nu-art/ts-common';
+import {Transaction} from 'firebase-admin/firestore';
+import {ModuleBE_BaseDB, RuntimeBE_ModulesDB} from '@nu-art/db-api-backend';
+import {
+	ApiDef_SyncManager,
+	DeltaSyncModule,
+	FullSyncModule,
+	LastUpdated,
+	NoNeedToSyncModule,
+	SmartSync_DeltaSync,
+	SmartSync_FullSync,
+	SmartSync_UpToDateSync,
+	SyncDataFirebaseState,
+	SyncManagerAPI_SmartSync
+} from '@nu-art/sync-manager-shared';
+import {DatabaseDef_DeletedDoc, DB_DeletedDoc, DBDef_DeletedDoc} from './deleted-doc/index.js';
 import {ApiHandler} from '@nu-art/http-server';
-import type {Transaction} from 'firebase-admin/firestore';
 
-function syncableCollectionFromBaseDb(dbModule: ModuleBE_BaseDB<any>): SyncableCollectionBE {
-	const queryApi = dbModule.query;
-
-	return {
-		get dbKey() {
-			return dbModule.dbDef.dbKey;
-		},
-
-		queryUpdatedSince: async (since: number): Promise<DB_Object[]> => {
-			return queryApi.where({__updated: {$gte: since}});
-		},
-
-		getNewestTimestamp: async (): Promise<number> => {
-			const query: FirestoreQuery<DB_Object> = {
-				limit: 1,
-				orderBy: [{key: '__updated', order: 'desc'}],
-			};
-			const rows = await queryApi.unManipulatedQuery(query);
-			const first = rows[0];
-
-			return first?.__updated ?? 0;
-		},
-	};
+export interface OnSyncEnvCompleted {
+	__onSyncEnvCompleted: (env: string, baseUrl: string, requiredHeaders: TypedMap<string>) => void | Promise<void>;
 }
 
-function syncableCollectionsFromRuntimeBaseDbModules(): SyncableCollectionBE[] {
-	const baseDbModules = RuntimeModules().all.filter((m): m is ModuleBE_BaseDB<any> =>
-		m.isInstanceOf(ModuleBE_BaseDB));
-
-	return baseDbModules.map(m => syncableCollectionFromBaseDb(m));
+export interface OnModuleCleanupV2 {
+	__onCleanupInvokedV2: () => Promise<void>;
 }
 
 export type SyncManagerBEConfig = {
-	retainDeletedCount: number;
-};
+	retainDeletedCount: number
+}
 
 /**
- * Sync manager backend: exposes onPostWrite (app calls it after writes) and smartSync API.
- * Discovers `ModuleBE_BaseDB` instances at runtime and orchestrates sync via their public query surface;
- * db-api has no sync types; BaseDB modules are wrapped to SyncableCollectionBE via file-local helpers below.
+ * # ModuleBE_SyncManager
+ *
+ * Manages all {@link ModuleBE_BaseDB} updates and deleted items to allow incremental sync with clients.
+ *
+ * ## Config:
+ *
+ * ```json
+ * "ModuleBE_SyncManager" : {
+ *   	retainDeletedCount: 100
+ * }
+ * ```
  */
 export class ModuleBE_SyncManager_Class
-	extends Module<SyncManagerBEConfig> {
+	extends Module<SyncManagerBEConfig>
+	implements OnModuleCleanupV2, OnSyncEnvCompleted {
 
-	public collection!: FirestoreCollectionV3<DatabaseDef_DeletedDoc>;
+	public collection!: FirestoreCollection<DatabaseDef_DeletedDoc>;
 
 	private database!: DatabaseWrapperBE;
-	private syncableCollections!: SyncableCollectionBE[];
+	private dbModules!: ModuleBE_BaseDB<any>[];
 	private resolvableFirebaseBasePath: ResolvableContent<string> = `/state/${this.getName()}`;
 
 	constructor() {
@@ -98,35 +96,38 @@ export class ModuleBE_SyncManager_Class
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
 
-	init(): void {
-		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV3();
-		this.collection = firestore.getCollection(DBDef_DeletedDoc);
-		this.syncableCollections = syncableCollectionsFromRuntimeBaseDbModules();
+	async __onSyncEnvCompleted(env: string, baseUrl: string, requiredHeaders: TypedMap<string>) {
+		await this.database.delete(resolveContent(this.resolvableFirebaseBasePath));
+	}
+
+	init() {
+		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
+		this.collection = firestore.getCollection(DBDef_DeletedDoc as any);
+		this.dbModules = RuntimeBE_ModulesDB();
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 	}
 
-	@ApiHandler(() => ApiDef_SyncManager.smartSync)
-	async smartSync(body: ApiStruct_SyncManager['smartSync']['Body']): Promise<ApiStruct_SyncManager['smartSync']['Response']> {
+	@ApiHandler(ApiDef_SyncManager.smartSync)
+	async calculateSmartSync(body: SyncManagerAPI_SmartSync['request']): Promise<SyncManagerAPI_SmartSync['response']> {
 		const frontendCollectionNames = body.modules.map(item => item.dbKey);
 		this.logVerbose(`Modules wanted: ${__stringify(frontendCollectionNames)}`);
 
-		const permissibleCollections: SyncableCollectionBE[] = await this.filterModules(
-			this.syncableCollections.filter(c => frontendCollectionNames.includes(c.dbKey))
-		);
-		const modulesAllowed = filterInstances(permissibleCollections.map(c => c.dbKey));
+		const permissibleModules: ModuleBE_BaseDB<any>[] = await this.filterModules(this.dbModules.filter(dbModule => frontendCollectionNames.includes(dbModule.dbDef.dbKey)));
+		const modulesAllowed = filterInstances(permissibleModules.map(_module => _module.dbDef.dbKey));
 		this.logVerbose(`Modules found: ${__stringify(modulesAllowed)}`);
+		this.logVerbose(`Modules not found: ${frontendCollectionNames.filter(collectionName => modulesAllowed.includes(collectionName))}`);
 
-		const dbNameToCollectionMap = arrayToMap(permissibleCollections, (item: SyncableCollectionBE) => item.dbKey);
+		const dbNameToModuleMap = arrayToMap(permissibleModules, (item: ModuleBE_BaseDB<any>) => item.dbDef.dbKey);
 		const syncDataResponse: (NoNeedToSyncModule | DeltaSyncModule | FullSyncModule)[] = [];
 		const upToDateSyncData = await this.getOrCreateSyncData();
 
 		await Promise.all(body.modules.map(async syncRequest => {
-			const collectionToCheck = dbNameToCollectionMap[syncRequest.dbKey] as SyncableCollectionBE;
-			if (!collectionToCheck)
+			const moduleToCheck = dbNameToModuleMap[syncRequest.dbKey] as ModuleBE_BaseDB<any>;
+			if (!moduleToCheck)
 				return this.logError(`Calculating collections to sync, failing to find dbKey: ${syncRequest.dbKey}`);
 
 			const remoteSyncData = upToDateSyncData[syncRequest.dbKey] ?? {lastUpdated: 0, oldestDeleted: 0};
-			if (syncRequest.lastUpdated === 0 && remoteSyncData.lastUpdated > 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted! > syncRequest.lastUpdated) {
+			if (syncRequest.lastUpdated === 0 && remoteSyncData.lastUpdated > 0 || exists(remoteSyncData.oldestDeleted) && remoteSyncData.oldestDeleted > syncRequest.lastUpdated) {
 				syncDataResponse.push({
 					dbKey: syncRequest.dbKey,
 					sync: SmartSync_FullSync,
@@ -139,65 +140,71 @@ export class ModuleBE_SyncManager_Class
 				syncDataResponse.push({
 					dbKey: syncRequest.dbKey,
 					sync: SmartSync_UpToDateSync,
-					lastUpdated: remoteSyncData.lastUpdated,
+					lastUpdated: remoteSyncData.lastUpdated
 				});
 				return;
 			}
 
 			if (syncRequest.lastUpdated !== remoteSyncData.lastUpdated) {
-				let itemsToReturn: Response_DBSync<any>;
+				let toUpdate = [];
 				try {
-					itemsToReturn = await this.querySyncResponse(collectionToCheck, syncRequest.lastUpdated);
-				} catch (e: unknown) {
-					this.logWarningBold(`Collection failed for dbKey: ${collectionToCheck.dbKey}`);
+					toUpdate = await moduleToCheck.query.where({__updated: {$gte: syncRequest.lastUpdated}});
+				} catch (e: any) {
+					this.logWarningBold(`Module assumed to be normal DB module: ${moduleToCheck.getName()}, collection:${moduleToCheck.dbDef.dbKey}`);
 					throw e;
 				}
+				const itemsToReturn = {
+					toUpdate: toUpdate,
+					toDelete: await this.queryDeleted(syncRequest.dbKey, {where: {__updated: {$gte: syncRequest.lastUpdated}}})
+				};
+
 				syncDataResponse.push({
 					dbKey: syncRequest.dbKey,
 					sync: SmartSync_DeltaSync,
 					lastUpdated: remoteSyncData.lastUpdated,
-					items: itemsToReturn,
+					items: itemsToReturn
 				});
 			}
 		}));
 
-		return {modules: syncDataResponse};
+		return {
+			modules: syncDataResponse
+		};
 	}
 
-	getOrCreateSyncData = async (): Promise<SyncDataFirebaseState> => {
+	public getOrCreateSyncData = async () => {
 		this.logVerbose('Current node path', `${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
 		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
 		const rtdbSyncData = await syncDataRef.get({});
 
-		const missingCollections = this.syncableCollections.filter(c => !rtdbSyncData[c.dbKey]);
+		const dbModuleDbKeys: string[] = filterInstances(this.dbModules.map(module => module.dbDef.dbKey));
+		this.logVerbose(`BE DB Modules: ${__stringify(dbModuleDbKeys)}`);
 
-		if (missingCollections.length) {
-			this.logWarning(`Syncing missing modules: `, missingCollections.map(c => c.dbKey).sort());
-			const newestTimestamps = await Promise.all(missingCollections.map(async c => {
+		const missingModules = this.dbModules.filter(dbModule => {
+			const dbBE_SyncData = rtdbSyncData[dbModule.dbDef.dbKey];
+			if (!dbBE_SyncData)
+				return true;
+
+			return false;
+		});
+
+		if (missingModules.length) {
+			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.dbDef.dbKey).sort());
+			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
+			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
 				try {
-					return await c.getNewestTimestamp();
-				} catch (e: unknown) {
-					this.logError(e as Error);
-					return 0;
+					return (await missingModule.query.unManipulatedQuery(query))[0] as DB_Object;
+				} catch (e: any) {
+					dispatch_onApplicationException.dispatchModule(e, this);
+					this.logError(e);
 				}
-			}));
-			newestTimestamps.forEach((ts, index) => {
-				rtdbSyncData[missingCollections[index].dbKey] = {lastUpdated: ts};
-			});
+			})));
+
+			newestItems.forEach((item, index) => rtdbSyncData[missingModules[index].dbDef.dbKey] = {lastUpdated: item?.__updated || 0});
 			await syncDataRef.set(rtdbSyncData);
 		}
 
 		return rtdbSyncData;
-	};
-
-	/**
-	 * Build sync response for a collection and since timestamp: live items (from collection) + deleted items (from this store).
-	 */
-	querySyncResponse = async (collection: SyncableCollectionBE, since: number): Promise<Response_DBSync<any>> => {
-		const toUpdate = await collection.queryUpdatedSince(since);
-		const query: FirestoreQuery<DB_Object> = {where: {__updated: {$gte: since}}};
-		const toDelete = await this.queryDeleted(collection.dbKey, query);
-		return {toUpdate, toDelete};
 	};
 
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DB_DeletedDoc> => {
@@ -207,78 +214,108 @@ export class ModuleBE_SyncManager_Class
 			__updated,
 			__created,
 			_v,
-			__collectionName: collectionName,
+			__collectionName: collectionName
 		};
 		uniqueKeys.forEach(key => {
 			if (key === '_id')
 				return;
-			(deletedItem as Record<string, unknown>)[key] = (item as Record<string, unknown>)[key] ?? '';
+
+			// @ts-ignore
+			deletedItem[key] = item[key] || '';
 		});
 		return deletedItem;
 	};
 
-	/**
-	 * Call this after each write (create/set/update/delete). The app is responsible for invoking it; db-api does not.
-	 */
-	async onPostWrite(collectionName: string, data: SyncPostWriteData, options: SyncPostWriteOptions): Promise<void> {
-		const now = currentTimeMillis();
-		const uniqueKeys = options.uniqueKeys ?? ['_id'];
-		const transaction = options.transaction as Transaction | undefined;
-
-		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			const updated = data.updated;
-			const latestUpdated = Array.isArray(updated) ?
-				updated.reduce((toRet, current) => Math.max(toRet, current.__updated), updated[0].__updated) :
-				updated.__updated;
-			await this.setLastUpdated(collectionName, latestUpdated);
-		}
-
-		if (data.deleted && !(Array.isArray(data.deleted) && data.deleted.length === 0)) {
-			await this.onItemsDeleted(collectionName, asArray(data.deleted), uniqueKeys, transaction);
-			await this.setLastUpdated(collectionName, now);
-		} else if (data.deleted === null)
-			await this.setOldestDeleted(collectionName, now);
-	}
-
-	queryDeleted = async (collectionName: string, query: FirestoreQuery<DB_Object>): Promise<DB_DeletedDoc[]> => {
-		const finalQuery = {
-			...query,
-			where: {...query.where, __collectionName: collectionName},
-		} as FirestoreQuery<DB_DeletedDoc>;
-		const deletedItems = await this.collection.query.custom(finalQuery);
-		deletedItems.forEach(_item => {
-			_item._id = (_item.__docId ?? _item._id) as DB_DeletedDoc['_id'];
-		});
-		return deletedItems;
-	};
-
-	private async setLastUpdated(collectionName: string, lastUpdated: number): Promise<void> {
-		await this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {lastUpdated});
-	}
-
-	private async setOldestDeleted(collectionName: string, oldestDeleted: number): Promise<void> {
-		await this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {oldestDeleted});
-	}
-
-	private async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction?: unknown): Promise<void> {
-		const toInsert: PreDB<DB_DeletedDoc>[] = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
+	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction?: Transaction) {
+		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
 		const now = currentTimeMillis();
 		toInsert.forEach(item => item.__updated = now);
-		await this.collection.create.all(toInsert, transaction as Transaction);
+		await this.collection.create.all(toInsert, transaction);
 		const deletedCountRef = this.database.ref<number>(`${resolveContent(this.resolvableFirebaseBasePath)}/deletedCount`);
 		let deletedCount = await deletedCountRef.get(0);
 		deletedCount += items.length;
 		await deletedCountRef.set(deletedCount);
 	}
 
-	setModuleFilter = (filter: (collections: SyncableCollectionBE[]) => Promise<SyncableCollectionBE[]>): void => {
-		const previousFilter = this.filterModules;
-		this.filterModules = async collections => filter(await previousFilter(collections));
+	async queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>): Promise<DB_DeletedDoc[]> {
+		const finalQuery = {
+			...query,
+			where: {...query.where, __collectionName: collectionName}
+		} as FirestoreQuery<DB_DeletedDoc>;
+
+		const deletedItems = await this.collection.query.custom(finalQuery);
+		deletedItems.forEach(_item => _item._id = (_item.__docId || _item._id) as typeof _item._id);
+		return deletedItems;
+	}
+
+	__onCleanupInvokedV2 = async () => {
+		if (!this.config.retainDeletedCount)
+			return this.logWarning('Will not run cleanup of deleted values:\n  No "retainDeletedCount" was specified in config..');
+
+		const deletedCountRef = this.database.ref<number>(`${resolveContent(this.resolvableFirebaseBasePath)}/deletedCount`);
+		let deletedCount = await deletedCountRef.get();
+		if (deletedCount === undefined) {
+			deletedCount = (await this.collection.query.custom(_EmptyQuery)).length;
+			await deletedCountRef.set(deletedCount);
+		}
+
+		const toDeleteCount = deletedCount - this.config.retainDeletedCount;
+		if (toDeleteCount <= 0)
+			return;
+
+		this.logDebug('Docs to delete', deletedCount);
+		this.logDebug('Docs to retain', this.config.retainDeletedCount);
+
+		const deleted = await this.collection.delete.query({
+			limit: toDeleteCount,
+			orderBy: [{key: '__updated', order: 'asc'}]
+		});
+		let newDeletedCount = deletedCount - deleted.length;
+		if (deleted.length !== toDeleteCount) {
+			this.logError(`Expected to delete ${toDeleteCount} but actually deleted ${deleted.length}`);
+			newDeletedCount = (await this.collection.query.custom(_EmptyQuery)).length;
+		}
+
+		await deletedCountRef.set(newDeletedCount);
+		const map = deleted.map(item => item.__collectionName);
+		const keys = filterDuplicates(map);
+
+		await Promise.all(keys.map(key => {
+			const newestDeletedItem = deleted.find(deletedItem => deletedItem.__collectionName === key)!;
+			this.logDebug(`setting oldest deleted timestamp ${key} = ${newestDeletedItem.__updated}`);
+			return this.setOldestDeleted(key, newestDeletedItem.__updated);
+		}));
 	};
 
-	setResolvablePath = (resolvablePath: ResolvableContent<string>): void => {
+	public getFullSyncData = async () => {
+		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
+		return (await syncDataRef.get({}));
+	};
+
+	async setLastUpdated(collectionName: string, lastUpdated: number) {
+		return this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {lastUpdated});
+	}
+
+	async setOldestDeleted(collectionName: string, oldestDeleted: number) {
+		return this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/deletedCount/${collectionName}`, {oldestDeleted});
+	}
+
+	setModuleFilter = (filter: (modules: ModuleBE_BaseDB<any>[]) => Promise<ModuleBE_BaseDB<any>[]>) => {
+		const previousFilter = this.filterModules;
+		this.filterModules = async modules => filter(await previousFilter(modules));
+	};
+
+	/**
+	 * Set function that allows to set a custom resolver for the rtdb node path
+	 * @param resolvablePath The resolver for the node path
+	 */
+	setResolvablePath = (resolvablePath: ResolvableContent<string>) => {
 		this.resolvableFirebaseBasePath = resolvablePath;
 	};
 
-	private filterModules = async (collections: SyncableCollectionBE[]): Promise<SyncableCollectionBE[]> => collections;
+	private filterModules = async (modules: ModuleBE_BaseDB<any>[]) => {
+		return modules;
+	};
 }
+
+export const ModuleBE_SyncManager = new ModuleBE_SyncManager_Class();
