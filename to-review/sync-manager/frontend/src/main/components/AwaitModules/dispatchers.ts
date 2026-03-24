@@ -11,4 +11,9 @@ export interface QueryAwaitedModules {
 	__queryAwaitedModule(): (ModuleFE_BaseDB<any>)[];
 }
 
+export interface OnSyncStatusChanged {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<any>): void;
+}
+
 export const dispatch_QueryAwaitedModules = new ThunderDispatcher<QueryAwaitedModules, '__queryAwaitedModule'>('__queryAwaitedModule');
+export const dispatch_onSyncStatusChanged = new ThunderDispatcher<OnSyncStatusChanged, '__onSyncStatusChanged'>('__onSyncStatusChanged');

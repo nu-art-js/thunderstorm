@@ -3,7 +3,7 @@ import {exists, ResolvableContent, resolveContent, RuntimeModules} from '@nu-art
 import './AwaitModules.scss';
 import {ComponentSync, LL_H_C, LL_V_L, TS_ProgressBar} from '@nu-art/thunder-widgets';
 import {DataStatus, ModuleFE_BaseDB, RuntimeFE_ModulesAPI} from '@nu-art/db-api-frontend';
-import {type QueryAwaitedModules} from './dispatchers.js';
+import {type OnSyncStatusChanged, type QueryAwaitedModules} from './dispatchers.js';
 import {ModuleFE_SyncManager} from '../../modules/ModuleFE_SyncManager.js';
 
 type Props = React.PropsWithChildren<{
@@ -30,7 +30,7 @@ export {dispatch_QueryAwaitedModules} from './dispatchers.js';
 
 export class AwaitModules
 	extends ComponentSync<Props, State>
-	implements /*OnSyncStatusChangedListener<any>,*/ QueryAwaitedModules {
+	implements OnSyncStatusChanged, QueryAwaitedModules {
 
 	// ######################### Life Cycle #########################
 	__onSyncStatusChanged(module: ModuleFE_BaseDB<any>): void {
