@@ -55,7 +55,7 @@ import {EventType_Query} from '@nu-art/db-api-shared';
 import {DataStatus, ModuleFE_BaseApi, RuntimeFE_ModulesAPI} from '@nu-art/db-api-frontend';
 import {DataSnapshot} from 'firebase/database';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
-import {dispatch_QueryAwaitedModules} from '../components/AwaitModules/dispatchers.js';
+import {dispatch_QueryAwaitedModules, dispatch_onSyncStatusChanged} from '../components/AwaitModules/dispatchers.js';
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '@nu-art/thunder-ui-modules';
 import {HttpClient, HttpRequest} from '@nu-art/http-client';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend';
@@ -276,6 +276,7 @@ export class ModuleFE_SyncManager_Class
 			await rtModule.loadCache();
 			rtModule.logVerbose(`Firing event (DataStatus.ContainsData): ${rtModule.config.dbKey}`);
 			rtModule.setDataStatus(DataStatus.ContainsData);
+			dispatch_onSyncStatusChanged.dispatchUI(rtModule);
 		} catch (e: any) {
 			this.logError(e);
 		} finally {
@@ -294,6 +295,7 @@ export class ModuleFE_SyncManager_Class
 			this.currentlySyncingModules.push({module: rtModule, syncId: this.generateSyncRequestId()});
 			rtModule.logVerbose(`Firing event (DataStatus.UpdatingData): ${rtModule.config.dbKey}`);
 			rtModule.setDataStatus(DataStatus.UpdatingData);
+			dispatch_onSyncStatusChanged.dispatchUI(rtModule);
 			if (data.items.toUpdate.length)
 				await rtModule.onEntriesUpdated(data.items.toUpdate);
 
@@ -305,6 +307,7 @@ export class ModuleFE_SyncManager_Class
 			this.logDebug(`Delta Sync Completed: ${rtModule.config.dbKey}`);
 			await rtModule.loadCache();
 			rtModule.setDataStatus(DataStatus.ContainsData);
+			dispatch_onSyncStatusChanged.dispatchUI(rtModule);
 		} catch (e: any) {
 			this.logError(e);
 		} finally {
@@ -367,6 +370,7 @@ export class ModuleFE_SyncManager_Class
 
 			rtModule.logVerbose(`Firing event (DataStatus.ContainsData): ${rtModule.config.dbKey}`);
 			rtModule.setDataStatus(DataStatus.ContainsData);
+			dispatch_onSyncStatusChanged.dispatchUI(rtModule);
 
 			rtModule.logVerbose(`Firing event (EventType_Query): ${rtModule.config.dbKey}`);
 
