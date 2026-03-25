@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ComponentSync, LL_H_C, ModuleFE_Thunderstorm, stopPropagation} from '@nu-art/thunderstorm-frontend';
 import './Component_SearchMeta.scss';
-import {filterInstances, formatTimestamp, TypedMap} from '@nu-art/ts-common';
+import {__stringify, filterInstances, formatTimestamp, TypedMap} from '@nu-art/ts-common';
 import {ModuleFE_CSVParser} from '@nu-art/thunderstorm-frontend/modules/ModuleFE_CSVParser';
 import {SearchContext, SearchResultsRenderer} from '../../../_core/SearchContext.js';
 import {SearchItem} from '../../../_core/SearchItem.js';
@@ -59,6 +59,7 @@ export class Component_SearchMeta
 				collection: result.dbKey,
 				id: result.id,
 				label: searchItem.labelResolver(result),
+				item: __stringify(result),
 			};
 		}));
 		const str = ModuleFE_CSVParser.toString(objects);
