@@ -50,7 +50,7 @@ export function RequirePermission<P extends PermissionScope>(scope: P, value: P[
 		const def = registerFunctionPermission(scope, value);
 
 		const wrapper = async function (this: This, ...args: Args): Promise<Return> {
-			ModuleBE_PermissionsAssert.assertFunctionPermission(def);
+			ModuleBE_PermissionsAssert.assertScopePermission(scope, value);
 			return originalMethod.call(this, ...args);
 		};
 

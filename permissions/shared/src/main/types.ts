@@ -44,6 +44,7 @@ export type DefaultDef_Group = {
 
 export type SessionData_Permissions_Value = {
 	domainToValueMap: TypedMap<number>
+	scopeEntries: string[]
 	roles: { key: string, uiLabel: string }[]
 };
 

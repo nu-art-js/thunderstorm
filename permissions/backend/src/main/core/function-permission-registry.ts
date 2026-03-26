@@ -33,6 +33,7 @@ export type FunctionPermissionDef = {
 };
 
 const registry = new Map<string, FunctionPermissionDef>();
+const scopeValuesRegistry = new Map<string, readonly string[]>();
 
 function compositeKey(scopeKey: string, value: string): string {
 	return `${scopeKey}\0${value}`;
@@ -41,9 +42,13 @@ function compositeKey(scopeKey: string, value: string): string {
 /**
  * Registers a function permission (scope + value). Called from @RequirePermission decorator init.
  * Returns the same def if (scopeKey, value) was already registered (stable id).
+ * Also stores the scope's ordered values array for position-based assertion.
  */
 export function registerFunctionPermission(scope: PermissionScope, value: string): FunctionPermissionDef {
 	const scopeKey = scope.key;
+	if (!scopeValuesRegistry.has(scopeKey))
+		scopeValuesRegistry.set(scopeKey, scope.values);
+
 	const key = compositeKey(scopeKey, value);
 	const existing = registry.get(key);
 	if (existing)
@@ -67,4 +72,11 @@ export function getRegisteredFunctionPermissions(): FunctionPermissionDef[] {
  */
 export function getFunctionPermissionDef(scopeKey: string, value: string): FunctionPermissionDef | undefined {
 	return registry.get(compositeKey(scopeKey, value));
+}
+
+/**
+ * Returns the ordered values array for a scope key, or undefined if the scope was never registered.
+ */
+export function getScopeValues(scopeKey: string): readonly string[] | undefined {
+	return scopeValuesRegistry.get(scopeKey);
 }

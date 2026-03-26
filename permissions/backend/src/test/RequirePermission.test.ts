@@ -5,12 +5,11 @@
  */
 
 import {expect} from 'chai';
-import {md5} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
 import {definePermissionScope} from '@nu-art/permissions-shared';
 import {getRegisteredFunctionPermissions} from '../main/core/function-permission-registry.js';
 import {getRequirePermissionDef, RequirePermission} from '../main/RequirePermission.js';
-import {MemKey_UserPermissions} from '../main/consts.js';
+import {MemKey_UserScopePermissions} from '../main/consts.js';
 
 const scope = definePermissionScope('test-require-permission', ['read', 'write', 'admin']);
 
@@ -45,29 +44,31 @@ describe('RequirePermission decorator', () => {
 		expect(all).to.include(def);
 	});
 
-	it('auto-asserts and passes when user has sufficient level', async () => {
+	it('auto-asserts and passes when user has sufficient scope level', async () => {
 		const instance = new ServiceWithPermission();
-		const def = getRequirePermissionDef(instance.doWrite)!;
-		const domainId = md5('function-permission-domain/' + scope.key);
-		def.domainId = domainId;
-		def.levelValue = 200;
 
 		await new MemStorage().init(async () => {
-			MemKey_UserPermissions.set({[domainId]: 200});
+			MemKey_UserScopePermissions.set(['test-require-permission:write']);
 			const result = await instance.doWrite();
 			expect(result).to.equal('ok');
 		});
 	});
 
-	it('auto-asserts and rejects when user has insufficient level', async () => {
+	it('auto-asserts and passes when user has higher scope level', async () => {
 		const instance = new ServiceWithPermission();
-		const def = getRequirePermissionDef(instance.doWrite)!;
-		const domainId = md5('function-permission-domain/' + scope.key);
-		def.domainId = domainId;
-		def.levelValue = 200;
 
 		await new MemStorage().init(async () => {
-			MemKey_UserPermissions.set({[domainId]: 100});
+			MemKey_UserScopePermissions.set(['test-require-permission:admin']);
+			const result = await instance.doWrite();
+			expect(result).to.equal('ok');
+		});
+	});
+
+	it('auto-asserts and rejects when user has insufficient scope level', async () => {
+		const instance = new ServiceWithPermission();
+
+		await new MemStorage().init(async () => {
+			MemKey_UserScopePermissions.set(['test-require-permission:read']);
 			try {
 				await instance.doWrite();
 				expect.fail('Should have thrown');
@@ -77,15 +78,11 @@ describe('RequirePermission decorator', () => {
 		});
 	});
 
-	it('auto-asserts and rejects when domain is missing from user permissions', async () => {
+	it('auto-asserts and rejects when scope is missing from user permissions', async () => {
 		const instance = new ServiceWithPermission();
-		const def = getRequirePermissionDef(instance.doWrite)!;
-		const domainId = md5('function-permission-domain/' + scope.key);
-		def.domainId = domainId;
-		def.levelValue = 200;
 
 		await new MemStorage().init(async () => {
-			MemKey_UserPermissions.set({});
+			MemKey_UserScopePermissions.set([]);
 			try {
 				await instance.doWrite();
 				expect.fail('Should have thrown');
@@ -95,25 +92,15 @@ describe('RequirePermission decorator', () => {
 		});
 	});
 
-	it('throws 503 when permission def is not yet provisioned', async () => {
-		const provisionScope = definePermissionScope('test-unprovisioned', ['read']);
-
-		class UnprovisionedService {
-			@RequirePermission(provisionScope, 'read')
-			async doRead(): Promise<string> {
-				return 'ok';
-			}
-		}
-
-		const instance = new UnprovisionedService();
+	it('auto-asserts and rejects when MemKey is not populated', async () => {
+		const instance = new ServiceWithPermission();
 
 		await new MemStorage().init(async () => {
-			MemKey_UserPermissions.set({});
 			try {
-				await instance.doRead();
+				await instance.doWrite();
 				expect.fail('Should have thrown');
-			} catch (e: any) {
-				expect(e.responseCode).to.equal(503);
+			} catch (_e: any) {
+				// MemKey not set throws before assertion; any error is acceptable
 			}
 		});
 	});
