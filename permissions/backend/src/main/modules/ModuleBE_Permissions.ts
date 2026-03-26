@@ -22,7 +22,6 @@ import {
 	DB_PermissionGroup,
 	DB_PermissionProject,
 	DefaultAccessLevel_Admin,
-	DefaultAccessLevel_Delete,
 	DefaultAccessLevel_NoAccess,
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
@@ -37,7 +36,7 @@ import {
 	trimStartingForwardSlash,
 } from '@nu-art/permissions-shared';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
-import {getRegisteredFunctionPermissions} from '../core/function-permission-registry.js';
+import {getRegisteredFunctionPermissions, getScopeValues} from '../core/function-permission-registry.js';
 import {
 	Domain_AccountManagement,
 	Domain_Developer,
@@ -187,10 +186,12 @@ class ModuleBE_Permissions_Class
 		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(permissionUserId);
 		const userGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(permissionUser.groups.map(g => g.groupId)));
 		const permissionMap = await this.getUserPermissionMap(userGroups);
+		const scopeEntries = await this.getUserScopeEntries(userGroups);
 
 		return {
 			key: 'permissions', value: {
 				domainToValueMap: permissionMap,
+				scopeEntries,
 				roles: userGroups.map(group => ({key: group.label, uiLabel: group.uiLabel})),
 			}
 		};
@@ -217,6 +218,46 @@ class ModuleBE_Permissions_Class
 		});
 		return permissionMap;
 	};
+
+	/**
+	 * Builds a flat string[] of 'scopeKey:value' entries from the user's groups.
+	 * For each scope, takes the max value across all groups (by position in the scope's values array).
+	 */
+	private async getUserScopeEntries(userGroups: DB_PermissionGroup[]): Promise<string[]> {
+		const allLevelIds = userGroups.flatMap(g => g.accessLevelIds);
+		if (allLevelIds.length === 0)
+			return [];
+
+		const levels = filterInstances(await ModuleBE_PermissionAccessLevelDB.query.all(allLevelIds));
+		const domainIds = [...new Set(levels.map(l => l.domainId))];
+		const domains = filterInstances(await ModuleBE_PermissionDomainDB.query.all(domainIds));
+		const domainById = reduceToMap(domains, d => d._id, d => d);
+
+		const scopeMaxMap: TypedMap<string> = {};
+		for (const level of levels) {
+			const domain = domainById[level.domainId];
+			if (!domain)
+				continue;
+
+			const scopeKey = domain.namespace;
+			const scopeValues = getScopeValues(scopeKey);
+			if (!scopeValues)
+				continue;
+
+			const currentMax = scopeMaxMap[scopeKey];
+			if (!currentMax) {
+				scopeMaxMap[scopeKey] = level.name;
+				continue;
+			}
+
+			const currentIdx = scopeValues.indexOf(currentMax);
+			const newIdx = scopeValues.indexOf(level.name);
+			if (newIdx > currentIdx)
+				scopeMaxMap[scopeKey] = level.name;
+		}
+
+		return _keys(scopeMaxMap).map(k => `${k}:${scopeMaxMap[k]}`);
+	}
 
 	__performProjectSetup() {
 		return {
@@ -267,17 +308,12 @@ class ModuleBE_Permissions_Class
 			}]);
 		}
 
-		const levelValueByName: TypedMap<number> = {
-			'No-Access': DefaultAccessLevel_NoAccess.value,
-			'Read': DefaultAccessLevel_Read.value,
-			'Write': DefaultAccessLevel_Write.value,
-			'Delete': DefaultAccessLevel_Delete.value,
-			'Admin': DefaultAccessLevel_Admin.value
-		};
-
 		for (const def of defs) {
 			const domainId = domainIdByScopeKey[def.scopeKey];
-			const levelValue = levelValueByName[def.value] ?? 100;
+			const scopeValues = getScopeValues(def.scopeKey);
+			const levelValue = scopeValues
+				? (scopeValues.indexOf(def.value) + 1) * 100
+				: 100;
 			const levelId = md5(`${domainId}/${def.value}`) as import('@nu-art/permissions-shared').DatabaseDef_PermissionAccessLevel['id'];
 			await ModuleBE_PermissionAccessLevelDB.set.all([{
 				_id: levelId,

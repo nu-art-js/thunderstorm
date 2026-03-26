@@ -100,8 +100,8 @@ describe('wireEntityPermissions', () => {
 
 		wireEntityPermissions(module as any, {preWrite});
 
-		const ui = {_id: 'x', name: 'new'};
-		const db = {_id: 'x', name: 'old'};
+		const ui = {_id: 'x', name: 'new'} as any;
+		const db = {_id: 'x', name: 'old'} as any;
 		await registered.preWrite[0](ui, db);
 
 		expect(captured).to.not.be.undefined;

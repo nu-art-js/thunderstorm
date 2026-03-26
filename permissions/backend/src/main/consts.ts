@@ -7,3 +7,5 @@ export const SessionKey_Permissions_BE = new SessionKey_BE<SessionData_Permissio
 export const SessionKey_StrictMode_BE = new SessionKey_BE<SessionData_StrictMode>('strictMode');
 
 export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions'); //[domainId]: access level numerical value
+
+export const MemKey_UserScopePermissions = new MemKey<string[]>('user-scope-permissions'); // flat array of 'scopeKey:value' entries

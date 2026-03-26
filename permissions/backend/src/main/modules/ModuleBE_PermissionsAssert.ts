@@ -47,10 +47,11 @@ import {
 	Request_AssertApiForUser,
 	SessionData_StrictMode
 } from '@nu-art/permissions-shared';
-import {MemKey_UserPermissions, SessionKey_Permissions_BE} from '../consts.js';
+import {MemKey_UserPermissions, MemKey_UserScopePermissions, SessionKey_Permissions_BE} from '../consts.js';
 import {PermissionKey_BE} from '../PermissionKey_BE.js';
 import {ModuleBE_PermissionAccessLevelDB, ModuleBE_PermissionAPIDB} from '../_entity.js';
 import type {FunctionPermissionDef} from '../core/function-permission-registry.js';
+import type {PermissionScope} from '@nu-art/permissions-shared';
 import {RuntimeBE_ModulesAPI} from '@nu-art/db-api-backend';
 
 
@@ -90,7 +91,15 @@ export class ModuleBE_PermissionsAssert_Class
 		try {
 			MemKey_UserPermissions.get();
 		} catch (err) {
-			MemKey_UserPermissions.set(SessionKey_Permissions_BE.get().domainToValueMap);
+			const sessionData = SessionKey_Permissions_BE.get();
+			MemKey_UserPermissions.set(sessionData.domainToValueMap);
+		}
+
+		try {
+			MemKey_UserScopePermissions.get();
+		} catch (err) {
+			const sessionData = SessionKey_Permissions_BE.get();
+			MemKey_UserScopePermissions.set(sessionData.scopeEntries ?? []);
 		}
 	};
 
@@ -234,6 +243,7 @@ export class ModuleBE_PermissionsAssert_Class
 	/**
 	 * Asserts that the user has at least the required level for the function-permission def (from @RequirePermission).
 	 * Call this before invoking a handler when getRequirePermissionDef(handler) returns a def.
+	 * @deprecated Use assertScopePermission for string-based scope:value assertion.
 	 */
 	assertFunctionPermission(def: FunctionPermissionDef): void {
 		if (def.domainId === undefined || def.levelValue === undefined)
@@ -247,6 +257,30 @@ export class ModuleBE_PermissionsAssert_Class
 		if (userDomainPermission < def.levelValue) {
 			this.logErrorBold(`function permission - userLevel < required: "${def.scopeKey}/${def.value}" ${userDomainPermission} < ${def.levelValue}`);
 			throw new ApiException(403, 'Action Forbidden');
+		}
+	}
+
+	/**
+	 * Asserts that the user has at least the required value for the given scope.
+	 * Reads MemKey_UserScopePermissions (string[] of 'scopeKey:value' entries).
+	 * Compares position in the scope's ordered values array.
+	 */
+	assertScopePermission(scope: PermissionScope, requiredValue: string): void {
+		const userPerms = MemKey_UserScopePermissions.get();
+		const prefix = scope.key + ':';
+		const entry = userPerms.find(p => p.startsWith(prefix));
+		if (!entry)
+			throw new ApiException(403, `No access for scope: ${scope.key}`);
+
+		const userValue = entry.substring(prefix.length);
+		const requiredIdx = scope.values.indexOf(requiredValue);
+		if (requiredIdx === -1)
+			throw new ApiException(503, `Unknown permission value '${requiredValue}' for scope '${scope.key}'`);
+
+		const userIdx = scope.values.indexOf(userValue);
+		if (userIdx === -1 || userIdx < requiredIdx) {
+			this.logErrorBold(`scope permission denied: ${scope.key} (has: ${userValue}, needs: ${requiredValue})`);
+			throw new ApiException(403, `Insufficient access for scope: ${scope.key}`);
 		}
 	}
 
