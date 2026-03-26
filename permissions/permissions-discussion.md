@@ -222,3 +222,29 @@ No new options here—just flag that any change (decorators, capability, dedicat
 ---
 
 *Document written for offline review. When you’re back, we can pick one or two threads (e.g. “function vs API” and “dedicated group”) and turn them into concrete design + tasks.*
+
+---
+
+## Design Decisions (Landed — 2026-03-24)
+
+### Function vs API binding: Option C (Decorator)
+
+`@RequirePermission(scope, value)` as a self-enforcing TC39 method decorator. Wraps the method; at invocation time reads `MemKey_UserPermissions` and asserts before original logic runs. Decoupled from `@ApiHandler` — works on any async method.
+
+### Assertions: In-handler + entity-level interceptors
+
+Three-tier architecture:
+- **db-api** (infra): mandatory externally-registerable interceptor chain on `ModuleBE_BaseDB` (preWrite, query, preDelete). Generic callbacks; no permission types.
+- **permissions** (middle): `@RequirePermission` (self-enforcing) + `wireEntityPermissions` (bridges db-api hooks with app callbacks). Agnostic to app-specific semantics.
+- **app** (top): defines custom assertion callbacks (org, ownership, visibility) and registers via `wireEntityPermissions`.
+
+### Two kinds of assertions
+
+1. **Simple / declarative**: `@RequirePermission(scope, value)` — binary access-level check.
+2. **Complex / custom**: App-defined callbacks via `wireEntityPermissions` — can be `@RequirePermission`-decorated for layered assertion.
+
+### Queries: Query constraints from interceptors
+
+Query interceptors on `ModuleBE_BaseDB` allow external modules to inject mandatory `where` clauses via `wireEntityPermissions`.
+
+See: `_docs/specs/permissions-decorator-and-entity-access-control.md` for the full spec.
