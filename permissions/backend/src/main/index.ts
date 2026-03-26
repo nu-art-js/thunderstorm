@@ -26,3 +26,4 @@ export * from './modules/index.js';
 export * from './permissions.js';
 export * from './_entity.js';
 export * from './types.js';
+export * from './entity-permissions.js';

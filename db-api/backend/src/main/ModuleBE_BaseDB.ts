@@ -49,7 +49,7 @@ import {
 	getModuleBEConfig
 } from './storm-stubs.js';
 import {CrudClause_Where, DB_Prototype} from '@nu-art/db-api-shared';
-import {BaseDBDefBE, PostWriteProcessingDataShape} from './backend-types.js';
+import {BaseDBDefBE, PostWriteProcessingDataShape, PreDeleteInterceptor, PreWriteInterceptor, QueryInterceptor} from './backend-types.js';
 
 export type BaseDBApiConfig = {
 	projectId?: string;
@@ -82,6 +82,10 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	public doc!: FirestoreCollection<Database>['doc'];
 	public runTransaction!: FirestoreCollection<Database>['runTransaction'];
 
+	private readonly preWriteInterceptors: PreWriteInterceptor<Database>[] = [];
+	private readonly queryInterceptors: QueryInterceptor<Database>[] = [];
+	private readonly preDeleteInterceptors: PreDeleteInterceptor<Database>[] = [];
+
 	protected constructor(dbDef: BaseDBDefBE, appConfig?: BaseDBApiConfig) {
 		super();
 		this.addToClassStack(ModuleBE_BaseDB);
@@ -98,6 +102,18 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 		this.upgradeInstances.bind(this);
 		this.manipulateQuery.bind(this);
 		this.collectDependencies.bind(this);
+	}
+
+	registerPreWriteInterceptor(fn: PreWriteInterceptor<Database>): void {
+		this.preWriteInterceptors.push(fn);
+	}
+
+	registerQueryInterceptor(fn: QueryInterceptor<Database>): void {
+		this.queryInterceptors.push(fn);
+	}
+
+	registerPreDeleteInterceptor(fn: PreDeleteInterceptor<Database>): void {
+		this.preDeleteInterceptors.push(fn);
 	}
 
 	__collectEntityDependencies = async (type: string, itemIds: string[], transaction?: Transaction): Promise<DBEntityDependencies | undefined> => {
@@ -210,11 +226,14 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 			preWriteProcessing: this._preWriteProcessing.bind(this),
 			postWriteProcessing: this._postWriteProcessing.bind(this) as any,
 			upgradeInstances: this.upgradeInstances.bind(this),
-			manipulateQuery: this.manipulateQuery.bind(this) as any
+			manipulateQuery: this._manipulateQuery.bind(this) as any
 		});
 	}
 
 	private _preWriteProcessing = async (dbItem: Database['uiType'], originalDbInstance: Database['dbType'], transaction?: Transaction, upgrade = true) => {
+		for (const interceptor of this.preWriteInterceptors)
+			await interceptor(dbItem, originalDbInstance, transaction);
+
 		await this.preWriteProcessing(dbItem, originalDbInstance, transaction);
 	};
 
@@ -241,6 +260,14 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	protected async postWriteProcessing(data: PostWriteProcessingDataShape<Database['dbType']>, actionType: CollectionActionType, transaction?: Transaction) {
 	}
 
+	private _manipulateQuery = (query: FirestoreQuery<Database['dbType']>): FirestoreQuery<Database['dbType']> => {
+		let result = query;
+		for (const interceptor of this.queryInterceptors)
+			result = interceptor(result);
+
+		return this.manipulateQuery(result);
+	};
+
 	manipulateQuery(query: FirestoreQuery<any>): FirestoreQuery<any> {
 		return query;
 	}
@@ -253,6 +280,9 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	 * @param dbItems - The DB entry that is going to be deleted.
 	 */
 	async canDeleteItems(dbItems: Database['dbType'][], transaction?: Transaction) {
+		for (const interceptor of this.preDeleteInterceptors)
+			await interceptor(dbItems, transaction);
+
 		const dependencies = await this.collectDependencies(dbItems, transaction);
 		if (dependencies)
 			throw new ApiException<DBEntityDependencyError>(422, 'entity has dependencies').setErrorBody({

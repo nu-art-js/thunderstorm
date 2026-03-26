@@ -313,6 +313,39 @@ Custom API endpoints can be added to any DB module using `@ApiHandler` from `@nu
 | `postWriteProcessing(data, actionType, transaction?)` | Side effects after write (sync, notify, cascade updates) |
 | `upgradeInstances(instances, force?)` | Run version upgrade processors |
 
+### Interceptor chain (external, mandatory)
+
+`ModuleBE_BaseDB` supports a mandatory interceptor chain that **any external module** can register callbacks on. Unlike the overridable hooks above (which the entity module controls), interceptors run in a private execution path — the entity module cannot bypass them.
+
+**Interceptor types** (exported from `@nu-art/db-api-backend`):
+
+| Type | Signature | Runs before |
+|------|-----------|-------------|
+| `PreWriteInterceptor<DB>` | `(dbItem, original, tx?) => Promise<void>` | `preWriteProcessing` |
+| `QueryInterceptor<DB>` | `(query) => query` | `manipulateQuery` |
+| `PreDeleteInterceptor<DB>` | `(dbItems, tx?) => Promise<void>` | `canDeleteItems` (dependency check) |
+
+**Registration methods** (public, callable by any module during init):
+
+```typescript
+dbModule.registerPreWriteInterceptor(async (dbItem, original, tx?) => {
+	// assert or transform before every write — cannot be bypassed
+});
+
+dbModule.registerQueryInterceptor((query) => {
+	// inject mandatory scoping into every query — cannot be bypassed
+	return {...query, where: {...query.where, orgId: currentOrgId()}};
+});
+
+dbModule.registerPreDeleteInterceptor(async (dbItems, tx?) => {
+	// gate deletion — cannot be bypassed
+});
+```
+
+**Execution order:** interceptors run in registration order, all before the corresponding subclass hook. Multiple interceptors of the same type are additive and non-removable.
+
+**Use case:** entity-level access control (permissions, multi-tenant isolation) where the app wires assertions externally and the entity module must not be able to skip them. See `@nu-art/permissions-backend` for `wireEntityPermissions`.
+
 **Deletion protection** is handled automatically via the `dependencies` declaration on the proto — the framework prevents deletion of entities referenced by other collections.
 
 **Version upgrades:**

@@ -20,38 +20,49 @@
 import type {PermissionScope} from '@nu-art/permissions-shared';
 import {registerFunctionPermission} from './core/function-permission-registry.js';
 import type {FunctionPermissionDef} from './core/function-permission-registry.js';
+import {ModuleBE_PermissionsAssert} from './modules/ModuleBE_PermissionsAssert.js';
 
 export {type FunctionPermissionDef} from './core/function-permission-registry.js';
 
 /**
  * Symbol key used to attach the function-permission def to a method.
- * PermissionsAssert (or middleware) can read this to assert before invoking the handler.
+ * Introspection via getRequirePermissionDef(handler) reads this.
  */
 export const RequirePermissionDefKey = Symbol.for('RequirePermissionDef');
 
 /**
- * Method decorator that registers a function permission (scope + value) and attaches
- * the def to the method. No assert in the decorator; assert runs at request time
- * when the handler is invoked (via PermissionsAssert or module wrapper).
+ * Self-enforcing method decorator. Registers a function permission (scope + value)
+ * and wraps the method so that invocation asserts the caller's access level via
+ * MemKey_UserPermissions before the original logic runs.
  *
- * @param scope - Branded permission scope (e.g. definePermissionScope('pathway', ['read','write','delete','admin']))
+ * Decoupled from @ApiHandler — works on any async method (API handlers, service
+ * methods, scheduled entry points, internal helpers). When composed with @ApiHandler,
+ * place @ApiHandler ABOVE this decorator so the route captures the wrapped method.
+ *
+ * @param scope - Branded permission scope (e.g. definePermissionScope('pipeline', ['read','write','admin']))
  * @param value - One of scope.values (e.g. 'write')
  */
 export function RequirePermission<P extends PermissionScope>(scope: P, value: P['values'][number]) {
-	return function <T extends (this: unknown, ...args: unknown[]) => Promise<unknown>>(
-		originalMethod: T,
-		_context: ClassMethodDecoratorContext<unknown, T>
-	): T {
+	return function <This, Args extends any[], Return>(
+		originalMethod: (this: This, ...args: Args) => Promise<Return>,
+		_context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Promise<Return>>
+	): (this: This, ...args: Args) => Promise<Return> {
 		const def = registerFunctionPermission(scope, value);
-		(originalMethod as T & { [RequirePermissionDefKey]?: FunctionPermissionDef })[RequirePermissionDefKey] = def;
-		return originalMethod;
+
+		const wrapper = async function (this: This, ...args: Args): Promise<Return> {
+			ModuleBE_PermissionsAssert.assertFunctionPermission(def);
+			return originalMethod.call(this, ...args);
+		};
+
+		(wrapper as Function & { [RequirePermissionDefKey]?: FunctionPermissionDef })[RequirePermissionDefKey] = def;
+		return wrapper;
 	};
 }
 
 /**
  * Returns the function-permission def attached to a handler, or undefined.
  */
-export function getRequirePermissionDef(handler: ((...args: unknown[]) => unknown) | null | undefined): FunctionPermissionDef | undefined {
+export function getRequirePermissionDef(handler: ((...args: any[]) => any) | null | undefined): FunctionPermissionDef | undefined {
 	if (!handler || typeof handler !== 'function')
 		return undefined;
 	return (handler as { [RequirePermissionDefKey]?: FunctionPermissionDef })[RequirePermissionDefKey];

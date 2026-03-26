@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import type {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
 import type {Transaction} from 'firebase-admin/firestore';
 import {DB_Object, generateHex, currentTimeMillis} from '@nu-art/ts-common';
@@ -43,7 +43,7 @@ function applyLimit<T>(items: T[], limit: { page?: number; itemsCount?: number }
  * Creates an in-memory mock that implements the FirestoreCollectionV3 shape used by ModuleBE_BaseDB and ModuleBE_BaseApi.
  * Backed by a Map keyed by _id. When the real V3 interface changes, update this mock to match.
  */
-export function createMockFirestoreCollectionV3(): FirestoreCollectionV3<any> {
+export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
 	const store = new Map<string, DB_Object>();
 
 	const runTransaction = async <T>(fn: (transaction?: Transaction) => Promise<T>): Promise<T> => fn(undefined);
@@ -153,5 +153,5 @@ export function createMockFirestoreCollectionV3(): FirestoreCollectionV3<any> {
 		doc,
 		runTransaction,
 		upgradeInstances
-	} as unknown as FirestoreCollectionV3<any>;
+	} as unknown as FirestoreCollection<any>;
 }

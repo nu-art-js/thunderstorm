@@ -5,6 +5,22 @@
  */
 
 import type {DB_Object} from '@nu-art/ts-common';
+import type {FirestoreQuery} from '@nu-art/firebase-shared';
+import type {Transaction} from 'firebase-admin/firestore';
+import type {DB_Prototype} from '@nu-art/db-api-shared';
+
+/**
+ * Interceptor callback types for the mandatory interceptor chain on ModuleBE_BaseDB.
+ * These are generic — no permission types. Any module can register interceptors.
+ */
+export type PreWriteInterceptor<Database extends DB_Prototype = DB_Prototype> =
+	(dbItem: Database['uiType'], original: Database['dbType'], tx?: Transaction) => Promise<void>;
+
+export type QueryInterceptor<Database extends DB_Prototype = DB_Prototype> =
+	(query: FirestoreQuery<Database['dbType']>) => FirestoreQuery<Database['dbType']>;
+
+export type PreDeleteInterceptor<Database extends DB_Prototype = DB_Prototype> =
+	(dbItems: Database['dbType'][], tx?: Transaction) => Promise<void>;
 
 /**
  * Shape of post-write processing data (mirrors firebase PostWriteProcessingData but for DB_Object, no DB_Prototype).
