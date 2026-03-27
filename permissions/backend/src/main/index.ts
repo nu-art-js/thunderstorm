@@ -19,11 +19,8 @@
 
 export * from './consts.js';
 export * from './core/module-pack.js';
-export * from './permissions-wire.js';
 export * from './core/function-permission-registry.js';
 export * from './RequirePermission.js';
 export * from './modules/index.js';
-export * from './permissions.js';
 export * from './_entity.js';
-export * from './types.js';
 export * from './entity-permissions.js';

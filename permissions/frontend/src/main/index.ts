@@ -17,9 +17,8 @@
  * limitations under the License.
  */
 
-export * from './PermissionKey_FE.js';
-export * from './permissions-wire.js';
 export * from './core/module-pack.js';
 export * from './ui/index.js';
 export * from './consts.js';
 export * from './_entity.js';
+export * from './modules/ModuleFE_PermissionsAssert.js';

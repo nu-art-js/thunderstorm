@@ -1,11 +1,8 @@
 import {SessionKey_BE} from '@nu-art/user-account-backend';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {TypedMap} from '@nu-art/ts-common';
 import {SessionData_Permissions, SessionData_StrictMode} from '@nu-art/permissions-shared';
 
 export const SessionKey_Permissions_BE = new SessionKey_BE<SessionData_Permissions>('permissions');
 export const SessionKey_StrictMode_BE = new SessionKey_BE<SessionData_StrictMode>('strictMode');
 
-export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions'); //[domainId]: access level numerical value
-
-export const MemKey_UserScopePermissions = new MemKey<string[]>('user-scope-permissions'); // flat array of 'scopeKey:value' entries
+export const MemKey_UserScopePermissions = new MemKey<string[]>('user-scope-permissions');

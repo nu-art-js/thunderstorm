@@ -24,12 +24,6 @@ export type FunctionPermissionDef = {
 	id: string;
 	scopeKey: string;
 	value: string;
-	/** Set on server load when domains/levels are created from registry. */
-	domainId?: string;
-	/** Set on server load when domains/levels are created from registry. */
-	levelId?: string;
-	/** Numeric level value for assert (user level >= required). Set on server load. */
-	levelValue?: number;
 };
 
 const registry = new Map<string, FunctionPermissionDef>();

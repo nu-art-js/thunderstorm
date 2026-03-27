@@ -17,97 +17,46 @@
  * limitations under the License.
  */
 
-import {_keys, BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
+import {Module} from '@nu-art/ts-common';
 import {ApiCaller} from '@nu-art/http-client';
-import {PermissionKey_FE} from '../PermissionKey_FE.js';
-import {SessionKey_Permissions_FE, SessionKey_StrictMode_FE} from '../consts.js';
-import {RendererKey_AccountMenu_SubHeader} from '@nu-art/user-account-frontend/consts';
-import {Renderer_RoleNames} from '../ui/Renderer_RoleNames.js';
+import {SessionKey_Permissions_FE} from '../consts.js';
 import {API_Permissions, ApiDef_Permissions} from '@nu-art/permissions-shared';
-import {getRendererRegistry} from '../permissions-wire.js';
-
-
-export type PermissionsModuleFEConfig = {
-	projectId: string
-}
+import type {PermissionScope} from '@nu-art/permissions-shared';
 
 export interface OnPermissionsChanged {
 	__onPermissionsChanged: () => void;
 }
 
-export interface OnPermissionsFailed {
-	__onPermissionsFailed: () => void;
-}
-
-export enum AccessLevel {
-	Undefined,
-	NoAccessLevelsDefined,
-	NoAccess,
-	HasAccess
-}
-
 export class ModuleFE_PermissionsAssert_Class
-	extends Module<PermissionsModuleFEConfig> {
-	permissionKeys: TypedMap<PermissionKey_FE<any>> = {};
+	extends Module {
 
-	constructor() {
-		super();
+	@ApiCaller(ApiDef_Permissions.setupPermissions)
+	async setupPermissions(_params?: API_Permissions['setupPermissions']['Params']): Promise<API_Permissions['setupPermissions']['Response']> {
+		void _params;
+		return undefined as unknown as API_Permissions['setupPermissions']['Response'];
 	}
 
-	@ApiCaller(ApiDef_Permissions.toggleStrictMode)
-	async toggleStrictMode(_params?: API_Permissions['toggleStrictMode']['Params']): Promise<API_Permissions['toggleStrictMode']['Response']> {
+	@ApiCaller(ApiDef_Permissions.getRegisteredScopes)
+	async getRegisteredScopes(_params?: API_Permissions['getRegisteredScopes']['Params']): Promise<API_Permissions['getRegisteredScopes']['Response']> {
 		void _params;
-		return undefined as unknown as API_Permissions['toggleStrictMode']['Response'];
-	}
-
-	@ApiCaller(ApiDef_Permissions.createProject)
-	async createProject(_params?: API_Permissions['createProject']['Params']): Promise<API_Permissions['createProject']['Response']> {
-		void _params;
-		return undefined as unknown as API_Permissions['createProject']['Response'];
+		return undefined as unknown as API_Permissions['getRegisteredScopes']['Response'];
 	}
 
 	protected init() {
 		super.init();
-
-		getRendererRegistry()?.registerRenderer(RendererKey_AccountMenu_SubHeader, Renderer_RoleNames);
 	}
 
-	getAccessLevelByKeyString(key: string) {
-		return this.getAccessLevel(this.getPermissionKey(key));
-	}
+	hasScopeAccess(scope: PermissionScope, requiredValue: string): boolean {
+		const sessionData = SessionKey_Permissions_FE.get();
+		const prefix = scope.key + ':';
+		const entry = sessionData.scopeEntries?.find(p => p.startsWith(prefix));
+		if (!entry)
+			return false;
 
-	getAccessLevel(key: PermissionKey_FE): AccessLevel {
-		const keyData = key.get();
-		if (!exists(keyData))
-			return SessionKey_StrictMode_FE.get() ? AccessLevel.Undefined : AccessLevel.HasAccess;
-
-		if (keyData.accessLevelIds.length === 0)
-			return AccessLevel.NoAccessLevelsDefined;
-
-		const userAccessLevels = SessionKey_Permissions_FE.get().domainToValueMap;
-		const accessLevels = keyData._accessLevels ?? {};
-		try {
-			const canAccess = (Object.keys(accessLevels) as (keyof typeof accessLevels)[]).reduce((hasAccess, domainId) => {
-				return hasAccess && userAccessLevels[domainId] >= accessLevels[domainId];
-			}, true);
-			return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
-		} catch (e) {
-			return AccessLevel.NoAccess;
-		}
-	}
-
-	getPermissionKey(key: string): PermissionKey_FE {
-		return this.permissionKeys[key];
-	}
-
-	registerPermissionKey(key: PermissionKey_FE) {
-		if (this.permissionKeys[key.key])
-			throw new BadImplementationException(`Registered PermissionKey '${key}' more than once!`);
-		this.permissionKeys[key.key] = key;
-	}
-
-	getAllPermissionKeys() {
-		return this.permissionKeys;
+		const userValue = entry.substring(prefix.length);
+		const requiredIdx = scope.values.indexOf(requiredValue);
+		const userIdx = scope.values.indexOf(userValue);
+		return userIdx >= requiredIdx;
 	}
 }
 
