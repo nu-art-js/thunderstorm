@@ -267,6 +267,58 @@ Catch `HttpException`; it exposes `responseCode`, `errorResponse`, `request`.
 
 ---
 
+## Forbidden patterns (non-negotiable)
+
+Every API endpoint **must** follow the full typed pipeline: `API_<Domain>` type → `ApiDefResolver<API_<Domain>>` constant → `@ApiHandler`/`@ApiCaller` consuming it. No shortcuts, no exceptions.
+
+### Raw `{ method, path }` objects
+
+**Forbidden.** Never define an API def as a plain object literal, with or without `as const`:
+
+```typescript
+// WRONG — untyped, no contract, no ApiDefResolver
+const ApiDef_Pipeline = {
+	runFullPipeline: {method: HttpMethod.GET, path: '/v1/pipeline/run'},
+} as const;
+```
+
+Every `ApiDef_*` constant **must** be typed as `ApiDefResolver<API_*>`. If there is no corresponding `API_*` type, create one first.
+
+### `ApiDef_*` without a corresponding `API_*` type
+
+**Forbidden.** The `API_<Domain>` type is the contract — it defines request body, response, params, and error types. The `ApiDef_<Domain>` resolver maps that contract to routes. One does not exist without the other. If you are writing `ApiDef_X`, there must be an `API_X` type that it resolves.
+
+### API definitions outside a shared package
+
+**Forbidden.** `API_*` types and `ApiDef_*` constants must **never** live in `app/backend`, `app/frontend`, or any domain-specific package. They belong in a **shared** package (`<lib>/shared/src/main/api-def.ts`) because they are the contract between client and server.
+
+- Backend-only endpoint with no frontend caller today? **Still goes in shared.** The contract is the contract — it must be importable by any domain that needs it, now or later.
+- Response types, request body types, param types referenced by the API struct also live in the shared package.
+
+### API spanning frontend and backend requires a library
+
+When an API is consumed by both backend (`@ApiHandler`) and frontend (`@ApiCaller`), the endpoint **must** live in a concept library with at minimum a `shared` package. The library structure:
+
+```
+<concept-lib>/
+  shared/    — API_<Domain> type, ApiDef_<Domain> constant, request/response types
+  backend/   — Module with @ApiHandler consuming ApiDef_<Domain>
+  frontend/  — Module with @ApiCaller consuming ApiDef_<Domain>
+```
+
+Both backend and frontend import the same `API_*` and `ApiDef_*` from `<concept-lib>/shared`. This is how type safety flows end-to-end: one shared contract, two consumers. If an API needs both a handler and a caller, it needs a library — there is no shortcut where the backend defines the route and the frontend "just knows" the path.
+
+### Summary: the only valid way to define an API
+
+1. `API_<Domain>` type (using `BodyApi`, `QueryApi`, or `EmptyApi`) — in shared.
+2. `ApiDef_<Domain>: ApiDefResolver<API_<Domain>>` constant — in shared, same file.
+3. Backend handler: `@ApiHandler(ApiDef_<Domain>.<action>)` — in backend package, imports from shared.
+4. Frontend caller: `@ApiCaller(ApiDef_<Domain>.<action>)` — in frontend package, imports from shared.
+
+Any other shape is wrong. Stop and fix it.
+
+---
+
 ## Naming conventions
 
 | Artifact | Convention |

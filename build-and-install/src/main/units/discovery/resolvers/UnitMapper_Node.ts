@@ -1,10 +1,7 @@
 import {TS_PackageJSON} from '../types.js';
 import {
-	_keys,
 	AbsolutePath,
-	deepClone,
 	RelativePath,
-	StringMap,
 	tsValidateBoolean,
 	tsValidateOptionalAnyString,
 	tsValidateResult,
@@ -76,22 +73,10 @@ export abstract class UnitMapper_Node<
 			if (tsValidateResult(packageJson.unitConfig.type, this.validator.type))
 				return; // not the expected type for this mapper
 
-			packageJson = deepClone(packageJson);
+			packageJson = Unit_PackageJson.transformDependencyPlaceholders(packageJson);
 			const configValidationResult = tsValidateResult(packageJson.unitConfig, this.validator as ValidatorTypeResolver<ConfigJSON>, undefined, false);
+
 			const dependencies = packageJson.dependencies;
-			if (dependencies)
-				packageJson.dependencies = _keys(dependencies).reduce<StringMap>((acc, key) => {
-					acc[key] = dependencies[key] === '?' ? `{{${key}}}` : dependencies[key];
-					return acc;
-				}, {});
-
-			const devDependencies = packageJson.devDependencies;
-			if (devDependencies)
-				packageJson.devDependencies = _keys(devDependencies).reduce<StringMap>((acc, key) => {
-					acc[key] = devDependencies[key] === '?' ? `{{${key}}}` : devDependencies[key];
-					return acc;
-				}, {});
-
 			Object.freeze(packageJson);
 
 			const baseConfig: BaseUnitConfig = {

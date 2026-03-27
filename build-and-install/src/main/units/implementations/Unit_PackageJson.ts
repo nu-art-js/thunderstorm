@@ -1,5 +1,5 @@
-import {CONST_NodeModules, CONST_PackageJSON} from '../../config/consts.js';
-import {__stringify, InvalidResult, StringMap, ValidationException} from '@nu-art/ts-common';
+import {CONST_NodeModules, CONST_PackageJSON, CONST_PackageJSONTemplate} from '../../config/consts.js';
+import {__stringify, _keys, deepClone, InvalidResult, StringMap, ValidationException} from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../../core/types.js';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {resolve} from 'path';
@@ -9,6 +9,7 @@ import {Phase_Prepare, Phase_PrepareWatch, Phase_Purge} from '../../phases/defin
 import {Commando_NVM} from '@nu-art/commando';
 import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_NodeProject} from './Unit_NodeProject.js';
+import {FilesCache} from '../../core/FilesCache.js';
 
 
 /**
@@ -42,6 +43,30 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	implements UnitPhaseImplementor<[Phase_Purge, Phase_Prepare, Phase_PrepareWatch]> {
 
 	configValidationResult?: InvalidResult<any>;
+
+	/**
+	 * Clones a raw __package.json and replaces '?' dependency values with template
+	 * placeholders '{{key}}' so template-transform can resolve them later.
+	 */
+	static transformDependencyPlaceholders<T extends TS_PackageJSON>(packageJson: T): T {
+		const result = deepClone(packageJson);
+
+		const dependencies = result.dependencies;
+		if (dependencies)
+			result.dependencies = _keys(dependencies).reduce<StringMap>((acc, key) => {
+				acc[key] = dependencies[key] === '?' ? `{{${key}}}` : dependencies[key];
+				return acc;
+			}, {});
+
+		const devDependencies = result.devDependencies;
+		if (devDependencies)
+			result.devDependencies = _keys(devDependencies).reduce<StringMap>((acc, key) => {
+				acc[key] = devDependencies[key] === '?' ? `{{${key}}}` : devDependencies[key];
+				return acc;
+			}, {});
+
+		return result;
+	}
 
 	constructor(config: C) {
 		super(config);
@@ -99,7 +124,15 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	}
 
 	async watchPrepare(): Promise<void> {
-		await this._sharedPrepare();
+		const pathToFile = resolve(this.config.fullPath, CONST_PackageJSONTemplate);
+		FilesCache.invalidate(pathToFile);
+		const raw = await FilesCache.load.json<TS_PackageJSON>(pathToFile);
+		const freshPackageJson = Unit_PackageJson.transformDependencyPlaceholders(raw);
+
+		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);
+		const params = this.deriveLibDependencies();
+		const content = FileSystemUtils.file.template.transform(__stringify(freshPackageJson, true), params);
+		await FileSystemUtils.file.template.write(targetPath, content, params, DEFAULT_OLD_TEMPLATE_PATTERN);
 	}
 
 	private async _sharedPrepare() {
