@@ -38,11 +38,15 @@ const readFile = async (path: string): Promise<string> => {
  */
 export const FilesCache = {
 	/**
-	 * Clears the file cache.
+	 * Clears the entire file cache.
 	 *
 	 * Useful for tests or when files may have changed.
 	 */
 	clear: () => cachedFiles = {},
+	/**
+	 * Invalidates a single cached entry so the next load re-reads from disk.
+	 */
+	invalidate: (path: string) => { delete cachedFiles[path]; },
 	load: {
 		/**
 		 * Loads and caches a JSON file.
