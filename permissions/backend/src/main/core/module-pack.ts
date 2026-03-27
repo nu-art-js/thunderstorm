@@ -20,16 +20,9 @@
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert.js';
 import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions.js';
-import {
-	ModulePackBE_PermissionAccessLevel, ModulePackBE_PermissionAPI, ModulePackBE_PermissionDomain,
-	ModulePackBE_PermissionGroup, ModulePackBE_PermissionProject, ModulePackBE_PermissionUser
-} from '../_entity.js';
+import {ModulePackBE_PermissionGroup, ModulePackBE_PermissionUser} from '../_entity.js';
 
 export const ModulePackBE_Permissions: Module[] = [
-	...ModulePackBE_PermissionAccessLevel,
-	...ModulePackBE_PermissionAPI,
-	...ModulePackBE_PermissionProject,
-	...ModulePackBE_PermissionDomain,
 	...ModulePackBE_PermissionGroup,
 	...ModulePackBE_PermissionUser,
 	ModuleBE_PermissionsAssert,

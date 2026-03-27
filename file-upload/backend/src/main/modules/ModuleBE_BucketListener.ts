@@ -19,7 +19,6 @@
 import {BadImplementationException, Dispatcher} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_StorageListener} from '@nu-art/firebase-backend';
-import {PermissionsGroup_PushMessanger} from '@nu-art/push-pub-sub-backend/core/permissions';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import {StorageEvent} from 'firebase-functions/storage';
 
@@ -71,7 +70,7 @@ export class ModuleBE_BucketListener_Class
 		const serviceAccount: DefaultDef_ServiceAccount = {
 			moduleName: this.getName(),
 			email: 'bucket-manager@nu-art-software.com',
-			groupIds: [PermissionsGroup_PushMessanger._id]
+			groupIds: []
 		};
 		return serviceAccount;
 	}
