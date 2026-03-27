@@ -146,6 +146,15 @@ export const phase_PrepareWatch: Phase<'watchPrepare'> = {
 	unitCategory: 'project', // All project units need to be prepared
 };
 
+export type Phase_InstallWatch = typeof phase_InstallWatch;
+export const phaseKey_InstallWatch = 'watchInstall';
+export const phase_InstallWatch: Phase<'watchInstall'> = {
+	key: phaseKey_InstallWatch,
+	name: 'Install Watch',
+	method: 'watchInstall',
+	dependencyPhase: [phase_PrepareWatch],
+};
+
 export type Phase_CompileWatch = typeof phase_CompileWatch;
 export const phaseKey_CompileWatch = 'watchCompile';
 export const phase_CompileWatch: Phase<'watchCompile'> = {
