@@ -5,20 +5,15 @@ import {dispatch_OnWorkHubTabSelected, dispatch_OnWorkHubTabsUpdated} from '../.
 import {StorageKey} from '@nu-art/thunder-core';
 import {WorkHubItem} from '../../_core/work-hub-item.js';
 import {workHubTabGroupColors} from '../../_ui/Component_WorkHub_Header/renderers/Component_WorkHub_TabGroup/consts.js';
-import {ModuleFE_PermissionMapper, PermissionKey_FE} from '@nu-art/permissions-frontend';
-import {PermissionKeys_WorkHubUI} from '@nu-art/work-hub-shared';
 
 class ModuleFE_WorkHub_Class
 	extends Module {
-
-	public readonly permissions: ModuleFE_PermissionMapper<typeof PermissionKeys_WorkHubUI>;
 
 	constructor() {
 		super();
 		this._tabs = this.storage_tabs.get([]);
 		this._tabStack = this.storage_tabStack.get([]);
 		this._workHubItemMap = {};
-		this.permissions = PermissionKey_FE.generatePermissionKeysByLevels(PermissionKeys_WorkHubUI);
 	}
 
 	//######################### Class Properties #########################
