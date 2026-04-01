@@ -44,8 +44,8 @@ const test = async (input: AssignPermissionsSetup): Promise<boolean> => {
 
 	const projectId = setupResult.nameToProjectMap['test-project']._id;
 	const domainId = setupResult.domainNameToObjectMap[Test_Domain1]._id;
-	const readGroup = setupResult.nameToGroupMap['test-group-read'];
-	expect(readGroup).to.exist;
+	const readRole = setupResult.nameToRoleMap['test-role-read'];
+	expect(readRole).to.exist;
 
 	// Granter has Admin (1000) for the domain
 	MemKey_AccountId.set(accounts.granter._id);
@@ -53,7 +53,7 @@ const test = async (input: AssignPermissionsSetup): Promise<boolean> => {
 
 	await ModuleBE_PermissionUserDB.assignPermissions({
 		targetAccountIds: [accounts.target._id],
-		permissionGroupIds: [readGroup!._id]
+		permissionRoleIds: [readRole!._id]
 	});
 
 	// Simulate target user's permissions (Read = 100)

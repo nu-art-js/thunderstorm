@@ -1,0 +1,83 @@
+---
+description: When implementing project setup tasks or working with PerformProjectSetup — how the setup action works and how to add tasks
+alwaysApply: false
+---
+# Project Setup Action
+
+## Overview
+
+There is **one** setup entry point for the entire project: the action-processor's `setup-project` action (`RAD_SetupProject`). No module should expose its own setup API endpoint.
+
+Modules participate by implementing the `PerformProjectSetup` interface from `@nu-art/action-processor-backend` and returning an array of `SetupTask` items. The executor collects all tasks, validates the dependency graph, and runs them in topological order.
+
+## Interface
+
+```typescript
+import {Brand} from '@nu-art/ts-common';
+
+type SetupTaskKey = Brand<string, 'SetupTaskKey'>;
+const asSetupTaskKey = (key: string) => key as SetupTaskKey;
+
+type SetupTask = {
+	key: SetupTaskKey;
+	dependsOn: SetupTaskKey[];
+	processor: () => Promise<void>;
+};
+
+interface PerformProjectSetup {
+	__performProjectSetup(): SetupTask[];
+}
+```
+
+## How to add a setup task
+
+1. **Add the dependency** — ensure your package depends on `@nu-art/action-processor-backend`.
+2. **Define a key constant** — export a branded constant following the `SetupTaskKey_{What}` pattern:
+   ```typescript
+   import {asSetupTaskKey} from '@nu-art/action-processor-backend';
+   export const SetupTaskKey_MyFeatureInit = asSetupTaskKey('my-feature-init');
+   ```
+3. **Implement the interface** — your module class implements `PerformProjectSetup` and returns `SetupTask[]`:
+   ```typescript
+   import {type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
+
+   class MyModule_Class
+       extends Module
+       implements PerformProjectSetup {
+
+       __performProjectSetup(): SetupTask[] {
+           return [{
+               key: SetupTaskKey_MyFeatureInit,
+               dependsOn: [],
+               processor: async () => { /* ... */ }
+           }];
+       }
+   }
+   ```
+4. **Declare dependencies** — if your task must run after another, import that task's key constant and add it to `dependsOn`:
+   ```typescript
+   import {SetupTaskKey_PermissionsGroups} from '@nu-art/permissions-backend';
+
+   dependsOn: [SetupTaskKey_PermissionsGroups]
+   ```
+
+## Key naming convention
+
+- Type: `SetupTaskKey` (branded `string`)
+- Branding util: `asSetupTaskKey(key)` — from `@nu-art/action-processor-backend`
+- Constants: `SetupTaskKey_{What}` — exported from the module that owns the task (e.g. `SetupTaskKey_PermissionsGroups`, `SetupTaskKey_PermissionsUsers`)
+- Values: kebab-case describing the task (e.g. `'permissions-groups'`, `'permissions-users'`)
+
+## Execution model
+
+1. The dispatcher collects `SetupTask[]` from every module implementing `PerformProjectSetup`.
+2. Validation (fail-fast): duplicate keys, missing dependencies, and cycles all throw `BadImplementationException`.
+3. Tasks are topologically sorted into depth levels — tasks whose dependencies are all satisfied at the same depth run in parallel via `Promise.all`.
+4. Levels execute sequentially, each level completing before the next begins.
+
+## Rules
+
+- **No module-specific setup endpoints.** All setup flows through the single `setup-project` action.
+- **One key per task.** Keys must be globally unique across the project.
+- **Export your key constant** so downstream modules can declare dependencies on it.
+- **A module may return multiple tasks** if it has independent setup steps with different dependency chains.

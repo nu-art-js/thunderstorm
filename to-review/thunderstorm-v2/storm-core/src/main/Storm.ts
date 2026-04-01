@@ -88,6 +88,7 @@ export class Storm
 
 		await httpServer.startServer();
 		await Promise.all(this.functions.map((fn) => (fn as ModuleBE_BaseFunction).onFunctionReady()));
+		await this.runPostBuildActions();
 		await onStarted?.();
 	}
 

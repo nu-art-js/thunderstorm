@@ -5,31 +5,85 @@
  */
 
 import {ActionDeclaration} from './types.js';
-import {_keys, Dispatcher, Logger, StaticLogger} from '@nu-art/ts-common';
+import {BadImplementationException, Brand, Dispatcher, flatArray, Logger, StaticLogger} from '@nu-art/ts-common';
 
-export type SetupProjectPromise = { priority: number; processor: () => Promise<void> };
+export type SetupTaskKey = Brand<string, 'SetupTaskKey'>;
+
+export const asSetupTaskKey = (key: string) => key as SetupTaskKey;
+
+export type SetupTask = {
+	key: SetupTaskKey;
+	dependsOn: SetupTaskKey[];
+	processor: () => Promise<void>;
+};
 
 export interface PerformProjectSetup {
-	__performProjectSetup(): SetupProjectPromise;
+	__performProjectSetup(): SetupTask[];
 }
 
 const dispatcher_ProjectSetup = new Dispatcher<PerformProjectSetup, '__performProjectSetup'>('__performProjectSetup');
 
-type PromisesMap = { [priority: number]: { processors: (() => Promise<void>)[] } };
+const topoSortTasks = (tasks: SetupTask[]): SetupTask[][] => {
+	const taskMap = new Map<SetupTaskKey, SetupTask>();
+	const inDegree = new Map<SetupTaskKey, number>();
+	const dependents = new Map<SetupTaskKey, SetupTaskKey[]>();
+
+	for (const task of tasks) {
+		if (taskMap.has(task.key))
+			throw new BadImplementationException(`Duplicate SetupTaskKey: '${task.key}'`);
+
+		taskMap.set(task.key, task);
+		inDegree.set(task.key, 0);
+		dependents.set(task.key, []);
+	}
+
+	for (const task of tasks) {
+		for (const dep of task.dependsOn) {
+			if (!taskMap.has(dep))
+				throw new BadImplementationException(`SetupTask '${task.key}' depends on unknown key '${dep}'`);
+
+			inDegree.set(task.key, inDegree.get(task.key)! + 1);
+			dependents.get(dep)!.push(task.key);
+		}
+	}
+
+	const levels: SetupTask[][] = [];
+	let ready = tasks.filter(t => inDegree.get(t.key) === 0);
+	let processed = 0;
+
+	while (ready.length > 0) {
+		levels.push(ready);
+		processed += ready.length;
+
+		const nextReady: SetupTask[] = [];
+		for (const task of ready) {
+			for (const depKey of dependents.get(task.key)!) {
+				const newDegree = inDegree.get(depKey)! - 1;
+				inDegree.set(depKey, newDegree);
+				if (newDegree === 0)
+					nextReady.push(taskMap.get(depKey)!);
+			}
+		}
+
+		ready = nextReady;
+	}
+
+	if (processed !== tasks.length)
+		throw new BadImplementationException(`Cycle detected in SetupTask dependency graph`);
+
+	return levels;
+};
+
 const Action_SetupProject = async (logger: Logger) => {
 	logger.logInfo('Setting up Project');
-	const promises = dispatcher_ProjectSetup.dispatchModule();
-	const promiseMap = promises.reduce<PromisesMap>((resultMap, promise) => {
-		resultMap[promise.priority] = resultMap[promise.priority] ?? {processors: []};
-		resultMap[promise.priority].processors.push(promise.processor);
+	const tasks = flatArray(dispatcher_ProjectSetup.dispatchModule());
+	const levels = topoSortTasks(tasks);
 
-		return resultMap;
-	}, {});
-
-	const priorities = _keys(promiseMap).sort();
-	for (const priorityKey of priorities) {
-		StaticLogger.logInfoBold(`Running SetupProject[${priorityKey}]`);
-		await Promise.all(promiseMap[priorityKey].processors.map(async processor => processor()));
+	for (let i = 0; i < levels.length; i++) {
+		const level = levels[i];
+		const keys = level.map(t => t.key).join(', ');
+		StaticLogger.logInfoBold(`SetupProject level ${i}: [${keys}]`);
+		await Promise.all(level.map(task => task.processor()));
 	}
 
 	logger.logInfo('Project Setup Completed!');

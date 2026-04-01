@@ -18,9 +18,7 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ApiCaller} from '@nu-art/http-client';
 import {SessionKey_Permissions_FE} from '../consts.js';
-import {API_Permissions, ApiDef_Permissions} from '@nu-art/permissions-shared';
 import type {PermissionScope} from '@nu-art/permissions-shared';
 
 export interface OnPermissionsChanged {
@@ -29,22 +27,6 @@ export interface OnPermissionsChanged {
 
 export class ModuleFE_PermissionsAssert_Class
 	extends Module {
-
-	@ApiCaller(ApiDef_Permissions.setupPermissions)
-	async setupPermissions(_params?: API_Permissions['setupPermissions']['Params']): Promise<API_Permissions['setupPermissions']['Response']> {
-		void _params;
-		return undefined as unknown as API_Permissions['setupPermissions']['Response'];
-	}
-
-	@ApiCaller(ApiDef_Permissions.getRegisteredScopes)
-	async getRegisteredScopes(_params?: API_Permissions['getRegisteredScopes']['Params']): Promise<API_Permissions['getRegisteredScopes']['Response']> {
-		void _params;
-		return undefined as unknown as API_Permissions['getRegisteredScopes']['Response'];
-	}
-
-	protected init() {
-		super.init();
-	}
 
 	hasScopeAccess(scope: PermissionScope, requiredValue: string): boolean {
 		const sessionData = SessionKey_Permissions_FE.get();

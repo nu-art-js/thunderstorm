@@ -1,5 +1,8 @@
-//Group
-export * from './_entity/permission-group/index.js';
+//Role
+export * from './_entity/permission-role/index.js';
+
+//Scope
+export * from './_entity/permission-scope/index.js';
 
 //User
 export * from './_entity/permission-user/index.js';

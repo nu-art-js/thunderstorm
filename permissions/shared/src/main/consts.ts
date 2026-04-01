@@ -1,1 +1,1 @@
-export const PermissionDBGroup = 'permission';
+export const PermissionDBGroup = 'permissions';

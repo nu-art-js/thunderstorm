@@ -1,42 +1,45 @@
-import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
+import {ModuleBE_BaseDB, PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 import {
+	DatabaseDef_PermissionRole,
+	DatabaseDef_PermissionUser,
 	DB_PermissionUser,
 	DBDef_PermissionUser,
-	DatabaseDef_PermissionUser,
-	GroupId_Default,
-	GroupId_PermissionsAdmin,
 	Request_AssignPermissions,
-	User_Group,
-	toPermissionGroupId,
-	type PerformProjectSetup,
-	type ResolveAdditionalPermissionGroups,
+	RoleAssignment,
 } from '@nu-art/permissions-shared';
-import {ModuleBE_Permissions} from '../../modules/ModuleBE_Permissions.js';
+import {stringToUniqueId} from '@nu-art/db-api-shared';
+import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
+import {ModuleBE_Permissions, RoleId_AppDefault, RoleId_PermissionsAdmin, SetupTaskKey_PermissionsRoles} from '../../modules/ModuleBE_Permissions.js';
 import {
 	ApiException,
+	asArray,
 	batchAction,
 	batchActionParallel,
-	DB_BaseObject,
 	dbObjectToId,
 	Dispatcher,
-	exists,
 	filterDuplicates,
 	filterInstances,
 	flatArray,
 	JwtTools,
 	UniqueId,
 } from '@nu-art/ts-common';
-import {ModuleBE_PermissionGroupDB} from '../permission-group/ModuleBE_PermissionGroupDB.js';
-import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
+import {ModuleBE_PermissionRoleDB} from '../permission-role/ModuleBE_PermissionRoleDB.js';
+import {ModuleBE_PermissionScopeDB} from '../permission-scope/ModuleBE_PermissionScopeDB.js';
+import {ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {Transaction} from 'firebase-admin/firestore';
-import {UI_Account} from '@nu-art/user-account-shared';
+import {SafeDB_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserScopePermissions} from '../../consts.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
-import {PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 import {getScopeValues} from '../../core/function-permission-registry.js';
 
 
-const dispatcher_resolveAdditionalGroups = new Dispatcher<ResolveAdditionalPermissionGroups, '__resolveAdditionalPermissionGroups'>('__resolveAdditionalPermissionGroups');
+export interface ResolveAdditionalPermissionRoles {
+	__resolveAdditionalPermissionRoles(accountId: string, context: 'register' | 'login'): Promise<string[]>;
+}
+
+const dispatcher_resolveAdditionalRoles = new Dispatcher<ResolveAdditionalPermissionRoles, '__resolveAdditionalPermissionRoles'>('__resolveAdditionalPermissionRoles');
+
+export const SetupTaskKey_PermissionsUsers = asSetupTaskKey('permissions-users');
 
 export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_PermissionUser>
@@ -46,196 +49,236 @@ export class ModuleBE_PermissionUserDB_Class
 		super(DBDef_PermissionUser);
 	}
 
-	__performProjectSetup() {
-		return {
-			priority: 200,
+	__performProjectSetup(): SetupTask[] {
+		return [{
+			key: SetupTaskKey_PermissionsUsers,
+			dependsOn: [SetupTaskKey_PermissionsRoles],
 			processor: async () => {
 				const accounts = await ModuleBE_AccountDB.query.where({});
-				const permissionUserIds = accounts.map(dbObjectToId) as DatabaseDef_PermissionUser['id'][];
+				this.logDebug(`Found ${accounts.length} accounts for permission-user sync`);
+
+				const permissionUserIds = accounts.map(a => stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(a._id));
 				const permissionsUser = await this.query.all(permissionUserIds);
 
 				const usersToUpsert: DB_PermissionUser[] = [];
 				const usersToDelete: DB_PermissionUser[] = [];
 				permissionsUser.forEach((user, index) => {
-					if (exists(user)) {
-						if (!exists(accounts.find(account => (account._id as unknown as DatabaseDef_PermissionUser['id']) === user._id)))
+					if (user) {
+						const accountExists = accounts.some(account => stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(account._id) === user._id);
+						if (!accountExists)
 							usersToDelete.push(user);
+
 						return;
 					}
 
 					usersToUpsert.push({
-						_id: accounts[index]._id as unknown as DatabaseDef_PermissionUser['id'],
-						groups: [] as User_Group[],
+						_id: stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(accounts[index]._id),
+						roles: [] as RoleAssignment[],
 					} as DB_PermissionUser);
 				});
+
+				this.logDebug(`Permission users to upsert: ${usersToUpsert.length}, to delete: ${usersToDelete.length}`);
+				usersToUpsert.forEach(u => this.logDebug(`  upsert _id=${u._id}  roles=${u.roles.length}`));
+				usersToDelete.forEach(u => this.logDebug(`  delete _id=${u._id}`));
 
 				await this.set.all(usersToUpsert);
 				await this.delete.all(usersToDelete);
 			}
-		};
+		}];
 	}
 
-	async __onUserLogin(account: UI_Account, transaction: Transaction) {
-		await this.insertIfNotExist(account as UI_Account & DB_BaseObject, transaction);
-		await this.ensureDefaultGroup(account as UI_Account & DB_BaseObject, transaction);
-		await this.checkAdminGrantFlag(account as UI_Account & DB_BaseObject, transaction);
-		await this.resolveAdditionalGroups(account as UI_Account & DB_BaseObject, 'login', transaction);
+	async __onUserLogin(account: SafeDB_Account, transaction: Transaction) {
+		await this.insertIfNotExist(account, transaction);
+		await this.ensureDefaultRole(account, transaction);
+		await this.ensurePersonalRole(account, transaction);
+		await this.checkAdminGrantFlag(account, transaction);
+		await this.resolveAdditionalRoles(account, 'login', transaction);
 	}
 
-	async __onNewUserRegistered(account: UI_Account, transaction: Transaction) {
-		await this.insertIfNotExist(account as UI_Account & DB_BaseObject, transaction);
-		await this.resolveAdditionalGroups(account as UI_Account & DB_BaseObject, 'register', transaction);
+	async __onNewUserRegistered(account: SafeDB_Account, transaction: Transaction) {
+		await this.insertIfNotExist(account, transaction);
+		await this.resolveAdditionalRoles(account, 'register', transaction);
 	}
 
-	private async ensureDefaultGroup(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
-		const permissionUserId = uiAccount._id as unknown as DatabaseDef_PermissionUser['id'];
-		const permissionUser = await this.query.unique(permissionUserId, transaction);
+	private toPermissionUserId(account: SafeDB_Account): DatabaseDef_PermissionUser['id'] {
+		return stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(account._id);
+	}
+
+	private toPersonalRoleId(account: SafeDB_Account): DatabaseDef_PermissionRole['id'] {
+		return stringToUniqueId<DatabaseDef_PermissionRole['dbKey']>(account._id);
+	}
+
+	private async ensureDefaultRole(account: SafeDB_Account, transaction: Transaction) {
+		const permissionUser = await this.query.unique(this.toPermissionUserId(account), transaction);
 		if (!permissionUser)
 			return;
 
-		const hasDefaultGroup = permissionUser.groups.some(g => g.groupId === GroupId_Default);
-		if (hasDefaultGroup)
+		if (permissionUser.roles.some(r => r.roleId === RoleId_AppDefault))
 			return;
 
-		permissionUser.groups.push({groupId: GroupId_Default});
+		permissionUser.roles.push({roleId: RoleId_AppDefault});
 		await this.set.item(permissionUser, transaction);
-		this.logInfo(`Backfilled Default group for user ${permissionUserId}`);
+		this.logInfo(`Backfilled Default role for user ${account._id}`);
 	}
 
-	private async checkAdminGrantFlag(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
+	private async ensurePersonalRole(account: SafeDB_Account, transaction: Transaction) {
+		const personalRoleId = this.toPersonalRoleId(account);
+		const existing = await ModuleBE_PermissionRoleDB.query.unique(personalRoleId, transaction);
+		if (!existing) {
+			await ModuleBE_PermissionRoleDB.create.item({
+				_id: personalRoleId,
+				label: `Personal (${account.email ?? account._id})`,
+				type: 'personal',
+				scopeEntries: [],
+			}, transaction);
+			this.logInfo(`Created personal role for user ${account._id}`);
+		}
+
+		const permissionUser = await this.query.unique(this.toPermissionUserId(account), transaction);
+		if (!permissionUser)
+			return;
+
+		if (permissionUser.roles.some(r => r.roleId === personalRoleId))
+			return;
+
+		permissionUser.roles.push({roleId: personalRoleId});
+		await this.set.item(permissionUser, transaction);
+		this.logInfo(`Assigned personal role to user ${account._id}`);
+	}
+
+	private async checkAdminGrantFlag(account: SafeDB_Account, transaction: Transaction) {
 		const flagRef = ModuleBE_Permissions.getAdminGrantFlagRef();
 		const flagValue = await flagRef.get(false);
 		if (!flagValue)
 			return;
 
-		const permissionUserId = uiAccount._id as unknown as DatabaseDef_PermissionUser['id'];
-		const permissionUser = await this.query.unique(permissionUserId, transaction);
+		const permissionUser = await this.query.unique(this.toPermissionUserId(account), transaction);
 		if (!permissionUser)
 			return;
 
-		const hasAdminGroup = permissionUser.groups.some(g => g.groupId === GroupId_PermissionsAdmin);
-		if (hasAdminGroup) {
+		if (permissionUser.roles.some(r => r.roleId === RoleId_PermissionsAdmin)) {
 			await flagRef.set(false);
 			return;
 		}
 
-		permissionUser.groups.push({groupId: GroupId_PermissionsAdmin});
+		permissionUser.roles.push({roleId: RoleId_PermissionsAdmin});
 		await this.set.item(permissionUser, transaction);
 		await flagRef.set(false);
-		this.logInfo(`Granted Permissions Admin to user ${permissionUserId} via RTDB flag (one-shot)`);
+		this.logInfo(`Granted Permissions Admin to user ${account._id} via RTDB flag (one-shot)`);
 	}
 
-	private async resolveAdditionalGroups(uiAccount: UI_Account & DB_BaseObject, context: 'register' | 'login', transaction: Transaction) {
-		const results: string[][] = await dispatcher_resolveAdditionalGroups.dispatchModuleAsync(uiAccount._id, context);
-		const additionalGroupIds = filterDuplicates(flatArray(results));
-		if (additionalGroupIds.length === 0)
+	private async resolveAdditionalRoles(account: SafeDB_Account, context: 'register' | 'login', transaction: Transaction) {
+		const results: string[][] = await dispatcher_resolveAdditionalRoles.dispatchModuleAsync(account._id, context);
+		const additionalRoleIds = filterDuplicates(flatArray(results));
+		if (additionalRoleIds.length === 0)
 			return;
 
-		const permissionUserId = uiAccount._id as unknown as DatabaseDef_PermissionUser['id'];
-		const permissionUser = await this.query.unique(permissionUserId, transaction);
+		const permissionUser = await this.query.unique(this.toPermissionUserId(account), transaction);
 		if (!permissionUser)
 			return;
 
-		const existingGroupIds = new Set(permissionUser.groups.map(g => g.groupId as string));
-		const newGroupIds = additionalGroupIds.filter((id: string) => !existingGroupIds.has(id));
-		if (newGroupIds.length === 0)
+		const existingRoleIds = new Set(permissionUser.roles.map(r => r.roleId as string));
+		const newRoleIds = additionalRoleIds.filter(id => !existingRoleIds.has(id));
+		if (newRoleIds.length === 0)
 			return;
 
-		const validGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(newGroupIds.map((id: string) => toPermissionGroupId(id))));
-		validGroups.forEach(g => permissionUser.groups.push({groupId: g._id}));
+		const validRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(newRoleIds.map(id => stringToUniqueId<DatabaseDef_PermissionRole['dbKey']>(id))));
+		validRoles.forEach(r => permissionUser.roles.push({roleId: r._id}));
 		await this.set.item(permissionUser, transaction);
-		this.logInfo(`Added ${validGroups.length} additional groups on ${context} for user ${permissionUserId}`);
+		this.logInfo(`Added ${validRoles.length} additional roles on ${context} for user ${account._id}`);
 	}
 
 	protected async preWriteProcessing(instance: DB_PermissionUser, originalDbInstance: DatabaseDef_PermissionUser['dbType'], t?: Transaction): Promise<void> {
-		instance._auditorId = MemKey_AccountId.get();
-		instance.__groupIds = filterDuplicates(instance.groups.map(group => group.groupId) || []);
+		instance.__roleIds = filterDuplicates(instance.roles.map(role => role.roleId) || []);
 
-		if (!instance.__groupIds.length)
+		if (!instance.__roleIds.length)
 			return;
 
-		const dbGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(instance.__groupIds, t));
-		if (instance.__groupIds.length !== dbGroups.length) {
-			const dbGroupIds = dbGroups.map(dbObjectToId);
-			throw new ApiException(422, `Trying to assign a user to a permission-group that does not exist: ${instance.__groupIds.filter(groupId => !dbGroupIds.includes(groupId))}`);
+		const dbRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(instance.__roleIds, t));
+		if (instance.__roleIds.length !== dbRoles.length) {
+			const dbRoleIds = dbRoles.map(dbObjectToId);
+			throw new ApiException(422, `Trying to assign a user to a permission role that does not exist: ${instance.__roleIds.filter(roleId => !dbRoleIds.includes(roleId))}`);
 		}
 	}
 
 	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DatabaseDef_PermissionUser['dbType']>, actionType: CollectionActionType) {
-		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
-		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
-		const before = data.before ? (Array.isArray(data.before) ? data.before : [data.before]) : [];
+		const deleted = asArray(data.deleted ?? []);
+		const updated = asArray(data.updated ?? []);
+		const before = asArray(data.before ?? []);
 		const beforeIds = before.map(b => b._id);
 		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i._id))).filter(id => beforeIds.includes(id));
 		await this.rotateSession(accountIdToInvalidate);
 	}
 
-	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
+	insertIfNotExist = async (account: SafeDB_Account, transaction: Transaction) => {
+		const permissionUserId = this.toPermissionUserId(account);
+
 		const create = async (transaction?: Transaction) => {
-			const groups: User_Group[] = [{groupId: GroupId_Default}];
+			const personalRoleId = this.toPersonalRoleId(account);
+			await ModuleBE_PermissionRoleDB.create.item({
+				_id: personalRoleId,
+				label: `Personal (${account.email ?? account._id})`,
+				type: 'personal',
+				scopeEntries: [],
+			}, transaction);
+
+			const roles: RoleAssignment[] = [{roleId: RoleId_AppDefault}, {roleId: personalRoleId}];
 
 			const existingUsers = await this.query.custom({limit: 1}, transaction);
 			if (existingUsers.length === 0) {
-				groups.push({groupId: GroupId_PermissionsAdmin});
-				this.logInfo('First-ever user — assigning Permissions Admin group');
+				roles.push({roleId: RoleId_PermissionsAdmin});
+				this.logInfo('First-ever user — assigning Permissions Admin role');
 			}
 
-			const validGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(groups.map(g => g.groupId)));
-			this.logInfo(`Assigning ${validGroups.length} groups to new user (of ${groups.length} requested)`);
+			const validRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(roles.map(r => r.roleId)));
+			this.logInfo(`Assigning ${validRoles.length} roles to new user (of ${roles.length} requested)`);
 
-			const permissionUserId = uiAccount._id as unknown as DatabaseDef_PermissionUser['id'];
 			return ModuleBE_PermissionUserDB.create.item({
 				_id: permissionUserId,
-				groups: validGroups.map(group => ({groupId: group._id})),
-				_auditorId: MemKey_AccountId.get()
+				roles: validRoles.map(role => ({roleId: role._id})),
 			}, transaction);
 		};
 
-		return ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: uiAccount._id as unknown as DatabaseDef_PermissionUser['id']}, create, transaction);
+		return ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: permissionUserId}, create, transaction);
 	};
 
 	async assignPermissions(body: Request_AssignPermissions) {
 		if (!body.targetAccountIds.length)
 			throw new ApiException(400, `Asked to modify permissions but provided no users to modify permissions of.`);
 
-		const permissionUserIds = body.targetAccountIds as unknown as DatabaseDef_PermissionUser['id'][];
+		const permissionUserIds = body.targetAccountIds.map(id => stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(id));
 		const usersToGiveTo = filterInstances(await this.query.all(permissionUserIds));
 		if (!usersToGiveTo.length || usersToGiveTo.length !== body.targetAccountIds.length) {
 			const dbUserIds = usersToGiveTo.map(dbObjectToId);
-			throw new ApiException(404, `Asked to give permissions to non-existent user accounts: ${body.targetAccountIds.filter(id => !dbUserIds.includes(id))}`);
+			throw new ApiException(404, `Asked to give permissions to non-existent user accounts: ${body.targetAccountIds.filter(id => !dbUserIds.includes(stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(id)))}`);
 		}
 
-		const dbGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(body.permissionGroupIds));
-		if (dbGroups.length !== body.permissionGroupIds.length) {
-			const dbGroupIds = dbGroups.map(dbObjectToId);
-			throw new ApiException(404, `Asked to give users non-existing permission groups: ${body.permissionGroupIds.filter(id => !dbGroupIds.includes(id))}`);
+		const dbRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(body.permissionRoleIds));
+		if (dbRoles.length !== body.permissionRoleIds.length) {
+			const dbRoleIds = dbRoles.map(dbObjectToId);
+			throw new ApiException(404, `Asked to give users non-existing permission roles: ${body.permissionRoleIds.filter(id => !dbRoleIds.includes(id))}`);
 		}
 
 		const myScopes = MemKey_UserScopePermissions.get();
-		const groupScopeEntries = filterDuplicates(dbGroups.flatMap(g => g.scopeEntries ?? []));
-		for (const entry of groupScopeEntries) {
-			const colonIdx = entry.indexOf(':');
-			if (colonIdx === -1)
-				continue;
-
-			const scopeKey = entry.substring(0, colonIdx);
-			const requiredValue = entry.substring(colonIdx + 1);
-			const scopeValues = getScopeValues(scopeKey);
+		const roleScopeIds = filterDuplicates(dbRoles.flatMap(r => r.scopeEntries ?? []));
+		const scopeEntities = filterInstances(await ModuleBE_PermissionScopeDB.query.all(roleScopeIds));
+		for (const entity of scopeEntities) {
+			const scopeValues = getScopeValues(entity.key);
 			if (!scopeValues)
 				continue;
 
-			const requiredIdx = scopeValues.indexOf(requiredValue);
-			const myEntry = myScopes.find(p => p.startsWith(scopeKey + ':'));
-			const myValue = myEntry ? myEntry.substring(scopeKey.length + 1) : undefined;
+			const requiredIdx = scopeValues.indexOf(entity.value);
+			const myEntry = myScopes.find(p => p.startsWith(entity.key + ':'));
+			const myValue = myEntry ? myEntry.substring(entity.key.length + 1) : undefined;
 			const myIdx = myValue ? scopeValues.indexOf(myValue) : -1;
 
 			if (myIdx < requiredIdx)
-				throw new ApiException(403, `Cannot assign scope '${scopeKey}:${requiredValue}' — your access is insufficient`);
+				throw new ApiException(403, `Cannot assign scope '${entity.key}:${entity.value}' — your access is insufficient`);
 		}
 
-		const groupIds = dbGroups.map(group => ({groupId: group._id}));
+		const roleIds = dbRoles.map(role => ({roleId: role._id}));
 		const usersToUpdate = usersToGiveTo.map(user => {
-			user.groups = groupIds;
+			user.roles = roleIds;
 			return user;
 		});
 

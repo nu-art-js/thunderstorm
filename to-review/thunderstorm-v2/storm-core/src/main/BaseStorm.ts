@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {merge, Module, ModuleManager, TS_Object} from '@nu-art/ts-common';
+import {AsyncVoidFunction, merge, Module, ModuleManager, TS_Object} from '@nu-art/ts-common';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 
 export type StormConfig = {
@@ -30,6 +30,7 @@ export abstract class BaseStorm
 
 	protected innerConfig: StormConfig;
 	private override: TS_Object = {};
+	private postBuildActions: AsyncVoidFunction[] = [];
 	readonly isDebug = false;
 
 	constructor(config: StormConfig | string) {
@@ -92,5 +93,16 @@ export abstract class BaseStorm
 
 	getGlobalEnvConfigRef() {
 		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<TS_Object>(`/${this.innerConfig.pathToEnvOverrideConfig}`);
+	}
+
+	public addPostBuildAction = (func: AsyncVoidFunction) => {
+		this.postBuildActions.push(func);
+		return this;
+	};
+
+	protected async runPostBuildActions() {
+		for (const action of this.postBuildActions) {
+			await action();
+		}
 	}
 }
