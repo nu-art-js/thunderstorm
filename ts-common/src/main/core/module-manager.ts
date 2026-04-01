@@ -229,8 +229,10 @@ export class ModuleManager
 	 * @throws {BadImplementationException} If any module is undefined (cyclic import issue)
 	 */
 	public init(): this {
-		if (this.config.logLevel)
+		if (this.config.logLevel) {
 			this.setMinLevel(this.config.logLevel);
+			this.modules.forEach((module: Module) => module.setMinLevel(this.config.logLevel));
+		}
 
 		this.logInfo(`---------  initializing app  ---------`);
 		const undefinedModule: boolean = this.modules.some(module => !exists(module));

@@ -21,8 +21,9 @@ import {ApiException, Module} from '@nu-art/ts-common';
 import type {ServerApi_Middleware} from '@nu-art/http-server';
 import {CollectSessionData} from '@nu-art/user-account-backend';
 import {SessionData_StrictMode} from '@nu-art/permissions-shared';
-import {MemKey_UserScopePermissions, SessionKey_Permissions_BE} from '../consts.js';
+import {MemKey_UserEntityContexts, MemKey_UserScopePermissions, SessionKey_Permissions_BE} from '../consts.js';
 import type {PermissionScope} from '@nu-art/permissions-shared';
+import type {PermissionAssertionContext} from '../assertion-types.js';
 
 type Config = {
 	strictMode?: boolean
@@ -33,23 +34,14 @@ export class ModuleBE_PermissionsAssert_Class
 	implements CollectSessionData<SessionData_StrictMode> {
 
 	readonly LoadPermissionsMiddleware: ServerApi_Middleware = async () => {
-		try {
-			MemKey_UserScopePermissions.get();
-		} catch (err) {
-			const sessionData = SessionKey_Permissions_BE.get();
-			MemKey_UserScopePermissions.set(sessionData.scopeEntries ?? []);
-		}
+		const sessionData = SessionKey_Permissions_BE.get();
+		MemKey_UserScopePermissions.set(sessionData.scopeEntries ?? []);
 	};
 
 	async __collectSessionData(): Promise<SessionData_StrictMode> {
 		return {key: 'strictMode', value: {isStrictMode: !!this.config?.strictMode}};
 	}
 
-	/**
-	 * Asserts that the user has at least the required value for the given scope.
-	 * Reads MemKey_UserScopePermissions (string[] of 'scopeKey:value' entries).
-	 * Compares position in the scope's ordered values array.
-	 */
 	assertScopePermission(scope: PermissionScope, requiredValue: string): void {
 		const userPerms = MemKey_UserScopePermissions.get();
 		const prefix = scope.key + ':';
@@ -67,6 +59,42 @@ export class ModuleBE_PermissionsAssert_Class
 			this.logErrorBold(`scope permission denied: ${scope.key} (has: ${userValue}, needs: ${requiredValue})`);
 			throw new ApiException(403, `Insufficient access for scope: ${scope.key}`);
 		}
+	}
+
+	createAssertionContext(): PermissionAssertionContext {
+		const userPerms = MemKey_UserScopePermissions.get();
+		const entityContexts = MemKey_UserEntityContexts.get();
+
+		return {
+			hasScope: (scope: PermissionScope, value: string): boolean => {
+				const prefix = scope.key + ':';
+				const entry = userPerms.find(p => p.startsWith(prefix));
+				if (!entry)
+					return false;
+
+				const userValue = entry.substring(prefix.length);
+				const requiredIdx = scope.values.indexOf(value);
+				if (requiredIdx === -1)
+					return false;
+
+				const userIdx = scope.values.indexOf(userValue);
+				return userIdx >= requiredIdx;
+			},
+
+			ownsEntity: async (pointer) => {
+				return entityContexts.some(ctx => ctx.dbKey === pointer.dbKey && ctx.id === pointer.id);
+			},
+
+			and: async (...predicates) => {
+				const results = await Promise.all(predicates);
+				return results.every(r => r);
+			},
+
+			or: async (...predicates) => {
+				const results = await Promise.all(predicates);
+				return results.some(r => r);
+			},
+		};
 	}
 }
 

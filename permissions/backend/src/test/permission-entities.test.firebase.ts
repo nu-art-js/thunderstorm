@@ -21,7 +21,7 @@ import {
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,
 	ModuleBE_PermissionDomainDB,
-	ModuleBE_PermissionGroupDB,
+	ModuleBE_PermissionRoleDB,
 	ModuleBE_PermissionProjectDB
 } from '../main/index.js';
 
@@ -34,7 +34,7 @@ const test = async (_input: EntitiesSetup): Promise<boolean> => {
 
 	const project = setupResult.nameToProjectMap['test-project'];
 	const domain = setupResult.domainNameToObjectMap[Test_Domain1];
-	const readGroup = setupResult.nameToGroupMap['test-group-read'];
+	const readRole = setupResult.nameToRoleMap['test-role-read'];
 
 	const dbProject = await ModuleBE_PermissionProjectDB.query.uniqueAssert(project._id);
 	expect(dbProject._id).to.eql(project._id);
@@ -47,9 +47,9 @@ const test = async (_input: EntitiesSetup): Promise<boolean> => {
 	const dbLevels = await ModuleBE_PermissionAccessLevelDB.query.custom({where: {domainId: domain._id}});
 	expect(dbLevels.length).to.be.greaterThan(0);
 
-	const dbGroup = await ModuleBE_PermissionGroupDB.query.uniqueAssert(readGroup!._id);
-	expect(dbGroup.label).to.eql('test-group-read');
-	expect(dbGroup.accessLevelIds).to.be.an('array');
+	const dbRole = await ModuleBE_PermissionRoleDB.query.uniqueAssert(readRole!._id);
+	expect(dbRole.label).to.eql('test-role-read');
+	expect(dbRole.accessLevelIds).to.be.an('array');
 
 	const apis = await ModuleBE_PermissionAPIDB.query.custom({where: {projectId: project._id}});
 	expect(apis.length).to.eql(1);

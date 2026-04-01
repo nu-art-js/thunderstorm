@@ -1,9 +1,9 @@
-import type {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '@nu-art/permissions-shared';
+import type {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionRole, DB_PermissionProject} from '@nu-art/permissions-shared';
 import {
 	ModuleBE_PermissionAccessLevelDB,
 	ModuleBE_PermissionAPIDB,
 	ModuleBE_PermissionDomainDB,
-	ModuleBE_PermissionGroupDB,
+	ModuleBE_PermissionRoleDB,
 	ModuleBE_PermissionProjectDB,
 	ModuleBE_PermissionUserDB
 } from '../../main/index.js';
@@ -18,7 +18,7 @@ export const permissionTestCleanup = async () => {
 	await ModuleBE_PermissionDomainDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionAPIDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionAccessLevelDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
-	await ModuleBE_PermissionGroupDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionRoleDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionUserDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 };
 
@@ -26,11 +26,11 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 	domainNameToObjectMap: TypedMap<DB_PermissionDomain>
 	accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>>
 	nameToProjectMap: TypedMap<DB_PermissionProject>
-	nameToGroupMap: TypedMap<DB_PermissionGroup>
+	nameToRoleMap: TypedMap<DB_PermissionRole>
 }> => {
 	const domainNameToObjectMap: TypedMap<DB_PermissionDomain> = {};
 	const accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
-	let nameToGroupMap: TypedMap<DB_PermissionGroup> = {};
+	let nameToRoleMap: TypedMap<DB_PermissionRole> = {};
 
 	// Create All Projects
 	const nameToProjectMap: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(projects.map(project => ModuleBE_PermissionProjectDB.create.item({
@@ -66,12 +66,12 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 			const accessLevelNameToObjectMap = reduceToMap(dbAccessLevels, accessLevel => accessLevel.name, accessLevel => accessLevel);
 
 			// Create Groups
-			const dbGroups = await ModuleBE_PermissionGroupDB.create.all(Groups_ToCreate.map(preGroup => ({
-				label: preGroup.label!,
-				uiLabel: preGroup.label!,
-				accessLevelIds: (preGroup.accessLevelIds as string[]).map((levelName: string) => accessLevelNameToObjectMap[levelName]._id)
-			})) as PreDB<DB_PermissionGroup>[]);
-			nameToGroupMap = reduceToMap(dbGroups, group => group.label, group => group);
+			const dbRoles = await ModuleBE_PermissionRoleDB.create.all(Roles_ToCreate.map(preRole => ({
+				label: preRole.label!,
+				uiLabel: preRole.label!,
+				accessLevelIds: (preRole.accessLevelIds as string[]).map((levelName: string) => accessLevelNameToObjectMap[levelName]._id)
+			})) as PreDB<DB_PermissionRole>[]);
+			nameToRoleMap = reduceToMap(dbRoles, role => role.label, role => role);
 
 			domainNameToObjectMap[dbDomain.namespace] = dbDomain;
 			accessLevelsByDomainNameMap[domain.namespace] = accessLevelNameToObjectMap;
@@ -91,7 +91,7 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 		domainNameToObjectMap,
 		accessLevelsByDomainNameMap,
 		nameToProjectMap,
-		nameToGroupMap
+		nameToRoleMap
 	};
 };
 
@@ -127,32 +127,32 @@ export const Test_AccessLevel_Write = 'Write';
 export const Test_AccessLevel_Delete = 'Delete';
 export const Test_AccessLevel_Admin = 'Admin';
 
-export const Group_ToCreate_NoAccess: Partial<DB_PermissionGroup> = {
-	label: 'test-group-no_access',
+export const Role_ToCreate_NoAccess: Partial<DB_PermissionRole> = {
+	label: 'test-role-no_access',
 	accessLevelIds: [Test_AccessLevel_NoAccess]
 };
-export const Group_ToCreate_Read: Partial<DB_PermissionGroup> = {
-	label: 'test-group-read',
+export const Role_ToCreate_Read: Partial<DB_PermissionRole> = {
+	label: 'test-role-read',
 	accessLevelIds: [Test_AccessLevel_Read]
 };
-export const Group_ToCreate_Write: Partial<DB_PermissionGroup> = {
-	label: 'test-group-write',
+export const Role_ToCreate_Write: Partial<DB_PermissionRole> = {
+	label: 'test-role-write',
 	accessLevelIds: [Test_AccessLevel_Write]
 };
-export const Group_ToCreate_Delete: Partial<DB_PermissionGroup> = {
-	label: 'test-group-delete',
+export const Role_ToCreate_Delete: Partial<DB_PermissionRole> = {
+	label: 'test-role-delete',
 	accessLevelIds: [Test_AccessLevel_Delete]
 };
-export const Group_ToCreate_Admin: Partial<DB_PermissionGroup> = {
-	label: 'test-group-admin',
+export const Role_ToCreate_Admin: Partial<DB_PermissionRole> = {
+	label: 'test-role-admin',
 	accessLevelIds: [Test_AccessLevel_Admin]
 };
-export const Groups_ToCreate = [
-	Group_ToCreate_NoAccess,
-	Group_ToCreate_Read,
-	Group_ToCreate_Write,
-	Group_ToCreate_Delete,
-	Group_ToCreate_Admin,
+export const Roles_ToCreate = [
+	Role_ToCreate_NoAccess,
+	Role_ToCreate_Read,
+	Role_ToCreate_Write,
+	Role_ToCreate_Delete,
+	Role_ToCreate_Admin,
 ];
 
 

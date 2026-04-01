@@ -1,112 +1,263 @@
 /*
- * @nu-art/permissions-backend - Pure unit tests for permission assertion logic
+ * @nu-art/permissions-backend - Pure unit tests for PermissionAssertionContext
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
 
-import {runSingleTestCase, TestModel} from '@nu-art/testalot';
+import {expect} from 'chai';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
-import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../main/index.js';
-import type {FunctionPermissionDef} from '../main/core/function-permission-registry.js';
-import type {TypedMap} from '@nu-art/ts-common';
+import {definePermissionScope} from '@nu-art/permissions-shared';
+import {ModuleBE_PermissionsAssert} from '../main/modules/ModuleBE_PermissionsAssert.js';
+import {MemKey_UserEntityContexts, MemKey_UserScopePermissions} from '../main/consts.js';
 
-describe('ModuleBE_PermissionsAssert', () => {
-	describe('assertUserPassesAccessLevels', () => {
-		type Input = { domainToLevelValueMap: TypedMap<number>; userPermissions: TypedMap<number> };
-		type Result = boolean;
-		type TestCase_AssertLevels = TestModel<Input, Result>;
+const Scope_Articles = definePermissionScope('articles', ['read', 'write', 'admin'] as const);
+const Scope_Pipeline = definePermissionScope('pipeline', ['read', 'write', 'admin'] as const);
 
-		const test = async (input: Input): Promise<Result> => {
-			ModuleBE_PermissionsAssert.assertUserPassesAccessLevels(input.domainToLevelValueMap, input.userPermissions);
-			return true;
-		};
-		const runTestCase = (testCase: TestCase_AssertLevels) => () => runSingleTestCase(test, testCase);
+describe('PermissionAssertionContext', () => {
+	describe('hasScope', () => {
+		it('returns true when user has exact required value', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:write']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				expect(ctx.hasScope(Scope_Articles, 'write')).to.be.true;
+			});
+		});
 
-		it('passes when user has all domains with value >= required', runTestCase({
-			input: {
-				domainToLevelValueMap: {domain1: 100},
-				userPermissions: {domain1: 100}
-			},
-			result: true
-		}));
+		it('returns true when user has higher value than required', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:admin']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				expect(ctx.hasScope(Scope_Articles, 'write')).to.be.true;
+			});
+		});
 
-		it('passes when user level is higher than required', runTestCase({
-			input: {
-				domainToLevelValueMap: {domain1: 100},
-				userPermissions: {domain1: 200}
-			},
-			result: true
-		}));
+		it('returns false when user has lower value than required', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:read']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				expect(ctx.hasScope(Scope_Articles, 'write')).to.be.false;
+			});
+		});
 
-		it('throws 403 when user missing domain', runTestCase({
-			input: {
-				domainToLevelValueMap: {domain1: 100},
-				userPermissions: {}
-			},
-			error: {expected: /Missing Access For This Domain/}
-		}));
+		it('returns false when scope is missing from user permissions', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['pipeline:admin']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				expect(ctx.hasScope(Scope_Articles, 'read')).to.be.false;
+			});
+		});
 
-		it('throws 403 when user level lower than required', runTestCase({
-			input: {
-				domainToLevelValueMap: {domain1: 100},
-				userPermissions: {domain1: 50}
-			},
-			error: {expected: /Action Forbidden/}
-		}));
+		it('returns false for unknown required value', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:admin']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				expect(ctx.hasScope(Scope_Articles, 'superadmin' as any)).to.be.false;
+			});
+		});
 	});
 
-	describe('assertFunctionPermission', () => {
-		type Input = { def: FunctionPermissionDef; userPermissions: TypedMap<number> };
-		type Result = boolean;
-		type TestCase_AssertFunction = TestModel<Input, Result>;
-
-		const test = async (input: Input): Promise<Result> => {
+	describe('and', () => {
+		it('returns true when all predicates are true', async () => {
 			await new MemStorage().init(async () => {
-				MemKey_UserPermissions.set(input.userPermissions);
-				ModuleBE_PermissionsAssert.assertFunctionPermission(input.def);
+				MemKey_UserScopePermissions.set(['articles:write', 'pipeline:read']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.and(
+					ctx.hasScope(Scope_Articles, 'write'),
+					ctx.hasScope(Scope_Pipeline, 'read')
+				);
+				expect(result).to.be.true;
 			});
-			return true;
-		};
-		const runTestCase = (testCase: TestCase_AssertFunction) => () => runSingleTestCase(test, testCase);
+		});
 
-		it('passes when def is provisioned and user has >= level', runTestCase({
-			input: {
-				def: {id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100},
-				userPermissions: {d1: 100}
-			},
-			result: true
-		}));
+		it('returns false when any predicate is false', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:write']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.and(
+					ctx.hasScope(Scope_Articles, 'write'),
+					ctx.hasScope(Scope_Pipeline, 'read')
+				);
+				expect(result).to.be.false;
+			});
+		});
 
-		it('throws 503 when def not provisioned (no domainId)', runTestCase({
-			input: {
-				def: {id: 'x', scopeKey: 's', value: 'v'},
-				userPermissions: {}
-			},
-			error: {expected: /not yet provisioned/}
-		}));
+		it('returns true with single true predicate', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:admin']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.and(ctx.hasScope(Scope_Articles, 'read'));
+				expect(result).to.be.true;
+			});
+		});
 
-		it('throws 503 when def not provisioned (no levelValue)', runTestCase({
-			input: {
-				def: {id: 'x', scopeKey: 's', value: 'v', domainId: 'd1'},
-				userPermissions: {d1: 100}
-			},
-			error: {expected: /not yet provisioned/}
-		}));
+		it('handles promise predicates', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:write']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.and(
+					ctx.hasScope(Scope_Articles, 'write'),
+					Promise.resolve(true)
+				);
+				expect(result).to.be.true;
+			});
+		});
+	});
 
-		it('throws 403 when user missing domain', runTestCase({
-			input: {
-				def: {id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100},
-				userPermissions: {}
-			},
-			error: {expected: /Missing Access For This Domain/}
-		}));
+	describe('or', () => {
+		it('returns true when any predicate is true', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:write']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.or(
+					ctx.hasScope(Scope_Articles, 'admin'),
+					ctx.hasScope(Scope_Articles, 'write')
+				);
+				expect(result).to.be.true;
+			});
+		});
 
-		it('throws 403 when user level less than required', runTestCase({
-			input: {
-				def: {id: 'x', scopeKey: 's', value: 'v', domainId: 'd1', levelValue: 100},
-				userPermissions: {d1: 50}
-			},
-			error: {expected: /Action Forbidden/}
-		}));
+		it('returns false when all predicates are false', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set([]);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.or(
+					ctx.hasScope(Scope_Articles, 'read'),
+					ctx.hasScope(Scope_Pipeline, 'read')
+				);
+				expect(result).to.be.false;
+			});
+		});
+
+		it('handles promise predicates', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set([]);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.or(
+					ctx.hasScope(Scope_Articles, 'read'),
+					Promise.resolve(true)
+				);
+				expect(result).to.be.true;
+			});
+		});
+	});
+
+	describe('ownsEntity', () => {
+		it('returns true when user has matching entity context', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set([]);
+				MemKey_UserEntityContexts.set([{dbKey: 'articles', id: 'article-123'}]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.ownsEntity({dbKey: 'articles', id: 'article-123'});
+				expect(result).to.be.true;
+			});
+		});
+
+		it('returns false when entity context does not match', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set([]);
+				MemKey_UserEntityContexts.set([{dbKey: 'articles', id: 'article-456'}]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.ownsEntity({dbKey: 'articles', id: 'article-123'});
+				expect(result).to.be.false;
+			});
+		});
+
+		it('returns false when entity contexts are empty', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set([]);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.ownsEntity({dbKey: 'articles', id: 'article-123'});
+				expect(result).to.be.false;
+			});
+		});
+
+		it('matches by both dbKey and id', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set([]);
+				MemKey_UserEntityContexts.set([{dbKey: 'topics', id: 'article-123'}]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.ownsEntity({dbKey: 'articles', id: 'article-123'});
+				expect(result).to.be.false;
+			});
+		});
+	});
+
+	describe('nested combinators', () => {
+		it('supports and inside or', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:write', 'pipeline:read']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.or(
+					ctx.and(
+						ctx.hasScope(Scope_Articles, 'write'),
+						ctx.hasScope(Scope_Pipeline, 'read')
+					),
+					ctx.hasScope(Scope_Articles, 'admin')
+				);
+				expect(result).to.be.true;
+			});
+		});
+
+		it('falls through to second or branch when first and fails', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:admin']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.or(
+					ctx.and(
+						ctx.hasScope(Scope_Articles, 'write'),
+						ctx.hasScope(Scope_Pipeline, 'write')
+					),
+					ctx.hasScope(Scope_Articles, 'admin')
+				);
+				expect(result).to.be.true;
+			});
+		});
+
+		it('rejects when all branches fail', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:read']);
+				MemKey_UserEntityContexts.set([]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.or(
+					ctx.and(
+						ctx.hasScope(Scope_Articles, 'write'),
+						ctx.hasScope(Scope_Pipeline, 'read')
+					),
+					ctx.hasScope(Scope_Articles, 'admin')
+				);
+				expect(result).to.be.false;
+			});
+		});
+
+		it('combines ownsEntity with hasScope in or', async () => {
+			await new MemStorage().init(async () => {
+				MemKey_UserScopePermissions.set(['articles:write']);
+				MemKey_UserEntityContexts.set([{dbKey: 'articles', id: 'article-42'}]);
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await ctx.or(
+					ctx.and(
+						ctx.hasScope(Scope_Articles, 'write'),
+						ctx.ownsEntity({dbKey: 'articles', id: 'article-42'})
+					),
+					ctx.hasScope(Scope_Articles, 'admin')
+				);
+				expect(result).to.be.true;
+			});
+		});
 	});
 });

@@ -17,40 +17,74 @@
  * limitations under the License.
  */
 
+import {ApiException} from '@nu-art/ts-common';
 import type {PermissionScope} from '@nu-art/permissions-shared';
 import {registerFunctionPermission} from './core/function-permission-registry.js';
 import type {FunctionPermissionDef} from './core/function-permission-registry.js';
 import {ModuleBE_PermissionsAssert} from './modules/ModuleBE_PermissionsAssert.js';
+import type {PermissionAsserter} from './assertion-types.js';
 
 export {type FunctionPermissionDef} from './core/function-permission-registry.js';
+export {type PermissionAssertionContext, type PermissionAsserter} from './assertion-types.js';
 
-/**
- * Symbol key used to attach the function-permission def to a method.
- * Introspection via getRequirePermissionDef(handler) reads this.
- */
 export const RequirePermissionDefKey = Symbol.for('RequirePermissionDef');
 
+type AsyncMethodDecorator = <This, Args extends any[], Return>(
+	originalMethod: (this: This, ...args: Args) => Promise<Return>,
+	_context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Promise<Return>>
+) => (this: This, ...args: Args) => Promise<Return>;
+
 /**
- * Self-enforcing method decorator. Registers a function permission (scope + value)
- * and wraps the method so that invocation asserts the caller's access level via
- * MemKey_UserPermissions before the original logic runs.
- *
- * Decoupled from @ApiHandler — works on any async method (API handlers, service
- * methods, scheduled entry points, internal helpers). When composed with @ApiHandler,
- * place @ApiHandler ABOVE this decorator so the route captures the wrapped method.
- *
- * @param scope - Branded permission scope (e.g. definePermissionScope('pipeline', ['read','write','admin']))
- * @param value - One of scope.values (e.g. 'write')
+ * Simple overload: checks that the caller has at least the required value
+ * for the given scope (position-based in the scope's ordered values array).
  */
-export function RequirePermission<P extends PermissionScope>(scope: P, value: P['values'][number]) {
+export function RequirePermission<P extends PermissionScope>(scope: P, value: P['values'][number]): AsyncMethodDecorator;
+
+/**
+ * Complex overload: receives a PermissionAssertionContext and the decorated
+ * method's arguments. Return true to allow, false to deny (throws 403).
+ *
+ * @example
+ * @RequirePermission((assert, body: EditArticleRequest) => {
+ *   return assert.or(
+ *     assert.and(
+ *       assert.hasScope(PermissionScope_Articles, 'write'),
+ *       assert.ownsEntity({dbKey: 'articles', id: body.articleId})
+ *     ),
+ *     assert.hasScope(PermissionScope_Articles, 'admin')
+ *   );
+ * })
+ */
+export function RequirePermission(asserter: PermissionAsserter): AsyncMethodDecorator;
+
+export function RequirePermission(scopeOrAsserter: PermissionScope | PermissionAsserter, value?: string): AsyncMethodDecorator {
+	if (typeof scopeOrAsserter === 'function') {
+		const asserter = scopeOrAsserter;
+		return function <This, Args extends any[], Return>(
+			originalMethod: (this: This, ...args: Args) => Promise<Return>,
+			_context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Promise<Return>>
+		): (this: This, ...args: Args) => Promise<Return> {
+			const wrapper = async function (this: This, ...args: Args): Promise<Return> {
+				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
+				const result = await asserter(ctx, ...args);
+				if (!result)
+					throw new ApiException(403, 'Permission assertion failed');
+
+				return originalMethod.call(this, ...args);
+			};
+			return wrapper;
+		};
+	}
+
+	const scope = scopeOrAsserter;
 	return function <This, Args extends any[], Return>(
 		originalMethod: (this: This, ...args: Args) => Promise<Return>,
 		_context: ClassMethodDecoratorContext<This, (this: This, ...args: Args) => Promise<Return>>
 	): (this: This, ...args: Args) => Promise<Return> {
-		const def = registerFunctionPermission(scope, value);
+		const def = registerFunctionPermission(scope, value!);
 
 		const wrapper = async function (this: This, ...args: Args): Promise<Return> {
-			ModuleBE_PermissionsAssert.assertScopePermission(scope, value);
+			ModuleBE_PermissionsAssert.assertScopePermission(scope, value!);
 			return originalMethod.call(this, ...args);
 		};
 
@@ -61,6 +95,7 @@ export function RequirePermission<P extends PermissionScope>(scope: P, value: P[
 
 /**
  * Returns the function-permission def attached to a handler, or undefined.
+ * Only set for the simple overload (scope + value).
  */
 export function getRequirePermissionDef(handler: ((...args: any[]) => any) | null | undefined): FunctionPermissionDef | undefined {
 	if (!handler || typeof handler !== 'function')

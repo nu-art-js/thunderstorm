@@ -157,7 +157,7 @@ export const DBDef_<Entity>: Database<DatabaseDef_<Entity>> = {
 		name: '<entity-name>',
 	},
 	backend: {
-		name: '<entity-name>',
+		name: '<context>--<plural-noun>',  // e.g. 'permissions--roles'
 	},
 	versions: ['1.0.0'],
 	modifiablePropsValidator: <Entity>_modifiablePropsValidator,
@@ -348,6 +348,12 @@ dbModule.registerPreDeleteInterceptor(async (dbItems, tx?) => {
 
 **Deletion protection** is handled automatically via the `dependencies` declaration on the proto — the framework prevents deletion of entities referenced by other collections.
 
+**Versioning policy:**
+- When adding a new version, increment the **patch** number (e.g. `1.0.0` → `1.0.1`).
+- **Never** bump the major or minor version on your own — only the user decides when a major or minor bump is appropriate.
+- Newest version goes first in the array: `versions: ['1.0.1', '1.0.0']`.
+- **Construction vs production:** Check the project mental model for the project lifecycle phase. During construction, schemas can be changed freely and versions reset to `['1.0.0']` — no migration processors needed. In production, every schema change requires a new version and an upgrade processor.
+
 **Version upgrades:**
 - `registerVersionUpgradeProcessor(version, processor)` — register a function to migrate items from one version to the next; call in constructor
 - `upgradeCollection(force?)` — process the entire collection through registered upgrade processors
@@ -488,4 +494,5 @@ Register in the app's frontend module init.
 | FE module singleton | `ModuleFE_<Entity>` |
 | FE module pack | `ModulePackFE_<LibName>` |
 | Dispatcher interface | `On<Entity>Updated` |
+| Backend collection name | `<context>--<plural-noun>` (e.g. `permissions--roles`) |
 | Dispatcher instance | `dispatch_on<Entity>Changed` |

@@ -1,28 +1,38 @@
-import {
-	_keys,
-	Dispatcher,
-	filterDuplicates,
-	filterInstances,
-	flatArray,
-	Module,
-} from '@nu-art/ts-common';
-import {ApiHandler} from '@nu-art/http-server';
-import {
-	ApiDef_Permissions,
-	DatabaseDef_PermissionUser,
-	GroupId_Default,
-	GroupId_PermissionsAdmin,
-	SessionData_Permissions,
-} from '@nu-art/permissions-shared';
-import type {CollectDefaultScopeValues, PerformProjectSetup, RegisteredScope} from '@nu-art/permissions-shared';
-import {BaseSessionClaims, CollectSessionData, MemKey_AccountId} from '@nu-art/user-account-backend';
+import {_keys, Dispatcher, filterDuplicates, filterInstances, flatArray, md5, Module,} from '@nu-art/ts-common';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {stringToUniqueId} from '@nu-art/db-api-shared';
+import type {DatabaseDef_PermissionRole, DB_PermissionRole, DB_PermissionScope, PermissionScope} from '@nu-art/permissions-shared';
+import {DatabaseDef_PermissionUser, permissionScopeId, SessionData_Permissions,} from '@nu-art/permissions-shared';
+import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
+import {BaseSessionClaims, CollectSessionData} from '@nu-art/user-account-backend';
 import {getRegisteredFunctionPermissions, getScopeValues} from '../core/function-permission-registry.js';
-import {ModuleBE_PermissionGroupDB, ModuleBE_PermissionUserDB} from '../_entity.js';
-import {ModuleBE_Firebase, FirebaseRef} from '@nu-art/firebase-backend';
+import {ModuleBE_PermissionRoleDB, ModuleBE_PermissionScopeDB, ModuleBE_PermissionUserDB} from '../_entity.js';
+import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase-backend';
+
+
+// --- Types consumed by app modules via CollectDefaultScopeValues dispatcher ---
+
+export type DefaultScopeGrant = {
+	readonly scope: PermissionScope;
+	readonly value: string;
+};
+
+export interface CollectDefaultScopeValues {
+	__collectDefaultScopeValues(): DefaultScopeGrant[];
+}
+
+// --- Well-known role IDs ---
+
+export const RoleId_AppDefault = stringToUniqueId<DatabaseDef_PermissionRole['dbKey']>(md5('app/default'));
+export const RoleId_PermissionsAdmin = stringToUniqueId<DatabaseDef_PermissionRole['dbKey']>(md5('permissions/admin'));
+
+// --- Module ---
 
 const dispatcher_collectDefaultScopeValues = new Dispatcher<CollectDefaultScopeValues, '__collectDefaultScopeValues'>('__collectDefaultScopeValues');
 
-export const PermissionGroup_SuperAdmin_ScopeEntries = ['permissions:admin'];
+export const SetupTaskKey_PermissionsRoles = asSetupTaskKey('permissions-roles');
+
+export const PermissionRole_SuperAdmin_ScopeIds = [permissionScopeId('permissions', 'admin')];
 
 class ModuleBE_Permissions_Class
 	extends Module
@@ -39,14 +49,64 @@ class ModuleBE_Permissions_Class
 		return this.adminGrantFlagRef;
 	}
 
-	@ApiHandler(ApiDef_Permissions.setupPermissions)
-	async setupPermissions(_params?: unknown): Promise<void> {
-		await this.__performProjectSetup().processor();
+	async __collectSessionData(data: BaseSessionClaims): Promise<SessionData_Permissions> {
+		const permissionUserId = stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(data.accountId);
+		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(permissionUserId);
+		const userRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(permissionUser.roles.map(r => r.roleId)));
+		const scopeEntries = await this.resolveUserScopeEntries(userRoles);
+
+		return {key: 'permissions', value: {scopeEntries}};
 	}
 
-	@ApiHandler(ApiDef_Permissions.getRegisteredScopes)
-	async getRegisteredScopes(_params?: unknown): Promise<RegisteredScope[]> {
+	private async resolveUserScopeEntries(userRoles: DB_PermissionRole[]): Promise<string[]> {
+		const allScopeIds = filterDuplicates(userRoles.flatMap(r => r.scopeEntries ?? []));
+		if (allScopeIds.length === 0)
+			return [];
+
+		const scopeEntities = filterInstances(await ModuleBE_PermissionScopeDB.query.all(allScopeIds));
+		return this.deduplicateScopeEntries(scopeEntities);
+	}
+
+	private deduplicateScopeEntries(scopeEntities: DB_PermissionScope[]): string[] {
+		const scopeMaxIdx: Record<string, { value: string; idx: number }> = {};
+		for (const entity of scopeEntities) {
+			const scopeValues = getScopeValues(entity.key);
+			const valueIdx = scopeValues ? scopeValues.indexOf(entity.value) : -1;
+
+			const current = scopeMaxIdx[entity.key];
+			if (!current || valueIdx > current.idx)
+				scopeMaxIdx[entity.key] = {value: entity.value, idx: valueIdx};
+		}
+
+		return _keys(scopeMaxIdx).map(k => `${k}:${scopeMaxIdx[k].value}`);
+	}
+
+	__performProjectSetup(): SetupTask[] {
+		return [{
+			key: SetupTaskKey_PermissionsRoles,
+			dependsOn: [],
+			processor: async () => {
+				await this.ensureScopeEntities();
+				await this.createDefaultRoleFromScopeContributions();
+				await this.ensurePermissionsAdminRole();
+			}
+		}];
+	}
+
+	async ensurePermissionRoles() {
+		const memStorage = new MemStorage();
+		await memStorage.init(async () => {
+			await this.ensureScopeEntities();
+			await this.createDefaultRoleFromScopeContributions();
+			await this.ensurePermissionsAdminRole();
+		});
+	}
+
+	private async ensureScopeEntities() {
 		const defs = getRegisteredFunctionPermissions();
+		this.logDebug(`Registered function permissions: ${defs.length} definitions`);
+		defs.forEach(def => this.logDebug(`  scopeKey=${def.scopeKey}  minValue=${def.minValue}`));
+
 		const scopeMap = new Map<string, readonly string[]>();
 		for (const def of defs) {
 			if (scopeMap.has(def.scopeKey))
@@ -57,98 +117,77 @@ class ModuleBE_Permissions_Class
 				scopeMap.set(def.scopeKey, values);
 		}
 
-		return [...scopeMap.entries()].map(([key, values]) => ({key, values}));
-	}
+		this.logDebug(`Scope map: ${scopeMap.size} scopes`);
+		scopeMap.forEach((values, key) => this.logDebug(`  ${key} -> [${values.join(', ')}]`));
 
-	async __collectSessionData(data: BaseSessionClaims): Promise<SessionData_Permissions> {
-		const permissionUserId = data.accountId as unknown as DatabaseDef_PermissionUser['id'];
-		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(permissionUserId);
-		const userGroups = filterInstances(await ModuleBE_PermissionGroupDB.query.all(permissionUser.groups.map(g => g.groupId)));
-		const scopeEntries = this.getUserScopeEntries(userGroups);
+		const scopeEntities = [...scopeMap.entries()].flatMap(([key, values]) =>
+			values.map(value => ({
+				_id: permissionScopeId(key, value),
+				key,
+				value,
+			}))
+		);
 
-		return {
-			key: 'permissions', value: {
-				scopeEntries,
-				roles: userGroups.map(group => ({key: group.label, uiLabel: group.uiLabel})),
-			}
-		};
-	}
-
-	/**
-	 * Builds a flat string[] of 'scopeKey:value' entries from the user's groups.
-	 * For each scope, takes the max value across all groups (by position in the scope's values array).
-	 */
-	private getUserScopeEntries(userGroups: import('@nu-art/permissions-shared').DB_PermissionGroup[]): string[] {
-		const allEntries = userGroups.flatMap(g => g.scopeEntries ?? []);
-		if (allEntries.length === 0)
-			return [];
-
-		const scopeMaxIdx: Record<string, { value: string; idx: number }> = {};
-		for (const entry of allEntries) {
-			const colonIdx = entry.indexOf(':');
-			if (colonIdx === -1)
-				continue;
-
-			const scopeKey = entry.substring(0, colonIdx);
-			const value = entry.substring(colonIdx + 1);
-			const scopeValues = getScopeValues(scopeKey);
-			const valueIdx = scopeValues ? scopeValues.indexOf(value) : -1;
-
-			const current = scopeMaxIdx[scopeKey];
-			if (!current || valueIdx > current.idx)
-				scopeMaxIdx[scopeKey] = {value, idx: valueIdx};
+		if (scopeEntities.length === 0) {
+			this.logDebug('No scope entities to ensure');
+			return;
 		}
 
-		return _keys(scopeMaxIdx).map(k => `${k}:${scopeMaxIdx[k].value}`);
+		this.logDebug(`Writing ${scopeEntities.length} scope entities:`);
+		scopeEntities.forEach(e => this.logDebug(`  _id=${e._id}  key=${e.key}  value=${e.value}`));
+
+		await ModuleBE_PermissionScopeDB.set.all(scopeEntities);
+		this.logInfoBold(`Ensured ${scopeEntities.length} scope entities`);
 	}
 
-	__performProjectSetup() {
-		return {
-			priority: 100,
-			processor: async () => {
-				await this.createDefaultGroupFromScopeContributions();
-				await this.ensurePermissionsAdminGroup();
-			}
-		};
-	}
-
-	private async createDefaultGroupFromScopeContributions() {
+	private async createDefaultRoleFromScopeContributions() {
 		const contributions = flatArray(dispatcher_collectDefaultScopeValues.dispatchModule());
-		this.logInfoBold(`Collected ${contributions.length} default scope contributions`);
+		this.logDebug(`Collected ${contributions.length} default scope contributions:`);
+		contributions.forEach(c => this.logDebug(`  ${c.scope.key}:${c.value}`));
 
-		const scopeEntries = filterDuplicates(contributions.map(grant => `${grant.scope.key}:${grant.value}`));
+		const scopeEntries = filterDuplicates(contributions.map(grant => permissionScopeId(grant.scope.key, grant.value)));
 
-		const _auditorId = MemKey_AccountId.get();
-		await ModuleBE_PermissionGroupDB.set.all([{
-			_id: GroupId_Default,
+		this.logDebug(`Default role _id=${RoleId_AppDefault}  scopeEntries=[${scopeEntries.join(', ')}]`);
+
+		await ModuleBE_PermissionRoleDB.set.all([{
+			_id: RoleId_AppDefault,
 			label: 'Default',
-			uiLabel: 'Default',
+			type: 'assignable',
 			scopeEntries,
-			_auditorId,
 		}]);
 
-		this.logInfoBold(`Default group upserted with ${scopeEntries.length} scope entries`);
+		this.logInfoBold(`Default role upserted with ${scopeEntries.length} scope entries`);
 	}
 
-	private async ensurePermissionsAdminGroup() {
-		const existing = await ModuleBE_PermissionGroupDB.query.unique(GroupId_PermissionsAdmin);
-		if (existing)
+	private async ensurePermissionsAdminRole() {
+		const existing = await ModuleBE_PermissionRoleDB.query.unique(RoleId_PermissionsAdmin);
+		if (existing) {
+			this.logDebug(`Permissions Admin role already exists (_id=${RoleId_PermissionsAdmin}), skipping creation`);
 			return;
+		}
 
-		const allScopes = await this.getRegisteredScopes();
-		const adminEntries = allScopes.map(s => `${s.key}:${s.values[s.values.length - 1]}`);
-		adminEntries.push(...PermissionGroup_SuperAdmin_ScopeEntries);
+		const defs = getRegisteredFunctionPermissions();
+		const scopeKeys = new Set(defs.map(d => d.scopeKey));
+		const adminScopeIds = [...scopeKeys].flatMap(key => {
+			const values = getScopeValues(key);
+			if (!values || values.length === 0)
+				return [];
 
-		const _auditorId = MemKey_AccountId.get();
-		await ModuleBE_PermissionGroupDB.set.all([{
-			_id: GroupId_PermissionsAdmin,
+			return [permissionScopeId(key, values[values.length - 1])];
+		});
+		adminScopeIds.push(...PermissionRole_SuperAdmin_ScopeIds);
+
+		const dedupedScopeIds = filterDuplicates(adminScopeIds);
+		this.logDebug(`Permissions Admin role _id=${RoleId_PermissionsAdmin}  scopeEntries=[${dedupedScopeIds.join(', ')}]`);
+
+		await ModuleBE_PermissionRoleDB.set.all([{
+			_id: RoleId_PermissionsAdmin,
 			label: 'Permissions Admin',
-			uiLabel: 'Permissions Admin',
-			scopeEntries: filterDuplicates(adminEntries),
-			_auditorId,
+			type: 'assignable',
+			scopeEntries: dedupedScopeIds,
 		}]);
 
-		this.logInfoBold('Permissions Admin group created');
+		this.logInfoBold('Permissions Admin role created');
 	}
 }
 
