@@ -8,6 +8,7 @@ import type {DB_Prototype} from '@nu-art/db-api-shared';
 import type {ModuleBE_BaseDB, PreWriteInterceptor, QueryInterceptor, PreDeleteInterceptor} from '@nu-art/db-api-backend';
 import type {PermissionScope} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionsAssert} from './modules/ModuleBE_PermissionsAssert.js';
+import {registerFunctionPermission} from './core/function-permission-registry.js';
 
 /**
  * Policy describing entity-level permission interceptors for a DB module.
@@ -46,6 +47,7 @@ export function wireEntityPermissions<Database extends DB_Prototype>(
  * Asserts the caller has at least `requiredValue` on `scope` before any write.
  */
 export function wireScopePermission<Database extends DB_Prototype>(dbModule: ModuleBE_BaseDB<Database>, scope: PermissionScope, requiredValue: string): void {
+	registerFunctionPermission(scope, requiredValue);
 	wireEntityPermissions(dbModule, {
 		preWrite: async () => {
 			ModuleBE_PermissionsAssert.assertScopePermission(scope, requiredValue);
