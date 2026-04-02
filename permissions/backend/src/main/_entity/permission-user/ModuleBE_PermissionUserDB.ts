@@ -31,6 +31,8 @@ import {SafeDB_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserScopePermissions} from '../../consts.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {getScopeValues} from '../../core/function-permission-registry.js';
+import {wireScopePermission} from '../../entity-permissions.js';
+import {PermissionScope_Permissions} from '@nu-art/permissions-shared';
 
 
 export interface ResolveAdditionalPermissionRoles {
@@ -47,6 +49,11 @@ export class ModuleBE_PermissionUserDB_Class
 
 	constructor() {
 		super(DBDef_PermissionUser);
+	}
+
+	init() {
+		super.init();
+		wireScopePermission(this, PermissionScope_Permissions, 'write');
 	}
 
 	__performProjectSetup(): SetupTask[] {
