@@ -1,4 +1,4 @@
-import {_keys, Dispatcher, filterDuplicates, filterInstances, flatArray, md5, Module,} from '@nu-art/ts-common';
+import {_keys, ApiException, Dispatcher, filterDuplicates, filterInstances, flatArray, md5, Module,} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {stringToUniqueId} from '@nu-art/db-api-shared';
 import type {DatabaseDef_PermissionRole, DB_PermissionRole, DB_PermissionScope, PermissionScope} from '@nu-art/permissions-shared';
@@ -8,6 +8,7 @@ import {BaseSessionClaims, CollectSessionData} from '@nu-art/user-account-backen
 import {getRegisteredFunctionPermissions, getScopeValues} from '../core/function-permission-registry.js';
 import {ModuleBE_PermissionRoleDB, ModuleBE_PermissionScopeDB, ModuleBE_PermissionUserDB} from '../_entity.js';
 import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {MemKey_ServiceAccountId, MemKey_UserScopePermissions} from '../consts.js';
 
 
 // --- Types consumed by app modules via CollectDefaultScopeValues dispatcher ---
@@ -20,6 +21,27 @@ export type DefaultScopeGrant = {
 export interface CollectDefaultScopeValues {
 	__collectDefaultScopeValues(): DefaultScopeGrant[];
 }
+
+// --- Service account config (module config, managed via config pipeline) ---
+//
+// FUTURE: Service account definitions are currently delivered via the module config pipeline,
+// which means app-level code can override them. This should be hardened so that SA configs
+// are read from a tamper-resistant source (e.g. a private RTDB path with no exposed write API,
+// or hardcoded frozen constants for well-known SAs). The bootstrap SA is safe today because
+// MemKey encapsulation prevents direct permission escalation, but additional SAs for
+// refactoring actions or other elevated operations should be protected against app-level injection.
+
+export type ServiceAccountConfig = {
+	readonly scopes: string[];
+	readonly enabled: boolean;
+	readonly systemOnly: boolean;
+};
+
+export const ServiceAccountId_Bootstrap = 'bootstrap-admin';
+
+type Config = {
+	serviceAccounts: Record<string, ServiceAccountConfig>;
+};
 
 // --- Well-known role IDs ---
 
@@ -35,10 +57,23 @@ export const SetupTaskKey_PermissionsRoles = asSetupTaskKey('permissions-roles')
 export const PermissionRole_SuperAdmin_ScopeIds = [permissionScopeId('permissions', 'admin')];
 
 class ModuleBE_Permissions_Class
-	extends Module
+	extends Module<Config>
 	implements CollectSessionData<SessionData_Permissions>, PerformProjectSetup {
 
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
+
+	constructor() {
+		super();
+		this.setDefaultConfig({
+			serviceAccounts: {
+				[ServiceAccountId_Bootstrap]: {
+					scopes: ['permissions:admin'],
+					enabled: true,
+					systemOnly: true,
+				}
+			}
+		});
+	}
 
 	protected init() {
 		super.init();
@@ -85,27 +120,43 @@ class ModuleBE_Permissions_Class
 		return [{
 			key: SetupTaskKey_PermissionsRoles,
 			dependsOn: [],
-			processor: async () => {
-				await this.ensureScopeEntities();
-				await this.createDefaultRoleFromScopeContributions();
-				await this.ensurePermissionsAdminRole();
-			}
+			processor: () => this.ensurePermissionRoles()
 		}];
 	}
 
 	async ensurePermissionRoles() {
-		const memStorage = new MemStorage();
-		await memStorage.init(async () => {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			await this.ensureScopeEntities();
 			await this.createDefaultRoleFromScopeContributions();
 			await this.ensurePermissionsAdminRole();
 		});
 	}
 
+	// --- Service account elevation ---
+
+	async runAsServiceAccount<R>(saId: string, action: () => Promise<R>): Promise<R> {
+		const saConfig = this.config.serviceAccounts[saId];
+		if (!saConfig || !saConfig.enabled)
+			throw new ApiException(403, `Service account '${saId}' is not enabled`);
+
+		if (saConfig.systemOnly) {
+			const store = MemStorage.getStore();
+			if (store && MemKey_UserScopePermissions.peak() !== undefined)
+				throw new ApiException(403, `System-only service account '${saId}' cannot be used within a user context`);
+		}
+
+		const memStorage = new MemStorage();
+		return memStorage.init(async () => {
+			MemKey_ServiceAccountId.set(saId);
+			MemKey_UserScopePermissions.set(saConfig.scopes);
+			return action();
+		});
+	}
+
 	private async ensureScopeEntities() {
 		const defs = getRegisteredFunctionPermissions();
 		this.logDebug(`Registered function permissions: ${defs.length} definitions`);
-		defs.forEach(def => this.logDebug(`  scopeKey=${def.scopeKey}  minValue=${def.minValue}`));
+		defs.forEach(def => this.logDebug(`  scopeKey=${def.scopeKey}  value=${def.value}`));
 
 		const scopeMap = new Map<string, readonly string[]>();
 		for (const def of defs) {
@@ -153,6 +204,7 @@ class ModuleBE_Permissions_Class
 			_id: RoleId_AppDefault,
 			label: 'Default',
 			type: 'assignable',
+			system: true,
 			scopeEntries,
 		}]);
 
@@ -160,12 +212,6 @@ class ModuleBE_Permissions_Class
 	}
 
 	private async ensurePermissionsAdminRole() {
-		const existing = await ModuleBE_PermissionRoleDB.query.unique(RoleId_PermissionsAdmin);
-		if (existing) {
-			this.logDebug(`Permissions Admin role already exists (_id=${RoleId_PermissionsAdmin}), skipping creation`);
-			return;
-		}
-
 		const defs = getRegisteredFunctionPermissions();
 		const scopeKeys = new Set(defs.map(d => d.scopeKey));
 		const adminScopeIds = [...scopeKeys].flatMap(key => {
@@ -184,10 +230,11 @@ class ModuleBE_Permissions_Class
 			_id: RoleId_PermissionsAdmin,
 			label: 'Permissions Admin',
 			type: 'assignable',
+			system: true,
 			scopeEntries: dedupedScopeIds,
 		}]);
 
-		this.logInfoBold('Permissions Admin role created');
+		this.logInfoBold('Permissions Admin role upserted');
 	}
 }
 

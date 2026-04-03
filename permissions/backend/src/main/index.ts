@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-export * from './consts.js';
 export * from './core/module-pack.js';
 export * from './core/function-permission-registry.js';
 export * from './assertion-types.js';

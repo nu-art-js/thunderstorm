@@ -1,4 +1,4 @@
-import {tsValidateArray, tsValidateString, tsValidateValue, tsValidator_arrayOfUniqueIds,} from '@nu-art/ts-common';
+import {tsValidateArray, tsValidateBoolean, tsValidateString, tsValidateValue, tsValidator_arrayOfUniqueIds,} from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
 import {DatabaseDef_PermissionRole, PermissionRole_DbKey} from './types.js';
 import {PermissionScope_DbKey} from '../permission-scope/types.js';
@@ -9,6 +9,7 @@ const Validator_ModifiableProps: DatabaseDef_PermissionRole['modifiablePropsVali
 	type: tsValidateValue(['personal', 'assignable'] as const),
 	scopeEntries: tsValidator_arrayOfUniqueIds,
 	dbPointer: tsValidateArray({dbKey: tsValidateString(), id: tsValidateString()}, false),
+	system: tsValidateBoolean(false),
 };
 
 const Validator_GeneratedProps: DatabaseDef_PermissionRole['generatedPropsValidator'] = {};
