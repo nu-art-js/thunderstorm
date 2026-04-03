@@ -22,5 +22,6 @@ export type DB_PermissionRole = DB_Object<DBKey> & {
 	label: string;
 	type: PermissionRoleType;
 	scopeEntries: DatabaseDef_PermissionScope['id'][];
-	dbPointer?: DBPointer<string>[]
+	dbPointer?: DBPointer<string>[];
+	system?: boolean;
 };
