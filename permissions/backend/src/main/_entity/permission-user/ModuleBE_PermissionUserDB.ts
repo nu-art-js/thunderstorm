@@ -9,7 +9,7 @@ import {
 } from '@nu-art/permissions-shared';
 import {stringToUniqueId} from '@nu-art/db-api-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
-import {ModuleBE_Permissions, RoleId_AppDefault, RoleId_PermissionsAdmin, SetupTaskKey_PermissionsRoles} from '../../modules/ModuleBE_Permissions.js';
+import {ModuleBE_Permissions, RoleId_AppDefault, RoleId_PermissionsAdmin, ServiceAccountId_Bootstrap, SetupTaskKey_PermissionsRoles} from '../../modules/ModuleBE_Permissions.js';
 import {
 	ApiException,
 	asArray,
@@ -60,7 +60,7 @@ export class ModuleBE_PermissionUserDB_Class
 		return [{
 			key: SetupTaskKey_PermissionsUsers,
 			dependsOn: [SetupTaskKey_PermissionsRoles],
-			processor: async () => {
+			processor: () => ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 				const accounts = await ModuleBE_AccountDB.query.where({});
 				this.logDebug(`Found ${accounts.length} accounts for permission-user sync`);
 
@@ -90,21 +90,27 @@ export class ModuleBE_PermissionUserDB_Class
 
 				await this.set.all(usersToUpsert);
 				await this.delete.all(usersToDelete);
-			}
+			})
 		}];
 	}
 
 	async __onUserLogin(account: SafeDB_Account, transaction: Transaction) {
-		await this.insertIfNotExist(account, transaction);
-		await this.ensureDefaultRole(account, transaction);
-		await this.ensurePersonalRole(account, transaction);
-		await this.checkAdminGrantFlag(account, transaction);
-		await this.resolveAdditionalRoles(account, 'login', transaction);
+		await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			const isNew = await this.insertIfNotExist(account, transaction);
+			if (!isNew) {
+				await this.ensureDefaultRole(account, transaction);
+				await this.ensurePersonalRole(account, transaction);
+				await this.checkAdminGrantFlag(account, transaction);
+			}
+			await this.resolveAdditionalRoles(account, 'login', transaction);
+		});
 	}
 
 	async __onNewUserRegistered(account: SafeDB_Account, transaction: Transaction) {
-		await this.insertIfNotExist(account, transaction);
-		await this.resolveAdditionalRoles(account, 'register', transaction);
+		await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			await this.insertIfNotExist(account, transaction);
+			await this.resolveAdditionalRoles(account, 'register', transaction);
+		});
 	}
 
 	private toPermissionUserId(account: SafeDB_Account): DatabaseDef_PermissionUser['id'] {
@@ -217,10 +223,12 @@ export class ModuleBE_PermissionUserDB_Class
 		await this.rotateSession(accountIdToInvalidate);
 	}
 
-	insertIfNotExist = async (account: SafeDB_Account, transaction: Transaction) => {
+	insertIfNotExist = async (account: SafeDB_Account, transaction: Transaction): Promise<boolean> => {
 		const permissionUserId = this.toPermissionUserId(account);
+		let created = false;
 
 		const create = async (transaction?: Transaction) => {
+			created = true;
 			const personalRoleId = this.toPersonalRoleId(account);
 			await ModuleBE_PermissionRoleDB.create.item({
 				_id: personalRoleId,
@@ -246,7 +254,8 @@ export class ModuleBE_PermissionUserDB_Class
 			}, transaction);
 		};
 
-		return ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: permissionUserId}, create, transaction);
+		await ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: permissionUserId}, create, transaction);
+		return created;
 	};
 
 	async assignPermissions(body: Request_AssignPermissions) {

@@ -15,12 +15,20 @@ export type PermissionScope = {
 	readonly [PermissionScopeBrand]: true;
 };
 
+const scopeRegistry = new Map<string, PermissionScope>();
+
 /**
  * Creates a frozen, branded permission scope. Use this to define scopes
  * for the @RequirePermission decorator (e.g. pathway: read, write, delete, admin).
  */
 export function definePermissionScope<K extends string, V extends readonly string[]>(key: K, values: V): PermissionScope & { key: K; values: V } {
-	return Object.freeze({key, values}) as PermissionScope & { key: K; values: V };
+	const scope = Object.freeze({key, values}) as PermissionScope & { key: K; values: V };
+	scopeRegistry.set(key, scope);
+	return scope;
+}
+
+export function getPermissionScopeValues(key: string): readonly string[] | undefined {
+	return scopeRegistry.get(key)?.values;
 }
 
 

@@ -11,7 +11,7 @@ import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAsse
 import {DropDown_PermissionRole, ModuleFE_PermissionRole, ModuleFE_PermissionScope, ModuleFE_PermissionUser} from '../../_entity.js';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';
 import type {DatabaseDef_PermissionRole, DB_PermissionRole, DB_PermissionUser} from '@nu-art/permissions-shared';
-import {PermissionScope_Permissions} from '@nu-art/permissions-shared';
+import {getPermissionScopeValues, PermissionScope_Permissions} from '@nu-art/permissions-shared';
 import type {DatabaseDef_Account} from '@nu-art/user-account-shared';
 import {TS_Route} from '@nu-art/thunder-routing';
 import {LL_H_C} from '@nu-art/thunder-widgets';
@@ -41,16 +41,15 @@ export class ScopePermissionsEditor
 
 	private deriveScopeStructure(): ScopeDescriptor[] {
 		const entities = ModuleFE_PermissionScope.cache.all();
-		const scopeMap = new Map<string, string[]>();
-		for (const entity of entities) {
-			const values = scopeMap.get(entity.key) ?? [];
-			if (!values.includes(entity.value))
-				values.push(entity.value);
+		const scopeKeys = new Set(entities.map(e => e.key));
 
-			scopeMap.set(entity.key, values);
-		}
+		return [...scopeKeys].map(key => {
+			const definedValues = getPermissionScopeValues(key);
+			if (definedValues)
+				return {key, values: [...definedValues]};
 
-		return [...scopeMap.entries()].map(([key, values]) => ({key, values}));
+			return {key, values: entities.filter(e => e.key === key).map(e => e.value)};
+		});
 	}
 
 	private canEdit(): boolean {
