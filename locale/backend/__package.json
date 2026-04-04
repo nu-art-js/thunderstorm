@@ -12,6 +12,8 @@
 	},
 	"dependencies": {
 		"@nu-art/locale-shared": "?",
+		"@nu-art/action-processor-backend": "?",
+		"@nu-art/permissions-backend": "?",
 		"@nu-art/db-api-backend": "?",
 		"@nu-art/db-api-shared": "?",
 		"@nu-art/ts-common": "?"

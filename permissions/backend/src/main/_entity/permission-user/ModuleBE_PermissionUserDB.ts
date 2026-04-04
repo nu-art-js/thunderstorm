@@ -221,7 +221,7 @@ export class ModuleBE_PermissionUserDB_Class
 	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DatabaseDef_PermissionUser['dbType']>, actionType: CollectionActionType) {
 		const deleted = asArray(data.deleted ?? []);
 		const updated = asArray(data.updated ?? []);
-		const before = asArray(data.before ?? []);
+		const before = filterInstances(asArray(data.before ?? []));
 		const beforeIds = before.map(b => b._id);
 		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i._id))).filter(id => beforeIds.includes(id));
 		await this.rotateSession(accountIdToInvalidate);

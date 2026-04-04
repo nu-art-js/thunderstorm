@@ -145,11 +145,24 @@ class ModuleBE_Permissions_Class
 				throw new ApiException(403, `System-only service account '${saId}' cannot be used within a user context`);
 		}
 
+		const scopes = saId === ServiceAccountId_Bootstrap
+			? this.resolveBootstrapScopes()
+			: saConfig.scopes;
+
 		const memStorage = new MemStorage();
 		return memStorage.init(async () => {
 			MemKey_ServiceAccountId.set(saId);
-			MemKey_UserScopePermissions.set(saConfig.scopes);
+			MemKey_UserScopePermissions.set(scopes);
 			return action();
+		});
+	}
+
+	private resolveBootstrapScopes(): string[] {
+		const defs = getRegisteredFunctionPermissions();
+		const scopeKeys = new Set(defs.map(d => d.scopeKey));
+		return [...scopeKeys].map(key => {
+			const values = getScopeValues(key);
+			return `${key}:${values![values!.length - 1]}`;
 		});
 	}
 
