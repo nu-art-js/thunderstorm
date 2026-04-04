@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/schema-to-types",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "schema-to-types - Express & Typescript based backend framework",
   "type": "module",
   "exports": {

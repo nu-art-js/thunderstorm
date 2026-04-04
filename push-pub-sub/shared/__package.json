@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/push-pub-sub-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "push-pub-sub Shared",
   "keywords": [
     "TacB0sS",

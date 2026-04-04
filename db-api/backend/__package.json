@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/db-api-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "db-api Backend",
   "keywords": [
     "TacB0sS",

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/permissions-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Permissions Backend",
   "keywords": [
     "TacB0sS",

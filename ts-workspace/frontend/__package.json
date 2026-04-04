@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-workspace-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "TS Workspace Frontend",
   "keywords": [
     "TacB0sS",

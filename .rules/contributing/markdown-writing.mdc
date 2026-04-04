@@ -1,0 +1,106 @@
+---
+description: Markdown writing standards and conventions
+alwaysApply: false
+---
+
+# Markdown Writing Standards
+
+This document defines standards for writing markdown files in the thunderstorm monorepo, including README files, documentation, and other markdown content.
+
+## General Principles
+
+- **Clarity**: Write clear, concise, and well-structured content
+- **Consistency**: Follow consistent formatting and style
+- **Accessibility**: Use proper heading hierarchy and structure
+- **Maintainability**: Keep content organized and easy to update
+
+## Structure
+
+### Headings
+
+- Use proper heading hierarchy (H1 → H2 → H3, etc.)
+- H1 should be used once per document (typically the title)
+- Use descriptive heading text
+- Maintain consistent heading style
+
+### Lists
+
+- Use unordered lists for items without order
+- Use ordered lists for sequential steps
+- Keep list items concise
+- Use nested lists when appropriate
+
+### Code Blocks
+
+- Use fenced code blocks with language tags
+- Include relevant context in code examples
+- Keep examples minimal but complete
+- Update examples when code changes
+
+### Links
+
+- Use descriptive link text
+- Prefer relative links for internal documentation
+- Use absolute links for external resources
+- Keep links up-to-date
+
+## README Files
+
+Every package should have a README.md that includes:
+
+### Required Sections
+
+1. **Package Purpose** - Clear description of what the package provides
+2. **Installation** - How to install/use the package
+3. **Quick Start** - Basic usage examples
+4. **Key Features** - Main capabilities and use cases
+5. **API Overview** - High-level structure and main exports
+6. **Documentation Links** - Links to detailed docs if available
+
+### Optional Sections
+
+- **Contributing** - Guidelines for contributors
+- **License** - License information
+- **Changelog** - Version history
+- **Examples** - Extended usage examples
+
+## Documentation Files
+
+- Use clear, descriptive titles
+- Organize content logically
+- Include examples where helpful
+- Cross-reference related documentation
+- Keep content up-to-date with code changes
+
+## Formatting Guidelines
+
+### Emphasis
+
+- Use **bold** for important terms or concepts
+- Use *italic* for emphasis or technical terms
+- Use `code` for inline code, file names, or technical terms
+
+### Code Examples
+
+```typescript
+// Always include language tag
+// Provide context and comments
+// Keep examples minimal but complete
+```
+
+### Tables
+
+Use tables for structured data:
+
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Data 1   | Data 2   | Data 3   |
+
+## Best Practices
+
+1. **Keep it simple**: Write clearly and concisely
+2. **Be consistent**: Follow established patterns
+3. **Update regularly**: Keep documentation in sync with code
+4. **Use examples**: Show, don't just tell
+5. **Cross-reference**: Link to related documentation
+6. **Review**: Proofread for clarity and accuracy

@@ -1,6 +1,6 @@
 {
 	"name": "@nu-art/browser-common",
-	"version": "$THUNDERSTORM_VERSION",
+	"version": "{{THUNDERSTORM_VERSION}}",
 	"description": "Common browser infrastructure utilities and helpers with no external dependencies",
 	"type": "module",
 	"keywords": [

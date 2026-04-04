@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/cli-params",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Type-safe CLI parameter resolver and parser for command-line applications. Parses process.argv into typed objects with validation, type conversion, defaults, and dependencies.",
   "type": "module",
   "keywords": [

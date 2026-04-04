@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-messaging-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Frontend messaging module for Thunderstorm framework providing topic-based messaging system with support for text, image, and video messages",
   "keywords": [
     "TacB0sS",

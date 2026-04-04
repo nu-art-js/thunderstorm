@@ -1,6 +1,6 @@
 {
 	"name": "@nu-art/locale-backend",
-	"version": "$THUNDERSTORM_VERSION",
+	"version": "{{THUNDERSTORM_VERSION}}",
 	"description": "Locale — Backend DB modules",
 	"license": "Apache-2.0",
 	"scripts": {

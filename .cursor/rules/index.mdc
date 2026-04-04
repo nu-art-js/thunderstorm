@@ -31,7 +31,8 @@ Paths are relative to the project root (monorepo root).
 |-----------|------|
 | Write or add a thunderstorm agent rule | [_thunderstorm/.cursor/rules/writing-rules.mdc](_thunderstorm/.cursor/rules/writing-rules.mdc) |
 | Bring a package to standard (full checklist) | [_thunderstorm/.rules/contributing/package-standard.mdc](_thunderstorm/.rules/contributing/package-standard.mdc) |
-| __package.json rules (common, infra, app) | [_thunderstorm/.rules/contributing/package.json/index.mdc](_thunderstorm/.rules/contributing/package.json/index.mdc) |
+| __package.json rules (format, maintenance, structure) | [_thunderstorm/.rules/contributing/package.json/index.mdc](_thunderstorm/.rules/contributing/package.json/index.mdc) |
+| Markdown writing standards | [_thunderstorm/.rules/contributing/markdown-writing.mdc](_thunderstorm/.rules/contributing/markdown-writing.mdc) |
 | Exports and re-export policy | [_thunderstorm/.rules/contributing/exports.mdc](_thunderstorm/.rules/contributing/exports.mdc) |
 | Copyright headers in source files | [_thunderstorm/.rules/contributing/copyright.mdc](_thunderstorm/.rules/contributing/copyright.mdc) |
 | License and LICENSE file | [_thunderstorm/.rules/contributing/license.mdc](_thunderstorm/.rules/contributing/license.mdc) |

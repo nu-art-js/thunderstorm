@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/logger",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Flexible logging infrastructure with multiple output targets, debug flags, and log rotation support",
   "type": "module",
   "keywords": [

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/google-services-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "google-services Backend",
   "keywords": [
     "TacB0sS",

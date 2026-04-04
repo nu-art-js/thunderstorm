@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/conflict-resolution-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Conflict Resolution Frontend",
   "keywords": [
     "TacB0sS",

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-pdf-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "ts-pdf - Express & Typescript based backend framework Frontend",
   "keywords": [
     "TacB0sS",

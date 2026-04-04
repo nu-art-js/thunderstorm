@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/app-config-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "App config shared types, API definitions and CRUD contract",
   "keywords": [
     "TacB0sS",

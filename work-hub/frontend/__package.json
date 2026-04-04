@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/work-hub-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "TS WorkHub Frontend",
   "keywords": [
     "TacB0sS",

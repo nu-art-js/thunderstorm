@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/file-upload-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "File Uploader - Express & Typescript based backend framework Frontend",
   "keywords": [
     "TacB0sS",

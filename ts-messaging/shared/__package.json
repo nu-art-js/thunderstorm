@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-messaging-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "A messaging module for Thunderstorm framework that provides topic-based messaging system with support for different message types (text, image, video) and discussion management features",
   "keywords": [
     "TacB0sS",

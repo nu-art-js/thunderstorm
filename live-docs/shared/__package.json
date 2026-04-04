@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/live-docs-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Live docs Shared",
   "keywords": [
     "TacB0sS",

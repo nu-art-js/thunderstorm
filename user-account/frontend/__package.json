@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/user-account-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "User Account Frontend",
   "keywords": [
     "TacB0sS",

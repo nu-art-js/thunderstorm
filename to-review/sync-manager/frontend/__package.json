@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/sync-manager-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Sync manager frontend client (smartSync API caller)",
   "keywords": [
     "TacB0sS",

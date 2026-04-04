@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/bug-report-backend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Bug Report Backend",
   "keywords": [
     "TacB0sS",

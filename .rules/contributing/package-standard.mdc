@@ -72,8 +72,9 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: `__package.json` reflects the package and complies with BAI and monorepo rules.
 
-- [ ] Apply [package.json-common.mdc](./package.json/package.json-common.mdc)
-- [ ] Infra: [package.json-infra-package.mdc](./package.json/package.json-infra-package.mdc) — App: [package.json-app-package.mdc](./package.json/package.json-app-package.mdc)
+- [ ] Apply [json-format.mdc](./package.json/json-format.mdc) — template params, package types, unitConfig, exports
+- [ ] Apply [maintenance.mdc](./package.json/maintenance.mdc) — keywords, README, export point organization
+- [ ] Apply [structure.mdc](./package.json/structure.mdc) — directory layout, library vs app
 - [ ] License field and LICENSE file — [license.mdc](./license.mdc)
 
 ---
@@ -138,7 +139,7 @@ Step-by-step checklist to bring a package to standard. Work through the phases i
 
 **Goal**: Package is consistent and build/lint-clean.
 
-- [ ] Invariants — [package.json-common.mdc](./package.json/package.json-common.mdc) (Non-negotiable invariants)
+- [ ] Invariants — [json-format.mdc](./package.json/json-format.mdc) (Non-negotiable invariants)
 - [ ] No re-exports — [exports.mdc](./exports.mdc)
 - [ ] No new linter errors
 - [ ] Public exports in `__package.json` and in README per [readme.mdc](./readme.mdc)

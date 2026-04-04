@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/slack-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Storm - Express & Typescript based backend framework Shared",
   "keywords": [
     "TacB0sS",

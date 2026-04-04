@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/bug-report-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Bug Report Shared",
   "keywords": [
     "TacB0sS",

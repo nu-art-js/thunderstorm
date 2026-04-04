@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-styles",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "author": "nu-art",
   "description": "Styles by Cipher",
   "type": "module",
