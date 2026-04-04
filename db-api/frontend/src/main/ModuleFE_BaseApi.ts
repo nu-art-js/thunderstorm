@@ -81,6 +81,7 @@ export abstract class ModuleFE_BaseApi<Proto extends DB_Prototype<any>>
 		if (op) {
 			if (op.running.requestType === 'delete' || op.pending?.requestType === 'delete')
 				throw new Error(`Item with id ${id} is marked for deletion`);
+
 			const p = new Promise<T>((resolve, reject) => {
 				const pending: PendingOp = {
 					requestType,

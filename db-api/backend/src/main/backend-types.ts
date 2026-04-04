@@ -32,6 +32,9 @@ export type PostWriteProcessingDataShape<T extends DB_Object> = {
 	deleted?: T | T[] | null;
 };
 
+export type PostWriteInterceptor<Database extends DB_Prototype = DB_Prototype> =
+	(data: PostWriteProcessingDataShape<Database['dbType']>, actionType: string, tx?: Transaction) => Promise<void>;
+
 /**
  * Minimal dependency definition shape (read by BE for entity dependency collection).
  */

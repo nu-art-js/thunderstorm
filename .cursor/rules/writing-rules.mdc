@@ -1,0 +1,150 @@
+---
+description: How to write and organize thunderstorm .rules/ agent rules, and how to route them from the index
+alwaysApply: false
+---
+
+# Writing thunderstorm rules
+
+Rules are `.mdc` files that instruct **agents** — not human developers. Every rule must be written as prescriptive directives the agent follows when generating, modifying, or reviewing code. This is not documentation; it is operational guidance.
+
+---
+
+## Audience: agents, not humans
+
+Rules tell an agent **what to do and what not to do**. They are not educational material.
+
+**Good (agent-directive):**
+- "When adding a new permission scope, place the definition at `<concept>/shared/src/main/permission-scope.ts`."
+- "Do not call `onPostWrite` manually — the sync manager registers interceptors automatically."
+- Sections named "When adding...", "When debugging...", "Step 1 — ...", "Forbidden patterns"
+
+**Bad (README-style):**
+- "The sync manager provides automatic incremental synchronization between Firestore and IndexedDB."
+- "Scope-based access control for Thunderstorm applications."
+- Sections named "Overview", "Introduction", "How it works"
+
+The litmus test: if a section reads like a README abstract, rewrite it as a directive. Concepts the agent must understand go in a short "What you must know" section with bullet points — not prose paragraphs.
+
+---
+
+## Where rules live
+
+### Library-specific rules
+
+Each library can have a `.rules/` directory at its root:
+
+```
+_thunderstorm/<lib>/.rules/
+  how-to-use.mdc     -- primary how-to for consuming this library
+  <topic>.mdc         -- additional rules scoped to this library
+```
+
+Example: `_thunderstorm/permissions/.rules/how-to-use.mdc`
+
+### Cross-cutting rules
+
+Rules that apply across thunderstorm (not tied to a single library) live under:
+
+```
+_thunderstorm/.rules/
+  vocabulary.mdc
+  operational/        -- how to operate in a thunderstorm project
+  contributing/       -- how to work ON thunderstorm packages
+  consuming/          -- how to work WITH thunderstorm in a project
+```
+
+### Cursor-level rules
+
+The index and other cursor-level routing rules live at:
+
+```
+_thunderstorm/.cursor/rules/
+  index.mdc           -- single routing table to all rules
+  writing-rules.mdc   -- this file
+```
+
+---
+
+## Rule file format
+
+### Frontmatter (required)
+
+Every `.mdc` file must start with:
+
+```yaml
+---
+description: <one-line summary of when/why this rule is loaded>
+alwaysApply: false
+---
+```
+
+The `description` is what appears in the agent-requestable rules list — make it specific enough to match intent. Always set `alwaysApply: false` unless the rule must be injected into every conversation.
+
+### Structure
+
+1. **Title** — `# How to use <library>` or `# <Rule topic>`
+2. **Context table** (for library how-tos) — packages and their purposes
+3. **"What you must know"** — bullet points of essential concepts (keep short, no prose)
+4. **Task-oriented sections** — "When adding...", "When debugging...", "When integrating..."
+   - Each contains step-by-step procedures with exact code templates
+   - Use template variables like `<Entity>`, `<Domain>`, `<concept>` for generalizable patterns
+5. **Naming conventions** — table of artifact → convention mappings
+6. **Forbidden patterns** — explicit "never do X" directives with reasoning
+
+### Code templates
+
+Use markdown code blocks with `typescript` language tag. Include realistic, copy-paste-ready examples with template variables:
+
+```typescript
+import {definePermissionScope} from '@nu-art/permissions-shared';
+
+export const PermissionScope_<Domain> = definePermissionScope('<key>', ['read', 'write', 'admin'] as const);
+```
+
+---
+
+## Adding a rule to the index
+
+Every rule must be routed from `_thunderstorm/.cursor/rules/index.mdc`. The index has three sections:
+
+| Section | For rules about... | Path convention |
+|---------|--------------------|----|
+| **Operational** | Operating in the project (build, deps, structure) | `_thunderstorm/.rules/operational/<topic>.mdc` |
+| **Contributing** | Working ON thunderstorm packages (standards, tests, exports) | `_thunderstorm/.rules/contributing/<topic>.mdc` |
+| **Consuming** | Working WITH thunderstorm in a project (library how-tos) | `_thunderstorm/<lib>/.rules/how-to-use.mdc` or `_thunderstorm/.rules/consuming/<topic>.mdc` |
+
+Add a row to the correct table:
+
+```markdown
+| <"Want to…" phrasing> | [<path>](<path>) |
+```
+
+The "Want to…" column is an intent description that helps the agent (or index reader) find the right rule. Keep it short and action-oriented.
+
+---
+
+## When to create a new rule
+
+Create a rule when:
+- A library or concept has patterns an agent must follow to generate correct code
+- Common mistakes keep recurring and need explicit "don't do this" guidance
+- A workflow has multiple steps that must be done in order (step-by-step procedure)
+- An existing rule is growing too large — split it by concern
+
+Do **not** create a rule for:
+- Information already covered by an existing rule (extend that rule instead)
+- One-off project-specific decisions (use change-history or the project mental model)
+- Content that belongs in a README (package overview, deps list, API summary)
+
+---
+
+## Rule vs README
+
+| Aspect | Rule (`.mdc`) | README (`.md`) |
+|--------|---------------|----------------|
+| Audience | Agent | Human developer |
+| Tone | Prescriptive ("do this") | Descriptive ("this does X") |
+| Structure | Task-oriented procedures | Feature-oriented sections |
+| Code | Templates with variables | Working examples |
+| Location | `.rules/` or `.cursor/rules/` | Package root |
+| Indexed in | `index.mdc` routing table | Not indexed |

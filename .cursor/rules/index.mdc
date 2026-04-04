@@ -29,6 +29,7 @@ Paths are relative to the project root (monorepo root).
 
 | Want to… | Read |
 |-----------|------|
+| Write or add a thunderstorm agent rule | [_thunderstorm/.cursor/rules/writing-rules.mdc](_thunderstorm/.cursor/rules/writing-rules.mdc) |
 | Bring a package to standard (full checklist) | [_thunderstorm/.rules/contributing/package-standard.mdc](_thunderstorm/.rules/contributing/package-standard.mdc) |
 | __package.json rules (common, infra, app) | [_thunderstorm/.rules/contributing/package.json/index.mdc](_thunderstorm/.rules/contributing/package.json/index.mdc) |
 | Exports and re-export policy | [_thunderstorm/.rules/contributing/exports.mdc](_thunderstorm/.rules/contributing/exports.mdc) |
@@ -52,8 +53,9 @@ Paths are relative to the project root (monorepo root).
 | Want to… | Read |
 |-----------|------|
 | Use db-api (CRUD, shared + backend + frontend) | [_thunderstorm/db-api/.rules/how-to-use.mdc](_thunderstorm/db-api/.rules/how-to-use.mdc) |
-| Permissions conventions (IDs, typing, helpers) | [_thunderstorm/permissions/.rules/permissions-conventions.mdc](_thunderstorm/permissions/.rules/permissions-conventions.mdc) |
+| Use permissions (scopes, assertions, service accounts) | [_thunderstorm/permissions/.rules/how-to-use.mdc](_thunderstorm/permissions/.rules/how-to-use.mdc) |
 | Use http (client and/or server) | [_thunderstorm/http/.rules/how-to-use.mdc](_thunderstorm/http/.rules/how-to-use.mdc) |
+| Use sync-manager (smart-sync, RTDB timestamps) | [_thunderstorm/to-review/sync-manager/.rules/how-to-use.mdc](_thunderstorm/to-review/sync-manager/.rules/how-to-use.mdc) |
 | Edit DB entities in UI (EditableItem, EditableDBItemV3) | [_thunderstorm/.rules/consuming/editable-item-pattern.mdc](_thunderstorm/.rules/consuming/editable-item-pattern.mdc) |
 | Add project setup tasks (PerformProjectSetup) | [_thunderstorm/.rules/consuming/setup-action.mdc](_thunderstorm/.rules/consuming/setup-action.mdc) |
 | Use module config (type, defaults, validator) | [_thunderstorm/ts-common/_docs/how-to-use-module-config.md](_thunderstorm/ts-common/_docs/how-to-use-module-config.md) |

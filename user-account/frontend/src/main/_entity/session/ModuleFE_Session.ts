@@ -77,6 +77,13 @@ class ModuleFE_Session_Class
 
 			return `Bearer ${sessionJWT}`;
 		});
+		HttpClient.default.setDefaultOnError(async (httpException) => {
+			if (httpException.responseCode === 401) {
+				this.logWarning('Received 401 — clearing session');
+				this.StorageKey_SessionId.delete();
+				StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
+			}
+		});
 		HttpClient.default.setDefaultOnComplete(async (__, _, request) => {
 			if (!request.getUrl().startsWith(HttpClient.default.getOrigin()!))
 				return;

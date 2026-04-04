@@ -100,6 +100,10 @@ export class HttpServer
 
 	addApiMiddleware(filter: (apiDef: ApiDef<any>) => boolean, ...middlewares: ServerApi_Middleware[]): this {
 		this.apiMiddlewares.push({filter, middlewares});
+		for (const route of this.routes)
+			if (filter(route.apiDef))
+				route.addMiddlewares(...middlewares);
+
 		return this;
 	}
 

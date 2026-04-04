@@ -25,6 +25,7 @@ import {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreC
 import {
 	__stringify,
 	arrayToMap,
+	asArray,
 	currentTimeMillis,
 	DB_Object,
 	dispatch_onApplicationException,
@@ -105,6 +106,19 @@ export class ModuleBE_SyncManager_Class
 		this.collection = firestore.getCollection(DBDef_DeletedDoc as any);
 		this.dbModules = RuntimeBE_ModulesDB();
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
+
+		for (const dbModule of this.dbModules) {
+			const dbKey = dbModule.dbDef.dbKey;
+			dbModule.registerPostWriteInterceptor(async (data) => {
+				const items = [
+					...asArray(data.updated ?? []),
+					...asArray(data.deleted ?? []),
+				];
+				const maxUpdated = items.reduce((acc, item) => Math.max(acc, item.__updated ?? 0), 0);
+				if (maxUpdated > 0)
+					await this.setLastUpdated(dbKey, maxUpdated);
+			});
+		}
 	}
 
 	@ApiHandler(ApiDef_SyncManager.smartSync)

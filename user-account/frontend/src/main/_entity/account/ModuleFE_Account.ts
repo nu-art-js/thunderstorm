@@ -136,6 +136,12 @@ class ModuleFE_Account_Class
 		return undefined as unknown as API_UserAccount['getPasswordAssertionConfig']['Response'];
 	}
 
+	@ApiCaller(ApiDef_UserAccount.deleteAccount, {onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['deleteAccount']>) => m.onAccountDeleted(ctx)})
+	async deleteAccount(params: API_UserAccount['deleteAccount']['Params']): Promise<API_UserAccount['deleteAccount']['Response']> {
+		void params;
+		return undefined as unknown as API_UserAccount['deleteAccount']['Response'];
+	}
+
 	protected init() {
 		super.init();
 
@@ -262,6 +268,10 @@ class ModuleFE_Account_Class
 
 	private onPasswordAssertionConfig = async (ctx: ApiCallContext<API_UserAccount['getPasswordAssertionConfig']>) => {
 		StorageKey_PasswordAssertionConfig.set(ctx.response.config);
+	};
+
+	private onAccountDeleted = async (ctx: ApiCallContext<API_UserAccount['deleteAccount']>) => {
+		await this.onEntryDeleted(ctx.response.account);
 	};
 }
 
