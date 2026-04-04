@@ -1,6 +1,6 @@
 {
 	"name": "@nu-art/locale-frontend",
-	"version": "$THUNDERSTORM_VERSION",
+	"version": "{{THUNDERSTORM_VERSION}}",
 	"description": "Locale — Frontend (Locale management UI)",
 	"license": "Apache-2.0",
 	"scripts": {

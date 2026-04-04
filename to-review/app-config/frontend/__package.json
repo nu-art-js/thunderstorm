@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/app-config-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "App config frontend module",
   "keywords": [
     "TacB0sS",

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/db-api-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "db-api Shared",
   "keywords": [
     "TacB0sS",

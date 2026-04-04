@@ -29,16 +29,16 @@ export function deriveScopeStructure(): ScopeDescriptor[] {
 export function resolveScopeSelections(
 	scopeEntries: DatabaseDef_PermissionScope['id'][],
 	scopes?: ScopeDescriptor[],
-	scopeEntities?: DB_PermissionScope[]
+	scopeEntities?: readonly Readonly<DB_PermissionScope>[]
 ): Record<string, string> {
-	scopes ??= deriveScopeStructure();
-	scopeEntities ??= ModuleFE_PermissionScope.cache.all();
+	const resolvedScopes = scopes ?? deriveScopeStructure();
+	const resolvedEntities = scopeEntities ?? ModuleFE_PermissionScope.cache.all();
 	const entryIds = new Set(scopeEntries as string[]);
 	const selections: Record<string, string> = {};
 
-	for (const scope of scopes) {
+	for (const scope of resolvedScopes) {
 		let maxIdx = -1;
-		for (const entity of scopeEntities) {
+		for (const entity of resolvedEntities) {
 			if (entity.key !== scope.key || !entryIds.has(entity._id as string))
 				continue;
 

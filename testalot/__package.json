@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/testalot",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Testing utilities and test framework helpers for TypeScript projects",
   "type": "module",
   "keywords": [

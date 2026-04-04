@@ -13,7 +13,7 @@ export type Props_ScopeEditor = {
 	scopeKey: string;
 	values: string[];
 	selected?: string;
-	onChanged: (scopeKey: string, value: string) => void;
+	onChanged: (scopeKey: string, value?: string) => void;
 	disabled?: boolean;
 };
 

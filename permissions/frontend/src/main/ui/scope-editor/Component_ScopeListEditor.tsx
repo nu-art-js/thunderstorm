@@ -5,7 +5,6 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import * as React from 'react';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import type {DB_PermissionScope, DatabaseDef_PermissionScope} from '@nu-art/permissions-shared';
 import {permissionScopeId} from '@nu-art/permissions-shared';
@@ -42,7 +41,7 @@ export class Component_ScopeListEditor
 		};
 	}
 
-	private readonly onScopeChanged = (scopeKey: string, value: string) => {
+	private readonly onScopeChanged = (scopeKey: string, value?: string) => {
 		const scopeEntities = ModuleFE_PermissionScope.cache.all();
 		const idsForThisKey = new Set(
 			scopeEntities.filter(e => e.key === scopeKey).map(e => e._id as string)

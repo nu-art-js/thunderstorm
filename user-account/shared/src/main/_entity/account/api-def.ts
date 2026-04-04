@@ -1,5 +1,5 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
-import {Minute, UniqueId} from '@nu-art/ts-common';
+import {Minute} from '@nu-art/ts-common';
 import {AccountType, DatabaseDef_Account, DB_Account, UI_Account} from './types.js';
 import {PasswordAssertionConfig} from '../../_enum/password-assertion/index.js';
 import {DB_BaseObject} from '@nu-art/db-api-shared';
@@ -28,7 +28,7 @@ export type API_UserAccount = {
 	getSessions: QueryApi<{ sessions: DB_Session[] }, DB_BaseObject<DatabaseDef_Account['dbKey']>>;
 	changeThumbnail: BodyApi<{ account: DB_Account }, { accountId: DatabaseDef_Account['id']; hash: string }>;
 	getPasswordAssertionConfig: QueryApi<{ config: PasswordAssertionConfig | undefined }>;
-	deleteAccount: QueryApi<{ account: DB_Account }, { accountId: UniqueId }>;
+	deleteAccount: QueryApi<{ account: DB_Account }, { accountId: DatabaseDef_Account['id'] }>;
 }
 
 export const ApiDef_UserAccount: ApiDefResolver<API_UserAccount> = {

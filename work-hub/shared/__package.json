@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/work-hub-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "TS WorkHub Shared",
   "keywords": [
     "TacB0sS",

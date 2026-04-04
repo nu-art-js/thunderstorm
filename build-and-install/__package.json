@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/build-and-install",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "A build system for monorepos that orchestrates building, testing, and deploying units with dependency-aware phase execution",
   "type": "module",
   "keywords": [

@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/idb-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "IndexedDB shared types and definitions",
   "keywords": [
     "TacB0sS",

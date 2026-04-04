@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/jira-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Jira api Module Shared",
   "keywords": [
     "TacB0sS",

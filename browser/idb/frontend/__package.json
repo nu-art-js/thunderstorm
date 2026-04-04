@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/idb-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "IndexedDB infrastructure for frontend applications",
   "keywords": [
     "TacB0sS",

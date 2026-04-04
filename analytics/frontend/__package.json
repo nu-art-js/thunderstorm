@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/analytics-frontend",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Analytics Frontend",
   "license": "Apache-2.0",
   "scripts": {

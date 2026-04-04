@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/conflict-resolution-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Conflict Resolution Shared",
   "keywords": [
     "TacB0sS",

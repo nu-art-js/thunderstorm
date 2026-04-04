@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-common",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "Core TypeScript infrastructure library for building modular applications with lifecycle management, logging, validation, and utilities",
   "type": "module",
   "keywords": [

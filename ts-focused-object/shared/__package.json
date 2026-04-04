@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-focused-object-shared",
-  "version": "$THUNDERSTORM_VERSION",
+  "version": "{{THUNDERSTORM_VERSION}}",
   "description": "ts-focused-object - Express & Typescript based backend framework Shared",
   "keywords": [
     "TacB0sS",

@@ -4,7 +4,6 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import * as React from 'react';
 import type {DatabaseDef_PermissionScope} from '@nu-art/permissions-shared';
 import {deriveScopeStructure, resolveScopeSelections} from './scope-utils.js';
 
