@@ -5,7 +5,7 @@
  */
 
 import {ActionDeclaration} from './types.js';
-import {BadImplementationException, Brand, Dispatcher, flatArray, Logger, StaticLogger} from '@nu-art/ts-common';
+import {BadImplementationException, Brand, Dispatcher, flatArray, Logger} from '@nu-art/ts-common';
 
 export type SetupTaskKey = Brand<string, 'SetupTaskKey'>;
 
@@ -82,12 +82,15 @@ const Action_SetupProject = async (logger: Logger) => {
 	for (let i = 0; i < levels.length; i++) {
 		const level = levels[i];
 		const keys = level.map(t => t.key).join(', ');
-		StaticLogger.logInfoBold(`SetupProject level ${i}: [${keys}]`);
+		logger.logInfoBold(`SetupProject level ${i}: [${keys}]`);
 		await Promise.all(level.map(task => task.processor()));
 	}
 
 	logger.logInfo('Project Setup Completed!');
 };
+
+const logger_SetupProject = new Logger('SetupProject');
+export const runProjectSetup = () => Action_SetupProject(logger_SetupProject);
 
 export const RAD_SetupProject: ActionDeclaration = {
 	key: 'setup-project',

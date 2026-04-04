@@ -75,9 +75,26 @@ interface PerformProjectSetup {
 3. Tasks are topologically sorted into depth levels — tasks whose dependencies are all satisfied at the same depth run in parallel via `Promise.all`.
 4. Levels execute sequentially, each level completing before the next begins.
 
+## Startup integration
+
+The app backend wires all setup tasks to run at startup via a single post-build action:
+
+```typescript
+import {runProjectSetup} from '@nu-art/action-processor-backend';
+
+new Storm(Environment)
+    .addModulePack(/* ... */)
+    .addPostBuildAction(runProjectSetup)
+    .build();
+```
+
+`runProjectSetup()` triggers the same dispatcher and topological executor as the `setup-project` action. **Do not add per-module post-build actions for setup/seed work** — implement `PerformProjectSetup` instead and the unified hook runs everything.
+
+The `setup-project` action remains available for manual re-runs (e.g. via the action-processor API).
+
 ## Rules
 
-- **No module-specific setup endpoints.** All setup flows through the single `setup-project` action.
+- **No module-specific setup endpoints or post-build actions.** All setup flows through `PerformProjectSetup` and the single `runProjectSetup` post-build hook.
 - **One key per task.** Keys must be globally unique across the project.
 - **Export your key constant** so downstream modules can declare dependencies on it.
 - **A module may return multiple tasks** if it has independent setup steps with different dependency chains.
