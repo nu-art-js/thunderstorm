@@ -1,0 +1,263 @@
+---
+description: How to use permissions: scope-based access control across shared, backend, and frontend
+alwaysApply: false
+---
+
+# How to use permissions
+
+Three packages — shared is always required; backend and frontend are independent:
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/permissions-shared` | Scope types, branded IDs, DB definitions, scope registry, session data |
+| `@nu-art/permissions-backend` | Assertion engine, `@RequirePermission`, entity interceptors, service accounts, bootstrap |
+| `@nu-art/permissions-frontend` | FE modules (IDB cache + smart-sync), permission assertion client, UI components |
+
+---
+
+## Concepts you must know
+
+- **PermissionScope** — branded type with a `key` and ordered `values` (lowest → highest privilege). Created only via `definePermissionScope`.
+- **PermissionRole** — a named collection of scope entry IDs. Can be `assignable` or `personal`. System roles have `system: true`.
+- **PermissionUser** — links an account to role assignments. One per account.
+- **Scope entry** — a single `key:value` pair (e.g. `topics:write`), stored as `DB_PermissionScope` in Firestore.
+- **Privilege hierarchy** — values are ordered left-to-right. A user with `admin` (index 2 in `['read', 'write', 'admin']`) satisfies any check for `read` (index 0) or `write` (index 1).
+
+---
+
+## When adding a new permission scope
+
+### Step 1 — Define the scope in the concept's shared package
+
+Place the scope definition at `<concept>/shared/src/main/permission-scope.ts` — **never in a backend-only package**. Both FE and BE must be able to import it.
+
+```typescript
+import {definePermissionScope} from '@nu-art/permissions-shared';
+
+export const PermissionScope_Topics = definePermissionScope('topics', ['read', 'write', 'admin'] as const);
+```
+
+Export from the shared package's `index.ts`:
+
+```typescript
+export * from './permission-scope.js';
+```
+
+`definePermissionScope` freezes the object, brands it, and registers it in the global scope registry (used by the FE for canonical ordering).
+
+### Step 2 — Protect API handlers with @RequirePermission
+
+In the backend module that owns the API, decorate handler methods:
+
+**Simple (scope + value):**
+
+```typescript
+import {RequirePermission} from '@nu-art/permissions-backend';
+import {PermissionScope_Topics} from '@app/news-topic-shared';
+
+@RequirePermission(PermissionScope_Topics, 'write')
+async upsertTopic(body: API_Topics['upsert']['Body']): Promise<API_Topics['upsert']['Response']> {
+	// only reachable if caller has topics:write or higher
+}
+```
+
+**Complex (assertion context) — when you need ownership checks or boolean logic:**
+
+```typescript
+@RequirePermission((assert, body: EditArticleRequest) => {
+	return assert.or(
+		assert.and(
+			assert.hasScope(PermissionScope_Articles, 'write'),
+			assert.ownsEntity({dbKey: 'articles', id: body.articleId})
+		),
+		assert.hasScope(PermissionScope_Articles, 'admin')
+	);
+})
+async editArticle(body: EditArticleRequest): Promise<void> { }
+```
+
+The `PermissionAssertionContext` provides: `hasScope`, `ownsEntity`, `and`, `or`.
+
+### Step 3 — Wire entity-level write protection on DB modules
+
+For scope-based write gating on a collection, use `wireScopePermission` during app-level permission wiring:
+
+```typescript
+import {wireScopePermission} from '@nu-art/permissions-backend';
+
+wireScopePermission(ModuleBE_TopicDB, PermissionScope_Topics, 'write');
+```
+
+This registers a mandatory `PreWriteInterceptor` — the entity module cannot bypass it.
+
+For more complex policies (query filtering, delete gating), use `wireEntityPermissions`:
+
+```typescript
+import {wireEntityPermissions} from '@nu-art/permissions-backend';
+
+wireEntityPermissions(ModuleBE_TopicDB, {
+	preWrite: async (dbItem, original, tx) => {
+		ModuleBE_PermissionsAssert.assertScopePermission(PermissionScope_Topics, 'write');
+	},
+	queryInterceptor: (query) => {
+		return query;
+	},
+	preDelete: async (dbItems, tx) => {
+		ModuleBE_PermissionsAssert.assertScopePermission(PermissionScope_Topics, 'admin');
+	},
+});
+```
+
+### Step 4 — Contribute default scope values (optional)
+
+If new users should have a default access level for this scope, implement `CollectDefaultScopeValues` on the owning module:
+
+```typescript
+import type {CollectDefaultScopeValues, DefaultScopeGrant} from '@nu-art/permissions-backend';
+
+class MyModule_Class
+	extends Module
+	implements CollectDefaultScopeValues {
+
+	__collectDefaultScopeValues(): DefaultScopeGrant[] {
+		return [{scope: PermissionScope_Topics, value: 'read'}];
+	}
+}
+```
+
+These are aggregated into the system Default role during bootstrap.
+
+---
+
+## When elevating permissions for system operations
+
+System operations (bootstrap, login/registration flows) that need to write permission-protected entities must run under a service account:
+
+```typescript
+import {ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '@nu-art/permissions-backend';
+
+await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+	await ModuleBE_PermissionRoleDB.set.all([...]);
+});
+```
+
+The `bootstrap-admin` SA is registered by default with `permissions:admin`. Service accounts are defined in module config:
+
+```typescript
+type ServiceAccountConfig = {
+	readonly scopes: string[];      // e.g. ['permissions:admin']
+	readonly enabled: boolean;
+	readonly systemOnly: boolean;   // if true, cannot be used within a user request context
+};
+```
+
+**Do not bypass permissions in any other way.** No flags, no middleware skipping, no direct MemKey manipulation. `runAsServiceAccount` is the only elevation mechanism.
+
+---
+
+## When integrating permissions into an app
+
+### Backend
+
+1. Add `ModulePackBE_Permissions` to the app backend module pack.
+2. Add `ModuleBE_PermissionsAssert.LoadPermissionsMiddleware` to the HTTP server middleware chain.
+3. Wire scope permissions on your DB modules using `wireScopePermission` or `wireEntityPermissions`.
+4. Decorate API handlers with `@RequirePermission`.
+
+### Frontend
+
+Add `ModulePackFE_Permissions` to the Thunder builder:
+
+```typescript
+import {ModulePackFE_Permissions} from '@nu-art/permissions-frontend';
+
+new Thunder(config)
+	.addModulePack(ModulePackFE_Permissions)
+	.build();
+```
+
+This enables IDB caching and smart-sync for all three permission entity types (scope, role, user).
+
+### Reacting to permission data changes in UI
+
+Extend `ComponentSync` and implement the relevant `On*Updated` interfaces:
+
+```typescript
+import {ComponentSync} from '@nu-art/thunder-widgets';
+import type {OnPermissionUserUpdated} from '@nu-art/permissions-frontend';
+
+class MyComponent
+	extends ComponentSync<{}, State>
+	implements OnPermissionUserUpdated {
+
+	__onPermissionUserUpdated() {
+		this.reDeriveState();
+	}
+}
+```
+
+### Client-side permission checks
+
+```typescript
+import {ModuleFE_PermissionsAssert} from '@nu-art/permissions-frontend';
+
+if (ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_Topics, 'write')) {
+	// show edit UI
+}
+```
+
+---
+
+## System roles (do not create manually)
+
+The bootstrap process creates and overwrites these on every startup:
+
+| Role | ID derivation | Purpose |
+|------|---------------|---------|
+| **Default** | `md5('app/default')` | Assigned to all users; scope entries collected from modules via `CollectDefaultScopeValues` |
+| **Permissions Admin** | `md5('permissions/admin')` | Highest scope value for every registered scope; grants full control |
+
+Both have `system: true` — they can only be modified by the bootstrap service account. Do not create or modify system roles outside of the bootstrap process.
+
+---
+
+## DB entities
+
+| Entity | DB key | Collection |
+|--------|--------|------------|
+| `DB_PermissionScope` | `permissions--scope` | `permissions--scopes` |
+| `DB_PermissionRole` | `permissions--role` | `permissions--roles` |
+| `DB_PermissionUser` | `permissions--user` | `permissions--users` |
+
+All share the `permissions` IDB group on the frontend.
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| Scope constant | `PermissionScope_<Domain>` |
+| Scope definition file | `permission-scope.ts` in the concept's shared package |
+| Scope entity IDs | `permissionScopeId(key, value)` — deterministic via md5, do not wrap |
+| Role IDs | `RoleId_<Name>` derived via `stringToUniqueId<DatabaseDef_PermissionRole["dbKey"]>(md5('context/name'))` |
+| Service account IDs | `ServiceAccountId_<Name>` string constants |
+
+---
+
+## Forbidden patterns
+
+- **Never use the old domain/access-level model** (`PermissionDomain`, `PermissionAccessLevel`, `CollectPermissionsProjects`). Legacy infrastructure — do not use in application code.
+- **Never define scopes in backend-only packages.** Both FE and BE must access the scope registry.
+- **Never create trivial ID wrapper functions.** Use `stringToUniqueId<DatabaseDef_*["dbKey"]>(id)` directly at the call site.
+- **Never bypass permissions** with flags, env vars, or direct MemKey writes. Use `runAsServiceAccount`.
+- **Never modify system roles** from app-level code. They are bootstrap-only.
+
+---
+
+## UI components (existing, use when needed)
+
+| Component | Purpose |
+|-----------|---------|
+| `ScopePermissionsEditor` | Full permissions matrix — users × scopes with role assignment editing |
+| `DropDown_PermissionRole` | Role selection dropdown |

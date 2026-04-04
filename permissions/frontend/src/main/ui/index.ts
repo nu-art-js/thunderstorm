@@ -1,2 +1,3 @@
-export * from './permission-editors/scope-permissions-editor.js';
+export * from './Page_Permissions/index.js';
+export * from './scope-editor/index.js';
 export * from './PermissionGuard.js';

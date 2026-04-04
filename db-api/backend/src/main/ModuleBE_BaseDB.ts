@@ -49,7 +49,7 @@ import {
 	getModuleBEConfig
 } from './storm-stubs.js';
 import {CrudClause_Where, DB_Prototype} from '@nu-art/db-api-shared';
-import {BaseDBDefBE, PostWriteProcessingDataShape, PreDeleteInterceptor, PreWriteInterceptor, QueryInterceptor} from './backend-types.js';
+import {BaseDBDefBE, PostWriteInterceptor, PostWriteProcessingDataShape, PreDeleteInterceptor, PreWriteInterceptor, QueryInterceptor} from './backend-types.js';
 
 export type BaseDBApiConfig = {
 	projectId?: string;
@@ -83,6 +83,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	public runTransaction!: FirestoreCollection<Database>['runTransaction'];
 
 	private readonly preWriteInterceptors: PreWriteInterceptor<Database>[] = [];
+	private readonly postWriteInterceptors: PostWriteInterceptor<Database>[] = [];
 	private readonly queryInterceptors: QueryInterceptor<Database>[] = [];
 	private readonly preDeleteInterceptors: PreDeleteInterceptor<Database>[] = [];
 
@@ -110,6 +111,10 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 
 	registerQueryInterceptor(fn: QueryInterceptor<Database>): void {
 		this.queryInterceptors.push(fn);
+	}
+
+	registerPostWriteInterceptor(fn: PostWriteInterceptor<Database>): void {
+		this.postWriteInterceptors.push(fn);
 	}
 
 	registerPreDeleteInterceptor(fn: PreDeleteInterceptor<Database>): void {
@@ -249,6 +254,9 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 
 	private _postWriteProcessing = async (data: PostWriteProcessingDataShape<Database['dbType']>, actionType: CollectionActionType, transaction?: Transaction) => {
 		await this.postWriteProcessing(data, actionType, transaction);
+
+		for (const interceptor of this.postWriteInterceptors)
+			await interceptor(data, actionType, transaction);
 	};
 
 	/**

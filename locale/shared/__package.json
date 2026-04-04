@@ -1,0 +1,36 @@
+{
+	"name": "@nu-art/locale-shared",
+	"version": "$THUNDERSTORM_VERSION",
+	"description": "Locale — Shared types (Locale, LocalizedString)",
+	"license": "Apache-2.0",
+	"scripts": {
+		"build": "tsc"
+	},
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	},
+	"dependencies": {
+		"@nu-art/db-api-shared": "?",
+		"@nu-art/permissions-shared": "?",
+		"@nu-art/ts-common": "?"
+	},
+	"devDependencies": {
+		"@types/chai": "?",
+		"@types/mocha": "?"
+	},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		},
+		"./*": {
+			"types": "./*.d.ts",
+			"import": "./*.js"
+		}
+	}
+}

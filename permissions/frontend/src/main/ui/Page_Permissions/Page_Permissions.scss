@@ -1,0 +1,63 @@
+.page-permissions {
+	.page-permissions__roles-header {
+		width: 100%;
+		justify-content: flex-end;
+	}
+
+	.tag--accent {
+		background: var(--accent-subtle);
+		color: var(--accent-primary);
+	}
+
+	.tag__remove {
+		background: none;
+		border: none;
+		cursor: pointer;
+		padding: 0 0 0 var(--space-1);
+		font-size: var(--text-sm);
+		color: inherit;
+		opacity: 0.6;
+		line-height: 1;
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+
+	.card-list__item--selected {
+		width: 100%;
+		background: var(--bg-elevated);
+		border: 1px solid var(--border-default);
+		border-left: 3px solid var(--accent-primary);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-sm);
+		padding: var(--space-5);
+
+		&:hover {
+			background: var(--bg-elevated);
+		}
+	}
+
+	.user-editor {
+		gap: var(--space-4);
+		align-items: stretch;
+		width: 100%;
+		padding-top: var(--space-3);
+		border-top: 1px solid var(--border-subtle);
+		margin-top: var(--space-2);
+	}
+
+	.card-list__item--selected {
+		.scope-editor,
+		.form-group,
+		.editor-panel__actions {
+			width: 100%;
+		}
+	}
+
+	.editor-panel__error {
+		font-size: var(--text-sm);
+		color: var(--status-warning-fg);
+		padding: var(--space-1) 0;
+	}
+}

@@ -1,0 +1,33 @@
+{
+	"name": "@nu-art/locale-backend",
+	"version": "$THUNDERSTORM_VERSION",
+	"description": "Locale — Backend DB modules",
+	"license": "Apache-2.0",
+	"scripts": {
+		"build": "tsc"
+	},
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	},
+	"dependencies": {
+		"@nu-art/locale-shared": "?",
+		"@nu-art/db-api-backend": "?",
+		"@nu-art/db-api-shared": "?",
+		"@nu-art/ts-common": "?"
+	},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		},
+		"./*": {
+			"types": "./*.d.ts",
+			"import": "./*.js"
+		}
+	}
+}

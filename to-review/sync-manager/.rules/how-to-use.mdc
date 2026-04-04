@@ -1,0 +1,128 @@
+---
+description: How to use sync-manager: automatic smart-sync between Firestore backend and IndexedDB frontend
+alwaysApply: false
+---
+
+# How to use sync-manager
+
+Two packages — the frontend sync module lives in `@nu-art/thunder-core`:
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/sync-manager-shared` | Sync types, API definitions, deleted-doc DB def |
+| `@nu-art/sync-manager-backend` | RTDB sync state, smart-sync HTTP API, automatic post-write timestamp updates |
+
+---
+
+## What you must know
+
+- RTDB timestamps are updated **automatically** via `PostWriteInterceptor` on every DB module. You do not need to call `onPostWrite` manually.
+- Smart-sync compares per-collection `lastUpdated` timestamps between frontend (IDB) and backend (RTDB) to decide: no sync, delta sync, or full sync.
+- Each `ModuleFE_BaseApi` participates in smart-sync when registered via a module pack in the Thunder builder.
+- Entities with the same `frontend.group` in their DB definition share an IDB database and sync together.
+
+---
+
+## When adding sync-manager to an app backend
+
+### Step 1 — Register the module
+
+Add `ModuleBE_SyncManager` to the app backend module pack. No other wiring is needed — `init()` automatically discovers all `ModuleBE_BaseDB` instances and registers post-write interceptors.
+
+```typescript
+import {ModuleBE_SyncManager} from '@nu-art/sync-manager-backend';
+
+// in app backend module pack
+ModuleBE_SyncManager
+```
+
+### Step 2 — Understand what happens at init
+
+During `init()`, the sync manager:
+
+1. Discovers all `ModuleBE_BaseDB` instances via `RuntimeBE_ModulesDB()`.
+2. For each DB module, registers a `PostWriteInterceptor` that computes `max(__updated)` from written/deleted items and patches the RTDB at `/state/ModuleBE_SyncManager/syncData/{dbKey}/lastUpdated`.
+3. On first smart-sync request, `getOrCreateSyncData()` initializes any missing collections in RTDB — empty collections start with `lastUpdated: 0`, which updates on first write.
+
+**You do not need to wire anything per collection.** Every `ModuleBE_BaseDB` is automatically covered.
+
+---
+
+## When debugging sync issues
+
+### Frontend shows stale or empty data
+
+1. Check the RTDB at `/state/ModuleBE_SyncManager/syncData/{dbKey}/lastUpdated` — if it's `0` for a collection that has data in Firestore, the post-write interceptor is not firing (check that the sync manager module is registered in the backend module pack).
+2. Check that the FE module pack is registered in the Thunder builder — if a collection's FE module is not registered, it won't participate in smart-sync.
+3. Check the `frontend.group` field in the entity's DB definition — entities in the same group sync together. If the group is wrong, sync may not trigger.
+4. **Deleting the RTDB sync node** forces a full re-initialization on next sync request. This is a valid troubleshooting step.
+
+### Sync decision logic
+
+| Frontend sends | RTDB has | Backend responds with |
+|----------------|----------|----------------------|
+| `lastUpdated === remote.lastUpdated` | same | `SmartSync_UpToDateSync` — no data |
+| `lastUpdated > 0` and `< remote.lastUpdated` | newer | `SmartSync_DeltaSync` — items updated since `lastUpdated` |
+| `lastUpdated === 0` or stale beyond oldest deleted | any | `SmartSync_FullSync` — all items |
+
+---
+
+## When filtering which modules are syncable
+
+Use `setModuleFilter` to restrict which DB modules participate in smart-sync (e.g. based on user permissions):
+
+```typescript
+ModuleBE_SyncManager.setModuleFilter(async (modules) => {
+	return modules.filter(m => isUserAllowedToSync(m.dbDef.dbKey));
+});
+```
+
+Filters are composable — each call wraps the previous filter.
+
+---
+
+## When overriding the RTDB path
+
+Default path is `/state/ModuleBE_SyncManager`. Override with:
+
+```typescript
+ModuleBE_SyncManager.setResolvablePath(() => `/custom/sync/path`);
+```
+
+---
+
+## RTDB state shape (for debugging)
+
+```
+/state/ModuleBE_SyncManager/
+  syncData/
+    {dbKey}/
+      lastUpdated: number     // max __updated across all items in collection
+  deletedCount: number        // total deleted-doc records (for cleanup)
+```
+
+---
+
+## Deleted documents
+
+When items are deleted, the sync manager stores them in a `deleted-docs` Firestore collection. On `DeltaSync`, deleted items since the requested timestamp are included in the response so the frontend can remove them from IDB.
+
+Config for cleanup retention:
+
+```json
+{
+  "ModuleBE_SyncManager": {
+    "retainDeletedCount": 1000
+  }
+}
+```
+
+---
+
+## Deps
+
+- `@nu-art/sync-manager-shared`
+- `@nu-art/db-api-backend` — `RuntimeBE_ModulesDB`, `ModuleBE_BaseDB` (for `PostWriteInterceptor` registration)
+- `@nu-art/firebase-backend` — Firestore + RTDB access
+- `@nu-art/http-server` — smart-sync API endpoint
+- `@nu-art/ts-common` — `Module`, `asArray`, logging

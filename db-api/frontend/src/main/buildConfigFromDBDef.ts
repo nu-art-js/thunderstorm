@@ -11,6 +11,7 @@ export function buildConfigFromDBDef<Proto extends DB_Prototype>(dbDef: Database
 	return {
 		dbKey: dbDef.dbKey,
 		validator: dbDef.modifiablePropsValidator,
+		generatedProps: 'generatedProps' in dbDef ? dbDef.generatedProps as (keyof Proto['dbType'])[] : undefined,
 		uniqueKeys: (dbDef.uniqueKeys ?? ['_id']) as Proto['uniqueKeys'],
 		versions: [...dbDef.versions],
 		dbConfig: {

@@ -25,7 +25,7 @@ import {
 } from '@nu-art/ts-common';
 import {ModuleBE_PermissionRoleDB} from '../permission-role/ModuleBE_PermissionRoleDB.js';
 import {ModuleBE_PermissionScopeDB} from '../permission-scope/ModuleBE_PermissionScopeDB.js';
-import {ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
+import {ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {SafeDB_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserScopePermissions} from '../../consts.js';
@@ -45,7 +45,11 @@ export const SetupTaskKey_PermissionsUsers = asSetupTaskKey('permissions-users')
 
 export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_PermissionUser>
-	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup {
+	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup, OnAccountDeleted {
+
+	__onAccountDeleted = async (account: SafeDB_Account, transaction: Transaction) => {
+		await this.delete.unique(this.toPermissionUserId(account), transaction);
+	};
 
 	constructor() {
 		super(DBDef_PermissionUser);

@@ -59,6 +59,7 @@ export enum DataStatus {
 export type DBConfig_ModuleFE<Types extends DB_Prototype> = {
 	dbKey: Types['dbKey'];
 	validator: Types['modifiablePropsValidator'];
+	generatedProps?: (keyof Types['dbType'])[];
 	uniqueKeys: Types['uniqueKeys'];
 	versions: string[];
 	dbConfig: DBConfig<Types['dbType']>;
@@ -83,6 +84,7 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 	readonly cache: MemCache<Database['dbType']>;
 	readonly config: DBConfig_ModuleFE<Database>;
 	readonly IDB: IDB_Store<Database['dbType']>;
+	private readonly keysToStripForValidation: (keyof Database['dbType'])[];
 
 	private dataStatus: DataStatus = DataStatus.NoData;
 	public readonly dispatcher: EventDispatcher<Database['dbType']>;
@@ -96,6 +98,9 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 		this.config = config;
 		this.dispatcher = dispatcher;
 		this.validator = config.validator;
+		this.keysToStripForValidation = config.generatedProps
+			? [...KeysOfDB_Object, ...config.generatedProps] as (keyof Database['dbType'])[]
+			: KeysOfDB_Object as (keyof Database['dbType'])[];
 
 		// Initialize caches (ts-common MemCache with DB id logic from to-refactor)
 		const uniqueKeys = config.uniqueKeys;
@@ -244,9 +249,7 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 
 
 	validateImpl(_instance: Partial<Database['uiType']>) {
-		// UIItem is well-defined at app level and already excludes generated props
-		// Just remove DB_Object keys before validation
-		const instance = deleteKeysObject(_instance as Database['dbType'], KeysOfDB_Object);
+		const instance = deleteKeysObject(_instance as Database['dbType'], this.keysToStripForValidation);
 		const results = tsValidateResult(instance, this.validator);
 		if (results)
 			this.onValidationError(_instance as Database['uiType'], results as InvalidResult<Database['dbType']>);

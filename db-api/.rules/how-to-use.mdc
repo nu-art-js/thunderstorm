@@ -319,17 +319,26 @@ Custom API endpoints can be added to any DB module using `@ApiHandler` from `@nu
 
 **Interceptor types** (exported from `@nu-art/db-api-backend`):
 
-| Type | Signature | Runs before |
-|------|-----------|-------------|
-| `PreWriteInterceptor<DB>` | `(dbItem, original, tx?) => Promise<void>` | `preWriteProcessing` |
-| `QueryInterceptor<DB>` | `(query) => query` | `manipulateQuery` |
-| `PreDeleteInterceptor<DB>` | `(dbItems, tx?) => Promise<void>` | `canDeleteItems` (dependency check) |
+| Type | Signature | Runs |
+|------|-----------|------|
+| `PreWriteInterceptor<DB>` | `(dbItem, original, tx?) => Promise<void>` | Before `preWriteProcessing`, before Firestore write |
+| `PostWriteInterceptor<DB>` | `(data, actionType, tx?) => Promise<void>` | After `postWriteProcessing`, after Firestore write |
+| `QueryInterceptor<DB>` | `(query) => query` | Before `manipulateQuery` |
+| `PreDeleteInterceptor<DB>` | `(dbItems, tx?) => Promise<void>` | Before `canDeleteItems` (dependency check) |
+
+`PostWriteInterceptor` receives a `PostWriteProcessingDataShape` containing `before`, `updated`, and `deleted` fields (each may be a single item or array — use `asArray` to normalize). The `actionType` string identifies the operation (e.g. `'set'`, `'create'`, `'delete'`).
 
 **Registration methods** (public, callable by any module during init):
 
 ```typescript
 dbModule.registerPreWriteInterceptor(async (dbItem, original, tx?) => {
 	// assert or transform before every write — cannot be bypassed
+});
+
+dbModule.registerPostWriteInterceptor(async (data, actionType, tx?) => {
+	// react after every write (sync timestamps, cascading updates) — cannot be bypassed
+	const updated = asArray(data.updated ?? []);
+	const deleted = asArray(data.deleted ?? []);
 });
 
 dbModule.registerQueryInterceptor((query) => {
@@ -342,9 +351,11 @@ dbModule.registerPreDeleteInterceptor(async (dbItems, tx?) => {
 });
 ```
 
-**Execution order:** interceptors run in registration order, all before the corresponding subclass hook. Multiple interceptors of the same type are additive and non-removable.
+**Execution order:** interceptors run in registration order, all before/after the corresponding subclass hook. Multiple interceptors of the same type are additive and non-removable.
 
-**Use case:** entity-level access control (permissions, multi-tenant isolation) where the app wires assertions externally and the entity module must not be able to skip them. See `@nu-art/permissions-backend` for `wireEntityPermissions`.
+**Use cases:**
+- **Pre-write / query / pre-delete:** entity-level access control (permissions, multi-tenant isolation) where the app wires assertions externally and the entity module must not be able to skip them. See `@nu-art/permissions-backend` for `wireEntityPermissions`.
+- **Post-write:** the sync manager uses this to automatically update RTDB sync timestamps after every write, eliminating the need for manual `onPostWrite` calls. See `@nu-art/sync-manager-backend`.
 
 **Deletion protection** is handled automatically via the `dependencies` declaration on the proto — the framework prevents deletion of entities referenced by other collections.
 

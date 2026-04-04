@@ -1,0 +1,44 @@
+{
+	"name": "@nu-art/locale-frontend",
+	"version": "$THUNDERSTORM_VERSION",
+	"description": "Locale — Frontend (Locale management UI)",
+	"license": "Apache-2.0",
+	"scripts": {
+		"build": "tsc"
+	},
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	},
+	"dependencies": {
+		"@app/common-frontend": "?",
+		"@nu-art/locale-shared": "?",
+		"@nu-art/db-api-frontend": "?",
+		"@nu-art/db-api-shared": "?",
+		"@nu-art/editable-item": "?",
+		"@nu-art/thunder-core": "?",
+		"@nu-art/thunder-routing": "?",
+		"@nu-art/thunder-widgets": "?",
+		"@nu-art/ts-common": "?",
+		"react": "?",
+		"react-dom": "?"
+	},
+	"devDependencies": {
+		"@types/react": "?",
+		"@types/react-dom": "?"
+	},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		},
+		"./*": {
+			"types": "./*.d.ts",
+			"import": "./*.js"
+		}
+	}
+}
