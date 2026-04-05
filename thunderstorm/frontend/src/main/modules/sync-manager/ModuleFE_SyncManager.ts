@@ -57,14 +57,15 @@ import {dispatch_QueryAwaitedModules} from '../../components/AwaitModules/AwaitM
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '../ModuleFE_ConnectivityModule.js';
 import {ModuleFE_BaseApi} from '../db-api-gen/ModuleFE_BaseApi.js';
 import {ModuleSyncType} from '../db-api-gen/types.js';
-import {BaseHttpRequest} from '@nu-art/thunderstorm-shared';
+import {BaseHttpRequest, HttpException} from '@nu-art/thunderstorm-shared';
 import {ApiDef_SyncManager, SyncManagerAPI_SmartSync} from '@nu-art/thunderstorm-shared/sync-manager/apis';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend/ModuleFE_FirebaseListener/ModuleFE_FirebaseListener';
-
 
 export interface PermissibleModulesUpdated {
 	__onPermissibleModulesUpdated: () => void;
 }
+
+type OnErrorCallback = (err: HttpException) => void;
 
 export const Default_SyncManagerNodePath = '/state/ModuleBE_SyncManager/syncData'; // Hardcoded path for now per Adam's request, should be const somewhere.
 
@@ -105,6 +106,7 @@ export class ModuleFE_SyncManager_Class
 	private _onSyncDataChanged?: (syncData?: SyncDataFirebaseState) => void;
 	private _debounceTimeout: number = 2 * Second;
 	private _debounceMaxTimeout: number = 10 * Second;
+	private onSmartSyncError: OnErrorCallback | undefined;
 
 	private syncDebouncer?: VoidFunction;
 	private syncQueue: QueueV2<NoNeedToSyncModule | DeltaSyncModule | FullSyncModule>;
@@ -128,12 +130,13 @@ export class ModuleFE_SyncManager_Class
 		// this.setMinLevel(LogLevel.Debug);
 	}
 
-
 	// ######################### Public Methods #########################
 
 	public setShouldCleanIDBOnFullSync = (cleanIDBOnFullSync: boolean) => {
 		this.cleanIDBOnFullSync = cleanIDBOnFullSync;
 	};
+
+	public setOnSmartSyncError = (callback: OnErrorCallback) => this.onSmartSyncError = callback;
 
 	public getPermissibleModuleNames = () => this.syncedModules.map(moduleSyncData => moduleSyncData.dbKey);
 
@@ -189,6 +192,7 @@ export class ModuleFE_SyncManager_Class
 			this.logError(e);
 			this.syncing = false;
 			this.pendingSync = false;
+			this.onSmartSyncError?.(e as HttpException);
 			return;
 		}
 		// //If queue is empty
