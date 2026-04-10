@@ -11,23 +11,22 @@ export type RouteParams = { [key: string]: string | number | boolean | undefined
  *
  * Converts an object of parameters into a URL-encoded query string.
  * - Functions are evaluated to get their return value
- * - undefined/null values result in `key=` (empty value)
+ * - undefined/null values are omitted entirely
  * - All values are URI-encoded
  *
  * @param params - Object with parameter keys and values
  * @returns URL-encoded query string (e.g., "key1=value1&key2=value2")
  */
 export function composeQueryParams(params: RouteParams = {}) {
-	return Object.keys(params).map((paramKey) => {
-		let param = params[paramKey];
-		if (param === undefined || param === null)
-			return `${paramKey}=`;
+	return Object.keys(params)
+		.filter(key => params[key] !== undefined && params[key] !== null)
+		.map((paramKey) => {
+			let param = params[paramKey]!;
+			if (typeof param === 'function')
+				param = param();
 
-		if (typeof param === 'function')
-			param = param();
-
-		return `${paramKey}=${encodeURIComponent(param)}`;
-	}).join('&');
+			return `${paramKey}=${encodeURIComponent(param)}`;
+		}).join('&');
 }
 
 /**

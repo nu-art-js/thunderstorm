@@ -13,19 +13,15 @@ import {ModuleBE_Permissions, RoleId_AppDefault, RoleId_PermissionsAdmin, Servic
 import {
 	ApiException,
 	asArray,
-	batchAction,
-	batchActionParallel,
 	dbObjectToId,
 	Dispatcher,
 	filterDuplicates,
 	filterInstances,
 	flatArray,
-	JwtTools,
-	UniqueId,
 } from '@nu-art/ts-common';
 import {ModuleBE_PermissionRoleDB} from '../permission-role/ModuleBE_PermissionRoleDB.js';
 import {ModuleBE_PermissionScopeDB} from '../permission-scope/ModuleBE_PermissionScopeDB.js';
-import {ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
+import {ModuleBE_AccountDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {Transaction} from 'firebase-admin/firestore';
 import {SafeDB_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserScopePermissions} from '../../consts.js';
@@ -107,6 +103,7 @@ export class ModuleBE_PermissionUserDB_Class
 				await this.checkAdminGrantFlag(account, transaction);
 			}
 			await this.resolveAdditionalRoles(account, 'login', transaction);
+			await ModuleBE_Permissions.recomputePermissionsForUsers([account._id]);
 		});
 	}
 
@@ -114,6 +111,7 @@ export class ModuleBE_PermissionUserDB_Class
 		await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			await this.insertIfNotExist(account, transaction);
 			await this.resolveAdditionalRoles(account, 'register', transaction);
+			await ModuleBE_Permissions.recomputePermissionsForUsers([account._id]);
 		});
 	}
 
@@ -223,8 +221,8 @@ export class ModuleBE_PermissionUserDB_Class
 		const updated = asArray(data.updated ?? []);
 		const before = filterInstances(asArray(data.before ?? []));
 		const beforeIds = before.map(b => b._id);
-		const accountIdToInvalidate = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i._id))).filter(id => beforeIds.includes(id));
-		await this.rotateSession(accountIdToInvalidate);
+		const accountIdsToRecompute = filterDuplicates(filterInstances([...deleted, ...updated].map(i => i._id))).filter(id => beforeIds.includes(id));
+		await ModuleBE_Permissions.recomputePermissionsForUsers(accountIdsToRecompute);
 	}
 
 	insertIfNotExist = async (account: SafeDB_Account, transaction: Transaction): Promise<boolean> => {
@@ -305,22 +303,6 @@ export class ModuleBE_PermissionUserDB_Class
 		await this.set.multi(usersToUpdate);
 	}
 
-	public async rotateSession(accountIds: UniqueId[]) {
-		if (!accountIds.length)
-			return;
-
-		const sessions = await batchActionParallel(accountIds, 10, async ids => await ModuleBE_SessionDB.query.custom({where: {accountId: {$in: ids as any}}}));
-		const validSessions = filterInstances(await Promise.all(sessions.map(async session => {
-			const isExpired = await JwtTools.isJwtExpired(session.sessionIdJwt);
-			return isExpired ? undefined : session;
-		})));
-		this.logWarning(`#### Rotating ${validSessions.length} Sessions! ####`);
-		await batchAction(validSessions, 500, async sessions => {
-			await this.runTransaction(async t => {
-				await Promise.all(sessions.map(session => ModuleBE_SessionDB._session.rotate.reissue.bySession(session, t)));
-			});
-		});
-	}
 }
 
 export const ModuleBE_PermissionUserDB = new ModuleBE_PermissionUserDB_Class();

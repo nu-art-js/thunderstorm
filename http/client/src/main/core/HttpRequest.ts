@@ -6,7 +6,7 @@
 
 // noinspection TypeScriptPreferShortImport
 import {_keys, asArray, BadImplementationException, exists, isErrorOfType, Logger, MimeType_json, StringMap} from '@nu-art/ts-common';
-import {composeUrl} from '../utils/utils.js';
+import {composeUrl, interpolatePathParams} from '../utils/utils.js';
 import {ApiError_GeneralErrorMessage, ApiErrorResponse, ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 
 // Axios v1+ import style
@@ -127,7 +127,10 @@ export class HttpRequest<API extends GeneralApi>
 
 		_keys(params).forEach((key) => {
 			const param = params[key];
-			return param && typeof param === 'string' && this.setUrlParam(key, param);
+			if (param === undefined || param === null)
+				return;
+
+			this.setUrlParam(key, param);
 		});
 
 		return this;
@@ -319,7 +322,8 @@ export class HttpRequest<API extends GeneralApi>
 			throw httpException;
 		}
 
-		const fullUrl = composeUrl(this.url, this.params);
+		const {url: interpolatedUrl, remainingParams} = interpolatePathParams(this.url, this.params);
+		const fullUrl = composeUrl(interpolatedUrl, remainingParams);
 		const body = this.body;
 
 		this.logDebug('Composed URL', {url: this.url, params: this.params, fullUrl});
@@ -374,9 +378,7 @@ export class HttpRequest<API extends GeneralApi>
 			};
 		}
 
-		this.logDebug('Request options', options);
-
-		this.logInfo(`Calling: ${this.method} - ${fullUrl}`);
+	 	this.logVerbose('Full request', {method: this.method, url: fullUrl, headers, params: this.params, body: body ?? undefined});
 
 		try {
 			this.response = await this.client.sendRequest(options) as Axios_Response<API['R']>;
@@ -395,7 +397,7 @@ export class HttpRequest<API extends GeneralApi>
 			// Extract response and status from Axios error
 			this.response = e?.response;
 			this.status = this.response?.status ?? 500;
-			this.logError('Request failed', {status: this.status, error: e.message});
+			this.logError('Request failed', {status: this.status, error: e.message, responseBody: this.response?.data});
 
 			// Convert AxiosError to HttpException for non-2xx status codes
 			if (!this.isValidStatus(this.status)) {

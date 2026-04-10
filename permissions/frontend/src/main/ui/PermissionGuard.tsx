@@ -20,8 +20,8 @@ type Props = {
  * Reads scopeEntries from the JWT session — same PermissionScope used on backend.
  *
  * Usage:
- *   <PermissionGuard scope={PermissionScope_Topics} value="write">
- *     <TopicEditor />
+ *   <PermissionGuard scope={PermissionScope_MyConcept} value="write">
+ *     <MyProtectedComponent />
  *   </PermissionGuard>
  */
 export const PermissionGuard: React.FC<Props> = ({scope, value, fallback, children}) => {

@@ -5,10 +5,11 @@
  */
 
 import * as React from 'react';
+import {AwaitModules} from '@nu-art/sync-manager-frontend';
 import {filterInstances, sortArray} from '@nu-art/ts-common';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import type {OnPermissionRoleUpdated, OnPermissionScopeUpdated, OnPermissionUserUpdated} from '../../_entity.js';
-import {DropDown_PermissionRole, ModuleFE_PermissionRole, ModuleFE_PermissionUser} from '../../_entity.js';
+import {DropDown_PermissionRole, ModuleFE_PermissionRole, ModuleFE_PermissionScope, ModuleFE_PermissionUser} from '../../_entity.js';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';
 import type {OnAccountsUpdated} from '@nu-art/user-account-frontend';
 import type {
@@ -45,7 +46,7 @@ type State = {
 	roleError?: string;
 };
 
-export class Page_Permissions
+class Page_Permissions
 	extends ComponentSync<{}, State>
 	implements OnPermissionUserUpdated, OnPermissionRoleUpdated, OnPermissionScopeUpdated, OnAccountsUpdated {
 
@@ -406,3 +407,9 @@ export class Page_Permissions
 		}
 	};
 }
+
+export const APage_Permissions = () => (
+	<AwaitModules modules={[ModuleFE_PermissionUser, ModuleFE_PermissionRole, ModuleFE_PermissionScope]}>
+		<Page_Permissions/>
+	</AwaitModules>
+);

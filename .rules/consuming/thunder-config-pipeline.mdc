@@ -11,6 +11,10 @@ For the full pipeline explanation and project bootstrap checklist, see [thunder-
 
 ---
 
+## Non-negotiable: always use the module config mechanism
+
+When a module needs runtime configuration, use `Module<Config>` and the RTDB config pipeline — never create parallel RTDB paths, custom `FirebaseRef` instances, or ad-hoc storage mechanisms. The config pipeline is the single source of truth for module configuration.
+
 ## Non-negotiable: when you create a module with config, seed the RTDB
 
 When creating or modifying a module that declares a config type (e.g. `extends Module<Config>`), you **must** also add its config entry to the RTDB seed file.
