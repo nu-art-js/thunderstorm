@@ -271,6 +271,20 @@ Catch `HttpException`; it exposes `responseCode`, `errorResponse`, `request`.
 
 Every API endpoint **must** follow the full typed pipeline: `API_<Domain>` type → `ApiDefResolver<API_<Domain>>` constant → `@ApiHandler`/`@ApiCaller` consuming it. No shortcuts, no exceptions.
 
+### Raw `HttpClient.createRequest()` in application code
+
+**Forbidden.** Always use the `@ApiCaller` decorator for HTTP calls. `HttpClient.createRequest()` is never acceptable in application code — the decorator pipeline is the only valid calling pattern. The "HttpRequest (manual usage)" section above documents the API for framework-level code only.
+
+### External third-party API calls
+
+External API calls (e.g. Polymarket, YouTube Data API) get a **dedicated module** that:
+
+1. Creates its own `HttpClient` in the constructor with the external origin
+2. Exposes `@ApiCaller`-decorated methods using the resolver form, passing the client via `{httpClient: m => m.client}`
+3. Owns the external API type definitions (`ApiDef`, param types) in the backend package — they are a third-party contract, not a project API
+
+The project-facing module handles `@ApiHandler` and delegates to the external module for fetching. Both modules live in the same backend package — the external caller is an implementation detail, not its own library.
+
 ### Raw `{ method, path }` objects
 
 **Forbidden.** Never define an API def as a plain object literal, with or without `as const`:

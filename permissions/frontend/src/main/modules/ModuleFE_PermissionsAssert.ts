@@ -18,7 +18,7 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {SessionKey_Permissions_FE} from '../consts.js';
+import {ModuleFE_UserPermissions} from '../_entity/user-permissions/ModuleFE_UserPermissions.js';
 import type {PermissionScope} from '@nu-art/permissions-shared';
 
 export interface OnPermissionsChanged {
@@ -29,9 +29,9 @@ export class ModuleFE_PermissionsAssert_Class
 	extends Module {
 
 	hasScopeAccess(scope: PermissionScope, requiredValue: string): boolean {
-		const sessionData = SessionKey_Permissions_FE.get();
+		const scopeEntries = ModuleFE_UserPermissions.getScopeEntries();
 		const prefix = scope.key + ':';
-		const entry = sessionData.scopeEntries?.find(p => p.startsWith(prefix));
+		const entry = scopeEntries.find(p => p.startsWith(prefix));
 		if (!entry)
 			return false;
 

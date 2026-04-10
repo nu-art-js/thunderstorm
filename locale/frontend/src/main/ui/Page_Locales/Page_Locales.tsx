@@ -1,3 +1,4 @@
+import {AwaitModules} from '@nu-art/sync-manager-frontend';
 import {ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {DB_Locale, DatabaseDef_Locale, UI_Locale} from '@nu-art/locale-shared';
 import {ModuleFE_Locale, OnLocalesUpdated} from '../../_entity/locale/ModuleFE_Locale.js';
@@ -10,7 +11,7 @@ type State = {
 	editable?: EditableDBItem<DatabaseDef_Locale>;
 };
 
-export class Page_Locales
+class Page_Locales
 	extends ComponentSync<{}, State>
 	implements OnLocalesUpdated {
 
@@ -132,3 +133,9 @@ export class Page_Locales
 		await editable.save();
 	}
 }
+
+export const APage_Locales = () => (
+	<AwaitModules modules={[ModuleFE_Locale]}>
+		<Page_Locales/>
+	</AwaitModules>
+);

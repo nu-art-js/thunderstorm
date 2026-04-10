@@ -20,12 +20,13 @@
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert.js';
 import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions.js';
-import {ModulePackBE_PermissionRole, ModulePackBE_PermissionScope, ModulePackBE_PermissionUser} from '../_entity.js';
+import {ModulePackBE_PermissionRole, ModulePackBE_PermissionScope, ModulePackBE_PermissionUser, ModulePackBE_UserPermissions} from '../_entity.js';
 
 export const ModulePackBE_Permissions: Module[] = [
 	...ModulePackBE_PermissionRole,
 	...ModulePackBE_PermissionScope,
 	...ModulePackBE_PermissionUser,
+	...ModulePackBE_UserPermissions,
 	ModuleBE_PermissionsAssert,
 	ModuleBE_Permissions,
 ];

@@ -34,7 +34,7 @@ Place the scope definition at `<concept>/shared/src/main/permission-scope.ts` �
 ```typescript
 import {definePermissionScope} from '@nu-art/permissions-shared';
 
-export const PermissionScope_Topics = definePermissionScope('topics', ['read', 'write', 'admin'] as const);
+export const PermissionScope_MyConcept = definePermissionScope('my-concept', ['read', 'write', 'admin'] as const);
 ```
 
 Export from the shared package's `index.ts`:
@@ -53,27 +53,27 @@ In the backend module that owns the API, decorate handler methods:
 
 ```typescript
 import {RequirePermission} from '@nu-art/permissions-backend';
-import {PermissionScope_Topics} from '@app/news-topic-shared';
+import {PermissionScope_MyConcept} from '@app/my-concept-shared';
 
-@RequirePermission(PermissionScope_Topics, 'write')
-async upsertTopic(body: API_Topics['upsert']['Body']): Promise<API_Topics['upsert']['Response']> {
-	// only reachable if caller has topics:write or higher
+@RequirePermission(PermissionScope_MyConcept, 'write')
+async upsertItem(body: API_MyConcept['upsert']['Body']): Promise<API_MyConcept['upsert']['Response']> {
+	// only reachable if caller has my-concept:write or higher
 }
 ```
 
 **Complex (assertion context) — when you need ownership checks or boolean logic:**
 
 ```typescript
-@RequirePermission((assert, body: EditArticleRequest) => {
+@RequirePermission((assert, body: EditItemRequest) => {
 	return assert.or(
 		assert.and(
-			assert.hasScope(PermissionScope_Articles, 'write'),
-			assert.ownsEntity({dbKey: 'articles', id: body.articleId})
+			assert.hasScope(PermissionScope_MyConcept, 'write'),
+			assert.ownsEntity({dbKey: 'my-items', id: body.itemId})
 		),
-		assert.hasScope(PermissionScope_Articles, 'admin')
+		assert.hasScope(PermissionScope_MyConcept, 'admin')
 	);
 })
-async editArticle(body: EditArticleRequest): Promise<void> { }
+async editItem(body: EditItemRequest): Promise<void> { }
 ```
 
 The `PermissionAssertionContext` provides: `hasScope`, `ownsEntity`, `and`, `or`.
@@ -85,7 +85,7 @@ For scope-based write gating on a collection, use `wireScopePermission` during a
 ```typescript
 import {wireScopePermission} from '@nu-art/permissions-backend';
 
-wireScopePermission(ModuleBE_TopicDB, PermissionScope_Topics, 'write');
+wireScopePermission(ModuleBE_MyEntityDB, PermissionScope_MyConcept, 'write');
 ```
 
 This registers a mandatory `PreWriteInterceptor` — the entity module cannot bypass it.
@@ -95,15 +95,15 @@ For more complex policies (query filtering, delete gating), use `wireEntityPermi
 ```typescript
 import {wireEntityPermissions} from '@nu-art/permissions-backend';
 
-wireEntityPermissions(ModuleBE_TopicDB, {
+wireEntityPermissions(ModuleBE_MyEntityDB, {
 	preWrite: async (dbItem, original, tx) => {
-		ModuleBE_PermissionsAssert.assertScopePermission(PermissionScope_Topics, 'write');
+		ModuleBE_PermissionsAssert.assertScopePermission(PermissionScope_MyConcept, 'write');
 	},
 	queryInterceptor: (query) => {
 		return query;
 	},
 	preDelete: async (dbItems, tx) => {
-		ModuleBE_PermissionsAssert.assertScopePermission(PermissionScope_Topics, 'admin');
+		ModuleBE_PermissionsAssert.assertScopePermission(PermissionScope_MyConcept, 'admin');
 	},
 });
 ```
@@ -120,7 +120,7 @@ class MyModule_Class
 	implements CollectDefaultScopeValues {
 
 	__collectDefaultScopeValues(): DefaultScopeGrant[] {
-		return [{scope: PermissionScope_Topics, value: 'read'}];
+		return [{scope: PermissionScope_MyConcept, value: 'read'}];
 	}
 }
 ```
@@ -201,7 +201,7 @@ class MyComponent
 ```typescript
 import {ModuleFE_PermissionsAssert} from '@nu-art/permissions-frontend';
 
-if (ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_Topics, 'write')) {
+if (ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_MyConcept, 'write')) {
 	// show edit UI
 }
 ```
@@ -252,6 +252,7 @@ All share the `permissions` IDB group on the frontend.
 - **Never create trivial ID wrapper functions.** Use `stringToUniqueId<DatabaseDef_*["dbKey"]>(id)` directly at the call site.
 - **Never bypass permissions** with flags, env vars, or direct MemKey writes. Use `runAsServiceAccount`.
 - **Never modify system roles** from app-level code. They are bootstrap-only.
+- **Every DB collection must be permission-gated.** Wire `wireScopePermission` (or `wireEntityPermissions`) on every DB module as part of the initial implementation. No collection should be writable without scope permission checks.
 
 ---
 

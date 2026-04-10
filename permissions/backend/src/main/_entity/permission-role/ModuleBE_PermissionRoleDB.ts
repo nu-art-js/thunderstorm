@@ -1,5 +1,5 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {DatabaseDef_PermissionRole, DB_PermissionRole, DBDef_PermissionRole, PermissionScope_Permissions} from '@nu-art/permissions-shared';
+import {DatabaseDef_PermissionRole, DBDef_PermissionRole, PermissionScope_Permissions} from '@nu-art/permissions-shared';
 import {ApiException, asArray, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {Transaction} from 'firebase-admin/firestore';
@@ -7,7 +7,7 @@ import {ModuleBE_PermissionUserDB} from '../permission-user/index.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {wireScopePermission} from '../../entity-permissions.js';
 import {MemKey_ServiceAccountId} from '../../consts.js';
-import {ServiceAccountId_Bootstrap} from '../../modules/ModuleBE_Permissions.js';
+import {ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '../../modules/ModuleBE_Permissions.js';
 
 export class ModuleBE_PermissionRoleDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_PermissionRole> {
@@ -21,7 +21,7 @@ export class ModuleBE_PermissionRoleDB_Class
 		wireScopePermission(this, PermissionScope_Permissions, 'admin');
 	}
 
-	protected async preWriteProcessing(instance: DB_PermissionRole, originalDbInstance: DatabaseDef_PermissionRole['dbType'], t?: Transaction) {
+	protected async preWriteProcessing(instance: DatabaseDef_PermissionRole['dbType'], originalDbInstance: DatabaseDef_PermissionRole['dbType'], t?: Transaction) {
 		if (instance.system || originalDbInstance?.system) {
 			const store = MemStorage.getStore();
 			const activeServiceAccount = store ? MemKey_ServiceAccountId.peak() : undefined;
@@ -35,7 +35,8 @@ export class ModuleBE_PermissionRoleDB_Class
 		const updated = asArray(data.updated ?? []);
 		const roleIds = filterDuplicates([...deleted, ...updated].map(r => r._id));
 		const users = await batchActionParallel(roleIds, 10, async ids => await ModuleBE_PermissionUserDB.query.custom({where: {__roleIds: {$aca: ids}}}));
-		await ModuleBE_PermissionUserDB.rotateSession(users.map(dbObjectToId));
+		const accountIds = filterDuplicates(users.map(dbObjectToId));
+		await ModuleBE_Permissions.recomputePermissionsForUsers(accountIds);
 	}
 }
 

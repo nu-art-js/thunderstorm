@@ -1,12 +1,11 @@
-import {_keys, ApiException, Dispatcher, filterDuplicates, filterInstances, flatArray, md5, Module,} from '@nu-art/ts-common';
+import {_keys, ApiException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, md5, Module, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {stringToUniqueId} from '@nu-art/db-api-shared';
-import type {DatabaseDef_PermissionRole, DB_PermissionRole, DB_PermissionScope, PermissionScope} from '@nu-art/permissions-shared';
-import {DatabaseDef_PermissionUser, permissionScopeId, SessionData_Permissions,} from '@nu-art/permissions-shared';
+import type {DatabaseDef_PermissionRole, DatabaseDef_PermissionUser, DatabaseDef_UserPermissions, DB_PermissionRole, DB_PermissionScope, DB_UserPermissions, PermissionScope} from '@nu-art/permissions-shared';
+import {getRegisteredRoleDefinitions, permissionScopeId,} from '@nu-art/permissions-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
-import {BaseSessionClaims, CollectSessionData} from '@nu-art/user-account-backend';
 import {getRegisteredFunctionPermissions, getScopeValues} from '../core/function-permission-registry.js';
-import {ModuleBE_PermissionRoleDB, ModuleBE_PermissionScopeDB, ModuleBE_PermissionUserDB} from '../_entity.js';
+import {ModuleBE_PermissionRoleDB, ModuleBE_PermissionScopeDB, ModuleBE_PermissionUserDB, ModuleBE_UserPermissionsDB} from '../_entity.js';
 import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserScopePermissions} from '../consts.js';
 
@@ -58,7 +57,7 @@ export const PermissionRole_SuperAdmin_ScopeIds = [permissionScopeId('permission
 
 class ModuleBE_Permissions_Class
 	extends Module<Config>
-	implements CollectSessionData<SessionData_Permissions>, PerformProjectSetup {
+	implements PerformProjectSetup {
 
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
 
@@ -84,13 +83,64 @@ class ModuleBE_Permissions_Class
 		return this.adminGrantFlagRef;
 	}
 
-	async __collectSessionData(data: BaseSessionClaims): Promise<SessionData_Permissions> {
-		const permissionUserId = stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(data.accountId);
-		const permissionUser = await ModuleBE_PermissionUserDB.query.uniqueAssert(permissionUserId);
-		const userRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(permissionUser.roles.map(r => r.roleId)));
-		const scopeEntries = await this.resolveUserScopeEntries(userRoles);
+	__performProjectSetup(): SetupTask[] {
+		return [{
+			key: SetupTaskKey_PermissionsRoles,
+			dependsOn: [],
+			processor: () => this.ensurePermissionRoles()
+		}];
+	}
 
-		return {key: 'permissions', value: {scopeEntries}};
+	async ensurePermissionRoles() {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			await this.ensureScopeEntities();
+			await this.createDefaultRoleFromScopeContributions();
+			await this.ensurePermissionsAdminRole();
+			await this.ensureDefinedRoles();
+			await this.recomputePermissionsForAllUsers();
+			this.logInfoBold('Recomputed UserPermissions for all users');
+		});
+	}
+
+	// --- Permission recomputation (materialized DB_UserPermissions) ---
+
+	async recomputePermissionsForUsers(accountIds: UniqueId[]): Promise<void> {
+		if (!accountIds.length)
+			return;
+
+		const permissionUserIds = accountIds.map(id => stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(id));
+		const permissionUsers = filterInstances(await ModuleBE_PermissionUserDB.query.all(permissionUserIds));
+
+		const entitiesToUpsert: DB_UserPermissions[] = await Promise.all(permissionUsers.map(async user => {
+			const userRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(user.roles.map(r => r.roleId)));
+			const scopeEntries = await this.resolveUserScopeEntries(userRoles);
+			return {
+				_id: stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(user._id),
+				scopeEntries,
+			} as DB_UserPermissions;
+		}));
+
+		if (entitiesToUpsert.length > 0)
+			await ModuleBE_UserPermissionsDB.set.all(entitiesToUpsert);
+	}
+
+	async recomputePermissionsForAllUsers(): Promise<void> {
+		const allUsers = await ModuleBE_PermissionUserDB.query.where({});
+		if (!allUsers.length)
+			return;
+
+		await batchActionParallel(allUsers, 50, async batch => {
+			const entitiesToUpsert: DB_UserPermissions[] = await Promise.all(batch.map(async user => {
+				const userRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(user.roles.map(r => r.roleId)));
+				const scopeEntries = await this.resolveUserScopeEntries(userRoles);
+				return {
+					_id: stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(user._id),
+					scopeEntries,
+				} as DB_UserPermissions;
+			}));
+
+			await ModuleBE_UserPermissionsDB.set.all(entitiesToUpsert);
+		});
 	}
 
 	private async resolveUserScopeEntries(userRoles: DB_PermissionRole[]): Promise<string[]> {
@@ -114,22 +164,6 @@ class ModuleBE_Permissions_Class
 		}
 
 		return _keys(scopeMaxIdx).map(k => `${k}:${scopeMaxIdx[k].value}`);
-	}
-
-	__performProjectSetup(): SetupTask[] {
-		return [{
-			key: SetupTaskKey_PermissionsRoles,
-			dependsOn: [],
-			processor: () => this.ensurePermissionRoles()
-		}];
-	}
-
-	async ensurePermissionRoles() {
-		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
-			await this.ensureScopeEntities();
-			await this.createDefaultRoleFromScopeContributions();
-			await this.ensurePermissionsAdminRole();
-		});
 	}
 
 	// --- Service account elevation ---
@@ -248,6 +282,22 @@ class ModuleBE_Permissions_Class
 		}]);
 
 		this.logInfoBold('Permissions Admin role upserted');
+	}
+
+	private async ensureDefinedRoles() {
+		const roleDefs = getRegisteredRoleDefinitions();
+		if (roleDefs.length === 0)
+			return;
+
+		await ModuleBE_PermissionRoleDB.set.all(roleDefs.map(def => ({
+			_id: stringToUniqueId<DatabaseDef_PermissionRole['dbKey']>(md5(`role/${def.key}`)),
+			label: def.label,
+			type: def.type,
+			system: true as const,
+			scopeEntries: filterDuplicates(def.scopes.map(({scope, value}) => permissionScopeId(scope.key, value))),
+		})));
+
+		this.logInfoBold(`Ensured ${roleDefs.length} application-defined roles: [${roleDefs.map(d => d.label).join(', ')}]`);
 	}
 }
 
