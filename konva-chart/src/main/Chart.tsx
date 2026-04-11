@@ -204,6 +204,7 @@ export class Chart extends React.Component<Props, State> {
 			<Layer>
 				<Rect x={0} y={0} width={width} height={height} fill={this.theme.background}/>
 				{this.renderGrid(pad, plotWidth, plotHeight)}
+				{this.renderBaselines(pad, plotWidth, plotHeight)}
 				{this.renderVAxes(pad, plotHeight)}
 				{this.renderHAxes(pad, plotWidth, plotHeight)}
 				{this.renderLayers(pad)}
@@ -224,6 +225,38 @@ export class Chart extends React.Component<Props, State> {
 		}
 
 		return lines;
+	}
+
+	private renderBaselines(pad: ChartPadding, plotWidth: number, plotHeight: number) {
+		const theme = this.theme;
+		const {hAxes, vAxes} = this.collectAxes();
+		const nodes: React.ReactNode[] = [];
+
+		vAxes.forEach((axis, i) => {
+			if (axis.baseline == null)
+				return;
+
+			const range = this.getVRange(axis);
+			if (axis.baseline < range.min || axis.baseline > range.max)
+				return;
+
+			const y = this.toCanvasY(axis.baseline, range, pad);
+			nodes.push(<Line key={`bl-v-${i}`} points={[pad.left, y, pad.left + plotWidth, y]} stroke={theme.axisText} strokeWidth={1} opacity={0.4} dash={[4, 3]}/>);
+		});
+
+		hAxes.forEach((axis, i) => {
+			if (axis.baseline == null)
+				return;
+
+			const range = this.getHRange(axis);
+			if (axis.baseline < range.min || axis.baseline > range.max)
+				return;
+
+			const x = this.toCanvasX(axis.baseline, range, pad);
+			nodes.push(<Line key={`bl-h-${i}`} points={[x, pad.top, x, pad.top + plotHeight]} stroke={theme.axisText} strokeWidth={1} opacity={0.4} dash={[4, 3]}/>);
+		});
+
+		return nodes;
 	}
 
 	private renderVAxes(pad: ChartPadding, plotHeight: number) {
@@ -303,10 +336,13 @@ export class Chart extends React.Component<Props, State> {
 			const lineOpacity = layer.opacity ?? 1;
 
 			if (layer.style === 'area') {
-				const plotHeight = this.props.height - pad.top - pad.bottom;
+				const baselineY = layer.vAxis.baseline != null
+					? this.toCanvasY(layer.vAxis.baseline, vRange, pad)
+					: pad.top + (this.props.height - pad.top - pad.bottom);
+
 				const areaPoints = [...flatPoints];
-				areaPoints.push(flatPoints[flatPoints.length - 2], pad.top + plotHeight);
-				areaPoints.push(flatPoints[0], pad.top + plotHeight);
+				areaPoints.push(flatPoints[flatPoints.length - 2], baselineY);
+				areaPoints.push(flatPoints[0], baselineY);
 
 				return <Group key={layer.id}>
 					<Line points={areaPoints} fill={layer.color} opacity={lineOpacity * 0.15} closed={true}/>

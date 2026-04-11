@@ -10,6 +10,7 @@ export type AxisConfig = {
 	formatters?: ((value: number) => string)[];
 	tooltipFormatter?: (value: number) => string;
 	position?: AxisPosition;
+	baseline?: number;
 };
 
 export type ChartLayerStyle = 'line' | 'dashed' | 'area';
