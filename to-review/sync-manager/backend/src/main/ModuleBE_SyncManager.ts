@@ -41,6 +41,7 @@ import {
 } from '@nu-art/ts-common';
 import {Transaction} from 'firebase-admin/firestore';
 import {ModuleBE_BaseDB, RuntimeBE_ModulesDB} from '@nu-art/db-api-backend';
+import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
 import {
 	ApiDef_SyncManager,
 	DeltaSyncModule,
@@ -81,9 +82,11 @@ export type SyncManagerBEConfig = {
  * }
  * ```
  */
+export const SetupTaskKey_SyncBackfill = asSetupTaskKey('sync-manager-backfill');
+
 export class ModuleBE_SyncManager_Class
 	extends Module<SyncManagerBEConfig>
-	implements OnModuleCleanupV2, OnSyncEnvCompleted {
+	implements OnModuleCleanupV2, OnSyncEnvCompleted, PerformProjectSetup {
 
 	public collection!: FirestoreCollection<DatabaseDef_DeletedDoc>;
 
@@ -119,6 +122,45 @@ export class ModuleBE_SyncManager_Class
 					await this.setLastUpdated(dbKey, maxUpdated);
 			});
 		}
+	}
+
+	__performProjectSetup(): SetupTask[] {
+		return [{
+			key: SetupTaskKey_SyncBackfill,
+			dependsOn: [],
+			processor: () => this.backfillStaleSyncTimestamps()
+		}];
+	}
+
+	private async backfillStaleSyncTimestamps() {
+		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
+		const rtdbSyncData = await syncDataRef.get({});
+
+		const staleModules = this.dbModules.filter(dbModule => {
+			const syncData = rtdbSyncData[dbModule.dbDef.dbKey];
+			return !syncData || !syncData.lastUpdated;
+		});
+
+		if (staleModules.length === 0)
+			return;
+
+		this.logWarning(`Backfilling stale sync timestamps for: [${staleModules.map(m => m.dbDef.dbKey).join(', ')}]`);
+
+		const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
+		await Promise.all(staleModules.map(async module => {
+			try {
+				const newest = (await module.query.unManipulatedQuery(query))[0] as DB_Object | undefined;
+				if (newest?.__updated) {
+					rtdbSyncData[module.dbDef.dbKey] = {lastUpdated: newest.__updated};
+					this.logInfo(`  ${module.dbDef.dbKey}: backfilled to ${newest.__updated}`);
+				}
+			} catch (e: any) {
+				dispatch_onApplicationException.dispatchModule(e, this);
+				this.logError(`Failed to backfill ${module.dbDef.dbKey}`, e);
+			}
+		}));
+
+		await syncDataRef.set(rtdbSyncData);
 	}
 
 	@ApiHandler(ApiDef_SyncManager.smartSync)

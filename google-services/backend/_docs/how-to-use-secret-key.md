@@ -16,12 +16,11 @@ export const ModulePackBE_MyFeature: Module[] = [
 ];
 ```
 
-2. **GCP project ID** must be available via one of:
-   - `GCP_PROJECT_ID` environment variable
-   - `GCLOUD_PROJECT` environment variable
-   - Explicit `projectId` parameter in the constructor
-
-3. **IAM permissions**: the service account needs `roles/secretmanager.secretAccessor` (read) and optionally `roles/secretmanager.secretVersionManager` (write/create).
+1. **GCP project ID** must be available via one of:
+  - `GCP_PROJECT_ID` environment variable
+  - `GCLOUD_PROJECT` environment variable
+  - Explicit `projectId` parameter in the constructor
+2. **IAM permissions**: the service account needs `roles/secretmanager.secretAccessor` (read) and optionally `roles/secretmanager.secretVersionManager` (write/create).
 
 ## Creating a SecretKey
 
@@ -85,6 +84,7 @@ export class MyModule_Class extends Module<Config> {
 
 - Use definite assignment (`!`) on the `SecretKey` field — if `init` sets it, it's guaranteed
 - Cache with a single assign-and-return expression — no intermediate checks
+
 ```
 
 ## Reading previous versions

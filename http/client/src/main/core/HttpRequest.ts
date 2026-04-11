@@ -451,11 +451,13 @@ export class HttpRequest<API extends GeneralApi>
 			this.logVerbose('Converted Buffer to ArrayBuffer for arraybuffer response type');
 		}
 
-		try {
-			response = JSON.parse(response as unknown as string) as API['R'];
-			this.logVerbose('Response parsed as JSON');
-		} catch (ignore: any) {
-			this.logVerbose('Response is not JSON, returning as-is');
+		if (typeof response === 'string') {
+			try {
+				response = JSON.parse(response) as API['R'];
+				this.logVerbose('Response parsed as JSON');
+			} catch (ignore: any) {
+				this.logVerbose('Response is not JSON, returning as-is');
+			}
 		}
 
 		this.logInfo(`Request completed successfully`, {status, method: this.method, url: fullUrl});

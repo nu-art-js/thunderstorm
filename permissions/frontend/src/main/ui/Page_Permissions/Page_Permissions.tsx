@@ -222,8 +222,8 @@ class Page_Permissions
 				<SelectableDropDown
 					onSelected={this.onAddUserRole}
 					placeholder={'Add a role...'}
-					itemResolver={() => ModuleFE_PermissionRole.cache.all()
-						.filter(r => r.type === 'assignable' && !r.system && !editingRoleIdSet.has(r._id as string))}
+				itemResolver={() => ModuleFE_PermissionRole.cache.all()
+					.filter(r => r.type === 'assignable' && !editingRoleIdSet.has(r._id as string))}
 				/>
 			</div>}
 

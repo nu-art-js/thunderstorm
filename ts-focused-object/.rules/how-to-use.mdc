@@ -1,0 +1,140 @@
+---
+description: How to use ts-focused-object — track which items are being viewed by connected clients, react server-side
+alwaysApply: false
+---
+
+# How to use ts-focused-object
+
+## Packages
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/ts-focused-object-shared` | Types (`FocusedEntity`, `FocusData_Map`), API def, constants (`DefaultTTL_FocusedObject`, `getRelationalPath`) |
+| `@nu-art/ts-focused-object-frontend` | `ModuleFE_FocusedObject` (focus/unfocus signaling, RTDB listening), `Component_FocusedEntityRef` (UI component) |
+| `@nu-art/ts-focused-object-backend` | `ModuleBE_FocusedObject` (HTTP handler, RTDB writes, TTL cleanup) |
+
+## What you must know
+
+- Focus data lives in RTDB at `/state/ModuleBE_FocusedObject/focusedData/` — clients read, backend writes
+- Transport is HTTP POST (`/v1/focus-object/update`), not direct RTDB writes from the client
+- Data structure is a nested map: `dbKey → itemId → accountId → deviceId → tabId → timestamp`
+- `FocusedEntity` is `{ dbKey: string, itemId: UniqueId }` — the unit of focus
+- TTL is 10 minutes (`DefaultTTL_FocusedObject`). Frontend sends keep-alive every TTL−20s while the browser window is focused
+- When the browser tab is blurred, keep-alive stops; entries expire naturally on the next backend update
+- `beforeunload` sends an empty focus list to clear the tab's entries immediately
+
+## When signaling focus from the frontend
+
+Call `ModuleFE_FocusedObject.focus(entities)` and `unfocus(entities)` directly:
+
+```typescript
+import {ModuleFE_FocusedObject} from '@nu-art/ts-focused-object-frontend';
+
+ModuleFE_FocusedObject.focus([{dbKey: '<dbKey>', itemId: '<itemId>'}]);
+ModuleFE_FocusedObject.unfocus([{dbKey: '<dbKey>', itemId: '<itemId>'}]);
+```
+
+The module debounces calls (2s), manages keep-alive, and handles window focus/blur automatically.
+
+## When using Component_FocusedEntityRef
+
+`Component_FocusedEntityRef` combines focus signaling + viewer display. It signals focus on mount, unfocus on unmount, and renders account thumbnails of active viewers:
+
+```typescript
+import {Component_FocusedEntityRef} from '@nu-art/ts-focused-object-frontend';
+
+<Component_FocusedEntityRef
+  focusedEntities={[{dbKey: '<dbKey>', itemId: '<itemId>'}]}
+  ignoreCurrentUser={true}
+/>
+```
+
+Use this when you want the focus lifecycle tied to a component's mount/unmount. Do **not** use it alongside manual `focus()`/`unfocus()` calls for the same entity — that causes double signaling.
+
+## When reading focus data for display only
+
+If you manage focus signaling separately and only want to display who is viewing:
+
+1. Implement `OnFocusedDataReceived` and register with `dispatch_onFocusedDataReceived`
+2. Query `ModuleFE_FocusedObject.getAccountIdsForFocusedItem(dbKey, itemId)` to get viewer account IDs
+
+```typescript
+import {dispatch_onFocusedDataReceived, ModuleFE_FocusedObject, type OnFocusedDataReceived} from '@nu-art/ts-focused-object-frontend';
+import type {FocusData_Map} from '@nu-art/ts-focused-object-shared';
+
+class MyPage
+  extends ComponentSync<{}, State>
+  implements OnFocusedDataReceived {
+
+  __onFocusedDataReceived(_map: FocusData_Map) {
+    this.forceUpdate();
+  }
+
+  componentDidMount() {
+    super.componentDidMount?.();
+    dispatch_onFocusedDataReceived.addListener(this);
+  }
+
+  componentWillUnmount() {
+    dispatch_onFocusedDataReceived.removeListener(this);
+  }
+
+  private renderViewers(dbKey: string, itemId: string) {
+    const viewerIds = ModuleFE_FocusedObject.getAccountIdsForFocusedItem(dbKey, itemId);
+    // render viewerIds...
+  }
+}
+```
+
+Note: `dispatch_onFocusedDataReceived` is a custom dispatcher, not a ThunderDispatcher — you must manually add/remove listeners in lifecycle methods.
+
+## When reacting to focus changes on the backend
+
+The backend does not need to depend on `ts-focused-object-backend`. Listen to the RTDB focus data directly using the admin SDK:
+
+```typescript
+import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {DefaultTTL_FocusedObject, getRelationalPath} from '@nu-art/ts-focused-object-shared/consts';
+import type {FocusData_Map} from '@nu-art/ts-focused-object-shared';
+
+const focusPath = `${getRelationalPath()}<dbKey>`;
+const db = ModuleBE_Firebase.createAdminSession().getDatabase();
+
+db.listen<FocusData_Map[string]>(focusPath, (value) => {
+  // value is ItemId_Map<AccountId_Map<DeviceId_Map<TabId_Map<number>>>>
+  // Traverse nested maps, check leaf timestamps against DefaultTTL_FocusedObject
+  // to determine which items are actively focused
+});
+```
+
+When checking timestamps, compare `timestamp + DefaultTTL_FocusedObject >= currentTimeMillis()`. Entries older than TTL should be treated as expired even if not yet cleaned by the backend module.
+
+## When wiring into an app
+
+### Backend
+
+Add `ModulePackBE_FocusedObject` to the backend module pack — this registers the HTTP handler and RTDB write logic:
+
+```typescript
+import {ModulePackBE_FocusedObject} from '@nu-art/ts-focused-object-backend';
+
+// In app/backend module registration
+```
+
+### Frontend
+
+Add `ModulePackFE_FocusedObject` to the frontend Thunder chain:
+
+```typescript
+import {ModulePackFE_FocusedObject} from '@nu-art/ts-focused-object-frontend';
+
+new Thunder(config)
+  .addModulePack(ModulePackFE_FocusedObject)
+  // ...
+```
+
+## Forbidden patterns
+
+- **Do not write to RTDB focus path from the frontend** — all writes go through the backend HTTP handler
+- **Do not use `Component_FocusedEntityRef` AND manual `focus()`/`unfocus()` for the same entity** — pick one approach
+- **Do not assume expired entries are already cleaned** — always check timestamps against TTL when reading focus data on the backend
