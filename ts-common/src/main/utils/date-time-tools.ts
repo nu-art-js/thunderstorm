@@ -20,6 +20,7 @@ import utc from 'moment';
 import {AuditBy, Timestamp} from './types.js';
 import {exists} from './tools.js';
 import {TimeProxy} from './time-proxy.js';
+import {BadImplementationException} from '../core/exceptions/exceptions.js';
 
 
 /** Time constants in milliseconds */
@@ -30,6 +31,41 @@ export const Day = Hour * 24;
 export const Week = Day * 7;
 export const Year = Day * 365;
 export const Month = Year / 12;
+
+const durationUnits: Record<string, number> = {
+	s: Second,
+	m: Minute,
+	h: Hour,
+	d: Day,
+	w: Week,
+};
+
+const durationPattern = /^(?:\d+[smhdw])+$/;
+const durationSegment = /(\d+)([smhdw])/g;
+
+/**
+ * Parses a compact duration string into milliseconds.
+ *
+ * Supports segments: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), `w` (weeks).
+ * Segments can be combined: `3h1m30s` → 3 hours + 1 minute + 30 seconds.
+ *
+ * @param duration - Duration string, e.g. `"5s"`, `"1m"`, `"3h1m30s"`
+ * @returns Duration in milliseconds
+ * @throws BadImplementationException if the format is invalid
+ */
+export function parseDuration(duration: string): number {
+	if (!durationPattern.test(duration))
+		throw new BadImplementationException(`Invalid duration format: "${duration}" — expected segments like 5s, 1m, 3h1m30s`);
+
+	let total = 0;
+	let match: RegExpExecArray | null;
+	durationSegment.lastIndex = 0;
+	while ((match = durationSegment.exec(duration)) !== null) {
+		total += parseInt(match[1]) * durationUnits[match[2]];
+	}
+
+	return total;
+}
 
 /** Predefined timestamp format strings */
 export const Format_HHmmss_DDMMYYYY = 'HH:mm:ss_DD-MM-YYYY';

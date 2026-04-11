@@ -53,6 +53,10 @@ export class SecretKey<T extends AnyPrimitive> {
 		return rawSecret ? JSON.parse(rawSecret) as T : undefined;
 	}
 
+	async delete(): Promise<void> {
+		await ModuleBE_SecretManager.deleteSecret(this.secret);
+	}
+
 	async modifiedTimestamp(): Promise<number> {
 		const versions = await ModuleBE_SecretManager.listEnabledVersions(this.secret);
 		if (!versions.length)
@@ -123,6 +127,18 @@ export class ModuleBE_SecretManager_Class
 	public getSecretVersionMetadata = async (versionName: string) => {
 		const [version] = await this.client.getSecretVersion({name: versionName});
 		return version;
+	};
+
+	public deleteSecret = async (_secret: Secret) => {
+		const name = composeSecretKey(_secret);
+		try {
+			await this.client.deleteSecret({name});
+		} catch (err: any) {
+			if (err.code === 5)
+				return;
+
+			throw new ThisShouldNotHappenException(`Failed to delete secret (${JSON.stringify(_secret)})`, err);
+		}
 	};
 
 	public getOrCreateSecret = async (_secret: Secret) => {

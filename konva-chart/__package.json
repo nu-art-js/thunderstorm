@@ -1,0 +1,37 @@
+{
+	"name": "@nu-art/konva-chart",
+	"version": "{{THUNDERSTORM_VERSION}}",
+	"author": "nu-art",
+	"description": "Reusable Konva-based chart components — time-series lines, event markers, crosshair",
+	"type": "module",
+	"license": "Apache-2.0",
+	"scripts": {
+		"build": "tsc"
+	},
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	},
+	"dependencies": {
+		"@nu-art/ts-common": "?",
+		"konva": "?",
+		"react": "?",
+		"react-konva": "?"
+	},
+	"devDependencies": {
+		"@types/react": "?"
+	},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		},
+		"./*": {
+			"types": "./*.d.ts",
+			"import": "./*.js"
+		}
+	}
+}

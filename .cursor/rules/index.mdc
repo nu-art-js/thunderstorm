@@ -59,6 +59,7 @@ Paths are relative to the project root (monorepo root).
 | Use sync-manager (smart-sync, RTDB timestamps) | [_thunderstorm/to-review/sync-manager/.rules/how-to-use.mdc](_thunderstorm/to-review/sync-manager/.rules/how-to-use.mdc) |
 | Edit DB entities in UI (EditableItem, EditableDBItemV3) | [_thunderstorm/.rules/consuming/editable-item-pattern.mdc](_thunderstorm/.rules/consuming/editable-item-pattern.mdc) |
 | Add project setup tasks (PerformProjectSetup) | [_thunderstorm/.rules/consuming/setup-action.mdc](_thunderstorm/.rules/consuming/setup-action.mdc) |
+| Use focused-object (track which items are being viewed) | [_thunderstorm/ts-focused-object/.rules/how-to-use.mdc](_thunderstorm/ts-focused-object/.rules/how-to-use.mdc) |
 | Use module config (type, defaults, validator) | [_thunderstorm/ts-common/_docs/how-to-use-module-config.md](_thunderstorm/ts-common/_docs/how-to-use-module-config.md) |
 | Use validators (runtime type checking) | [_thunderstorm/ts-common/_docs/how-to-use-validators.md](_thunderstorm/ts-common/_docs/how-to-use-validators.md) |
 | Module config from RTDB (config pipeline, seed data) | [_thunderstorm/.rules/consuming/thunder-config-pipeline.mdc](_thunderstorm/.rules/consuming/thunder-config-pipeline.mdc) |
