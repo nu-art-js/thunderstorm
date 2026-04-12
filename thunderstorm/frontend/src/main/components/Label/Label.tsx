@@ -105,7 +105,7 @@ export class Label
 	};
 
 	private getProps = () => {
-		const {tooltip, className, containerSelector, onClick, ...rest} = this.props;
+		const {tooltip, className, containerSelector, onClick, forceUpdate, ...rest} = this.props;
 		return {
 			...rest,
 			className: _className('ts-label', className),
