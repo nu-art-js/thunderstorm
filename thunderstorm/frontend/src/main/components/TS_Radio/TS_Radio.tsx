@@ -3,6 +3,7 @@ import './TS_Radio.scss';
 import {ComponentSync} from '../../core/ComponentSync.js';
 import {_className, stopPropagation} from '../../utils/tools.js';
 import {Label} from '../Label/Label.js';
+import {exists} from '@nu-art/ts-common';
 
 type Props<ItemType> = {
 												 values: ItemType[];
@@ -13,6 +14,7 @@ type Props<ItemType> = {
 												 innerRef?: React.RefObject<HTMLDivElement>;
 												 labelRenderer?: (value: ItemType) => React.ReactNode;
 												 labelTooltipContainerSelector?: string;
+												 labelTooltipResolver?: (value: ItemType) => string;
 											 } & (
 												 { canUnselect: true; onCheck?: (value?: ItemType, prevValue?: ItemType) => void }
 												 | { canUnselect?: false; onCheck?: (value: ItemType, prevValue?: ItemType) => void }
@@ -74,7 +76,9 @@ export class TS_Radio<ItemType>
 	private renderRadioLabel = (value: ItemType) => {
 		const renderer = this.props.labelRenderer ?? ((value: ItemType) => String(value));
 		const label = renderer(value);
-		return <Label className={'ts-radio__label'} tooltip={label} containerSelector={this.state.labelTooltipContainerSelector}>{label}</Label>;
+		const labelTooltip = exists(this.props.labelTooltipResolver) ? this.props.labelTooltipResolver(value) : label;
+		return <Label forceUpdate={true} className={'ts-radio__label'} tooltip={labelTooltip}
+									containerSelector={this.state.labelTooltipContainerSelector}>{label}</Label>;
 	};
 
 	private renderRadioButton = (value: ItemType) => {
