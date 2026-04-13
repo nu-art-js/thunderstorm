@@ -30,6 +30,7 @@ export type BAI_Config = {
 				'firebase.json'?: string
 				'.firebaserc'?: string
 				baseEmulationPort?: number
+				mongoPort?: number
 			}
 			playwright?: {
 				browsers?: ('chromium' | 'firefox' | 'webkit')[]

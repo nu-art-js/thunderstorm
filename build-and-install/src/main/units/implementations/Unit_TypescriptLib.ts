@@ -31,7 +31,7 @@ import {
 import {ProjectUnit_RuntimeContext} from '../base/ProjectUnit.js';
 import {glob} from 'node:fs/promises';
 import {TestType, TestTypes} from '../../core/params.js';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import path from 'node:path';
 import {ExportMapper} from '../../exports/ExportMapper.js';
 import {TsConfig} from '../base/types.js';
@@ -214,6 +214,32 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			}, DEFAULT_TEMPLATE_PATTERN);
 
 			await this.releasePorts(ports);
+
+			const mongoPort = runtimeContext.baiConfig.files?.tests?.firebase?.mongoPort;
+			if (mongoPort) {
+				const containerName = `mongo-test-${config.key.replace(/[^a-z0-9-]/gi, '-')}`;
+				this.logInfo(`Starting MongoDB test container on port ${mongoPort} (container: ${containerName})`);
+
+				await this.releasePorts([`${mongoPort}`]);
+				const commando = this.allocateCommando();
+				await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${mongoPort}:27017 mongo:7`, (stdout, stderr, exitCode) => {
+					if (exitCode !== 0)
+						throw new CommandoException('Failed to start MongoDB test container', stdout, stderr, exitCode);
+				});
+
+				process.env['MONGODB_EMULATOR_HOST'] = `localhost:${mongoPort}`;
+				this.logInfo(`MongoDB test container started — MONGODB_EMULATOR_HOST=localhost:${mongoPort}`);
+
+				this.registerTerminatable(async () => {
+					try {
+						const stopCommando = this.allocateCommando();
+						await this.executeAsyncCommando(stopCommando, `docker rm -f ${containerName}`, () => {
+						});
+					} catch (e: any) {
+						this.logWarning(`Failed to stop MongoDB test container: ${e.message}`);
+					}
+				});
+			}
 		},
 		ui: async () => {
 			throw new NotImplementedYetException('UI tests not implemented yet');
@@ -672,7 +698,7 @@ ${browserNames}
 		const packageJson = FileSystemUtils.file.template.transform(__stringify(this.config.packageJson, true), params);
 		this.logVerbose('Compiling params: ', params);
 		this.logVerbose('Compiling from package.json: ', packageJson);
-		await FileSystemUtils.file.template.write(targetPath, packageJson, params, DEFAULT_OLD_TEMPLATE_PATTERN);
+		await FileSystemUtils.file.template.write(targetPath, packageJson, params, DEFAULT_TEMPLATE_PATTERN);
 	}
 
 	async purge() {

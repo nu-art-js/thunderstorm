@@ -1,21 +1,11 @@
 import {_keys, LogLevel, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {BaseCliParam, CliParams} from '@nu-art/cli-params';
-import {AllBaiParams, BaiParam_AllUnits, BaiParam_NoBuild, BaiParam_Prepare} from './params.js';
+import {BaseCliParam} from '@nu-art/cli-params';
+import {AllBaiParams, BaiParam_Help, BaiParams} from './params.js';
 import {UnitPhaseImplementor} from './types.js';
 import {Phase} from '../phases/definitions/index.js';
 import {ProjectUnit} from '../units/index.js';
 
-export const BaiParam_Help: BaseCliParam<'help', boolean> = {
-	keys: ['--help', '-h'],
-	keyName: 'help',
-	type: 'boolean',
-	group: 'General',
-	description: 'This help menu',
-	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}, {param: BaiParam_AllUnits, value: true}],
-};
-
-const AllBaiParams_Help = [...AllBaiParams, BaiParam_Help];
-export type Help_BaiParams = CliParams<typeof AllBaiParams_Help>;
+export {BaiParam_Help};
 
 export type Phase_Help = typeof phase_Help;
 export const phaseKey_Help = 'help';
@@ -23,7 +13,7 @@ export const phase_Help: Phase<'printHelp'> = {
 	key: phaseKey_Help,
 	name: 'Help',
 	method: 'printHelp',
-	filter: (params) => (params as Help_BaiParams).help,
+	filter: (params) => (params as BaiParams).help,
 };
 
 const config = {key: 'help-printer', fullPath: process.cwd(), relativePath: '.', dependencies: {}, label: 'Help Printer'};

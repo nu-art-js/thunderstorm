@@ -84,16 +84,15 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	}
 
 	protected deriveDistDependencies(): StringMap {
+		const baseParams = this.runtimeContext.baiConfig.templateParams?.packageJson ?? {};
 		const params = (this.runtimeContext.parentUnit as Unit_NodeProject).innerUnits.reduce((dependencies, unit) => {
-			dependencies[unit.config.key] = (unit as Unit_PackageJson).config.packageJson.version;
+			const rawVersion = (unit as Unit_PackageJson).config.packageJson.version;
+			dependencies[unit.config.key] = FileSystemUtils.file.template.transform(rawVersion, baseParams);
 			return dependencies;
 		}, {
-			...this.runtimeContext.baiConfig.templateParams?.packageJson,
+			...baseParams,
 		});
-		return {
-			...params,
-			THUNDERSTORM_DEP_VERSION: this.runtimeContext.baiConfig.templateParams?.packageJson?.['THUNDERSTORM_VERSION'] ?? ''
-		};
+		return params;
 	}
 
 	protected deriveLibDependencies() {

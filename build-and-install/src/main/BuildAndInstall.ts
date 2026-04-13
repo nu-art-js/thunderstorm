@@ -10,6 +10,7 @@ import {
 	merge
 } from '@nu-art/ts-common';
 import {AllBaiParams, BaiParams} from './core/params.js';
+import {phase_Help, Unit_HelpPrinter} from './core/Unit_HelpPrinter.js';
 import {Phase, phases_Build, phases_Deploy, phases_Launch, phases_Terminating} from './phases/definitions/index.js';
 import {UnitsMapper} from './units/discovery/UnitsMapper.js';
 import {FilesCache} from './core/FilesCache.js';
@@ -34,6 +35,7 @@ import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 
 
 export const DefaultPhases = [
+	[phase_Help],
 	...phases_Build,
 	...phases_Terminating,
 	...phases_Launch,
@@ -140,6 +142,8 @@ export class BuildAndInstall
 
 	async build() {
 		await this.init();
+
+		this.workspace.addProjectUnits([Unit_HelpPrinter]);
 
 		// Scan units from workspace
 		await this.workspace.scanUnits(this.pathToProject, this.unitsMapper);

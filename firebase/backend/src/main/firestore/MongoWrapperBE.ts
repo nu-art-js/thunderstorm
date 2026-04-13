@@ -24,10 +24,16 @@ import {getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
 import type {Db as MongoDriverDb, MongoClient} from 'mongodb';
 
 
+export const CONST_MONGODB_EMULATOR_HOST = 'MONGODB_EMULATOR_HOST';
+
 export class MongoWrapperBE
 	extends Logger {
 
 	private static instances: TypedMap<MongoWrapperBE> = {};
+
+	static isEmulator(): boolean {
+		return !!process.env[CONST_MONGODB_EMULATOR_HOST];
+	}
 
 	static getOrCreate(client: MongoClient, dbName: string): MongoWrapperBE {
 		const key = dbName;

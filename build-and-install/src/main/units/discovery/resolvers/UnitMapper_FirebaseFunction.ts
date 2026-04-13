@@ -32,7 +32,8 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 	ignore?: string[],
 	sslKey?: string
 	sslCert?: string
-	functions: string[] | FunctionConfig[];  // Required: Array of function names (legacy) or function configs
+	functions: string[] | FunctionConfig[];
+	mongo?: { port?: number; dbName?: string };
 };
 
 const valuesValidator = {
@@ -92,6 +93,11 @@ const functionItemValidator = (input?: string | FunctionConfig) => {
 
 const functionsArrayValidator = tsValidate_OptionalArray(functionItemValidator);
 
+const mongoEmulatorValidator = {
+	port: tsValidateOptionalAnyNumber,
+	dbName: tsValidateOptionalAnyString,
+};
+
 export class UnitMapper_FirebaseFunction_Class
 	extends UnitMapper_Node<Unit_FirebaseFunctionsApp, UnitConfigJSON_FirebaseFunction> {
 
@@ -103,7 +109,8 @@ export class UnitMapper_FirebaseFunction_Class
 		basePort: tsValidateOptionalAnyNumber,
 		sslKey: tsValidateOptionalAnyString,
 		sslCert: tsValidateOptionalAnyString,
-		functions: functionsArrayValidator, // Required: non-empty array validated in process, accepts string[] or FunctionConfig[]
+		functions: functionsArrayValidator,
+		mongo: tsValidateOptionalObject(mongoEmulatorValidator),
 		containerDeployment: tsValidateOptionalObject(containerDeploymentValidator),
 		...UnitMapper_Node.tsValidator_Node,
 	};
