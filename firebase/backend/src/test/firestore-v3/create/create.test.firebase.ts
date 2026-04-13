@@ -5,7 +5,6 @@ import {createTestCases, CreateTestInput, TestInputValue} from './consts.js';
 import {duplicateObjectToCreate, testInstance2} from '../../_entity/_core/consts.js';
 import {deepClone} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {Transaction} from 'firebase-admin/firestore';
 
 const runTestCase_Create = (testCase: TestModel<CreateTestInput, TestInputValue>) => () => runSingleTestCase(test_FirestoreV3_Create, testCase);
 const runTestCase_CreateAll = (testCase: TestModel<CreateTestInput, TestInputValue>) => () => runSingleTestCase(test_FirestoreV3_CreateAll, testCase);
@@ -40,8 +39,8 @@ describe('Firestore v3 - Create', () => {
 			value: [duplicateObjectToCreate],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
-				const promise = collection.runTransaction(async (transaction) => {
-					return collection.create.item(toCreate, transaction);
+				const promise = collection.runTransaction(async () => {
+					return collection.create.item(toCreate);
 				});
 				await expect(promise).to.be.rejectedWith();
 			}
@@ -55,7 +54,7 @@ describe('Firestore v3 - Create', () => {
 			value: [],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
-				await collection.runTransaction(async (transaction: Transaction) => await expect(collection.create.item(toCreate, transaction)).to.be.fulfilled);
+				await collection.runTransaction(async () => await expect(collection.create.item(toCreate)).to.be.fulfilled);
 			}
 		}
 	}));
@@ -103,8 +102,8 @@ describe('Firestore v3 - CreateAll', () => {
 			value: [duplicateObjectToCreate],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
-				const promise = collection.runTransaction(async (transaction: Transaction) => {
-					return collection.create.all([toCreate], transaction);
+				const promise = collection.runTransaction(async () => {
+					return collection.create.all([toCreate]);
 				});
 				await expect(promise).to.be.rejectedWith();
 			}
@@ -118,7 +117,7 @@ describe('Firestore v3 - CreateAll', () => {
 			value: [],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
-				await collection.runTransaction(async (transaction) => await expect(collection.create.all([toCreate], transaction)).to.be.fulfilled);
+				await collection.runTransaction(async () => await expect(collection.create.all([toCreate])).to.be.fulfilled);
 			}
 		}
 	}));

@@ -42,7 +42,6 @@ export interface OnCleanupSchedulerAct {
 }
 
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
-import {firestore} from 'firebase-admin';
 import {UI_PushSession} from '@nu-art/push-pub-sub-shared/push-session/index';
 import {ModuleBE_PushSessionDB, ModuleBE_PushSessionDB_Class} from './ModuleBE_PushSessionDB.js';
 import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB.js';
@@ -50,7 +49,6 @@ import {DatabaseDef_PushMessagesHistory} from '@nu-art/push-pub-sub-shared/push-
 import {ModuleBE_PushMessagesHistoryDB, ModuleBE_PushMessagesHistoryDB_Class} from './ModuleBE_PushMessagesHistoryDB.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {Message} from 'firebase-admin/messaging';
-import Transaction = firestore.Transaction;
 
 
 type Config = {
@@ -121,14 +119,14 @@ export class ModuleBE_PushPubSub_Class
 			});
 		});
 
-		await ModuleBE_PushSubscriptionDB.runTransaction(async transaction => {
-			const data = await ModuleBE_PushSubscriptionDB.query.where({pushSessionId: body.pushSessionId}, transaction);
+		await ModuleBE_PushSubscriptionDB.runTransaction(async () => {
+			const data = await ModuleBE_PushSubscriptionDB.query.where({pushSessionId: body.pushSessionId});
 			const toInsert = subscriptions.filter(s => !data.find(d => d.topic === s.topic && compare(s.filter, d.filter)));
 			if (toInsert.length === 0)
 				return;
 
 			this.logWarning(`Subscribe on: `, toInsert);
-			return ModuleBE_PushSubscriptionDB.create.all(toInsert, transaction);
+			return ModuleBE_PushSubscriptionDB.create.all(toInsert);
 		});
 	};
 
@@ -141,8 +139,8 @@ export class ModuleBE_PushPubSub_Class
 			throw HttpCodes._4XX.BAD_REQUEST(`Message content too long, ${messageLength} > ${this.config.messageLengthLimit}`,);
 
 		const messageSubscription = {topic: message.topic, props: message.filter};
-		const newVar = async (transaction: Transaction) => {
-			let subscriptions = await ModuleBE_PushSubscriptionDB.query.where({topic: message.topic}, transaction);
+		const newVar = async () => {
+			let subscriptions = await ModuleBE_PushSubscriptionDB.query.where({topic: message.topic});
 			this.logVerbose(`Found ${subscriptions.length} subscribers for message: `, messageSubscription);
 			if (message.filter)
 				subscriptions = subscriptions.filter(subscription => !subscription.filter || compare(subscription.filter, message.filter));
@@ -154,7 +152,7 @@ export class ModuleBE_PushPubSub_Class
 			// I get the tokens relative to those sessions (query)
 			this.logDebug(`Sending push to:`, ` -- Sessions:`, sessionsIds, ` -- Message: `, message);
 
-			const pushSessions = await batchActionParallel(sessionsIds, 10, async elements => ModuleBE_PushSessionDB.query.where({pushSessionId: {$in: elements}}, transaction));
+			const pushSessions = await batchActionParallel(sessionsIds, 10, async elements => ModuleBE_PushSessionDB.query.where({pushSessionId: {$in: elements}}));
 			const map_sessionIdToSession = arrayToMap(pushSessions, session => session.pushSessionId);
 
 			subscriptions = subscriptions.filter(subscription => map_sessionIdToSession[subscription.pushSessionId]);

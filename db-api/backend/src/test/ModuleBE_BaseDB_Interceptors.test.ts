@@ -9,7 +9,6 @@ import {ModuleBE_BaseDB} from '../main/ModuleBE_BaseDB.js';
 import type {BaseDBDefBE} from '../main/backend-types.js';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
 import type {DBEntityDependencies} from '@nu-art/db-api-shared';
-import type {Transaction} from 'firebase-admin/firestore';
 const TEST_DB_DEF: BaseDBDefBE = {dbKey: 'interceptor-test', entityName: 'InterceptorTest', versions: ['v1']};
 
 class InterceptorTestModule_Class
@@ -33,7 +32,7 @@ class InterceptorTestModule_Class
 		return query;
 	}
 
-	async collectDependencies(_dbInstances: any[], _transaction?: Transaction): Promise<DBEntityDependencies | undefined> {
+	async collectDependencies(_dbInstances: any[]): Promise<DBEntityDependencies | undefined> {
 		this.callLog.push('collectDependencies');
 		return undefined;
 	}
@@ -211,20 +210,18 @@ describe('ModuleBE_BaseDB interceptor chain', () => {
 			expect(mod.callLog).to.deep.equal([]);
 		});
 
-		it('receives dbItems and transaction arguments', async () => {
+		it('receives dbItems argument', async () => {
 			const mod = createModule();
-			let captured: { items: any[]; tx: Transaction | undefined } | undefined;
-			mod.registerPreDeleteInterceptor(async (items: any[], tx?: Transaction) => {
-				captured = {items, tx};
+			let captured: { items: any[] } | undefined;
+			mod.registerPreDeleteInterceptor(async (items: any[]) => {
+				captured = {items};
 			});
 
 			const items = [{_id: 'a'}, {_id: 'b'}] as any[];
-			const fakeTx = {id: 'mock-tx'} as unknown as Transaction;
-			await mod.canDeleteItems(items, fakeTx);
+			await mod.canDeleteItems(items);
 
 			expect(captured).to.not.be.undefined;
 			expect(captured!.items).to.equal(items);
-			expect(captured!.tx).to.equal(fakeTx);
 		});
 	});
 

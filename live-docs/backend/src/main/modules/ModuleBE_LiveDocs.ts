@@ -77,8 +77,8 @@ export class ModuleBE_LiveDocs_Class
 
 	async changeHistory(params: LiveDocHistoryReqParams) {
 		const key = params.key;
-		return await this.livedocs.runTransaction(async (transaction) => {
-			const results = await this.livedocs.query.custom({where: {key}}, transaction);
+		return await this.livedocs.runTransaction(async () => {
+			const results = await this.livedocs.query.custom({where: {key}});
 			const docsHistory = results[0];
 			if (!docsHistory)
 				throw new BadImplementationException(`Cannot change history of an non-existing doc with key: ${key}`);
@@ -100,7 +100,7 @@ export class ModuleBE_LiveDocs_Class
 			}
 
 			docsHistory._audit = auditBy('temp-no-user');
-			await this.livedocs.set.item(docsHistory, transaction);
+			await this.livedocs.set.item(docsHistory);
 			return docsHistory.docs[docsHistory.index];
 		});
 	}

@@ -27,8 +27,8 @@ export const FreeForm_TestCase1: ArrayType<TestModel_FreeForm['testcases']> = {
 			const collection = firestore.getCollection<DatabaseDef_FreeForm>(DBDef_FreeForm);
 			const dbItems = await collection.create.all([{values: ['val1', 'val2', 'val3']}, {values: ['val3', 'val4', 'val5']}]);
 
-			await firestore.firestore.runTransaction(async (transaction) => {
-				const item = (await collection.query.unique(dbItems[0]._id, transaction))!;
+			await collection.runTransaction(async () => {
+				const item = (await collection.query.unique(dbItems[0]._id))!;
 				expect(true).to.eql(exists(item));
 				item.values = item.values.filter(id => id !== 'val3');
 

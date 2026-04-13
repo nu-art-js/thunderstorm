@@ -48,8 +48,8 @@ export const TestCases_FB_CreateAll: TestCase_FirestoreV3_CreateAll[] = [
 				const toCreate = deepClone(duplicateObjectToCreate);
 				// create twice and expect to reject
 
-				const promise = collection.runTransaction(async (transaction) => {
-					return collection.create.all([toCreate], transaction);
+				const promise = collection.runTransaction(async () => {
+					return collection.create.all([toCreate]);
 				});
 				await expect(promise).to.be.rejectedWith();
 			}
@@ -64,7 +64,7 @@ export const TestCases_FB_CreateAll: TestCase_FirestoreV3_CreateAll[] = [
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
 
-				await collection.runTransaction(async (transaction) => await expect(collection.create.all([toCreate], transaction)).to.be.fulfilled);
+				await collection.runTransaction(async () => await expect(collection.create.all([toCreate])).to.be.fulfilled);
 			}
 		}
 	},

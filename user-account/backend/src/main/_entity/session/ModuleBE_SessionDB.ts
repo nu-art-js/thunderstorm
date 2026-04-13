@@ -13,7 +13,6 @@ import {
 	TypedKeyValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {AccountType_Service, DatabaseDef_Account, DatabaseDef_Session, DB_Session, DBDef_Session, SafeDB_Account} from '@nu-art/user-account-shared';
 import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
@@ -24,7 +23,6 @@ import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {ModuleBE_AccountDB, OnAccountDeleted} from '../account/ModuleBE_AccountDB.js';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
 import {dbObjectToId, stringToUniqueId} from '@nu-art/db-api-shared';
-import Transaction = firestore.Transaction;
 
 export type BaseSessionClaims = {
 	accountId: DatabaseDef_Account['id'],
@@ -39,7 +37,7 @@ export type Props_CreateSession = {
 };
 
 export interface CollectSessionData<R extends TypedKeyValue<any, AnyPrimitive>> {
-	__collectSessionData(data: BaseSessionClaims, transaction?: Transaction): Promise<R>;
+	__collectSessionData(data: BaseSessionClaims): Promise<R>;
 }
 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, RecursiveObjectOfPrimitives>>, '__collectSessionData'>('__collectSessionData');
@@ -61,8 +59,8 @@ export class ModuleBE_SessionDB_Class
 
 	private jwtHandler!: JWT_Handler<BaseSessionClaims & RecursiveObjectOfPrimitives>;
 
-	__onAccountDeleted = async (account: SafeDB_Account, transaction: Transaction) => {
-		await this.delete.where({accountId: account._id}, transaction);
+	__onAccountDeleted = async (account: SafeDB_Account) => {
+		await this.delete.where({accountId: account._id});
 	};
 
 	constructor() {
@@ -87,8 +85,8 @@ export class ModuleBE_SessionDB_Class
 		});
 	}
 
-	private collectSessionData = async (content: BaseSessionClaims, transaction?: Transaction) => {
-		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(content, transaction));
+	private collectSessionData = async (content: BaseSessionClaims) => {
+		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(content));
 		return collectedData.reduce((sessionData, moduleSessionData) => {
 			// We don't skip existing keys. This allows us to override session data provided by infra, with session data provided by app. If wanted, add flag to symbolize this is intentional to all relevant places.
 			sessionData[moduleSessionData.key] = moduleSessionData.value;
@@ -107,8 +105,8 @@ export class ModuleBE_SessionDB_Class
 
 
 	token = {
-		create: async (initialClaims: BaseSessionClaims, ttlInMs?: number, transaction?: Transaction) => {
-			const claims = await this.collectSessionData(initialClaims, transaction);
+		create: async (initialClaims: BaseSessionClaims, ttlInMs?: number) => {
+			const claims = await this.collectSessionData(initialClaims);
 			return await this.jwtHandler.create(claims, ttlInMs ?? this.config.sessionTTLms);
 		},
 		refresh: async (jwtOrigin: string) => {
@@ -146,7 +144,7 @@ export class ModuleBE_SessionDB_Class
 			// Determine if the session should be rotated:
 			return remainingTTL / totalTTL < this.config.rotationFactor;
 		},
-		refresh: async (dbSession: DB_Session = MemKey_DB_Session.get(), transaction?: Transaction) => {
+		refresh: async (dbSession: DB_Session = MemKey_DB_Session.get()) => {
 			this.logInfo(`Refreshing JWT for Account: ${dbSession.accountId}`);
 
 			const jwt = await this.token.refresh(dbSession.sessionIdJwt);
@@ -160,9 +158,9 @@ export class ModuleBE_SessionDB_Class
 				}
 			};
 
-			return await this._session.save(content, jwt, transaction);
+			return await this._session.save(content, jwt);
 		},
-		reissue: async (dbSession: DB_Session = MemKey_DB_Session.get(), transaction?: Transaction) => {
+		reissue: async (dbSession: DB_Session = MemKey_DB_Session.get()) => {
 			this.logInfo(`Reissuing JWT for Account: ${dbSession.accountId} from Session: ${dbSession._id}`);
 			const claims = await this.token.verify(dbSession.sessionIdJwt);
 			const initialClaims = {
@@ -171,26 +169,26 @@ export class ModuleBE_SessionDB_Class
 				label: `reissued from ${dbSession._id}`,
 			};
 
-			const jwt = await this.token.create(initialClaims, (claims.exp - claims.iat) * 1000, transaction);
+			const jwt = await this.token.create(initialClaims, (claims.exp - claims.iat) * 1000);
 
 			const content: Props_CreateSession = {
 				linkedSessionId: dbSession._id,
 				prevSessions: dbSession.validSessionJwtMd5s,
 				initialClaims: initialClaims
 			};
-			return await this._session.save(content, jwt, transaction);
+			return await this._session.save(content, jwt);
 		}
 	};
 
 	_session = {
 		query: {
-			byJwt: async (jwt: string, transaction?: Transaction) => {
+			byJwt: async (jwt: string) => {
 				return await this.query.uniqueCustom({
 					// We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
 					where: {validSessionJwtMd5s: {$ac: stringToUniqueId<DatabaseDef_Session['dbKey']>(md5(jwt))}},
 					orderBy: [{key: '__created', order: 'desc'}],
 					limit: 1
-				}, transaction);
+				});
 			}
 		},
 		return: async (dbSession: DB_Session) => {
@@ -200,7 +198,7 @@ export class ModuleBE_SessionDB_Class
 			MemKey_Jwt.set(jwt);
 			return jwt;
 		},
-		save: async (content: Props_CreateSession, jwt: string, transaction?: Transaction) => {
+		save: async (content: Props_CreateSession, jwt: string) => {
 			const _id = stringToUniqueId<DatabaseDef_Session['dbKey']>(md5(jwt));
 			const validSessionJwtMd5s = content.prevSessions ? [_id, ...content.prevSessions] : [_id];
 			if (validSessionJwtMd5s.length > this.config.maxPrevSession)
@@ -218,61 +216,61 @@ export class ModuleBE_SessionDB_Class
 
 			const idsToDelete = dbSession.validSessionJwtMd5s.slice(1);
 			if (idsToDelete.length)
-				await this.delete.all(idsToDelete, transaction);
+				await this.delete.all(idsToDelete);
 
-			return await this.set.item(dbSession, transaction);
+			return await this.set.item(dbSession);
 		},
-		create: Object.assign(async (content: Props_CreateSession, ttlInMs?: number, transaction?: Transaction) => {
+		create: Object.assign(async (content: Props_CreateSession, ttlInMs?: number) => {
 				this.logInfo(`Creating JWT for Account: ${content.initialClaims.accountId}`);
-				const jwt = await this.token.create(content.initialClaims, ttlInMs, transaction);
-				return await this._session.save(content, jwt, transaction);
+				const jwt = await this.token.create(content.initialClaims, ttlInMs);
+				return await this._session.save(content, jwt);
 			},
 			{
-				andReturn: async (content: Props_CreateSession, ttlInMs?: number, transaction?: Transaction) => {
-					const dbSession = await this._session.create(content, ttlInMs, transaction);
+				andReturn: async (content: Props_CreateSession, ttlInMs?: number) => {
+					const dbSession = await this._session.create(content, ttlInMs);
 					return await this._session.return(dbSession);
 				},
 			}),
 		rotate: {
 			refreshIfNeeded: {
-				byJwt: async (jwt: string, transaction?: Transaction) => {
+				byJwt: async (jwt: string) => {
 					if (!(await this.__session.shouldRefresh(jwt)))
 						return;
 
-					const dbSession = await this._session.query.byJwt(jwt, transaction);
+					const dbSession = await this._session.query.byJwt(jwt);
 					this.logInfo(`Refreshing Session by JWT for account(${dbSession.accountId}) sessionId(${dbSession._id})`);
-					return await this.__session.refresh(dbSession, transaction);
+					return await this.__session.refresh(dbSession);
 				},
-				bySession: async (dbSession: DB_Session = MemKey_DB_Session.get(), transaction?: Transaction) => {
+				bySession: async (dbSession: DB_Session = MemKey_DB_Session.get()) => {
 					if (!(await this.__session.shouldRefresh(dbSession.sessionIdJwt)))
 						return dbSession;
 
 					this.logInfo(`Refreshing Session by dbSession for account(${dbSession.accountId}) sessionId(${dbSession._id})`);
-					return await this.__session.refresh(dbSession, transaction);
+					return await this.__session.refresh(dbSession);
 				}
 			},
 			reissue: {
-				byJwt: async (jwt: string, transaction?: Transaction) => {
+				byJwt: async (jwt: string) => {
 					await this.jwtHandler.assert(jwt);
-					const dbSession = await this._session.query.byJwt(jwt, transaction);
-					return await this.__session.reissue(dbSession, transaction);
+					const dbSession = await this._session.query.byJwt(jwt);
+					return await this.__session.reissue(dbSession);
 				},
-				bySession: async (dbSession: DB_Session = MemKey_DB_Session.get(), transaction?: Transaction) => {
+				bySession: async (dbSession: DB_Session = MemKey_DB_Session.get()) => {
 					await this.jwtHandler.assert(dbSession.sessionIdJwt);
-					return await this.__session.reissue(dbSession, transaction);
+					return await this.__session.reissue(dbSession);
 				}
 			}
 		},
 		invalidate: {
-			byJwt: async (jwt: string, transaction?: Transaction) => {
-				const session = await this._session.query.byJwt(jwt, transaction);
-				return await this._session.invalidate.bySession(session, transaction);
+			byJwt: async (jwt: string) => {
+				const session = await this._session.query.byJwt(jwt);
+				return await this._session.invalidate.bySession(session);
 			},
-			bySession: async (dbSession: DB_Session = MemKey_DB_Session.get(), transaction?: Transaction) => {
+			bySession: async (dbSession: DB_Session = MemKey_DB_Session.get()) => {
 				if (!dbSession)
 					throw HttpCodes._4XX.UNAUTHORIZED('No session in context to invalidate');
 
-				await this.set.item({...dbSession, validSessionJwtMd5s: []}, transaction);
+				await this.set.item({...dbSession, validSessionJwtMd5s: []});
 
 				this.logInfo(`Session invalidated for account: ${dbSession.accountId}, sessionId: ${dbSession._id}`);
 			}
@@ -296,7 +294,7 @@ export class ModuleBE_SessionDB_Class
 
 	private async locateSession(jwt: string) {
 		try {
-			const {dbSession, claims} = await this.runTransaction(async t => {
+			const {dbSession, claims} = await this.runTransaction(async () => {
 				let dbSession: DB_Session;
 				try {
 					dbSession = await this._session.query.byJwt(jwt);

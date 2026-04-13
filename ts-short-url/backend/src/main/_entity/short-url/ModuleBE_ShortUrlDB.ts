@@ -38,7 +38,7 @@ export class ModuleBE_ShortUrlDB_Class
 		};
 	}
 
-	protected async preWriteProcessing(dbInstance: UI_ShortUrl, originalDbInstance: DB_ShortUrl, transaction?: FirebaseFirestore.Transaction) {
+	protected async preWriteProcessing(dbInstance: UI_ShortUrl, originalDbInstance: DB_ShortUrl) {
 		if (!dbInstance._shortUrl)
 			dbInstance._shortUrl = generateShortURL();
 	}

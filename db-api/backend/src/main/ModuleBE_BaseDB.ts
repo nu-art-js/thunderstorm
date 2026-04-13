@@ -36,10 +36,8 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {CollectionActionType, FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
+import {CollectionActionType, FirestoreCollection, getActiveTransaction, MemKey_DeletedDocs, MongoCollection} from '@nu-art/firebase-backend';
 import {DocWrapper} from '@nu-art/firebase-backend/firestore/DocWrapper';
-import {Transaction} from 'firebase-admin/firestore';
-import {MemKey_DeletedDocs} from '@nu-art/firebase-backend/firestore/consts';
 import {
 	DBApiBEConfig,
 	DBEntityDependencies,
@@ -50,6 +48,8 @@ import {
 } from './storm-stubs.js';
 import {CrudClause_Where, DB_Prototype} from '@nu-art/db-api-shared';
 import {BaseDBDefBE, PostWriteInterceptor, PostWriteProcessingDataShape, PreDeleteInterceptor, PreWriteInterceptor, QueryInterceptor} from './backend-types.js';
+
+export type BackendType = 'firestore' | 'mongo';
 
 export type BaseDBApiConfig = {
 	projectId?: string;
@@ -70,10 +70,22 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	extends Module<Config & DBApiConfig>
 	implements EntityDependencyCollection {
 
+	private static defaultBackend: BackendType = 'firestore';
+	private static mongoDbName: string = 'default';
+
+	static setDefaultBackend(backend: BackendType) {
+		ModuleBE_BaseDB.defaultBackend = backend;
+	}
+
+	static setMongoDbName(dbName: string) {
+		ModuleBE_BaseDB.mongoDbName = dbName;
+	}
+
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
 
-	public collection!: FirestoreCollection<Database>;
+	protected backendType: BackendType = ModuleBE_BaseDB.defaultBackend;
+	public collection!: FirestoreCollection<Database> | MongoCollection<Database>;
 	public readonly dbDef: BaseDBDefBE;
 	public query!: FirestoreCollection<Database>['query'];
 	public create!: FirestoreCollection<Database>['create'];
@@ -121,7 +133,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 		this.preDeleteInterceptors.push(fn);
 	}
 
-	__collectEntityDependencies = async (type: string, itemIds: string[], transaction?: Transaction): Promise<DBEntityDependencies | undefined> => {
+	__collectEntityDependencies = async (type: string, itemIds: string[]): Promise<DBEntityDependencies | undefined> => {
 		const dependencyDefs = this.dbDef.dependencies ?? {};
 		const dependencyDefKeys = _keys(dependencyDefs).filter((key): key is string => dependencyDefs[key].dbKey === type);
 		if (!dependencyDefKeys.length)
@@ -141,7 +153,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 					throw new BadImplementationException(`Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
 			}
 
-			acc.push(batchActionParallel(itemIds, 10, async ids => this.query.unManipulatedQuery({where: whereClause(ids)}, transaction)));
+			acc.push(batchActionParallel(itemIds, 10, async ids => this.query.unManipulatedQuery({where: whereClause(ids)})));
 			return acc;
 		}, [] as Promise<Database['dbType'][]>[]);
 
@@ -150,7 +162,8 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 
 		let conflictingItems = filterInstances((await Promise.all(conflictItemQueries)).flat());
 		conflictingItems = filterDuplicates<Database['dbType']>(conflictingItems, dbObjectToId);
-		const ignoredInThisTransaction = MemKey_DeletedDocs.get([]).find(item => item.transaction === transaction);
+		const activeTransaction = getActiveTransaction();
+		const ignoredInThisTransaction = activeTransaction ? MemKey_DeletedDocs.get([]).find(item => item.transaction === activeTransaction) : undefined;
 		if (ignoredInThisTransaction) {
 			const ignoredForThisCollection: Set<UniqueId> | undefined = ignoredInThisTransaction.deleted[this.dbDef.dbKey];
 			conflictingItems = conflictingItems.filter(object => !ignoredForThisCollection?.has(object._id));
@@ -178,6 +191,13 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 			return acc;
 		}, {} as DBEntityDependencies['dependencyMap']);
 	};
+
+	public asFirestoreCollection(): FirestoreCollection<Database> {
+		if (this.collection instanceof MongoCollection)
+			throw new BadImplementationException(`${this.getName()} requires FirestoreCollection but is configured with MongoDB`);
+
+		return this.collection as FirestoreCollection<Database>;
+	}
 
 	/**
 	 * Executed during the initialization of the module.
@@ -221,51 +241,60 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 		this.create = wrapInTryCatch(this.collection.create, 'create');
 		this.set = wrapInTryCatch(this.collection.set, 'set');
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
-		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
+		if ('doc' in this.collection)
+			this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 	}
 
 	protected resolveCollection() {
-		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestore();
-		this.collection = firestore.getCollection(this.dbDef as any, {
+		const hooks = {
 			canDeleteItems: this.canDeleteItems.bind(this),
 			preWriteProcessing: this._preWriteProcessing.bind(this),
 			postWriteProcessing: this._postWriteProcessing.bind(this) as any,
 			upgradeInstances: this.upgradeInstances.bind(this),
 			manipulateQuery: this._manipulateQuery.bind(this) as any
-		});
+		};
+
+		const session = ModuleBE_Firebase.createAdminSession(this.config?.projectId);
+
+		switch (this.backendType) {
+			case 'mongo':
+				this.collection = session.getMongo(ModuleBE_BaseDB.mongoDbName).getCollection(this.dbDef as any, hooks);
+				break;
+
+			case 'firestore':
+			default:
+				this.collection = session.getFirestore().getCollection(this.dbDef as any, hooks);
+				break;
+		}
 	}
 
-	private _preWriteProcessing = async (dbItem: Database['uiType'], originalDbInstance: Database['dbType'], transaction?: Transaction, upgrade = true) => {
+	private _preWriteProcessing = async (dbItem: Database['uiType'], originalDbInstance: Database['dbType']) => {
 		for (const interceptor of this.preWriteInterceptors)
-			await interceptor(dbItem, originalDbInstance, transaction);
+			await interceptor(dbItem, originalDbInstance);
 
-		await this.preWriteProcessing(dbItem, originalDbInstance, transaction);
+		await this.preWriteProcessing(dbItem, originalDbInstance);
 	};
 
 	/**
 	 * Override this method to customize the processing that should be done before create, set or update.
 	 *
-	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 * @param originalDbInstance - The DB instance fetched from remote firestore.
 	 */
-	protected async preWriteProcessing(dbInstance: Database['uiType'], originalDbInstance: Database['dbType'], transaction?: Transaction) {
+	protected async preWriteProcessing(dbInstance: Database['uiType'], originalDbInstance: Database['dbType']) {
 	}
 
-	private _postWriteProcessing = async (data: PostWriteProcessingDataShape<Database['dbType']>, actionType: CollectionActionType, transaction?: Transaction) => {
-		await this.postWriteProcessing(data, actionType, transaction);
+	private _postWriteProcessing = async (data: PostWriteProcessingDataShape<Database['dbType']>, actionType: CollectionActionType) => {
+		await this.postWriteProcessing(data, actionType);
 
 		for (const interceptor of this.postWriteInterceptors)
-			await interceptor(data, actionType, transaction);
+			await interceptor(data, actionType);
 	};
 
 	/**
 	 * Override this method to customize processing that should be done after create, set, update or delete.
-	 * @param data
-	 * @param actionType create/set/update/delete
-	 * @param transaction
 	 */
-	protected async postWriteProcessing(data: PostWriteProcessingDataShape<Database['dbType']>, actionType: CollectionActionType, transaction?: Transaction) {
+	protected async postWriteProcessing(data: PostWriteProcessingDataShape<Database['dbType']>, actionType: CollectionActionType) {
 	}
 
 	private _manipulateQuery = (query: FirestoreQuery<Database['dbType']>): FirestoreQuery<Database['dbType']> => {
@@ -284,14 +313,13 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 
 	/**
 	 * Override this method to provide actions or assertions to be executed before the deletion happens.
-	 * @param transaction - The transaction object
 	 * @param dbItems - The DB entry that is going to be deleted.
 	 */
-	async canDeleteItems(dbItems: Database['dbType'][], transaction?: Transaction) {
+	async canDeleteItems(dbItems: Database['dbType'][]) {
 		for (const interceptor of this.preDeleteInterceptors)
-			await interceptor(dbItems, transaction);
+			await interceptor(dbItems);
 
-		const dependencies = await this.collectDependencies(dbItems, transaction);
+		const dependencies = await this.collectDependencies(dbItems);
 		if (dependencies)
 			throw new ApiException<DBEntityDependencyError>(422, 'entity has dependencies').setErrorBody({
 				type: 'entity-has-dependencies',
@@ -299,8 +327,8 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 			});
 	}
 
-	async collectDependencies(dbInstances: Database['dbType'][], transaction?: Transaction): Promise<DBEntityDependencies | undefined> {
-		const dependencyResponses = await dispatch_CollectEntityDependencies.dispatchModuleAsync(this.dbDef.dbKey, dbInstances.map(dbObjectToId), transaction);
+	async collectDependencies(dbInstances: Database['dbType'][]): Promise<DBEntityDependencies | undefined> {
+		const dependencyResponses = await dispatch_CollectEntityDependencies.dispatchModuleAsync(this.dbDef.dbKey, dbInstances.map(dbObjectToId));
 		const filtered = filterInstances(dependencyResponses);
 		if (!filtered.length)
 			return undefined;
@@ -340,6 +368,20 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	};
 
 	processCollection = async (processInstances: (instances: Database['dbType'][]) => Promise<void>) => {
+		if (this.collection instanceof MongoCollection) {
+			const itemsCount = this.config.chunksSize ?? CONST_DefaultWriteChunkSize;
+			const query = {limit: {page: 0, itemsCount}};
+			let instances: Database['dbType'][];
+
+			while ((instances = await this.collection.query.unManipulatedQuery(query)).length > 0) {
+				(this as any).logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
+				await processInstances(instances);
+				query.limit.page++;
+			}
+			return;
+		}
+
+		const fsCollection = this.collection as FirestoreCollection<Database>;
 		let docs: DocWrapper<any>[];
 		const itemsCount = this.config.chunksSize ?? CONST_DefaultWriteChunkSize;
 
@@ -347,9 +389,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 			limit: {page: 0, itemsCount},
 		};
 
-		while ((docs = await this.collection.doc.unManipulatedQuery(query)).length > 0) {
-
-			// this is old Backward compatible from before the assertion of unique ids where the doc ref is the _id of the doc
+		while ((docs = await fsCollection.doc.unManipulatedQuery(query)).length > 0) {
 			const toDelete = docs.filter(doc => {
 				return doc.ref.id !== doc.data!._id;
 			});
@@ -360,7 +400,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 
 			if (toDelete.length > 0) {
 				(this as any).logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);
-				await this.collection.delete.multi.allDocs(toDelete);
+				await fsCollection.delete.multi.allDocs(toDelete);
 			}
 
 			query.limit.page++;

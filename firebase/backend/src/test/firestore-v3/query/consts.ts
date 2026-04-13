@@ -1,4 +1,3 @@
-import {Transaction} from 'firebase-admin/firestore';
 import {compare, exists, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
@@ -73,8 +72,8 @@ export const queryTestCases: QueryTest[] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				await collection.runTransaction(async (transaction: Transaction) => {
-					const items = sortArray(await collection.query.custom(_EmptyQuery, transaction), (item: DB_Type) => item.numeric);
+				await collection.runTransaction(async () => {
+					const items = sortArray(await collection.query.custom(_EmptyQuery), (item: DB_Type) => item.numeric);
 					expect(items.length).to.eql(5);
 					expect(true).to.eql(compare(items.map((item: DB_Type) => removeDBObjectKeys(item)), expectedResult));
 				});
@@ -117,8 +116,8 @@ export const queryAllTestCases: TestModel<CollectionTestInput, TestInputValue>[]
 			outerCollection: outerQueryCollection,
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
-				await collectionInner.runTransaction(async (transaction) => {
-					const items = await collectionInner.query.all([id_inner1, id_inner2], transaction);
+				await collectionInner.runTransaction(async () => {
+					const items = await collectionInner.query.all([id_inner1, id_inner2]);
 					expect(items.length).to.eql(2);
 				});
 			}
@@ -162,8 +161,8 @@ export const queryComplexTestCases: TestModel<CollectionTestInput, TestInputValu
 			outerCollection: outerQueryCollection,
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
-				await collectionInner.runTransaction(async (transaction) => {
-					const innerItems = await collectionInner.query.custom({where: {parentId: id_outer1}}, transaction);
+				await collectionInner.runTransaction(async () => {
+					const innerItems = await collectionInner.query.custom({where: {parentId: id_outer1}});
 					expect(innerItems.length).to.eql(5);
 					expect(true).to.eql(innerItems.every(item => item.parentId === id_outer1));
 				});
@@ -260,12 +259,12 @@ export const queryWithPagination: QueryTest[] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				await collection.runTransaction(async (transaction: Transaction) => {
+				await collection.runTransaction(async () => {
 					const items = await collection.query.custom({
 						where: {},
 						orderBy: [{key: 'stringValue', order: 'asc'}],
 						limit: {page: 1, itemsCount: 2}
-					}, transaction);
+					});
 
 					expect(items.length).to.eql(2);
 				});

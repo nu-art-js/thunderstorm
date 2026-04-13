@@ -67,15 +67,15 @@ export class ModuleBE_ArchiveModule_Class
 		if (!dbModule)
 			throw new BadImplementationException('no module found');
 
-		return dbModule.runTransaction(async (transaction) => {
-			const instance = dbInstance ?? await dbModule.query.unique({_id}, transaction);
+		return dbModule.runTransaction(async () => {
+			const instance = dbInstance ?? await dbModule.query.unique({_id});
 
 			if (!instance)
 				throw new BadImplementationException(`couldn't find doc with id ${_id}`);
 
 			(instance as DB_Object & { __hardDelete?: boolean }).__hardDelete = true;
 
-			await dbModule.set.item(instance, transaction);
+			await dbModule.set.item(instance);
 		});
 	}
 
@@ -89,7 +89,7 @@ export class ModuleBE_ArchiveModule_Class
 		const collectionItems = await dbModule.query.custom(_EmptyQuery);
 		await batchActionParallel(collectionItems, 10, (chunk) => Promise.all(chunk.map((item) => this.hardDeleteUnique({
 			_id: item._id,
-			collectionName: dbModule.collection.collection.path,
+			collectionName: dbModule.asFirestoreCollection().collection.path,
 			dbInstance: item
 		}))));
 	}
@@ -102,7 +102,7 @@ export class ModuleBE_ArchiveModule_Class
 		if (!dbModule)
 			throw new BadImplementationException('no db module found');
 
-		const collectionGroup = dbModule.collection.collection.firestore.collectionGroup('_archived');
+		const collectionGroup = dbModule.asFirestoreCollection().collection.firestore.collectionGroup('_archived');
 		const query = collectionGroup.where('_originDocId', '==', _id).orderBy('__created', 'desc');
 		const snapshot = await query.get();
 		const docs = snapshot.docs.map((doc) => doc.data());
@@ -134,7 +134,7 @@ export class ModuleBE_ArchiveModule_Class
 		if ((before as DB_Object & { __hardDelete?: boolean }).__hardDelete)
 			return;
 
-		const collectionRef = dbModule.collection.collection;
+		const collectionRef = dbModule.asFirestoreCollection().collection;
 		const timestamp = currentTimeMillis();
 
 		let dbInstance = deepClone(before) as DB_Object & { _originDocId?: string };
@@ -151,7 +151,7 @@ export class ModuleBE_ArchiveModule_Class
 	}
 
 	private async hardDeleteDoc(instance: DB_Object, dbModule: AnyBaseDB) {
-		const collectionRef = dbModule.collection.collection;
+		const collectionRef = dbModule.asFirestoreCollection().collection;
 		const instanceRef = collectionRef.doc(instance._id);
 		const archivedCollectionRef = instanceRef.collection(Const_ArchivedCollectionPath);
 

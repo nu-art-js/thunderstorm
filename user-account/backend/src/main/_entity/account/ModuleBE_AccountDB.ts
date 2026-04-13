@@ -14,7 +14,6 @@ import {
 	Year
 } from '@nu-art/ts-common';
 import {DB_BaseObject} from '@nu-art/db-api-shared';
-import {firestore} from 'firebase-admin';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import {FirestoreQuery} from '@nu-art/firebase-shared';
@@ -42,7 +41,7 @@ import {QueryDocumentSnapshot} from 'firebase-admin/firestore';
 import {Header_Authorization, MemKey_AccountEmail, MemKey_AccountId, MemKey_AccountType, MemKey_DB_Session, SessionKey_Account_BE} from '../session/consts.js';
 import {BaseSessionClaims, CollectSessionData, ModuleBE_SessionDB} from '../session/ModuleBE_SessionDB.js';
 import {ModuleBE_FailedLoginAttemptDB} from '../failed-login-attempt/ModuleBE_FailedLoginAttemptDB.js';
-import Transaction = firestore.Transaction;
+import {getActiveTransaction} from '@nu-art/firebase-backend';
 
 
 type BaseAccount = {
@@ -56,11 +55,11 @@ type SpicedAccount = BaseAccount & {
 type AccountToCreate = SpicedAccount | BaseAccount;
 
 export interface OnNewUserRegistered {
-	__onNewUserRegistered(account: SafeDB_Account, transaction: Transaction): void;
+	__onNewUserRegistered(account: SafeDB_Account): void;
 }
 
 export interface OnUserLogin {
-	__onUserLogin(account: SafeDB_Account, transaction: Transaction): void;
+	__onUserLogin(account: SafeDB_Account): void;
 }
 
 export interface OnPreLogout {
@@ -73,7 +72,7 @@ const dispatch_onAccountRegistered = new Dispatcher<OnNewUserRegistered, '__onNe
 export const dispatch_onPreLogout = new Dispatcher<OnPreLogout, '__onPreLogout'>('__onPreLogout');
 
 export interface OnAccountDeleted {
-	__onAccountDeleted: (account: SafeDB_Account, transaction: Transaction) => Promise<void>;
+	__onAccountDeleted: (account: SafeDB_Account) => Promise<void>;
 }
 
 const dispatch_OnAccountDeleted = new Dispatcher<OnAccountDeleted, '__onAccountDeleted'>('__onAccountDeleted');
@@ -189,7 +188,7 @@ export class ModuleBE_AccountDB_Class
 		};
 	}
 
-	protected async preWriteProcessing(dbInstance: UI_Account, originalDbInstance: DatabaseDef_Account['dbType'], transaction?: Transaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: UI_Account, originalDbInstance: DatabaseDef_Account['dbType']): Promise<void> {
 		try {
 			dbInstance._auditorId = MemKey_AccountId.get();
 		} catch (e) {
@@ -214,29 +213,30 @@ export class ModuleBE_AccountDB_Class
 				saltedPassword: hashPasswordWithSalt(salt, accountToSpice.password)
 			};
 		},
-		create: async (accountToCreate: AccountToCreate, transaction: Transaction) => {
+		create: async (accountToCreate: AccountToCreate) => {
 			let dbAccount = (await this.query.custom({
 				where: {email: accountToCreate.email},
 				limit: 1
-			}, transaction))[0];
+			}))[0];
 			if (dbAccount)
 				throw new ApiException(422, `User with email "${accountToCreate.email}" already exists`);
 
-			dbAccount = await this.create.item(accountToCreate, transaction);
+			dbAccount = await this.create.item(accountToCreate);
 			return makeAccountSafe(dbAccount);
 		},
 		setAccountMemKeys: async (account: SafeDB_Account) => {
 			MemKey_AccountId.set(account._id);
 			MemKey_AccountEmail.set(account.email!);
 		},
-		onAccountCreated: async (account: SafeDB_Account, transaction: Transaction) => {
-			await dispatch_onAccountRegistered.dispatchModuleAsync(account, transaction);
+		onAccountCreated: async (account: SafeDB_Account) => {
+			await dispatch_onAccountRegistered.dispatchModuleAsync(account);
 		},
-		onAccountLogin: async (account: SafeDB_Account, transaction: Transaction) => {
-			await dispatch_onAccountLogin.dispatchModuleAsync(account, transaction);
+		onAccountLogin: async (account: SafeDB_Account) => {
+			await dispatch_onAccountLogin.dispatchModuleAsync(account);
 		},
-		queryUnsafeAccount: async (credentials: AccountEmail, transaction?: Transaction) => {
+		queryUnsafeAccount: async (credentials: AccountEmail) => {
 			const firestoreQuery = FirestoreInterface.buildQuery(this.collection as any, {where: {email: credentials.email}});
+			const transaction = getActiveTransaction();
 			let results;
 			if (transaction)
 				results = (await transaction.get(firestoreQuery)).docs as QueryDocumentSnapshot<DB_Account>[];
@@ -255,8 +255,8 @@ export class ModuleBE_AccountDB_Class
 
 			return results[0].data();
 		},
-		querySafeAccount: async (credentials: AccountEmail, transaction?: Transaction) => {
-			const account = await this.impl.queryUnsafeAccount(credentials, transaction);
+		querySafeAccount: async (credentials: AccountEmail) => {
+			const account = await this.impl.queryUnsafeAccount(credentials);
 			return makeAccountSafe(account);
 		}
 	};
@@ -264,7 +264,7 @@ export class ModuleBE_AccountDB_Class
 
 	account = {
 		// this flow is for creating real human users with email and password
-		register: async (accountWithPassword: API_UserAccount['registerAccount']['Body'], transaction?: Transaction): Promise<API_UserAccount['registerAccount']['Response']> => {
+		register: async (accountWithPassword: API_UserAccount['registerAccount']['Body']): Promise<API_UserAccount['registerAccount']['Response']> => {
 			if (!this.config.canRegister)
 				throw new ApiException(418, 'Registration is disabled!!');
 
@@ -274,10 +274,10 @@ export class ModuleBE_AccountDB_Class
 				email: accountWithPassword.email,
 				password: accountWithPassword.password
 			});
-			const dbSafeAccount = await this.runTransaction(async transaction => {
-				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
+			const dbSafeAccount = await this.runTransaction(async () => {
+				const dbSafeAccount = await this.impl.create(spicedAccount);
 				await this.impl.setAccountMemKeys(dbSafeAccount);
-				await this.impl.onAccountCreated(dbSafeAccount, transaction);
+				await this.impl.onAccountCreated(dbSafeAccount);
 				return dbSafeAccount;
 			});
 
@@ -291,12 +291,12 @@ export class ModuleBE_AccountDB_Class
 		login: async (credentials: API_UserAccount['login']['Body']): Promise<API_UserAccount['login']['Response']> => {
 			this.impl.fixEmail(credentials);
 
-			const safeAccount = await this.runTransaction(async transaction => {
-				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email}, transaction);
+			const safeAccount = await this.runTransaction(async () => {
+				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email});
 				await this.password.assertPasswordMatch(dbAccount, credentials.password);
 				const safeAccount = makeAccountSafe(dbAccount);
 				MemKey_AccountId.set(safeAccount._id);
-				await this.impl.onAccountLogin(safeAccount, transaction);
+				await this.impl.onAccountLogin(safeAccount);
 				return safeAccount;
 			});
 
@@ -313,36 +313,36 @@ export class ModuleBE_AccountDB_Class
 			const password = createAccountRequest.password;
 			let dbSafeAccount: SafeDB_Account;
 			this.impl.fixEmail(createAccountRequest);
-			return this.runTransaction(async transaction => {
+			return this.runTransaction(async () => {
 				if (exists(password) || exists(createAccountRequest.passwordCheck)) {
 					this.impl.assertPasswordCheck(createAccountRequest);
 					const spicedAccount = this.impl.spiceAccount(createAccountRequest as AccountToSpice);
-					dbSafeAccount = await this.impl.create(spicedAccount, transaction);
+					dbSafeAccount = await this.impl.create(spicedAccount);
 				} else
-					dbSafeAccount = await this.impl.create(createAccountRequest, transaction);
+					dbSafeAccount = await this.impl.create(createAccountRequest);
 
-				await this.impl.onAccountCreated(dbSafeAccount, transaction);
+				await this.impl.onAccountCreated(dbSafeAccount);
 				return dbSafeAccount;
 			});
 		},
 		saml: async (oAuthAccount: AccountEmailWithDevice) => {
 			this.impl.fixEmail(oAuthAccount);
-			const dbSafeAccount = await this.runTransaction(async transaction => {
+			const dbSafeAccount = await this.runTransaction(async () => {
 				let dbSafeAccount: SafeDB_Account;
 				try {
-					dbSafeAccount = await this.impl.querySafeAccount({...oAuthAccount}, transaction);
+					dbSafeAccount = await this.impl.querySafeAccount({...oAuthAccount});
 					this.logInfo('SAML login account');
 					MemKey_AccountId.set(dbSafeAccount._id);
-					await this.impl.onAccountLogin(dbSafeAccount, transaction);
+					await this.impl.onAccountLogin(dbSafeAccount);
 				} catch (e: any) {
 					if ((e as ApiException).responseCode !== 401)
 						throw e;
 
 					this.logInfo('SAML register account');
 
-					dbSafeAccount = await this.impl.create({email: oAuthAccount.email, type: 'user'}, transaction);
+					dbSafeAccount = await this.impl.create({email: oAuthAccount.email, type: 'user'});
 					MemKey_AccountId.set(dbSafeAccount._id);
-					await this.impl.onAccountCreated(dbSafeAccount, transaction);
+					await this.impl.onAccountCreated(dbSafeAccount);
 				}
 				return dbSafeAccount;
 			});
@@ -350,7 +350,7 @@ export class ModuleBE_AccountDB_Class
 			return ModuleBE_SessionDB._session.create({initialClaims});
 		},
 		changePassword: async (passwordToChange: API_UserAccount['changePassword']['Body']): Promise<API_UserAccount['changePassword']['Response']> => {
-			return this.runTransaction(async transaction => {
+			return this.runTransaction(async () => {
 				const email = MemKey_AccountEmail.get();
 				const deviceId = MemKey_DB_Session.get().deviceId;
 				await this.account.login({email, deviceId, password: passwordToChange.oldPassword}); // perform login to make sure the old password holds
@@ -370,7 +370,7 @@ export class ModuleBE_AccountDB_Class
 					...safeAccount,
 					salt: spicedAccount.salt,
 					saltedPassword: spicedAccount.saltedPassword
-				}, transaction);
+				});
 
 				const initialClaims = {
 					accountId: updatedAccount._id,
@@ -383,11 +383,11 @@ export class ModuleBE_AccountDB_Class
 			});
 		},
 		setPassword: async (passwordBody: API_UserAccount['setPassword']['Body']): Promise<API_UserAccount['setPassword']['Response']> => {
-			return this.runTransaction(async transaction => {
+			return this.runTransaction(async () => {
 				const email = MemKey_AccountEmail.get();
 				const deviceId = MemKey_DB_Session.get().deviceId;
 
-				const dbAccount = await this.impl.queryUnsafeAccount({email}, transaction);
+				const dbAccount = await this.impl.queryUnsafeAccount({email});
 				if (dbAccount.saltedPassword)
 					throw HttpCodes._4XX.FORBIDDEN('account already has password');
 
@@ -399,7 +399,7 @@ export class ModuleBE_AccountDB_Class
 					...safeAccount,
 					salt: spicedAccount.salt,
 					saltedPassword: spicedAccount.saltedPassword
-				}, transaction);
+				});
 
 				const initialClaims = {
 					accountId: updatedAccount._id,
@@ -433,15 +433,15 @@ export class ModuleBE_AccountDB_Class
 			};
 		},
 		delete: async (request: API_UserAccount['deleteAccount']['Params']): Promise<API_UserAccount['deleteAccount']['Response']> => {
-			return await this.runTransaction(async t => {
+			return await this.runTransaction(async () => {
 				const account = await this.query.unique(request.accountId);
 				if (!account)
 					throw HttpCodes._4XX.NOT_FOUND(`Account with id ${request.accountId} Not Found!`);
 
 				try {
 					const safeAccount = makeAccountSafe(account);
-					await dispatch_OnAccountDeleted.dispatchModuleAsyncSerial(safeAccount, t);
-					await this.delete.item(account, t);
+					await dispatch_OnAccountDeleted.dispatchModuleAsyncSerial(safeAccount);
+					await this.delete.item(account);
 					return {account};
 				} catch (err: any) {
 					const error = err as ApiException;

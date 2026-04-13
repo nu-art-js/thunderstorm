@@ -1,4 +1,4 @@
-import {CollectionTest, firestore, id_inner1, id_inner2, id_inner3, id_inner4, id_outer1, innerQueryCollection, outerQueryCollection} from '../_core/consts.js';
+import {CollectionTest, id_inner1, id_inner2, id_inner3, id_inner4, id_outer1, innerQueryCollection, outerQueryCollection} from '../_core/consts.js';
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
 import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
@@ -6,43 +6,43 @@ import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/shared/index.
 
 
 const transaction_addInner4 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
-	return firestore.firestore.runTransaction(async (transaction) => {
+	return collectionOuter.runTransaction(async () => {
 		console.log(`pah1 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1, transaction))!;
+		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs.push(id_inner4);
 
-		await collectionOuter.set.item(outerItem, transaction);
+		await collectionOuter.set.item(outerItem);
 		console.log(`zevel1 ${currentTimeMillis() - now}`);
 	});
 };
 
 const transaction_removeInner2 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
-	return firestore.firestore.runTransaction(async (transaction) => {
+	return collectionOuter.runTransaction(async () => {
 		console.log(`pah2 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1, transaction))!;
+		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs = outerItem.refs.filter(id => id !== id_inner2);
 
-		await collectionOuter.set.item(outerItem, transaction);
+		await collectionOuter.set.item(outerItem);
 		console.log(`zevel2 ${currentTimeMillis() - now}`);
 	});
 
 };
 const transaction_removeInner3 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
-	return firestore.firestore.runTransaction(async (transaction) => {
+	return collectionOuter.runTransaction(async () => {
 		console.log(`pah3 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1, transaction))!;
+		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs = outerItem.refs.filter(id => id !== id_inner3);
 
-		await collectionOuter.set.item(outerItem, transaction);
+		await collectionOuter.set.item(outerItem);
 
 		console.log(`zevel3 ${currentTimeMillis() - now}`);
 	});
@@ -61,7 +61,7 @@ export const transactionTestCases1: CollectionTest['testcases'] = [
 				const originalReferencedInnerItems = await collectionInner.query.custom({where: {parentId: id_outer1}});
 				expect(originalReferencedInnerItems.length).to.eql(5); // we know there are 5 items
 
-				await firestore.firestore.runTransaction(async (transaction) => {
+				await collectionOuter.runTransaction(async () => {
 					const outerItem = (await collectionOuter.query.unique(id_outer1))!;
 
 					expect(true).to.eql(exists(outerItem));

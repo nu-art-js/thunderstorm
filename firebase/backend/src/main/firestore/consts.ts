@@ -2,17 +2,34 @@ import {Dispatcher, UniqueId} from '@nu-art/ts-common';
 import {CanDeleteDBEntitiesProto} from './types.js';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {PotentialDependenciesToDelete} from '@nu-art/firebase-shared';
+import {Transaction} from 'firebase-admin/firestore';
 
 export const canDeleteDispatcher = new Dispatcher<CanDeleteDBEntitiesProto, '__canDeleteEntitiesProto'>('__canDeleteEntitiesProto');
 
+export type TransactionWrapper = {
+	transaction: Transaction;
+	active: boolean;
+};
+
+export const MemKey_FirestoreTransaction = new MemKey<TransactionWrapper>('firestore--transaction');
+
+export function getActiveTransaction(): Transaction | undefined {
+	const wrapper = MemKey_FirestoreTransaction.peak();
+	if (!wrapper?.active)
+		return undefined;
+
+	return wrapper.transaction;
+}
+
 export type MemKey_DeletedDocs_Type = {
-	transaction: FirebaseFirestore.Transaction;
+	transaction: Transaction;
 	deleted: { [dbKey: string]: Set<UniqueId> };
 }
 
 export const MemKey_DeletedDocs = new MemKey<MemKey_DeletedDocs_Type[]>('deleted--docs');
 
-export function addDeletedToTransaction(transaction: FirebaseFirestore.Transaction | undefined, deleted: PotentialDependenciesToDelete) {
+export function addDeletedToTransaction(deleted: PotentialDependenciesToDelete) {
+	const transaction = getActiveTransaction();
 	if (!transaction)
 		return;
 

@@ -19,13 +19,15 @@
 /**
  * Created by tacb0ss on 25/08/2018.
  */
-import {Logger, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
 import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE.js';
 import {StorageWrapperBE} from '../storage/StorageWrapperBE.js';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE.js';
 import {App} from 'firebase-admin/app';
 import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE.js';
+import {MongoWrapperBE} from '../firestore/MongoWrapperBE.js';
 import {FirebaseConfig} from '@nu-art/firebase-shared';
+import type {MongoClient} from 'mongodb';
 
 
 /**
@@ -50,6 +52,8 @@ export abstract class FirebaseSession<Config>
 	protected databases: TypedMap<DatabaseWrapperBE> = {};
 	protected storage?: StorageWrapperBE;
 	protected firestores: TypedMap<FirestoreWrapperBE> = {};
+	protected mongos: TypedMap<MongoWrapperBE> = {};
+	protected mongoClient?: MongoClient;
 	protected messaging?: PushMessagesWrapperBE;
 
 
@@ -100,6 +104,20 @@ export abstract class FirebaseSession<Config>
 			this.firestores[dbName ?? 'default'] = new FirestoreWrapperBE(this, dbName);
 
 		return this.firestores[dbName ?? 'default'];
+	}
+
+	public setMongoClient(client: MongoClient) {
+		this.mongoClient = client;
+	}
+
+	public getMongo(dbName: string): MongoWrapperBE {
+		if (!this.mongoClient)
+			throw new BadImplementationException('MongoClient not set on session — call setMongoClient() before getMongo()');
+
+		if (!this.mongos[dbName])
+			this.mongos[dbName] = new MongoWrapperBE(this.mongoClient, dbName);
+
+		return this.mongos[dbName];
 	}
 
 	/**

@@ -48,8 +48,8 @@ export const TestCases_FB_Create: CreateTest['testcases'] = [
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
 				// create twice and expect to reject
-				const promise = collection.runTransaction(async (transaction) => {
-					return collection.create.item(toCreate, transaction);
+				const promise = collection.runTransaction(async () => {
+					return collection.create.item(toCreate);
 				});
 				await expect(promise).to.be.rejectedWith();
 			}
@@ -63,7 +63,7 @@ export const TestCases_FB_Create: CreateTest['testcases'] = [
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
 
-				await collection.runTransaction(async (transaction) => await expect(collection.create.item(toCreate, transaction)).to.be.fulfilled);
+				await collection.runTransaction(async () => await expect(collection.create.item(toCreate)).to.be.fulfilled);
 
 			}
 		}

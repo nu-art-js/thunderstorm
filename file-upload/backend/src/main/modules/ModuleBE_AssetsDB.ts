@@ -55,7 +55,6 @@ import {ModuleBE_AssetsDeleted} from './ModuleBE_AssetsDeleted.js';
 import {FileMetadata} from '@google-cloud/storage';
 import {fileTypeFromBuffer} from 'file-type';
 import {FileWrapper} from '@nu-art/firebase-backend';
-import {Transaction} from 'firebase-admin/firestore';
 
 /** Local type for cleanup scheduler (replaces thunderstorm-backend). */
 export type CleanupDetails = { moduleKey: string; interval: number; cleanup: () => Promise<void> };
@@ -126,10 +125,10 @@ export class ModuleBE_AssetsDB_Class
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
-	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DB_Asset>, actionType: CollectionActionType, transaction?: Transaction): Promise<void> {
+	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DB_Asset>, actionType: CollectionActionType): Promise<void> {
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		if (deleted.length)
-			await ModuleBE_AssetsDeleted.set.all(deleted as unknown as DB_AssetDeleted[], transaction);
+			await ModuleBE_AssetsDeleted.set.all(deleted as unknown as DB_AssetDeleted[]);
 	}
 
 	@ApiHandler(ApiDef_AssetUploader.getUploadUrl)
@@ -156,8 +155,8 @@ export class ModuleBE_AssetsDB_Class
 		const originalQuery = this.query;
 		this.query = {
 			...originalQuery,
-			unique: async (_id, transaction) => {
-				const dbAsset = await originalQuery.uniqueAssert(_id, transaction);
+			unique: async (_id) => {
+				const dbAsset = await originalQuery.uniqueAssert(_id);
 				const signedUrl = (dbAsset.signedUrl?.validUntil || 0) > currentTimeMillis() ? dbAsset.signedUrl : undefined;
 				if (!signedUrl) {
 					const url = await ModuleBE_AssetsStorage.getReadSignedUrl(dbAsset);
@@ -184,7 +183,7 @@ export class ModuleBE_AssetsDB_Class
 
 	}
 
-	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: Transaction): Promise<DB_Asset> {
+	async queryUnique(where: Clause_Where<DB_Asset>): Promise<DB_Asset> {
 		const dbAsset = await this.query.uniqueCustom({where});
 		const signedUrl = (dbAsset.signedUrl?.validUntil || 0) > currentTimeMillis() ? dbAsset.signedUrl : undefined;
 		if (!signedUrl) {
@@ -337,17 +336,17 @@ export class ModuleBE_AssetsDB_Class
 			}
 		}
 
-		const finalDbAsset = await this.runTransaction(async (transaction): Promise<DB_Asset> => {
-			const duplicatedAssets = await this.query.custom({where: {md5Hash: dbTempAsset.md5Hash}}, transaction);
+		const finalDbAsset = await this.runTransaction(async (): Promise<DB_Asset> => {
+			const duplicatedAssets = await this.query.custom({where: {md5Hash: dbTempAsset.md5Hash}});
 			if (duplicatedAssets.length && duplicatedAssets[0]) {
 				this.logWarning(`${dbTempAsset.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
 				return {...duplicatedAssets[0], feId: dbTempAsset.feId};
 			}
 
-			const doc = this.collection.doc.item(assetForApi);
-			await ModuleBE_AssetsTemp.delete.unique(dbTempAsset._id, transaction);
+			const doc = this.doc.item(assetForApi);
+			await ModuleBE_AssetsTemp.delete.unique(dbTempAsset._id);
 			const assetForMain: DB_Asset = {...dbTempAsset, _id: dbTempAsset._id as unknown as DB_Asset['_id']};
-			return await doc.set(assetForMain, transaction);
+			return await doc.set(assetForMain);
 		});
 
 		return this.notifyFrontend(FileStatus.Completed, finalDbAsset);

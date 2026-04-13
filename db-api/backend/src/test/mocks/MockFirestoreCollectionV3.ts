@@ -6,7 +6,6 @@
 
 import type {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
-import type {Transaction} from 'firebase-admin/firestore';
 import {DB_Object, generateHex, currentTimeMillis} from '@nu-art/ts-common';
 
 type DocRefLike = { ref: { id: string }; data?: DB_Object };
@@ -46,7 +45,7 @@ function applyLimit<T>(items: T[], limit: { page?: number; itemsCount?: number }
 export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
 	const store = new Map<string, DB_Object>();
 
-	const runTransaction = async <T>(fn: (transaction?: Transaction) => Promise<T>): Promise<T> => fn(undefined);
+	const runTransaction = async <T>(fn: () => Promise<T>): Promise<T> => fn();
 
 	const getDocWrapper = (id: string) => ({
 		ref: {id},

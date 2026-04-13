@@ -23,6 +23,7 @@ import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper.js';
 import {Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {DB_Object, Promise_all_sequentially, UniqueId} from '@nu-art/ts-common';
 import {DocumentReference, DocumentSnapshot, getFirestore, Query, QueryDocumentSnapshot, QuerySnapshot, Transaction,} from 'firebase-admin/firestore';
+import {getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
 
 
 export class FirestoreWrapperBE
@@ -39,9 +40,9 @@ export class FirestoreWrapperBE
 			this.firestore = getFirestore(firebaseSession.app);
 	}
 
-	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>, transaction?: Transaction): Promise<ReturnType> => {
-		if (transaction) // if a transaction was provided to be used, use it
-			return processor(transaction);
+	runTransaction = async <ReturnType>(processor: () => Promise<ReturnType>): Promise<ReturnType> => {
+		if (getActiveTransaction())
+			return processor();
 
 		const postTransactionActions: (() => Promise<any>)[] = [];
 		const toRet = await this.firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
@@ -64,11 +65,11 @@ export class FirestoreWrapperBE
 			const getMockDocumentSnapshot = <T extends DB_Object>(data: T, _id: UniqueId, exists = true) => {
 				return {
 					id: _id,
-					ref: {} as any, // Mock DocumentReference
+					ref: {} as any,
 					exists,
 					data: () => (exists ? data : undefined),
 					get: (fieldPath: string) => (data as any)[fieldPath],
-					metadata: {} as any, // Mock metadata
+					metadata: {} as any,
 				} as unknown as DocumentSnapshot<T>;
 			};
 
@@ -100,7 +101,6 @@ export class FirestoreWrapperBE
 			};
 
 			transaction.delete = (documentRef: DocumentReference<any>, precondition?: FirebaseFirestore.Precondition) => {
-				// update deletions
 				updateTransactionUpdates(documentRef, false);
 				writeActions.push(() => originDelete(documentRef, precondition));
 				return transaction;
@@ -111,7 +111,6 @@ export class FirestoreWrapperBE
 				// @ts-ignore
 				const doc: FirebaseFirestore.QuerySnapshot<any> | FirebaseFirestore.DocumentSnapshot<any> = await originGet(args);
 
-				// handle doc snapshot
 				if (doc instanceof DocumentSnapshot) {
 					const document: any | undefined = doc.data();
 
@@ -121,7 +120,6 @@ export class FirestoreWrapperBE
 					return transactionUpdates[document._id] ?? doc;
 				}
 
-				// handle query snapshot
 				if (doc instanceof QuerySnapshot) {
 					const docs = doc.docs;
 
@@ -151,10 +149,16 @@ export class FirestoreWrapperBE
 				});
 			};
 
-			const toRet = await processor(transaction);
-			writeActions.forEach(action => action());
+			const wrapper = {transaction, active: true};
+			MemKey_FirestoreTransaction.set(wrapper);
 
-			return toRet;
+			try {
+				const toRet = await processor();
+				writeActions.forEach(action => action());
+				return toRet;
+			} finally {
+				wrapper.active = false;
+			}
 		});
 
 		await Promise_all_sequentially(postTransactionActions);

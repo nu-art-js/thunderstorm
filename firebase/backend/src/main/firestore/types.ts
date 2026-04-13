@@ -7,7 +7,6 @@ import {
 	Firestore,
 	Query,
 	QueryDocumentSnapshot,
-	Transaction,
 } from 'firebase-admin/firestore';
 
 export type FirestoreType_Collection = CollectionReference;
@@ -17,5 +16,5 @@ export type FirestoreType_DocumentReference<T> = DocumentReference<T>;
 export type FirestoreType = Firestore;
 
 export type CanDeleteDBEntitiesProto = {
-	__canDeleteEntitiesProto: <T extends DB_Prototype>(type: T['dbKey'], itemIds: string[], transaction?: Transaction) => Promise<DB_EntityDependencyV2>
+	__canDeleteEntitiesProto: <T extends DB_Prototype>(type: T['dbKey'], itemIds: string[]) => Promise<DB_EntityDependencyV2>
 }

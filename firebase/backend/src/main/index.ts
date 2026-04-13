@@ -27,6 +27,9 @@ export * from './firestore/DocWrapper.js';
 export * from './firestore/FirestoreCollection.js';
 export * from './firestore/FirestoreInterface.js';
 export * from './firestore/FirestoreWrapperBE.js';
+export * from './firestore/MongoCollection.js';
+export * from './firestore/MongoInterface.js';
+export * from './firestore/MongoWrapperBE.js';
 export * from './firestore/types.js';
 
 export * from './push/PushMessagesWrapperBE.js';
