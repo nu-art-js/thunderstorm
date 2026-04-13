@@ -84,7 +84,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
 
-	protected backendType: BackendType = ModuleBE_BaseDB.defaultBackend;
+	protected backendType?: BackendType;
 	public collection!: FirestoreCollection<Database> | MongoCollection<Database>;
 	public readonly dbDef: BaseDBDefBE;
 	public query!: FirestoreCollection<Database>['query'];
@@ -256,7 +256,7 @@ export abstract class ModuleBE_BaseDB<Database extends DB_Prototype, Config exte
 
 		const session = ModuleBE_Firebase.createAdminSession(this.config?.projectId);
 
-		switch (this.backendType) {
+		switch (this.backendType ?? ModuleBE_BaseDB.defaultBackend) {
 			case 'mongo':
 				this.collection = session.getMongo(ModuleBE_BaseDB.mongoDbName).getCollection(this.dbDef as any, hooks);
 				break;

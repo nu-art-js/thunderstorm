@@ -449,6 +449,15 @@ export const BaiParam_IndicesMcpPort: BaseCliParam<'indicesMcpPort', number> = {
 	dependencies: [{param: BaiParam_IndicesMcpServer, value: true}]
 };
 
+export const BaiParam_Help: BaseCliParam<'help', boolean> = {
+	keys: ['--help', '-h'],
+	keyName: 'help',
+	type: 'boolean',
+	group: 'General',
+	description: 'This help menu',
+	dependencies: [{param: BaiParam_NoBuild, value: true}, {param: BaiParam_Prepare, value: false}, {param: BaiParam_AllUnits, value: true}],
+};
+
 export const AllBaiParams = [
 	BaiParam_AllUnits,
 	BaiParam_DependencyTree,
@@ -493,7 +502,8 @@ export const AllBaiParams = [
 	BaiParam_MapExports,
 	BaiParam_IndicesMcpServer,
 	BaiParam_IndicesMcpPort,
-	BaiParam_DebugLifecycle
+	BaiParam_DebugLifecycle,
+	BaiParam_Help,
 ];
 
 export type BaiParams = CliParams<typeof AllBaiParams>;

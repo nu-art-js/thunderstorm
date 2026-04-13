@@ -47,6 +47,11 @@ export type FunctionConfig = {
 	resources?: FunctionResourceConfig; // Per-function resource configuration
 };
 
+export type MongoEmulatorConfig = {
+	port?: number;    // Defaults to basePort + 11
+	dbName?: string;  // Defaults to 'default'
+};
+
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	firebaseConfig?: FirebasePackageConfig;
 	pathToFirebaseConfig: string,
@@ -58,16 +63,16 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	sslCert: string
 	pathToEmulatorData: string
 	sources?: string[];
-	// Support both legacy format (string[]) and new format (FunctionConfig[])
-	functions: string[] | FunctionConfig[]; // Array of function names (legacy) or function configs
+	functions: string[] | FunctionConfig[];
+	mongo?: MongoEmulatorConfig;
 	containerDeployment?: {
 		artifactRegistry: {
-			region: string;        // e.g., 'us-central1'
-			repository: string;     // e.g., 'firebase-functions'
-			projectId: string;     // GCP project ID
+			region: string;
+			repository: string;
+			projectId: string;
 		};
-		imageName: string;         // Required: Docker image name (must be lowercase, alphanumeric with dots, underscores, or hyphens)
-		dockerfile?: string;      // Path to Dockerfile, defaults to './Dockerfile'
+		imageName: string;
+		dockerfile?: string;
 	};
 };
 
@@ -195,6 +200,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await sleep(2 * Second * Unit_FirebaseFunctionsApp.staggerCount++);
 		await this.releaseEmulatorPorts();
 
+		if (this.config.mongo)
+			await this.startMongoEmulator();
+
 		let emulatorPromise: Promise<void> | undefined;
 
 		const proxyPromise = this.runProxy(() => {
@@ -209,7 +217,51 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	async releaseEmulatorPorts() {
 		const allPorts = Array.from({length: 11}, (_, i) => `${this.config.basePort + i}`);
+		if (this.config.mongo)
+			allPorts.push(`${this.resolveMongoPort()}`);
+
 		return this.releasePorts(allPorts);
+	}
+
+	//######################### MongoDB Emulator #########################
+
+	private resolveMongoPort(): number {
+		return this.config.mongo?.port ?? this.config.basePort + 11;
+	}
+
+	private resolveMongoContainerName(): string {
+		return `mongo-emu-${this.config.key.replace(/[^a-z0-9-]/gi, '-')}`;
+	}
+
+	private async startMongoEmulator() {
+		const port = this.resolveMongoPort();
+		const containerName = this.resolveMongoContainerName();
+
+		this.logInfo(`Starting MongoDB emulator on port ${port} (container: ${containerName})`);
+
+		const stopAction = async () => this.stopMongoEmulator();
+		this.registerTerminatable(stopAction);
+
+		const commando = this.allocateCommando();
+		await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:27017 mongo:7`, (stdout, stderr, exitCode) => {
+			if (exitCode !== 0)
+				throw new CommandoException(`Failed to start MongoDB emulator container`, stdout, stderr, exitCode);
+		});
+
+		process.env['MONGODB_EMULATOR_HOST'] = `localhost:${port}`;
+		this.logInfo(`MongoDB emulator started — MONGODB_EMULATOR_HOST=localhost:${port}`);
+	}
+
+	private async stopMongoEmulator() {
+		const containerName = this.resolveMongoContainerName();
+		this.logInfo(`Stopping MongoDB emulator (container: ${containerName})`);
+
+		try {
+			const commando = this.allocateCommando();
+			await this.executeAsyncCommando(commando, `docker rm -f ${containerName}`, () => {});
+		} catch (e: any) {
+			this.logWarning(`Failed to stop MongoDB emulator container: ${e.message}`);
+		}
 	}
 
 	async deploy() {
@@ -1013,6 +1065,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 					return LogLevel.Warning;
 			})
 			.onLog(/.*Emulator Hub running.*/, () => this.setStatus('Launch Complete'));
+
+		if (this.config.mongo)
+			commando.custom(`export MONGODB_EMULATOR_HOST=localhost:${this.resolveMongoPort()}`);
 
 		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect-functions ${this.config.debugPort}` : ''}`);

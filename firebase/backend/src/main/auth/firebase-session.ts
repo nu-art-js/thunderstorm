@@ -25,9 +25,9 @@ import {StorageWrapperBE} from '../storage/StorageWrapperBE.js';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE.js';
 import {App} from 'firebase-admin/app';
 import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE.js';
-import {MongoWrapperBE} from '../firestore/MongoWrapperBE.js';
+import {CONST_MONGODB_EMULATOR_HOST, MongoWrapperBE} from '../firestore/MongoWrapperBE.js';
 import {FirebaseConfig} from '@nu-art/firebase-shared';
-import type {MongoClient} from 'mongodb';
+import {MongoClient} from 'mongodb';
 
 
 /**
@@ -111,8 +111,14 @@ export abstract class FirebaseSession<Config>
 	}
 
 	public getMongo(dbName: string): MongoWrapperBE {
-		if (!this.mongoClient)
-			throw new BadImplementationException('MongoClient not set on session — call setMongoClient() before getMongo()');
+		if (!this.mongoClient) {
+			const emulatorHost = process.env[CONST_MONGODB_EMULATOR_HOST];
+			if (emulatorHost)
+				this.mongoClient = new MongoClient(`mongodb://${emulatorHost}`);
+			else
+				throw new BadImplementationException(
+					'MongoClient not set on session — call setMongoClient() before getMongo(), or set MONGODB_EMULATOR_HOST for local development');
+		}
 
 		if (!this.mongos[dbName])
 			this.mongos[dbName] = new MongoWrapperBE(this.mongoClient, dbName);
