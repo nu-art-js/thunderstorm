@@ -39,7 +39,6 @@ import {
 	resolveContent,
 	TypedMap
 } from '@nu-art/ts-common';
-import {Transaction} from 'firebase-admin/firestore';
 import {ModuleBE_BaseDB, RuntimeBE_ModulesDB} from '@nu-art/db-api-backend';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
 import {
@@ -282,11 +281,11 @@ export class ModuleBE_SyncManager_Class
 		return deletedItem;
 	};
 
-	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction?: Transaction) {
+	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id']) {
 		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
 		const now = currentTimeMillis();
 		toInsert.forEach(item => item.__updated = now);
-		await this.collection.create.all(toInsert, transaction);
+		await this.collection.create.all(toInsert);
 		const deletedCountRef = this.database.ref<number>(`${resolveContent(this.resolvableFirebaseBasePath)}/deletedCount`);
 		let deletedCount = await deletedCountRef.get(0);
 		deletedCount += items.length;

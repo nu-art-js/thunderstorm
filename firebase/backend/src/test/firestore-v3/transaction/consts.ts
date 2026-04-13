@@ -16,43 +16,43 @@ import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/index.js';
 
 
 const transaction_addInner4 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
-	return firestore.firestore.runTransaction(async (transaction) => {
+	return firestore.runTransaction(async () => {
 		console.log(`pah1 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1, transaction))!;
+		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs.push(id_inner4);
 
-		await collectionOuter.set.item(outerItem, transaction);
+		await collectionOuter.set.item(outerItem);
 		console.log(`zevel1 ${currentTimeMillis() - now}`);
 	});
 };
 
 const transaction_removeInner2 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
-	return firestore.firestore.runTransaction(async (transaction) => {
+	return firestore.runTransaction(async () => {
 		console.log(`pah2 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1, transaction))!;
+		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs = outerItem.refs.filter((id: string) => id !== id_inner2);
 
-		await collectionOuter.set.item(outerItem, transaction);
+		await collectionOuter.set.item(outerItem);
 		console.log(`zevel2 ${currentTimeMillis() - now}`);
 	});
 
 };
 const transaction_removeInner3 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
-	return firestore.firestore.runTransaction(async (transaction) => {
+	return firestore.runTransaction(async () => {
 		console.log(`pah3 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1, transaction))!;
+		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs = outerItem.refs.filter((id: string) => id !== id_inner3);
 
-		await collectionOuter.set.item(outerItem, transaction);
+		await collectionOuter.set.item(outerItem);
 
 		console.log(`zevel3 ${currentTimeMillis() - now}`);
 	});
@@ -71,7 +71,7 @@ export const transactionTestCases1: CollectionTest['testcases'] = [
 				const originalReferencedInnerItems = await collectionInner.query.custom({where: {parentId: id_outer1}});
 				expect(originalReferencedInnerItems.length).to.eql(5); // we know there are 5 items
 
-				await firestore.firestore.runTransaction(async (transaction) => {
+				await firestore.runTransaction(async () => {
 					const outerItem = (await collectionOuter.query.unique(id_outer1))!;
 
 					expect(true).to.eql(exists(outerItem));

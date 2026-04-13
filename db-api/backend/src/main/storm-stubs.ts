@@ -6,7 +6,6 @@
 
 import {Const_UniqueKeys, Day, Hour} from '@nu-art/ts-common';
 import {Dispatcher} from '@nu-art/ts-common';
-import type {Transaction} from 'firebase-admin/firestore';
 import type {BaseDBDefBE, DBApiBEConfigShape} from './backend-types.js';
 import type {DBEntityDependencies} from '@nu-art/db-api-shared';
 
@@ -26,7 +25,7 @@ export const getModuleBEConfig = (dbDef: BaseDBDefBE): DBApiBEConfigShape => {
 export {DBEntityDependencyErrorType, type DBEntityDependencies, type DBEntityDependencyError, type DBEntityDependencyResult} from '@nu-art/db-api-shared';
 
 export interface EntityDependencyCollection {
-	__collectEntityDependencies: (type: string, itemIds: string[], transaction?: Transaction) => Promise<DBEntityDependencies | undefined>;
+	__collectEntityDependencies: (type: string, itemIds: string[]) => Promise<DBEntityDependencies | undefined>;
 }
 
 export const dispatch_CollectEntityDependencies = new Dispatcher<EntityDependencyCollection, '__collectEntityDependencies'>('__collectEntityDependencies');

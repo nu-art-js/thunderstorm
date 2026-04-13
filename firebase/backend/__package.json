@@ -48,6 +48,7 @@
     "firebase-admin": "?",
     "firebase-functions": "?",
     "google-auth-library": "?",
+    "mongodb": "?",
     "http-proxy": "1.18.1",
     "url": "0.11.3",
     "ws": "^8.13.0"

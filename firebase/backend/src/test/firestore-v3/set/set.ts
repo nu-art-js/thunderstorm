@@ -8,7 +8,6 @@ import {asArray, compare, DB_Object, deepClone, PreDB, removeDBObjectKeys, sortA
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {DB_Type, DatabaseDef_Type} from '../_entity.js';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
-import {Transaction} from 'firebase-admin/firestore';
 
 chai.use(chaiAsPromised);
 export const updatedStringValue1 = 'test update';
@@ -72,8 +71,8 @@ export const TestCases_FB_Set: TestCase_FirestoreV3_Set[] = [
 		input: {
 			toCreate: [],
 			setAction: async (collection, inserted) => {
-				await collection.runTransaction(async (transaction: Transaction) => {
-					await collection.set.item(deepClone(testInstance1), transaction);
+				await collection.runTransaction(async () => {
+					await collection.set.item(deepClone(testInstance1));
 				});
 			}
 		}
@@ -144,13 +143,13 @@ export const TestCases_FB_Set: TestCase_FirestoreV3_Set[] = [
 		input: {
 			toCreate: [testInstance1, testInstance2, testInstance3],
 			setAction: async (collection, inserted) => {
-				await collection.runTransaction(async (transaction: Transaction) => {
+				await collection.runTransaction(async () => {
 					const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId)!;
 					const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId)!;
 					await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {
 						..._test2,
 						stringValue: updatedStringValue2
-					}], transaction);
+					}]);
 				});
 			}
 		}

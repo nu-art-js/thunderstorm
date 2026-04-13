@@ -6,6 +6,7 @@
 
 import {ActionDeclaration} from './types.js';
 import {BadImplementationException, Brand, Dispatcher, flatArray, Logger} from '@nu-art/ts-common';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 export type SetupTaskKey = Brand<string, 'SetupTaskKey'>;
 
@@ -75,18 +76,20 @@ const topoSortTasks = (tasks: SetupTask[]): SetupTask[][] => {
 };
 
 const Action_SetupProject = async (logger: Logger) => {
-	logger.logInfo('Setting up Project');
-	const tasks = flatArray(dispatcher_ProjectSetup.dispatchModule());
-	const levels = topoSortTasks(tasks);
+	return new MemStorage().init(async () => {
+		logger.logInfo('Setting up Project');
+		const tasks = flatArray(dispatcher_ProjectSetup.dispatchModule());
+		const levels = topoSortTasks(tasks);
 
-	for (let i = 0; i < levels.length; i++) {
-		const level = levels[i];
-		const keys = level.map(t => t.key).join(', ');
-		logger.logInfoBold(`SetupProject level ${i}: [${keys}]`);
-		await Promise.all(level.map(task => task.processor()));
-	}
+		for (let i = 0; i < levels.length; i++) {
+			const level = levels[i];
+			const keys = level.map(t => t.key).join(', ');
+			logger.logInfoBold(`SetupProject level ${i}: [${keys}]`);
+			await Promise.all(level.map(task => task.processor()));
+		}
 
-	logger.logInfo('Project Setup Completed!');
+		logger.logInfo('Project Setup Completed!');
+	});
 };
 
 const logger_SetupProject = new Logger('SetupProject');

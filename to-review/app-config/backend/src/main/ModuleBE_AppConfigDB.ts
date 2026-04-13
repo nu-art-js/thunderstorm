@@ -7,8 +7,6 @@
 import {_keys, ApiException, Logger, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_AppConfig, DB_AppConfig, DBDef_AppConfig, UI_AppConfig} from '@nu-art/app-config-shared';
-import {firestore} from 'firebase-admin';
-import Transaction = firestore.Transaction;
 
 type InferType<T> = T extends AppConfigKey_BE<infer V> ? V : never;
 
@@ -21,7 +19,7 @@ export class ModuleBE_AppConfigDB_Class
 		super(DBDef_AppConfig);
 	}
 
-	protected async preWriteProcessing(dbInstance: UI_AppConfig, _originalDbInstance: DB_AppConfig, _transaction?: Transaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: UI_AppConfig, _originalDbInstance: DB_AppConfig): Promise<void> {
 		const appKey = this.keyMap[dbInstance.key];
 		if (!appKey)
 			return;

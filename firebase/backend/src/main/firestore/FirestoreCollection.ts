@@ -51,14 +51,13 @@ import {
 import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from './types.js';
 import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '@nu-art/firebase-shared';
 import {FirestoreWrapperBE} from './FirestoreWrapperBE.js';
-import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterface} from './FirestoreInterface.js';
 import {firestore} from 'firebase-admin';
 import {DocWrapper, UpdateObject} from './DocWrapper.js';
 import {composeDbObjectUniqueId} from '@nu-art/firebase-shared';
 import {_EmptyQuery, maxBatch} from '@nu-art/firebase-shared';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {addDeletedToTransaction} from './consts.js';
+import {addDeletedToTransaction, getActiveTransaction} from './consts.js';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
@@ -71,10 +70,10 @@ export type PostWriteProcessingData<DBType extends TS_Object> = {
 };
 export type CollectionActionType = 'create' | 'set' | 'update' | 'delete'
 export type FirestoreCollectionHooks<DBType extends TS_Object> = {
-	canDeleteItems: (dbItems: DBType[], transaction?: Transaction) => Promise<void>,
-	preWriteProcessing?: (dbInstance: DBType, originalDbInstance?: DBType, transaction?: Transaction) => Promise<void>,
+	canDeleteItems: (dbItems: DBType[]) => Promise<void>,
+	preWriteProcessing?: (dbInstance: DBType, originalDbInstance?: DBType) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<DBType>) => FirestoreQuery<DBType>,
-	postWriteProcessing?: (data: PostWriteProcessingData<DBType>, actionType: CollectionActionType, transaction?: Transaction) => Promise<void>,
+	postWriteProcessing?: (data: PostWriteProcessingData<DBType>, actionType: CollectionActionType) => Promise<void>,
 	upgradeInstances: (instances: DBType[]) => Promise<any>
 }
 
@@ -172,29 +171,30 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		},
 		all: (_ids: (Proto['uniqueParam'])[]) => _ids.map(this.doc.unique),
 		allItems: (preDBItems: Proto['uiType'][]) => {
-			// At this point all preDB MUST have ids
 			return preDBItems.map(preDBItem => this.doc.item(preDBItem));
 		},
-		query: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction) => {
-			return (await this._customQuery(query, true, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
+		query: async (query: FirestoreQuery<Proto['dbType']>) => {
+			return (await this._customQuery(query, true)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
 		},
-		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction) => {
-			return (await this._customQuery(query, false, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>) => {
+			return (await this._customQuery(query, false)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
 		},
 	});
 
-	private getAll = async (docs: DocWrapper<Proto>[], transaction?: Transaction): Promise<(Proto['dbType'] | undefined)[]> => {
+	private getAll = async (docs: DocWrapper<Proto>[]): Promise<(Proto['dbType'] | undefined)[]> => {
 		if (docs.length === 0)
 			return [];
 
+		const transaction = getActiveTransaction();
 		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Proto['dbType'] | undefined);
 	};
 
-	private _customQuery = async (tsQuery: FirestoreQuery<Proto['dbType']>, canManipulateQuery: boolean, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Proto['dbType']>[]> => {
+	private _customQuery = async (tsQuery: FirestoreQuery<Proto['dbType']>, canManipulateQuery: boolean): Promise<FirestoreType_DocumentSnapshot<Proto['dbType']>[]> => {
 		if (canManipulateQuery)
 			tsQuery = this.hooks?.manipulateQuery?.(deepClone(tsQuery)) ?? tsQuery;
 
 		const firestoreQuery = FirestoreInterface.buildQuery<Proto>(this, tsQuery);
+		const transaction = getActiveTransaction();
 		if (transaction)
 			return (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<Proto['dbType']>[];
 
@@ -202,17 +202,17 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 	};
 
 	query = Object.freeze({
-		unique: async (_id: Proto['uniqueParam'], transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
-		uniqueAssert: async (_id: Proto['uniqueParam'], transaction?: Transaction): Promise<Proto['dbType']> => {
-			const resultItem = await this.query.unique(_id, transaction);
+		unique: async (_id: Proto['uniqueParam']) => await this.doc.unique(_id).get(),
+		uniqueAssert: async (_id: Proto['uniqueParam']): Promise<Proto['dbType']> => {
+			const resultItem = await this.query.unique(_id);
 			if (!resultItem)
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${__stringify(_id)}`);
 
 			return resultItem;
 		},
-		uniqueWhere: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction) => this.query.uniqueCustom({where}, transaction),
-		uniqueCustom: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction) => {
-			const thisShouldBeOnlyOne = await this.query.custom(query, transaction);
+		uniqueWhere: async (where: Clause_Where<Proto['dbType']>) => this.query.uniqueCustom({where}),
+		uniqueCustom: async (query: FirestoreQuery<Proto['dbType']>) => {
+			const thisShouldBeOnlyOne = await this.query.custom(query);
 			if (thisShouldBeOnlyOne.length === 0)
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
 
@@ -221,32 +221,33 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 
 			return thisShouldBeOnlyOne[0];
 		},
-		all: async (_ids: (Proto['uniqueParam'])[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
-		custom: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			return (await this._customQuery(query, true, transaction)).map(snapshot => snapshot.data());
+		all: async (_ids: (Proto['uniqueParam'])[]) => await this.getAll(this.doc.all(_ids)),
+		custom: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
+			return (await this._customQuery(query, true)).map(snapshot => snapshot.data());
 		},
-		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			return this.query.custom({where}, transaction);
+		where: async (where: Clause_Where<Proto['dbType']>): Promise<Proto['dbType'][]> => {
+			return this.query.custom({where});
 		},
-		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			return (await this._customQuery(query, false, transaction)).map(snapshot => snapshot.data());
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
+			return (await this._customQuery(query, false)).map(snapshot => snapshot.data());
 		},
 	});
 
-	uniqueGetOrCreate = async (where: Clause_Where<Proto['dbType']>, toCreate: (transaction?: Transaction) => Promise<Proto['uiType']>, transaction?: Transaction) => {
+	uniqueGetOrCreate = async (where: Clause_Where<Proto['dbType']>, toCreate: () => Promise<Proto['uiType']>) => {
 		try {
-			return await this.query.uniqueWhere(where, transaction);
+			return await this.query.uniqueWhere(where);
 		} catch (e: any) {
-			return toCreate(transaction);
+			return toCreate();
 		}
 	};
 
-	protected _createAll = async (preDBItems: Proto['uiType'][], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => {
+	protected _createAll = async (preDBItems: Proto['uiType'][], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => {
 		if (preDBItems.length === 1)
-			return [await this.create.item(preDBItems[0], transaction)];
+			return [await this.create.item(preDBItems[0])];
 
+		const transaction = getActiveTransaction();
 		const docs = this.doc.allItems(preDBItems);
-		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
+		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i])));
 		this.assertNoDuplicatedIds(dbItems, 'create.all');
 
 		if (transaction)
@@ -259,59 +260,53 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 	};
 
 	create = Object.freeze({
-		item: async (preDBItem: Proto['uiType'], transaction?: Transaction): Promise<Proto['dbType']> => await this.doc.item(preDBItem)
-			.create(preDBItem, transaction),
+		item: async (preDBItem: Proto['uiType']): Promise<Proto['dbType']> => await this.doc.item(preDBItem)
+			.create(preDBItem),
 		all: this._createAll,
 	});
 
-	private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType, performUpgrade = true) => {
-		//Get all items
+	private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[], multiWriteType: MultiWriteType = defaultMultiWriteType, performUpgrade = true) => {
+		const transaction = getActiveTransaction();
 		const docs = this.doc.allItems(items);
 		const dbItems = await this.getAll(docs);
-		//Prepare all items
 		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
 			return !exists(_dbItem)
-				? await docs[i].prepareForCreate(items[i], transaction, performUpgrade)
-				: await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, transaction, performUpgrade);
+				? await docs[i].prepareForCreate(items[i], performUpgrade)
+				: await docs[i].prepareForSet(items[i] as Proto['dbType'], _dbItem!, performUpgrade);
 		}));
 		this.assertNoDuplicatedIds(preparedItems, 'set.all');
-		//Write all items
 		if (transaction)
-			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
 			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
-		//postWriteProcessing if provided
-		if (preparedItems.length) //Only call postWriteProcessing if we actually set items
+
+		if (preparedItems.length)
 			await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems}, 'set');
+
 		return preparedItems;
 	};
 
 	set = Object.freeze({
-		item: async (preDBItem: Proto['uiType'], transaction?: Transaction) => {
-			// We've noticed that we call preWriteProcessing twice on create.
-			// if(!preDBItem._id)
-			// 	await this.hooks?.preWriteProcessing?.(preDBItem, undefined, transaction);
-
-			return await this.doc.item(preDBItem).set(preDBItem, transaction);
+		item: async (preDBItem: Proto['uiType']) => {
+			return await this.doc.item(preDBItem).set(preDBItem);
 		},
-		all: (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction) => {
-			if (transaction)
-				return this._setAll(items, transaction);
+		all: (items: (Proto['uiType'] | Proto['dbType'])[]) => {
+			if (getActiveTransaction())
+				return this._setAll(items);
 
-			return this.runTransactionInChunks(items, (chunk, transaction) => this._setAll(chunk, transaction));
+			return this.runTransactionInChunks(items, (chunk) => this._setAll(chunk));
 		},
 		/**
 		 * Multi is a non atomic operation
 		 */
-		multi: (items: (Proto['uiType'] | Proto['dbType'])[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
-			return this._setAll(items, transaction, multiWriteType);
+		multi: (items: (Proto['uiType'] | Proto['dbType'])[], multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+			return this._setAll(items, multiWriteType);
 		},
 	});
 
 	// @ts-ignore
 	private upgradeInstances = (items: (Proto['uiType'] | Proto['dbType'])[]) => {
-		return this._setAll(items, undefined, defaultMultiWriteType, false);
+		return this._setAll(items, defaultMultiWriteType, false);
 	};
 
 	protected _updateAll = async (updateData: UpdateObject<Proto['dbType']>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => {
@@ -323,7 +318,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		return dbItems;
 	};
 
-	async validateUpdateData(updateData: UpdateData<Proto['dbType']>, transaction?: Transaction) {
+	async validateUpdateData(updateData: UpdateData<Proto['dbType']>) {
 	}
 
 	// update = Object.freeze({
@@ -331,43 +326,41 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 	// 	all: this._updateAll,
 	// });
 
-	protected _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+	protected _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
-		const docsToBeDeleted = await this.doc.query(query, transaction);
-		// Because we query for docs, these docs and their data must exist in Firestore.
-		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!); // Data must exist here.
-		await this._deleteAll(docsToBeDeleted, transaction, multiWriteType);
+		const docsToBeDeleted = await this.doc.query(query);
+		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!);
+		await this._deleteAll(docsToBeDeleted, multiWriteType);
 		return itemsToReturn;
 	};
 
-	protected _deleteUnManipulatedQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+	protected _deleteUnManipulatedQuery = async (query: FirestoreQuery<Proto['dbType']>, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
-		const docsToBeDeleted = await this.doc.unManipulatedQuery(query, transaction);
-		// Because we query for docs, these docs and their data must exist in Firestore.
-		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!); // Data must exist here.
-		await this._deleteAll(docsToBeDeleted, transaction, multiWriteType);
+		const docsToBeDeleted = await this.doc.unManipulatedQuery(query);
+		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!);
+		await this._deleteAll(docsToBeDeleted, multiWriteType);
 		return itemsToReturn;
 	};
 
-	protected _deleteAll = async (docsToBeDeleted: DocWrapper<Proto>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
-		const dbItems = filterInstances(await this.getAll(docsToBeDeleted, transaction));
+	protected _deleteAll = async (docsToBeDeleted: DocWrapper<Proto>[], multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+		const transaction = getActiveTransaction();
+		const dbItems = filterInstances(await this.getAll(docsToBeDeleted));
 		const itemsToCheck = dbItems.filter((item, index) => docsToBeDeleted[index].ref.id == item._id);
-		addDeletedToTransaction(transaction, {
+		addDeletedToTransaction({
 			dbKey: this.dbDef.dbKey,
 			ids: dbItems.map(dbObjectToId)
 		});
-		await this.hooks?.canDeleteItems(itemsToCheck, transaction);
+		await this.hooks?.canDeleteItems(itemsToCheck);
 		if (transaction)
-			// here we do not call doc.delete because we have performed all the delete preparation as a group of items before this call
 			docsToBeDeleted.map(async doc => transaction.delete(doc.ref));
 		else
 			await this.multiWrite(multiWriteType, docsToBeDeleted, 'delete');
 
-		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, 'delete', transaction);
+		await this.hooks?.postWriteProcessing?.({deleted: dbItems}, 'delete');
 		return dbItems;
 	};
 
@@ -381,66 +374,64 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 	};
 
 	delete = Object.freeze({
-		unique: async (id: Proto['uniqueParam'], transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
-		item: async (item: Proto['uiType'], transaction?: Transaction) => await this.doc.item(item).delete(transaction),
-		all: async (ids: (Proto['uniqueParam'])[], transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			if (!transaction)
-				return this.runTransactionInChunks(ids, (chunk, t) => this.delete.all(chunk, t));
+		unique: async (id: Proto['uniqueParam']) => await this.doc.unique(id).delete(),
+		item: async (item: Proto['uiType']) => await this.doc.item(item).delete(),
+		all: async (ids: (Proto['uniqueParam'])[]): Promise<Proto['dbType'][]> => {
+			if (!getActiveTransaction())
+				return this.runTransactionInChunks(ids, (chunk) => this.delete.all(chunk));
 
-			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction);
+			return this._deleteAll(ids.map(id => this.doc.unique(id)));
 		},
-		allDocs: async (docs: DocWrapper<Proto>[], transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			if (!transaction)
-				return this.runTransactionInChunks(docs, (chunk, t) => this.delete.allDocs(chunk, t));
+		allDocs: async (docs: DocWrapper<Proto>[]): Promise<Proto['dbType'][]> => {
+			if (!getActiveTransaction())
+				return this.runTransactionInChunks(docs, (chunk) => this.delete.allDocs(chunk));
 
-			return await this._deleteAll(docs, transaction);
+			return await this._deleteAll(docs);
 		},
-		allItems: async (items: Proto['uiType'][], transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			if (!transaction)
-				return this.runTransactionInChunks(items, (chunk, t) => this.delete.allItems(chunk, t));
+		allItems: async (items: Proto['uiType'][]): Promise<Proto['dbType'][]> => {
+			if (!getActiveTransaction())
+				return this.runTransactionInChunks(items, (chunk) => this.delete.allItems(chunk));
 
-			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction);
+			return await this._deleteAll(items.map(_item => this.doc.item(_item)));
 		},
-		query: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			if (!transaction) {
-				//query all docs and then delete in chunks
+		query: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
+			if (!getActiveTransaction()) {
 				if (!exists(query) || compare(query, _EmptyQuery))
 					throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
-				const docs = await this.doc.query(query, transaction);
-				const items = docs.map(doc => doc.data!); // Data must exist here.
-				await this.runTransactionInChunks(docs, (chunk, t) => this._deleteAll(chunk, t));
+				const docs = await this.doc.query(query);
+				const items = docs.map(doc => doc.data!);
+				await this.runTransactionInChunks(docs, (chunk) => this._deleteAll(chunk));
 				return items;
 			}
 
-			return await this._deleteQuery(query, transaction);
+			return await this._deleteQuery(query);
 		},
-		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			if (!transaction) {
-				//query all docs and then delete in chunks
+		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
+			if (!getActiveTransaction()) {
 				if (!exists(query) || compare(query, _EmptyQuery))
 					throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
-				const docs = await this.doc.unManipulatedQuery(query, transaction);
-				const items = docs.map(doc => doc.data!); // Data must exist here.
-				await this.runTransactionInChunks(docs, (chunk, t) => this._deleteAll(chunk, t));
+				const docs = await this.doc.unManipulatedQuery(query);
+				const items = docs.map(doc => doc.data!);
+				await this.runTransactionInChunks(docs, (chunk) => this._deleteAll(chunk));
 				return items;
 			}
 
-			return await this._deleteUnManipulatedQuery(query, transaction);
+			return await this._deleteUnManipulatedQuery(query);
 		},
-		where: async (where: Clause_Where<Proto['dbType']>, transaction?: Transaction): Promise<Proto['dbType'][]> => {
-			return this.delete.query({where}, transaction);
+		where: async (where: Clause_Where<Proto['dbType']>): Promise<Proto['dbType'][]> => {
+			return this.delete.query({where});
 		},
 
 		/**
-		 * Multi is a non atomic operation - doesn't use transactions. Use 'all' variants for transaction.
+		 * Multi is a non atomic operation — doesn't use transactions. Use 'all' variants for transaction.
 		 */
 		multi: {
-			all: async (ids: UniqueId[], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id as Proto['uniqueParam'])), undefined, multiWriteType),
-			items: async (items: Proto['uiType'][], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(items.map(_item => this.doc.item(_item)), undefined, multiWriteType),
-			allDocs: async (docs: DocWrapper<Proto>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => await this._deleteAll(docs, undefined, multiWriteType),
-			query: async (query: FirestoreQuery<Proto['dbType']>, multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteQuery(query, undefined, multiWriteType)
+			all: async (ids: UniqueId[], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id as Proto['uniqueParam'])), multiWriteType),
+			items: async (items: Proto['uiType'][], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(items.map(_item => this.doc.item(_item)), multiWriteType),
+			allDocs: async (docs: DocWrapper<Proto>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Proto['dbType'][]> => await this._deleteAll(docs, multiWriteType),
+			query: async (query: FirestoreQuery<Proto['dbType']>, multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteQuery(query, multiWriteType)
 		},
 		yes: {iam: {sure: {iwant: {todelete: {the: {collection: {delete: this.deleteCollection}}}}}}}
 	});
@@ -514,16 +505,15 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 
 
 	/**
-	 * A firestore transaction is run globally on the firestore project and not specifically on any collection, locking specific documents in the project.
-	 * @param processor
-	 * @param transaction A transaction that was provided to be used
+	 * Runs the processor within a Firestore transaction scope. If already inside a transaction
+	 * (detected via MemKey), the existing transaction is reused. Otherwise a new one is created.
 	 */
-	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>, transaction?: Transaction): Promise<ReturnType> => {
-		return this.wrapper.runTransaction<ReturnType>(processor, transaction);
+	runTransaction = async <ReturnType>(processor: () => Promise<ReturnType>): Promise<ReturnType> => {
+		return this.wrapper.runTransaction<ReturnType>(processor);
 	};
 
-	runTransactionInChunks = async <T = any, R = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
-		return batchActionParallel(items, chunkSize, (chunk) => this.runTransaction(t => processor(chunk, t)));
+	runTransactionInChunks = async <T = any, R = any>(items: T[], processor: (chunk: typeof items) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
+		return batchActionParallel(items, chunkSize, (chunk) => this.runTransaction(() => processor(chunk)));
 	};
 
 	getVersion = () => {

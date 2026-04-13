@@ -22,7 +22,6 @@ import {
 import {ModuleBE_PermissionRoleDB} from '../permission-role/ModuleBE_PermissionRoleDB.js';
 import {ModuleBE_PermissionScopeDB} from '../permission-scope/ModuleBE_PermissionScopeDB.js';
 import {ModuleBE_AccountDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
-import {Transaction} from 'firebase-admin/firestore';
 import {SafeDB_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserScopePermissions} from '../../consts.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
@@ -43,8 +42,8 @@ export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_PermissionUser>
 	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup, OnAccountDeleted {
 
-	__onAccountDeleted = async (account: SafeDB_Account, transaction: Transaction) => {
-		await this.delete.unique(this.toPermissionUserId(account), transaction);
+	__onAccountDeleted = async (account: SafeDB_Account) => {
+		await this.delete.unique(this.toPermissionUserId(account));
 	};
 
 	constructor() {
@@ -94,23 +93,23 @@ export class ModuleBE_PermissionUserDB_Class
 		}];
 	}
 
-	async __onUserLogin(account: SafeDB_Account, transaction: Transaction) {
+	async __onUserLogin(account: SafeDB_Account) {
 		await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
-			const isNew = await this.insertIfNotExist(account, transaction);
+			const isNew = await this.insertIfNotExist(account);
 			if (!isNew) {
-				await this.ensureDefaultRole(account, transaction);
-				await this.ensurePersonalRole(account, transaction);
-				await this.checkAdminGrantFlag(account, transaction);
+				await this.ensureDefaultRole(account);
+				await this.ensurePersonalRole(account);
+				await this.checkAdminGrantFlag(account);
 			}
-			await this.resolveAdditionalRoles(account, 'login', transaction);
+			await this.resolveAdditionalRoles(account, 'login');
 			await ModuleBE_Permissions.recomputePermissionsForUsers([account._id]);
 		});
 	}
 
-	async __onNewUserRegistered(account: SafeDB_Account, transaction: Transaction) {
+	async __onNewUserRegistered(account: SafeDB_Account) {
 		await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
-			await this.insertIfNotExist(account, transaction);
-			await this.resolveAdditionalRoles(account, 'register', transaction);
+			await this.insertIfNotExist(account);
+			await this.resolveAdditionalRoles(account, 'register');
 			await ModuleBE_Permissions.recomputePermissionsForUsers([account._id]);
 		});
 	}
@@ -123,8 +122,8 @@ export class ModuleBE_PermissionUserDB_Class
 		return stringToUniqueId<DatabaseDef_PermissionRole['dbKey']>(account._id);
 	}
 
-	private async ensureDefaultRole(account: SafeDB_Account, transaction: Transaction) {
-		const permissionUser = await this.query.unique(this.toPermissionUserId(account), transaction);
+	private async ensureDefaultRole(account: SafeDB_Account) {
+		const permissionUser = await this.query.unique(this.toPermissionUserId(account));
 		if (!permissionUser)
 			return;
 
@@ -132,24 +131,24 @@ export class ModuleBE_PermissionUserDB_Class
 			return;
 
 		permissionUser.roles.push({roleId: RoleId_AppDefault});
-		await this.set.item(permissionUser, transaction);
+		await this.set.item(permissionUser);
 		this.logInfo(`Backfilled Default role for user ${account._id}`);
 	}
 
-	private async ensurePersonalRole(account: SafeDB_Account, transaction: Transaction) {
+	private async ensurePersonalRole(account: SafeDB_Account) {
 		const personalRoleId = this.toPersonalRoleId(account);
-		const existing = await ModuleBE_PermissionRoleDB.query.unique(personalRoleId, transaction);
+		const existing = await ModuleBE_PermissionRoleDB.query.unique(personalRoleId);
 		if (!existing) {
 			await ModuleBE_PermissionRoleDB.create.item({
 				_id: personalRoleId,
 				label: `Personal (${account.email ?? account._id})`,
 				type: 'personal',
 				scopeEntries: [],
-			}, transaction);
+			});
 			this.logInfo(`Created personal role for user ${account._id}`);
 		}
 
-		const permissionUser = await this.query.unique(this.toPermissionUserId(account), transaction);
+		const permissionUser = await this.query.unique(this.toPermissionUserId(account));
 		if (!permissionUser)
 			return;
 
@@ -157,17 +156,17 @@ export class ModuleBE_PermissionUserDB_Class
 			return;
 
 		permissionUser.roles.push({roleId: personalRoleId});
-		await this.set.item(permissionUser, transaction);
+		await this.set.item(permissionUser);
 		this.logInfo(`Assigned personal role to user ${account._id}`);
 	}
 
-	private async checkAdminGrantFlag(account: SafeDB_Account, transaction: Transaction) {
+	private async checkAdminGrantFlag(account: SafeDB_Account) {
 		const flagRef = ModuleBE_Permissions.getAdminGrantFlagRef();
 		const flagValue = await flagRef.get(false);
 		if (!flagValue)
 			return;
 
-		const permissionUser = await this.query.unique(this.toPermissionUserId(account), transaction);
+		const permissionUser = await this.query.unique(this.toPermissionUserId(account));
 		if (!permissionUser)
 			return;
 
@@ -177,18 +176,18 @@ export class ModuleBE_PermissionUserDB_Class
 		}
 
 		permissionUser.roles.push({roleId: RoleId_PermissionsAdmin});
-		await this.set.item(permissionUser, transaction);
+		await this.set.item(permissionUser);
 		await flagRef.set(false);
 		this.logInfo(`Granted Permissions Admin to user ${account._id} via RTDB flag (one-shot)`);
 	}
 
-	private async resolveAdditionalRoles(account: SafeDB_Account, context: 'register' | 'login', transaction: Transaction) {
+	private async resolveAdditionalRoles(account: SafeDB_Account, context: 'register' | 'login') {
 		const results: string[][] = await dispatcher_resolveAdditionalRoles.dispatchModuleAsync(account._id, context);
 		const additionalRoleIds = filterDuplicates(flatArray(results));
 		if (additionalRoleIds.length === 0)
 			return;
 
-		const permissionUser = await this.query.unique(this.toPermissionUserId(account), transaction);
+		const permissionUser = await this.query.unique(this.toPermissionUserId(account));
 		if (!permissionUser)
 			return;
 
@@ -199,17 +198,17 @@ export class ModuleBE_PermissionUserDB_Class
 
 		const validRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(newRoleIds.map(id => stringToUniqueId<DatabaseDef_PermissionRole['dbKey']>(id))));
 		validRoles.forEach(r => permissionUser.roles.push({roleId: r._id}));
-		await this.set.item(permissionUser, transaction);
+		await this.set.item(permissionUser);
 		this.logInfo(`Added ${validRoles.length} additional roles on ${context} for user ${account._id}`);
 	}
 
-	protected async preWriteProcessing(instance: DB_PermissionUser, originalDbInstance: DatabaseDef_PermissionUser['dbType'], t?: Transaction): Promise<void> {
+	protected async preWriteProcessing(instance: DB_PermissionUser, originalDbInstance: DatabaseDef_PermissionUser['dbType']): Promise<void> {
 		instance.__roleIds = filterDuplicates(instance.roles.map(role => role.roleId) || []);
 
 		if (!instance.__roleIds.length)
 			return;
 
-		const dbRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(instance.__roleIds, t));
+		const dbRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(instance.__roleIds));
 		if (instance.__roleIds.length !== dbRoles.length) {
 			const dbRoleIds = dbRoles.map(dbObjectToId);
 			throw new ApiException(422, `Trying to assign a user to a permission role that does not exist: ${instance.__roleIds.filter(roleId => !dbRoleIds.includes(roleId))}`);
@@ -225,11 +224,11 @@ export class ModuleBE_PermissionUserDB_Class
 		await ModuleBE_Permissions.recomputePermissionsForUsers(accountIdsToRecompute);
 	}
 
-	insertIfNotExist = async (account: SafeDB_Account, transaction: Transaction): Promise<boolean> => {
+	insertIfNotExist = async (account: SafeDB_Account): Promise<boolean> => {
 		const permissionUserId = this.toPermissionUserId(account);
 		let created = false;
 
-		const create = async (transaction?: Transaction) => {
+		const create = async () => {
 			created = true;
 			const personalRoleId = this.toPersonalRoleId(account);
 			await ModuleBE_PermissionRoleDB.create.item({
@@ -237,11 +236,11 @@ export class ModuleBE_PermissionUserDB_Class
 				label: `Personal (${account.email ?? account._id})`,
 				type: 'personal',
 				scopeEntries: [],
-			}, transaction);
+			});
 
 			const roles: RoleAssignment[] = [{roleId: RoleId_AppDefault}, {roleId: personalRoleId}];
 
-			const existingUsers = await this.query.custom({limit: 1}, transaction);
+			const existingUsers = await this.query.custom({limit: 1});
 			if (existingUsers.length === 0) {
 				roles.push({roleId: RoleId_PermissionsAdmin});
 				this.logInfo('First-ever user — assigning Permissions Admin role');
@@ -253,10 +252,10 @@ export class ModuleBE_PermissionUserDB_Class
 			return ModuleBE_PermissionUserDB.create.item({
 				_id: permissionUserId,
 				roles: validRoles.map(role => ({roleId: role._id})),
-			}, transaction);
+			});
 		};
 
-		await ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: permissionUserId}, create, transaction);
+		await ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: permissionUserId}, create);
 		return created;
 	};
 

@@ -6,7 +6,6 @@
 
 import type {DB_Object} from '@nu-art/ts-common';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
-import type {Transaction} from 'firebase-admin/firestore';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 
 /**
@@ -14,13 +13,13 @@ import type {DB_Prototype} from '@nu-art/db-api-shared';
  * These are generic — no permission types. Any module can register interceptors.
  */
 export type PreWriteInterceptor<Database extends DB_Prototype = DB_Prototype> =
-	(dbItem: Database['uiType'], original: Database['dbType'], tx?: Transaction) => Promise<void>;
+	(dbItem: Database['uiType'], original: Database['dbType']) => Promise<void>;
 
 export type QueryInterceptor<Database extends DB_Prototype = DB_Prototype> =
 	(query: FirestoreQuery<Database['dbType']>) => FirestoreQuery<Database['dbType']>;
 
 export type PreDeleteInterceptor<Database extends DB_Prototype = DB_Prototype> =
-	(dbItems: Database['dbType'][], tx?: Transaction) => Promise<void>;
+	(dbItems: Database['dbType'][]) => Promise<void>;
 
 /**
  * Shape of post-write processing data (mirrors firebase PostWriteProcessingData but for DB_Object, no DB_Prototype).
@@ -33,7 +32,7 @@ export type PostWriteProcessingDataShape<T extends DB_Object> = {
 };
 
 export type PostWriteInterceptor<Database extends DB_Prototype = DB_Prototype> =
-	(data: PostWriteProcessingDataShape<Database['dbType']>, actionType: string, tx?: Transaction) => Promise<void>;
+	(data: PostWriteProcessingDataShape<Database['dbType']>, actionType: string) => Promise<void>;
 
 /**
  * Minimal dependency definition shape (read by BE for entity dependency collection).
