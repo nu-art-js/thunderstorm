@@ -20,16 +20,28 @@
  * Created by tacb0ss on 25/08/2018.
  */
 
-import {Module} from '@nu-art/ts-common';
+import {ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin.js';
+import {FirebaseSession} from './auth/firebase-session.js';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword.js";
 import {readFileSync} from 'fs';
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {deleteApp, getApps} from 'firebase-admin/app';
 
 
+export type FirestoreMongoConfig = {
+	firestoreUid: string;
+	firestoreLocation: string;
+};
+
+export type MongoConnectionConfig = {
+	mongoUrl?: string;
+	firestoreMongo?: FirestoreMongoConfig;
+};
+
 type ConfigType = {
 	isEmulator?: boolean
+	mongo?: MongoConnectionConfig;
 };
 
 export const FIREBASE_DEFAULT_PROJECT_ID = 'local';
@@ -44,6 +56,7 @@ export class ModuleBE_Firebase_Class
 	}
 
 	protected init(): void {
+		FirebaseSession.setMongoUrlResolver((authKey) => this.resolveMongoUrl(authKey));
 	}
 
 	async __resetForTests() {
@@ -59,10 +72,9 @@ export class ModuleBE_Firebase_Class
 		if (session)
 			return session;
 
-		// try to fetch the service account from the auth serviceAccount by the authKey
 		let serviceAccount;
 		try {
-			serviceAccount = ModuleBE_Auth.getAuthConfig(authKey);
+			serviceAccount = ModuleBE_Auth.getCredentials(authKey);
 		} catch (e: any) {
 			if (authKey !== FIREBASE_DEFAULT_PROJECT_ID)
 				throw e;
@@ -75,6 +87,42 @@ export class ModuleBE_Firebase_Class
 		// define a unique key for the firebase session, and any following requests for this auth key
 		this.logInfo(`Creating Firebase session for auth key: ${authKey}`, serviceAccount);
 		return this.adminSessions[authKey] = new FirebaseSession_Admin(authKey, serviceAccount).connect();
+	}
+
+	public resolveMongoUrl(authKey?: string): string {
+		const mongoConfig = this.resolveMongoConfig(authKey);
+
+		if (mongoConfig?.mongoUrl)
+			return mongoConfig.mongoUrl;
+
+		if (mongoConfig?.firestoreMongo)
+			return ModuleBE_Firebase_Class.buildFirestoreMongoUrl(mongoConfig.firestoreMongo);
+
+		throw new ImplementationMissingException(
+			`No MongoDB connection configured for session '${authKey ?? 'default'}'. ` +
+			'Set mongo.mongoUrl or mongo.firestoreMongo in ModuleBE_Firebase config (default), or in auth config (keyed).');
+	}
+
+	private resolveMongoConfig(authKey?: string): MongoConnectionConfig | undefined {
+		if (!authKey || authKey === FIREBASE_DEFAULT_PROJECT_ID)
+			return this.config?.mongo;
+
+		try {
+			const authConfig = ModuleBE_Auth.getAuthConfig(authKey);
+			if (typeof authConfig === 'object' && 'mongo' in authConfig)
+				return (authConfig as { mongo: MongoConnectionConfig }).mongo;
+		} catch (_e: any) {
+		}
+
+		return undefined;
+	}
+
+	private static buildFirestoreMongoUrl(config: FirestoreMongoConfig): string {
+		const {firestoreUid, firestoreLocation} = config;
+		return `mongodb://${firestoreUid}.${firestoreLocation}.firestore.goog:443/default` +
+			'?loadBalanced=true&tls=true&retryWrites=false' +
+			'&authMechanism=MONGODB-OIDC' +
+			'&authMechanismProperties=ENVIRONMENT:gcp,TOKEN_RESOURCE:FIRESTORE';
 	}
 
 	createModuleStateFirebaseRef<T>(module: Module, _relativePath: string) {

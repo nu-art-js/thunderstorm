@@ -222,13 +222,18 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 				await this.releasePorts([`${mongoPort}`]);
 				const commando = this.allocateCommando();
-				await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${mongoPort}:27017 mongo:7`, (stdout, stderr, exitCode) => {
+				await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${mongoPort}:${mongoPort} mongo:7 --replSet rs0 --port ${mongoPort}`, (stdout, stderr, exitCode) => {
 					if (exitCode !== 0)
 						throw new CommandoException('Failed to start MongoDB test container', stdout, stderr, exitCode);
 				});
 
-				process.env['MONGODB_EMULATOR_HOST'] = `localhost:${mongoPort}`;
-				this.logInfo(`MongoDB test container started — MONGODB_EMULATOR_HOST=localhost:${mongoPort}`);
+				const initCommando = this.allocateCommando();
+				await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${mongoPort} --quiet --eval "rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:${mongoPort}'}]}); while(!rs.status().members.some(m=>m.stateStr==='PRIMARY')){sleep(200)} print('PRIMARY ready')"`, (stdout, stderr, exitCode) => {
+					if (exitCode !== 0)
+						throw new CommandoException('Failed to initiate MongoDB test replica set', stdout, stderr, exitCode);
+				});
+
+				this.logInfo(`MongoDB test container started as replica set on port ${mongoPort}`);
 
 				this.registerTerminatable(async () => {
 					try {

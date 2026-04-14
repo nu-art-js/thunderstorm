@@ -44,7 +44,7 @@ import {
 	TypedMap,
 	UniqueId,
 	ValidationException,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
 } from '@nu-art/ts-common';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {composeDbObjectUniqueId, _EmptyQuery, maxBatch} from '@nu-art/firebase-shared';
@@ -53,6 +53,7 @@ import {addDeletedToTransaction, getActiveTransaction, MemKey_FirestoreTransacti
 import {MongoInterface} from './MongoInterface.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
 import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb} from 'mongodb';
+import {MemStorage} from '@nu-art/ts-common/mem-storage';
 
 
 const getDbDefValidator = <Proto extends DB_Prototype>(dbDef: Database<Proto>) => {
@@ -434,9 +435,12 @@ export class MongoCollection<Proto extends DB_Prototype>
 		const session = client.startSession();
 		try {
 			let result: ReturnType;
+			const parentStorage = MemStorage.getStore();
 			await session.withTransaction(async () => {
-				MemKey_FirestoreTransaction.set({transaction: session as any, active: true});
-				result = await processor();
+				await new MemStorage().init(async () => {
+					MemKey_FirestoreTransaction.set({transaction: session as any, active: true});
+					result = await processor();
+				}, parentStorage);
 			});
 			return result!;
 		} finally {

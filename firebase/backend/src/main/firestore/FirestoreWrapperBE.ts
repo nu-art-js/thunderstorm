@@ -24,6 +24,7 @@ import {Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {DB_Object, Promise_all_sequentially, UniqueId} from '@nu-art/ts-common';
 import {DocumentReference, DocumentSnapshot, getFirestore, Query, QueryDocumentSnapshot, QuerySnapshot, Transaction,} from 'firebase-admin/firestore';
 import {getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
+import {MemStorage} from '@nu-art/ts-common/mem-storage';
 
 
 export class FirestoreWrapperBE
@@ -149,16 +150,19 @@ export class FirestoreWrapperBE
 				});
 			};
 
-			const wrapper = {transaction, active: true};
-			MemKey_FirestoreTransaction.set(wrapper);
+			const parentStorage = MemStorage.getStore();
+			return new MemStorage().init(async () => {
+				const wrapper = {transaction, active: true};
+				MemKey_FirestoreTransaction.set(wrapper);
 
-			try {
-				const toRet = await processor();
-				writeActions.forEach(action => action());
-				return toRet;
-			} finally {
-				wrapper.active = false;
-			}
+				try {
+					const toRet = await processor();
+					writeActions.forEach(action => action());
+					return toRet;
+				} finally {
+					wrapper.active = false;
+				}
+			}, parentStorage);
 		});
 
 		await Promise_all_sequentially(postTransactionActions);

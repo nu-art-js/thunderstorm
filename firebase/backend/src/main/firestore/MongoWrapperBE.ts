@@ -22,6 +22,7 @@ import {MongoCollection} from './MongoCollection.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
 import {getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
 import type {Db as MongoDriverDb, MongoClient} from 'mongodb';
+import {MemStorage} from '@nu-art/ts-common/mem-storage';
 
 
 export const CONST_MONGODB_EMULATOR_HOST = 'MONGODB_EMULATOR_HOST';
@@ -61,20 +62,23 @@ export class MongoWrapperBE
 		const session = this.client.startSession();
 		try {
 			let result: ReturnType;
+			const parentStorage = MemStorage.getStore();
 			await session.withTransaction(async () => {
-				const wrapper = {transaction: session as any, active: true};
-				MemKey_FirestoreTransaction.set(wrapper);
+				await new MemStorage().init(async () => {
+					const wrapper = {transaction: session as any, active: true};
+					MemKey_FirestoreTransaction.set(wrapper);
 
-				// @ts-ignore
-				session.postTransaction = (action: () => Promise<any>) => {
-					postTransactionActions.push(action);
-				};
+					// @ts-ignore
+					session.postTransaction = (action: () => Promise<any>) => {
+						postTransactionActions.push(action);
+					};
 
-				try {
-					result = await processor();
-				} finally {
-					wrapper.active = false;
-				}
+					try {
+						result = await processor();
+					} finally {
+						wrapper.active = false;
+					}
+				}, parentStorage);
 			});
 			await Promise_all_sequentially(postTransactionActions);
 			return result!;

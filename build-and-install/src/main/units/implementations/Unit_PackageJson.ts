@@ -7,7 +7,7 @@ import {existsSync} from 'fs';
 import {TS_PackageJSON} from '../discovery/types.js';
 import {Phase_Prepare, Phase_PrepareWatch, Phase_Purge} from '../../phases/definitions/index.js';
 import {Commando_NVM} from '@nu-art/commando';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_NodeProject} from './Unit_NodeProject.js';
 import {FilesCache} from '../../core/FilesCache.js';
 
@@ -131,14 +131,14 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);
 		const params = this.deriveLibDependencies();
 		const content = FileSystemUtils.file.template.transform(__stringify(freshPackageJson, true), params);
-		await FileSystemUtils.file.template.write(targetPath, content, params, DEFAULT_OLD_TEMPLATE_PATTERN);
+		await FileSystemUtils.file.template.write(targetPath, content, params, DEFAULT_TEMPLATE_PATTERN);
 	}
 
 	private async _sharedPrepare() {
 		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);
 		const params = this.deriveLibDependencies();
 		const packageJson = FileSystemUtils.file.template.transform(__stringify(this.config.packageJson, true), params);
-		await FileSystemUtils.file.template.write(targetPath, packageJson, params, DEFAULT_OLD_TEMPLATE_PATTERN);
+		await FileSystemUtils.file.template.write(targetPath, packageJson, params, DEFAULT_TEMPLATE_PATTERN);
 	}
 
 	/**
