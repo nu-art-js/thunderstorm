@@ -14,7 +14,7 @@ import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, Default_Files
 import {Commando_NVM, CommandoException} from '@nu-art/commando';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/index.js';
 import {resolve} from 'path';
-import {DEFAULT_OLD_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
 
@@ -165,7 +165,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		packageJson.dependencies = dependencies;
 
-		await FileSystemUtils.file.template.write(targetPath, __stringify(packageJson, true), this.deriveDistDependencies(), DEFAULT_OLD_TEMPLATE_PATTERN);
+		await FileSystemUtils.file.template.write(targetPath, __stringify(packageJson, true), this.deriveDistDependencies(), DEFAULT_TEMPLATE_PATTERN);
 	}
 
 	async prepare() {
@@ -243,13 +243,18 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		this.registerTerminatable(stopAction);
 
 		const commando = this.allocateCommando();
-		await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:27017 mongo:7`, (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:${port} mongo:7 --replSet rs0 --port ${port}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to start MongoDB emulator container`, stdout, stderr, exitCode);
 		});
 
-		process.env['MONGODB_EMULATOR_HOST'] = `localhost:${port}`;
-		this.logInfo(`MongoDB emulator started — MONGODB_EMULATOR_HOST=localhost:${port}`);
+		const initCommando = this.allocateCommando();
+		await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${port} --quiet --eval "rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:${port}'}]}); while(!rs.status().members.some(m=>m.stateStr==='PRIMARY')){sleep(200)} print('PRIMARY ready')"`, (stdout, stderr, exitCode) => {
+			if (exitCode !== 0)
+				throw new CommandoException(`Failed to initiate MongoDB replica set`, stdout, stderr, exitCode);
+		});
+
+		this.logInfo(`MongoDB emulator started as replica set on port ${port}`);
 	}
 
 	private async stopMongoEmulator() {

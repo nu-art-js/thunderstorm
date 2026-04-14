@@ -19,13 +19,13 @@
 /**
  * Created by tacb0ss on 25/08/2018.
  */
-import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
+import {ImplementationMissingException, Logger, TypedMap} from '@nu-art/ts-common';
 import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE.js';
 import {StorageWrapperBE} from '../storage/StorageWrapperBE.js';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE.js';
 import {App} from 'firebase-admin/app';
 import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE.js';
-import {CONST_MONGODB_EMULATOR_HOST, MongoWrapperBE} from '../firestore/MongoWrapperBE.js';
+import {MongoWrapperBE} from '../firestore/MongoWrapperBE.js';
 import {FirebaseConfig} from '@nu-art/firebase-shared';
 import {MongoClient} from 'mongodb';
 
@@ -46,8 +46,17 @@ export type Firebase_UserCredential = {
 /**
  * An abstract class that serves as a base for Firebase session classes.
  */
+export type MongoUrlResolver = (authKey?: string) => string;
+
 export abstract class FirebaseSession<Config>
 	extends Logger {
+
+	private static mongoUrlResolver?: MongoUrlResolver;
+
+	static setMongoUrlResolver(resolver: MongoUrlResolver) {
+		FirebaseSession.mongoUrlResolver = resolver;
+	}
+
 	app!: App;
 	protected databases: TypedMap<DatabaseWrapperBE> = {};
 	protected storage?: StorageWrapperBE;
@@ -112,12 +121,10 @@ export abstract class FirebaseSession<Config>
 
 	public getMongo(dbName: string): MongoWrapperBE {
 		if (!this.mongoClient) {
-			const emulatorHost = process.env[CONST_MONGODB_EMULATOR_HOST];
-			if (emulatorHost)
-				this.mongoClient = new MongoClient(`mongodb://${emulatorHost}`);
-			else
-				throw new BadImplementationException(
-					'MongoClient not set on session — call setMongoClient() before getMongo(), or set MONGODB_EMULATOR_HOST for local development');
+			if (!FirebaseSession.mongoUrlResolver)
+				throw new ImplementationMissingException('MongoUrlResolver not set — call FirebaseSession.setMongoUrlResolver() during module init');
+
+			this.mongoClient = new MongoClient(FirebaseSession.mongoUrlResolver(this.firebaseAppName));
 		}
 
 		if (!this.mongos[dbName])
