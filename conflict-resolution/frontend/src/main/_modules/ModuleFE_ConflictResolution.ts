@@ -7,7 +7,7 @@
 import {DBEntityDependencies, DBEntityDependencyErrorType} from '@nu-art/conflict-resolution-shared';
 import {HttpClient} from '@nu-art/http-client';
 import {BadImplementationException, Module, TypedMap, asArray} from '@nu-art/ts-common';
-import {dispatch_ShowConflictResolution} from '../_dispatchers/index.js';
+import {dispatch_ShowConflictResolution} from '../_dispatchers/show-conflict-resolution.js';
 import {ConflictResolutionItem} from '@nu-art/conflict-resolution-shared';
 
 class ModuleFE_ConflictResolution_Class

@@ -1,5 +1,5 @@
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
-import {DB_Account} from '../account/index.js';
+import {DB_Account} from '../account/types.js';
 
 // login statuses
 export const LoginStatus_Success = 'success';

@@ -12,7 +12,7 @@ import {
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
-import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/index.js';
+import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/types.js';
 
 
 const transaction_addInner4 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {

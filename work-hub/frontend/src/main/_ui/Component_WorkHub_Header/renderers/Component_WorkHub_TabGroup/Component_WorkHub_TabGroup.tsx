@@ -4,7 +4,7 @@ import {CSSProperties, FC} from 'react';
 import {Component_WorkHub_Tab} from '../Component_WorkHub_Tab/Component_WorkHub_Tab.js';
 import './Component_WorkHub_TabGroup.scss';
 import {Component_WorkHub_TabGroupMenu} from '../Component_WorkHub_TabGroupMenu/Component_WorkHub_TabGroupMenu.js';
-import {ModuleFE_WorkHub} from '../../../../_module/index.js';
+import {ModuleFE_WorkHub} from '../../../../_module/ModuleFE_WorkHub/ModuleFE_WorkHub.js';
 
 type Props = {
 	group: WorkHubTabGroup;

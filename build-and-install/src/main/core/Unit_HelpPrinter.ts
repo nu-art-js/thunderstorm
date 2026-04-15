@@ -2,8 +2,8 @@ import {_keys, LogLevel, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {BaseCliParam} from '@nu-art/cli-params';
 import {AllBaiParams, BaiParam_Help, BaiParams} from './params.js';
 import {UnitPhaseImplementor} from './types.js';
-import {Phase} from '../phases/definitions/index.js';
-import {ProjectUnit} from '../units/index.js';
+import type {Phase} from '../phases/definitions/types.js';
+import {ProjectUnit} from '../units/base/ProjectUnit.js';
 
 export {BaiParam_Help};
 

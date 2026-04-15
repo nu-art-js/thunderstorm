@@ -5,7 +5,7 @@ import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {resolve} from 'path';
 import {existsSync} from 'fs';
 import {TS_PackageJSON} from '../discovery/types.js';
-import {Phase_Prepare, Phase_PrepareWatch, Phase_Purge} from '../../phases/definitions/index.js';
+import {Phase_Prepare, Phase_PrepareWatch, Phase_Purge} from '../../phases/definitions/consts.js';
 import {Commando_NVM} from '@nu-art/commando';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_NodeProject} from './Unit_NodeProject.js';

@@ -19,7 +19,7 @@ import {BaseCommando} from '@nu-art/commando';
 import {MergeTypes} from '@nu-art/commando';
 import {CommandoPool} from '@nu-art/commando';
 import {Commando_Basic} from '@nu-art/commando';
-import {BAI_Config} from '../../config/types/index.js';
+import {BAI_Config} from '../../config/types/project-config.js';
 import {UnitsDependencyMapper} from '../../dependencies/UnitsDependencyMapper.js';
 import {BaiParams} from '../../core/params.js';
 import {Workspace} from '../../workspace/Workspace.js';

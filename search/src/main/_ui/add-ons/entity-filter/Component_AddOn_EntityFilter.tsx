@@ -3,7 +3,8 @@ import {AddOn_EntityFilter, AddOnDef_EntityFilter} from './types.js';
 import {InferProps, InferState, LL_H_C, SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_AddOn_EntityFilter.scss';
-import {SearchAddOn, SearchItem} from '../../../_core/index.js';
+import {SearchAddOn} from '../../../_core/SearchAddOn.js';
+import {SearchItem} from '../../../_core/SearchItem.js';
 
 type Props = { label?: string };
 

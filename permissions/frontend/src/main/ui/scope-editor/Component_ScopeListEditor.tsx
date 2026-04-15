@@ -9,8 +9,7 @@ import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import type {DB_PermissionScope, DatabaseDef_PermissionScope} from '@nu-art/permissions-shared';
 import {permissionScopeId} from '@nu-art/permissions-shared';
 import {ComponentSync, LL_V_L} from '@nu-art/thunder-widgets';
-import type {OnPermissionScopeUpdated} from '../../_entity.js';
-import {ModuleFE_PermissionScope} from '../../_entity.js';
+import {ModuleFE_PermissionScope, type OnPermissionScopeUpdated} from '../../_entity/permission-scope/ModuleFE_PermissionScope.js';
 import {deriveScopeStructure, resolveScopeSelections} from './scope-utils.js';
 import {Component_ScopeEditor} from './Component_ScopeEditor.js';
 

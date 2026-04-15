@@ -5,7 +5,7 @@ import {TestSuite} from '@nu-art/ts-common/test-index';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {composeDbObjectUniqueId} from '../../../main/index.js';
-import {DB_Type_MultiKey, DatabaseDef_Type_MultiKey} from '../../_entity/type-multi-key/shared/index.js';
+import {DB_Type_MultiKey, DatabaseDef_Type_MultiKey} from '../../_entity/type-multi-key/shared/types.js';
 import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 
 

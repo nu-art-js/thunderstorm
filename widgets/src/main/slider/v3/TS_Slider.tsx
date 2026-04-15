@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {TS_Slider as TS_SliderV1} from '../v1/index.js';
+import {TS_Slider as TS_SliderV1} from '../v1/TS_Slider.js';
 
 type Props = {
 	min: number;

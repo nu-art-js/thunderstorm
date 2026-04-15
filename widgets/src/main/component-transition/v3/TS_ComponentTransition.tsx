@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {TS_ComponentTransition as TS_ComponentTransitionV1} from '../v1/index.js';
+import {TS_ComponentTransition as TS_ComponentTransitionV1} from '../v1/TS_ComponentTransition.js';
 
 type Props = React.PropsWithChildren<{
 	trigger: boolean;

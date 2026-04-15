@@ -2,7 +2,7 @@ import {ApiHandler} from '@nu-art/http-server';
 import {Module} from '@nu-art/ts-common';
 import {AnalyticsPlugin_Base} from '../plugins/AnalyticsPlugin_Base.js';
 import {API_Analytics, ApiDef_Analytics} from '@nu-art/analytics-shared';
-import {AnalyticsPluginRegistry} from '../plugins/index.js';
+import {AnalyticsPluginRegistry} from '../plugins/registry.js';
 
 type Config = {
 	plugins: {

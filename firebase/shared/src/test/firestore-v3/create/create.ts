@@ -4,7 +4,7 @@ import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import * as chaiAsPromised from 'chai-as-promised';
 import {CreateTest, createTestCases} from './consts.js';
 import {expect} from 'chai';
-import {DB_Type, DatabaseDef_Type, TestInputValue} from '../_entity.js';
+import {DB_Type, DatabaseDef_Type, TestInputValue} from '../_entity/type/types.js';
 import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 
 const chai = await import('\'chai\'');

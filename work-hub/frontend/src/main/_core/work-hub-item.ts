@@ -1,5 +1,5 @@
 import {generateHex, Logger} from '@nu-art/ts-common';
-import {ModuleFE_WorkHub} from '../_module/index.js';
+import {ModuleFE_WorkHub} from '../_module/ModuleFE_WorkHub/ModuleFE_WorkHub.js';
 import {MouseEvent, ReactNode} from 'react';
 import {ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
 import {WorkHubTab} from '@nu-art/work-hub-shared';

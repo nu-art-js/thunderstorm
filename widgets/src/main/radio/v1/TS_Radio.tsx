@@ -2,7 +2,7 @@ import * as React from 'react';
 import '../TS_Radio.scss';
 import {ComponentSync} from '../../_core/ComponentSync.js';
 import {_className, stopPropagation} from '@nu-art/thunder-core';
-import {Label} from '../../label/index.js';
+import {Label} from '../../label/v1/Label.js';
 
 export type Props<ItemType> = {
 	values: ItemType[];

@@ -1,5 +1,5 @@
 import {LL_H_C, TS_Input} from '@nu-art/thunder-widgets';
-import {SearchAddOn} from '../../../_core/index.js';
+import {SearchAddOn} from '../../../_core/SearchAddOn.js';
 import {Component_SearchAddOn} from '../../components/Component_SearchAddOn.js';
 import {AddOn_SearchTerms, AddOnDef_SearchTerms} from './types.js';
 import './Component_AddOn_SearchTerms.scss';

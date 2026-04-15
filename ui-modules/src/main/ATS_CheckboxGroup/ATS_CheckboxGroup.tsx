@@ -1,7 +1,8 @@
 import './ATS_CheckboxGroup.scss';
 import {voidFunction} from '@nu-art/ts-common';
 import {ComponentSync, LL_V_L, TS_CheckboxGroup} from '@nu-art/thunder-widgets';
-import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
+import {TS_AppTools} from '../TS_AppTools/TS_AppTools.js';
+import {AppToolsScreen} from '../TS_AppTools/types.js';
 import {thunderstormATSGroups} from '../consts.js';
 
 type Props = {};

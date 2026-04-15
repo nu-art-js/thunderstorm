@@ -4,7 +4,7 @@ import {ResolvableContent, resolveContent, RuntimeVersion, TypedMap, UniqueId} f
 import {DB_Account} from '@nu-art/user-account-shared';
 import './PopUp_AccountMenu.scss';
 import {Component_ChangePassword} from '../Component_ChangePassword/Component_ChangePassword.js';
-import {ModuleFE_Account} from '../../_entity/account/index.js';
+import {ModuleFE_Account} from '../../_entity/account/ModuleFE_Account.js';
 import {_className, openUrl} from '@nu-art/thunder-core';
 import {Component_AccountThumbnail} from '../Component_AccountThumbnail/Component_AccountThumbnail.js';
 import {getElementCenterPos, ModuleFE_MouseInteractivity, mouseInteractivity_PopUp} from '@nu-art/thunder-mouse-interactivity-frontend';

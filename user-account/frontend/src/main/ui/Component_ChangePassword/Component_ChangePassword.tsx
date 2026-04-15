@@ -1,6 +1,7 @@
 import {Button, ComponentSync, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ModuleFE_Account, SessionKeyFE_Account} from '../../_entity.js';
+import {ModuleFE_Account} from '../../_entity/account/ModuleFE_Account.js';
+import {SessionKeyFE_Account} from '../../_entity/account/consts.js';
 
 type Props = {
 	postSubmitAction?: () => void;

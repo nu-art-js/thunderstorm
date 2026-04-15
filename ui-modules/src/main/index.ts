@@ -10,6 +10,7 @@ export * from './ATS_Printable/ATS_AbstractPrintable.js';
 export * from './ATS_TextArea/ATS_TextArea.js';
 export * from './ATS_Toaster/ATS_Toaster.js';
 export * from './ATS_Toggle/ATS_Toggle.js';
-export * from './TS_AppTools/index.js';
+export * from './TS_AppTools/TS_AppTools.js';
+export * from './TS_AppTools/types.js';
 export * from './modules/ModuleFE_ConnectivityModule.js';
 export * from './modules/ModuleFE_Thunderstorm.js';

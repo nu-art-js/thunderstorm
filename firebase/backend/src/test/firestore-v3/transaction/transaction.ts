@@ -1,5 +1,5 @@
 import {CollectionTest, CollectionTestInput, prepareCollectionTest} from '../../_entity/_core/consts.js';
-import {TestInputValue} from '../_entity.js';
+import {TestInputValue} from '../_entity/type/types.js';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import {transactionTestCases} from './consts.js';

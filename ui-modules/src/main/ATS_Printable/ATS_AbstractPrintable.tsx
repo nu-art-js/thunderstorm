@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import {TS_AppTools} from '../TS_AppTools/index.js';
+import {TS_AppTools} from '../TS_AppTools/TS_AppTools.js';
 import './ATS_Printable.scss';
 import {Button, ComponentSync, LL_H_C, LL_V_L, TS_Printable, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';

@@ -1,5 +1,5 @@
 import './ATS_CrudOperations.scss';
-import {AppToolsScreen, ATS_Backend} from '../TS_AppTools/index.js';
+import {AppToolsScreen, ATS_Backend} from '../TS_AppTools/types.js';
 import {
 	Button,
 	ComponentSync,

@@ -1,4 +1,4 @@
-import {FirebasePackageConfig} from '../types/index.js';
+import {FirebasePackageConfig} from '../types/package/package.js';
 
 
 export type DefaultType_ProjectEnvs = 'local' | 'dev' | 'staging' | 'prod';

@@ -1,6 +1,8 @@
 import * as React from 'react';
 import {ComponentSync, LL_V_L, VirtualizedList} from '@nu-art/thunder-widgets';
-import {SearchContext, SearchItem, SearchResult, SearchResultsRenderer} from '../../../_core/index.js';
+import {SearchResult} from '../../../_core/SearchAddOn.js';
+import {SearchItem} from '../../../_core/SearchItem.js';
+import {SearchContext, SearchResultsRenderer} from '../../../_core/SearchContext.js';
 import './Component_SearchResults.scss';
 import {filterInstances, ResolvableContent} from '@nu-art/ts-common';
 

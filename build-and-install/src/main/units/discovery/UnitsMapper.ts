@@ -1,4 +1,5 @@
-import {BaseUnit, ProjectUnit} from '../index.js';
+import {BaseUnit} from '../base/BaseUnit.js';
+import {ProjectUnit} from '../base/ProjectUnit.js';
 import {promises as fs} from 'fs';
 import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
 import {UnitMapper_Base} from './resolvers/UnitMapper_Base.js';

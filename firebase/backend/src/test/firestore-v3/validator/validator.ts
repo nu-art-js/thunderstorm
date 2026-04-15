@@ -1,5 +1,6 @@
 import {CollectionTest, CollectionTestInput, prepareCollectionTest} from '../../_entity/_core/consts.js';
-import {DB_Type_Complex, TestInputValue} from '../_entity.js';
+import {TestInputValue} from '../_entity/type/types.js';
+import {DB_Type_Complex} from '../_entity/type-complex/types.js';
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';

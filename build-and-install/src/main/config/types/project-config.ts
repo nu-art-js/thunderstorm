@@ -1,5 +1,6 @@
 import {StringMap, TypedMap} from '@nu-art/ts-common';
-import {Package, RuntimePackage} from './package/index.js';
+import type {Package} from './package/package.js';
+import type {RuntimePackage} from './package/runtime-package.js';
 
 export type ProjectConfig = {
 	params: StringMap;

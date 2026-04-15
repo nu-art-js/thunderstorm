@@ -3,7 +3,7 @@ import {TestSuite} from '@nu-art/ts-common/test-index';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DB_Type, DatabaseDef_Type} from '../../_entity.js';
+import {DB_Type, DatabaseDef_Type} from '../../_entity/type/types.js';
 
 const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,

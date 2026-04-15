@@ -42,12 +42,16 @@
   "type": "module",
   "exports": {
     "./core": {
-      "types": "./_core/index.d.ts",
-      "import": "./_core/index.js"
+      "types": "./_core/work-hub-item.d.ts",
+      "import": "./_core/work-hub-item.js"
     },
     "./ui": {
-      "types": "./_ui/index.d.ts",
-      "import": "./_ui/index.js"
+      "types": "./_ui/Component_WorkHub/Component_WorkHub.d.ts",
+      "import": "./_ui/Component_WorkHub/Component_WorkHub.js"
+    },
+    "./ui/action-menu-types": {
+      "types": "./_ui/Component_WorkHubActionMenu/types.d.ts",
+      "import": "./_ui/Component_WorkHubActionMenu/types.js"
     },
     "./modules": {
       "types": "./_module/ModuleFE_WorkHub/ModuleFE_WorkHub.d.ts",

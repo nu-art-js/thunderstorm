@@ -2,7 +2,7 @@ import * as React from 'react';
 import {exists, isPromise, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import '../Button.scss';
 import {_className} from '@nu-art/thunder-core';
-import {LL_H_C} from '../../layouts/v3/index.js';
+import {LL_H_C} from '../../layouts/v3/Layouts.js';
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'text' | 'dangerous' | (string & {});
 type ButtonProps = Omit<React.HTMLProps<HTMLButtonElement>, 'type' | 'ref'>;

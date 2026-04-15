@@ -1,7 +1,8 @@
 import {thunderstormATSGroups} from '../consts.js';
 import {ComponentSync} from '@nu-art/thunder-widgets';
 import {LL_V_L} from '@nu-art/thunder-widgets';
-import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
+import {TS_AppTools} from '../TS_AppTools/TS_AppTools.js';
+import {AppToolsScreen} from '../TS_AppTools/types.js';
 import './ATS_Label.scss';
 import {Label} from '@nu-art/thunder-widgets';
 

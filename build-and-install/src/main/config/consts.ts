@@ -1,8 +1,8 @@
 /**
  * Constants for file names and configuration keys used throughout the build system.
  */
-import {MemKey} from '@nu-art/ts-common/mem-storage/index';
-import {RuntimeProjectConfig} from './types/index.js';
+import {MemKey} from '@nu-art/ts-common/mem-storage';
+import {RuntimeProjectConfig} from './types/project-config.js';
 
 /** Version file name (version-app.json) */
 export const CONST_VersionApp = 'version-app.json';

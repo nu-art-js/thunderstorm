@@ -146,7 +146,7 @@ export type Database<Proto extends DB_Prototype> = {
 	versions: Proto['versions']['versions'];
 	indices?: Proto['indices'];
 	lockKeys?: Proto['lockKeys'];
-	dependencies?: Proto['dependencies']
+	dependencies?: Proto['dependencies'];
 } & (Proto['generatedProps'] extends never
 	? object
 	: { generatedProps: Proto['generatedProps'] })

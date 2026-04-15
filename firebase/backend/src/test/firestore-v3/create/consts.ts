@@ -3,7 +3,7 @@ import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../../_entity/_core/consts.js';
-import {DatabaseDef_Type, DB_Type, TestInputValue} from '../../_entity/type/index.js';
+import {DatabaseDef_Type, DB_Type, TestInputValue} from '../../_entity/type/types.js';
 import {FirestoreCollection} from '../../_main.js';
 
 export type {TestInputValue};

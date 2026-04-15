@@ -8,8 +8,10 @@ import * as React from 'react';
 import {AwaitModules} from '@nu-art/sync-manager-frontend';
 import {filterInstances, sortArray} from '@nu-art/ts-common';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
-import type {OnPermissionRoleUpdated, OnPermissionScopeUpdated, OnPermissionUserUpdated} from '../../_entity.js';
-import {DropDown_PermissionRole, ModuleFE_PermissionRole, ModuleFE_PermissionScope, ModuleFE_PermissionUser} from '../../_entity.js';
+import {ModuleFE_PermissionRole, type OnPermissionRoleUpdated} from '../../_entity/permission-role/ModuleFE_PermissionRole.js';
+import {DropDown_PermissionRole} from '../../_entity/permission-role/ui-components.js';
+import {ModuleFE_PermissionScope, type OnPermissionScopeUpdated} from '../../_entity/permission-scope/ModuleFE_PermissionScope.js';
+import {ModuleFE_PermissionUser, type OnPermissionUserUpdated} from '../../_entity/permission-user/ModuleFE_PermissionUser.js';
 import {ModuleFE_Account} from '@nu-art/user-account-frontend/index';
 import type {OnAccountsUpdated} from '@nu-art/user-account-frontend';
 import type {

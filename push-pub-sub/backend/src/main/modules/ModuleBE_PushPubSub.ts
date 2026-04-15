@@ -42,10 +42,10 @@ export interface OnCleanupSchedulerAct {
 }
 
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
-import {UI_PushSession} from '@nu-art/push-pub-sub-shared/push-session/index';
+import {UI_PushSession} from '@nu-art/push-pub-sub-shared/push-session/types';
 import {ModuleBE_PushSessionDB, ModuleBE_PushSessionDB_Class} from './ModuleBE_PushSessionDB.js';
 import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB.js';
-import {DatabaseDef_PushMessagesHistory} from '@nu-art/push-pub-sub-shared/push-messages-history/index';
+import {DatabaseDef_PushMessagesHistory} from '@nu-art/push-pub-sub-shared/push-messages-history/types';
 import {ModuleBE_PushMessagesHistoryDB, ModuleBE_PushMessagesHistoryDB_Class} from './ModuleBE_PushMessagesHistoryDB.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {Message} from 'firebase-admin/messaging';

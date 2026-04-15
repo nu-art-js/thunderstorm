@@ -1,5 +1,5 @@
 import {Module} from '@nu-art/ts-common';
-import {ModuleFE_Toaster} from '../toaster/index.js';
+import {ModuleFE_Toaster} from '../toaster/ModuleFE_Toaster.js';
 import {base64ToBlob} from '@nu-art/ts-common';
 
 

@@ -8,7 +8,7 @@ import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
 import {ComponentSync} from '@nu-art/thunder-widgets';
 import './Overlay_ConflictResolution.scss';
 import {Panel_ConflictResolution} from '../Panel_ConflictResolution/Panel_ConflictResolution.js';
-import {OnShowConflictResolution} from '../../_dispatchers/index.js';
+import {OnShowConflictResolution} from '../../_dispatchers/show-conflict-resolution.js';
 
 type State = {
 	dependencies?: DBEntityDependencies

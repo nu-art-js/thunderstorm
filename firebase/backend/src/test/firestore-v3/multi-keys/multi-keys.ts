@@ -5,7 +5,7 @@ import {firestore, validateDBObject} from '../../_entity/_core/consts.js';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery, composeDbObjectUniqueId} from '@nu-art/firebase-shared';
-import {DB_Type_MultiKey, DatabaseDef_Type_MultiKey} from '../../_entity/type-multi-key/index.js';
+import {DB_Type_MultiKey, DatabaseDef_Type_MultiKey} from '../../_entity/type-multi-key/types.js';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 
 chai.use(chaiAsPromised);

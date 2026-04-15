@@ -1,5 +1,5 @@
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
-import {DB_Account} from '../account/index.js';
+import {DB_Account} from '../account/types.js';
 
 type VersionTypes_FailedLoginAttempt = { '1.0.0': DB_FailedLoginAttempt };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_FailedLoginAttempt>;

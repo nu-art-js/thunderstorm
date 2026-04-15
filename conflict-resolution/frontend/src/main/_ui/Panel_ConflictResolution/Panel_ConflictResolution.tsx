@@ -8,8 +8,8 @@ import type {DBEntityDependencies} from '@nu-art/conflict-resolution-shared';
 import {Button, ComponentSync, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
 import type {ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
 import {_keys, _values, filterDuplicates, flatArray, RuntimeModules} from '@nu-art/ts-common';
-import {dispatch_ShowConflictResolution} from '../../_dispatchers/index.js';
-import {TS_Icons} from '@nu-art/ts-styles/icons/index';
+import {dispatch_ShowConflictResolution} from '../../_dispatchers/show-conflict-resolution.js';
+import {TS_Icons} from '@nu-art/ts-styles/icons/icons';
 import './Panel_ConflictResolution.scss';
 import {ConflictResolutionTree} from '../ConflictResolutionTree/ConflictResolutionTree.js';
 

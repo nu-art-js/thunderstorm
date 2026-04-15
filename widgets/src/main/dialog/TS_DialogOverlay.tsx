@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {ComponentSync} from '../_core/ComponentSync.js';
-import {TS_Overlay} from '../components/TS_Overlay/index.js';
+import {TS_Overlay} from '../components/TS_Overlay/TS_Overlay.js';
 import {stopPropagation} from '@nu-art/thunder-core';
 import {Dialog_Model, DialogKey, DialogListener, ModuleFE_Dialog} from './ModuleFE_Dialog.js';
 import './TS_DialogOverlay.scss';

@@ -53,7 +53,8 @@ import {
 	SyncDataFirebaseState,
 	SyncManagerAPI_SmartSync
 } from '@nu-art/sync-manager-shared';
-import {DatabaseDef_DeletedDoc, DB_DeletedDoc, DBDef_DeletedDoc} from './deleted-doc/index.js';
+import type {DatabaseDef_DeletedDoc, DB_DeletedDoc} from './deleted-doc/types.js';
+import {DBDef_DeletedDoc} from './deleted-doc/db-def.js';
 import {ApiHandler} from '@nu-art/http-server';
 
 export interface OnSyncEnvCompleted {

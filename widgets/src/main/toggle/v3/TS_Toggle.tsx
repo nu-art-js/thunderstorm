@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {TS_Toggle as TS_ToggleV1} from '../v1/index.js';
+import {TS_Toggle as TS_ToggleV1} from '../v1/TS_Toggle.js';
 
 type Props = {
 	id?: string;

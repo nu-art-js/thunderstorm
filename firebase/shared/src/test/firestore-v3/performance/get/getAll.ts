@@ -3,7 +3,7 @@ import {TestSuite} from '@nu-art/ts-common/test-index';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DatabaseDef_Type} from '../../../_entity/type/shared/index.js';
+import {DatabaseDef_Type} from '../../../_entity/type/shared/types.js';
 import {FirestoreCollection} from '../../../../main/backend/firestore/FirestoreCollection.js';
 
 const dbDef: Database<DatabaseDef_Type> = {

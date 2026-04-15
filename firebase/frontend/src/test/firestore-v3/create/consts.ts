@@ -3,7 +3,7 @@ import {TestSuite} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts.js';
 import {_EmptyQuery} from '../../../main/index.js';
-import {DB_Type, DatabaseDef_Type, TestInputValue} from '../_entity.js';
+import {DB_Type, DatabaseDef_Type, TestInputValue} from '../_entity/type/types.js';
 import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 
 

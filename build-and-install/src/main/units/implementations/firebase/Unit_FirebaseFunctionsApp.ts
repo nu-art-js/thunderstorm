@@ -8,11 +8,11 @@ import {
 	CONST_TrashDir,
 	CONST_VersionApp
 } from '../../../config/consts.js';
-import {FirebasePackageConfig} from '../../../config/types/index.js';
+import {FirebasePackageConfig} from '../../../config/types/package/package.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, Default_Files, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
 import {Commando_NVM, CommandoException} from '@nu-art/commando';
-import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/index.js';
+import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/consts.js';
 import {resolve} from 'path';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';

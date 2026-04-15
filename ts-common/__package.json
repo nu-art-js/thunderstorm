@@ -61,12 +61,12 @@
       "import": "./index.js"
     },
     "./utils": {
-      "types": "./utils/index.d.ts",
-      "import": "./utils/index.js"
+      "types": "./utils-public-exports.d.ts",
+      "import": "./utils-public-exports.js"
     },
     "./mem-storage": {
-      "types": "./mem-storage/index.d.ts",
-      "import": "./mem-storage/index.js"
+      "types": "./mem-storage/MemStorage.d.ts",
+      "import": "./mem-storage/MemStorage.js"
     },
     "./testing": {
       "types": "./testing.d.ts",

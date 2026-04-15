@@ -5,7 +5,7 @@ import {TestSuite} from '@nu-art/ts-common/test-index';
 import {Database} from '@nu-art/db-api-shared';
 import {asArray, compare, DB_Object, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery} from '../../../main/index.js';
-import {DB_Type, DatabaseDef_Type} from '../_entity.js';
+import {DB_Type, DatabaseDef_Type} from '../_entity/type/types.js';
 import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
 
 

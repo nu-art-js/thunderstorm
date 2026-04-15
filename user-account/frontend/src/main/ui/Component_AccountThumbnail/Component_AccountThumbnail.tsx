@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {cloneObj, MUSTNeverHappenException, ResolvableContent, resolveContent, UniqueId} from '@nu-art/ts-common';
-import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/ModuleFE_Account.js';
 import {DB_Account} from '@nu-art/user-account-shared';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_AccountThumbnail.scss';

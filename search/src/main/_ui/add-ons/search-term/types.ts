@@ -1,4 +1,4 @@
-import {SearchAddOn, SearchAddOnDef} from '../../../_core/index.js';
+import {SearchAddOn, SearchAddOnDef} from '../../../_core/SearchAddOn.js';
 
 enum SearchTermSortScore {
 	ExactMatch,

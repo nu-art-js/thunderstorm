@@ -2,7 +2,7 @@ import {_keys, BadImplementationException, cloneObj, composeUrl, deepClone, exis
 import {StorageKey, ThunderDispatcher} from '@nu-art/thunder-core';
 import {ModuleFE_Routing} from '@nu-art/thunder-routing';
 import {ModuleFE_Clipboard} from '@nu-art/thunder-widgets';
-import {AppState} from '../../shared/index.js';
+import {AppState} from '../../shared/types.js';
 import {URLParam_AppState} from './consts.js';
 
 function encodeStateBase64(decoded: AppState): string {

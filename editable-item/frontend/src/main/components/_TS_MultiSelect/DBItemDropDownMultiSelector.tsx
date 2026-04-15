@@ -7,7 +7,7 @@
 import {DB_Prototype} from '@nu-art/db-api-shared';
 import {ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
 import {ComponentSync} from '@nu-art/thunder-widgets';
-import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2} from '../TS_MultiSelect/index.js';
+import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2} from '../TS_MultiSelect/TS_MultiSelect_V2.js';
 
 type Props<Proto extends DB_Prototype<any>> = {
 	selector: MultiSelect_Selector<string>;

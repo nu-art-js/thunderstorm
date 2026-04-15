@@ -18,7 +18,7 @@ import {
 } from '../../_entity/_core/consts.js';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
-import {DatabaseDef_Type, DB_Type, TestInputValue} from '../_entity.js';
+import {DatabaseDef_Type, DB_Type, TestInputValue} from '../_entity/type/types.js';
 
 export type QueryTestInput = {
 	value: TestInputValue;

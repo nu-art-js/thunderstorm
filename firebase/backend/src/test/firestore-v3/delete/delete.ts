@@ -15,7 +15,7 @@ import {
 } from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
-import {DB_Type, DatabaseDef_Type} from '../_entity.js';
+import {DB_Type, DatabaseDef_Type} from '../_entity/type/types.js';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 
 chai.use(chaiAsPromised);

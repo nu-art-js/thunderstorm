@@ -1,6 +1,7 @@
 import {ComponentSync} from '@nu-art/thunder-widgets';
 import {compare} from '@nu-art/ts-common';
-import {SearchAddOn, SearchAddOnDef, SearchAddOnRenderer, SearchContext} from '../../_core/index.js';
+import {SearchAddOn, SearchAddOnDef} from '../../_core/SearchAddOn.js';
+import {SearchAddOnRenderer, SearchContext} from '../../_core/SearchContext.js';
 
 type Props = {
 	context: SearchContext;

@@ -27,7 +27,7 @@ import {
 	Phase_Publish,
 	Phase_Test,
 	Phase_ToESM
-} from '../../phases/definitions/index.js';
+} from '../../phases/definitions/consts.js';
 import {ProjectUnit_RuntimeContext} from '../base/ProjectUnit.js';
 import {glob} from 'node:fs/promises';
 import {TestType, TestTypes} from '../../core/params.js';

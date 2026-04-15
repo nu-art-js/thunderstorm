@@ -3,7 +3,7 @@ import {ComponentSync, LL_H_C, TS_Input} from '@nu-art/thunder-widgets';
 import {Model_PopUp, ModuleFE_MouseInteractivity} from '@nu-art/thunder-mouse-interactivity-frontend';
 import {WorkHubTabGroup} from '@nu-art/work-hub-shared';
 import {createRef, CSSProperties, MouseEvent} from 'react';
-import {ModuleFE_WorkHub} from '../../../../_module/index.js';
+import {ModuleFE_WorkHub} from '../../../../_module/ModuleFE_WorkHub/ModuleFE_WorkHub.js';
 import {BadImplementationException, compare} from '@nu-art/ts-common';
 import './Component_WorkHub_TabGroupMenu.scss';
 import {workHubTabGroupColors} from '../Component_WorkHub_TabGroup/consts.js';
