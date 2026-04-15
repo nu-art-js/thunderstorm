@@ -31,4 +31,3 @@ export * from './_entity/user-permissions/api-def.js';
 export * from './session-data.js';
 export * from './permissions-scopes.js';
 export * from './role-definition.js';
-export * from './document-access.js';
