@@ -1,4 +1,4 @@
-import {FirebasePackageConfig} from '../../../config/types/index.js';
+import {FirebasePackageConfig} from '../../../config/types/package/package.js';
 import {UnitPhaseImplementor} from '../../../core/types.js';
 import {ImplementationMissingException, StringMap, TS_Object} from '@nu-art/ts-common';
 import {
@@ -13,7 +13,7 @@ import {
 } from '../../../config/consts.js';
 import {Commando_NVM, CommandoException} from '@nu-art/commando';
 import {resolve} from 'path';
-import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/index.js';
+import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/consts.js';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';

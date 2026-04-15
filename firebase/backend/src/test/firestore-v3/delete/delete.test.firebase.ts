@@ -2,7 +2,7 @@ import {runSingleTestCase} from '@nu-art/testalot';
 import {TestCase_FirestoreV3_Delete, TestCases_FirestoreV3_Delete, test_FirestoreV3_Delete} from './delete.js';
 import {compare, PreDB, sortArray} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DB_Type} from '../_entity.js';
+import {DB_Type} from '../_entity/type/types.js';
 
 const runTestCase = (testCase: TestCase_FirestoreV3_Delete) => () => {
 	if (!('result' in testCase))

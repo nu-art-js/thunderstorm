@@ -4,7 +4,7 @@ import {_className} from '@nu-art/thunder-core';
 import {LL_H_C} from '@nu-art/thunder-widgets';
 import {exists} from '@nu-art/ts-common';
 import {WorkHubTab} from '@nu-art/work-hub-shared';
-import {ModuleFE_WorkHub} from '../../../../_module/index.js';
+import {ModuleFE_WorkHub} from '../../../../_module/ModuleFE_WorkHub/ModuleFE_WorkHub.js';
 
 type Props = {
 	tab: WorkHubTab;

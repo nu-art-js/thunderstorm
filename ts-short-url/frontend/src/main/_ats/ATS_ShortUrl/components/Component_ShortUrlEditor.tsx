@@ -4,7 +4,7 @@ import {EDITABLE, TS_EditableContent, TS_EditableItemStatus} from '@nu-art/edita
 import {Button, InferProps, InferState, LL_H_C, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {DatabaseDef_ShortUrl, GetShortUrlRequest, UI_ShortUrl} from '@nu-art/ts-short-url-shared';
-import {ModuleFE_ShortUrl} from '../../../_entity/short-url/index.js';
+import {ModuleFE_ShortUrl} from '../../../_entity/short-url/ModuleFE_ShortUrl.js';
 
 
 type Props = EditableRef<UI_ShortUrl> & { deleteCallback?: VoidFunction }

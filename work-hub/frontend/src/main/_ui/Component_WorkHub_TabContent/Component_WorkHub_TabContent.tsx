@@ -1,6 +1,6 @@
 import {WorkHubTab} from '@nu-art/work-hub-shared';
 import {createRef} from 'react';
-import {ModuleFE_WorkHub} from '../../_module/index.js';
+import {ModuleFE_WorkHub} from '../../_module/ModuleFE_WorkHub/ModuleFE_WorkHub.js';
 import './Component_WorkHub_TabContent.scss';
 import {ComponentSync, TS_ErrorBoundary} from '@nu-art/thunder-widgets';
 import {WorkHubItem} from '../../_core/work-hub-item.js';

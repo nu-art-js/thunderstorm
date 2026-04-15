@@ -20,7 +20,8 @@ import {_keys, exists, formatTimestamp} from '@nu-art/ts-common';
 import {AccountEmail, AccountPassword, API_UserAccount, ErrorType_LoginBlocked} from '@nu-art/user-account-shared';
 import './Component_Login.scss';
 import {Button, ComponentSync, LL_H_C, LL_V_C, ModuleFE_Toaster, TS_PropRenderer} from '@nu-art/thunder-widgets';
-import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity.js';
+import {ModuleFE_Account} from '../../_entity/account/ModuleFE_Account.js';
+import {StorageKey_DeviceId} from '../../_entity/account/consts.js';
 import {Component_LoginBlocked} from '../Component_LoginBlocked/Component_LoginBlocked.js';
 import {TS_Input} from '@nu-art/thunder-widgets/v3';
 

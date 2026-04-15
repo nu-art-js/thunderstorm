@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {filterDuplicates, RuntimeModules, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
-import {AppToolsScreen, ATS_Backend, TS_AppTools} from '../TS_AppTools/index.js';
+import {TS_AppTools} from '../TS_AppTools/TS_AppTools.js';
+import {AppToolsScreen, ATS_Backend} from '../TS_AppTools/types.js';
 import {Button, ComponentSync, LL_H_C} from '@nu-art/thunder-widgets';
 import {genericNotificationAction} from '@nu-art/thunder-notifications';
 import {ModuleFE_BaseApi, ModuleFE_BaseDB} from '@nu-art/db-api-frontend';

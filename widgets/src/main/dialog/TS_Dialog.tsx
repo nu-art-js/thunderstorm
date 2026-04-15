@@ -2,9 +2,9 @@ import * as React from 'react';
 import './TS_Dialog.scss';
 import {_values, BadImplementationException, filterInstances, flatArray, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {DialogKey, ModuleFE_Dialog} from './ModuleFE_Dialog.js';
-import {TS_ErrorBoundary} from '../error-boundary/index.js';
-import {Button} from '../button/index.js';
-import {LL_V_L} from '../layouts/index.js';
+import {TS_ErrorBoundary} from '../error-boundary/TS_ErrorBoundary.js';
+import {Button} from '../button/v1/Button.js';
+import {LL_V_L} from '../layouts/v1/Layouts.js';
 
 import {ComponentSync} from '../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';

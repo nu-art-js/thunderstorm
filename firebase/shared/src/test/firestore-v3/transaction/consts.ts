@@ -2,7 +2,7 @@ import {CollectionTest, id_inner1, id_inner2, id_inner3, id_inner4, id_outer1, i
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
 import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
-import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/shared/index.js';
+import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/shared/types.js';
 
 
 const transaction_addInner4 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {

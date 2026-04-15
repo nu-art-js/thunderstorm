@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {TS_ReadMore as TS_ReadMoreV1} from '../v1/index.js';
+import {TS_ReadMore as TS_ReadMoreV1} from '../v1/TS_ReadMore.js';
 
 type Props = {
 	text: string;

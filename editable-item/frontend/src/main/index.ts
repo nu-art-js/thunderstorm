@@ -62,7 +62,7 @@ export {
 	type StaticProps_TS_MultiSelect_V2,
 	type DynamicProps_TS_MultiSelect_V2,
 	type MultiSelect_Selector,
-} from './components/TS_MultiSelect/index.js';
+} from './components/TS_MultiSelect/TS_MultiSelect_V2.js';
 export {
 	DBItemDropDownMultiSelector,
 	type MultiSelectDropDownPropsV3,

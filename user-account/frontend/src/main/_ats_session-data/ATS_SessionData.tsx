@@ -1,5 +1,5 @@
 import {__stringify} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../_entity/account/index.js';
+import {ModuleFE_Account} from '../_entity/account/ModuleFE_Account.js';
 import {ComponentSync, LL_V_L, TS_Input, TS_TextArea} from '@nu-art/thunder-widgets';
 import {AppToolsScreen} from '@nu-art/thunder-ui-modules';
 import {OnStorageKeyChangedListener} from '@nu-art/thunder-core';

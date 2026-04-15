@@ -1,7 +1,7 @@
 import {mkdirSync, readFileSync, rmSync, writeFileSync} from 'fs';
 import {dirname, resolve} from 'path';
 import {Logger} from '../core/logger/index.js';
-import {StringMap} from '../utils/index.js';
+import {StringMap} from '../utils/types.js';
 import {FileSystemUtils} from '../utils/FileSystemUtils.js';
 
 /** Regex for matching file header comments: `// file: path/to/file` */

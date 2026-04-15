@@ -2,7 +2,7 @@ import {firestore, testInstance1} from '../../../_entity/_core/consts.js';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DB_Type, DatabaseDef_Type} from '../../_entity.js';
+import {DB_Type, DatabaseDef_Type} from '../../_entity/type/types.js';
 
 type TestCase_WriteMulti = { description?: string; input: {}; result: {} };
 type Test_WriteMulti = { label: string; testcases: TestCase_WriteMulti[]; processor: (testCase: TestCase_WriteMulti) => Promise<void> };

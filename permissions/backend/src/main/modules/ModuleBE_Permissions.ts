@@ -5,7 +5,10 @@ import type {DatabaseDef_PermissionRole, DatabaseDef_PermissionUser, DatabaseDef
 import {getRegisteredRoleDefinitions, permissionScopeId,} from '@nu-art/permissions-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
 import {getRegisteredFunctionPermissions, getScopeValues} from '../core/function-permission-registry.js';
-import {ModuleBE_PermissionRoleDB, ModuleBE_PermissionScopeDB, ModuleBE_PermissionUserDB, ModuleBE_UserPermissionsDB} from '../_entity.js';
+import {ModuleBE_PermissionRoleDB} from '../_entity/permission-role/ModuleBE_PermissionRoleDB.js';
+import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
+import {ModuleBE_PermissionUserDB} from '../_entity/permission-user/ModuleBE_PermissionUserDB.js';
+import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserScopePermissions} from '../consts.js';
 

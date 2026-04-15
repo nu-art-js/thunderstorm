@@ -59,5 +59,5 @@ export * from './validator/type-validators.js';
 
 export * from './consts/consts.js';
 
-export * from './mem-cache/index.js';
+export * from './mem-cache/MemCache.js';
 export * from './modules/csv-serializer.js';

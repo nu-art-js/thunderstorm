@@ -15,7 +15,7 @@ import {
 import {capitalizeFirstLetter, DateTimeFormat_yyyyMMDDTHHmmss, JwtTools, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {ModuleFE_Account} from '../_entity.js';
+import {ModuleFE_Account} from '../_entity/account/ModuleFE_Account.js';
 import {TS_Input} from '@nu-art/thunder-widgets/v3';
 import {_className} from '@nu-art/thunder-core';
 

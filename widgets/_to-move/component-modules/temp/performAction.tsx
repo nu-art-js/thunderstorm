@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {genericNotificationAction} from '../../components/TS_Notifications/index.js';
+import {genericNotificationAction} from '@nu-art/thunder-notifications';
 import {ToastBuilder} from '../ModuleFE_Toaster.js';
 import {generateErrorToastContent} from './genereteToasts.js';
 

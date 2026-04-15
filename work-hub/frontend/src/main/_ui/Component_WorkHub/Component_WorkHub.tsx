@@ -1,7 +1,7 @@
 import {ComponentSync, LL_V_L} from '@nu-art/thunder-widgets';
 import './Component_WorkHub.scss';
 import {WorkHubTab, WorkHubTabGroup} from '@nu-art/work-hub-shared';
-import {ModuleFE_WorkHub} from '../../_module/index.js';
+import {ModuleFE_WorkHub} from '../../_module/ModuleFE_WorkHub/ModuleFE_WorkHub.js';
 import {Component_WorkHub_Header} from '../Component_WorkHub_Header/Component_WorkHub_Header.js';
 import {OnWorkHubTabs} from '../../dispatchers.js';
 import {Component_WorkHub_TabContent} from '../Component_WorkHub_TabContent/Component_WorkHub_TabContent.js';

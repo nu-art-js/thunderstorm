@@ -18,7 +18,7 @@ import {
 } from '../_core/consts.js';
 import {_EmptyQuery} from '../../../main/index.js';
 import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
-import {DatabaseDef_Type, DB_Type, TestInputValue} from '../_entity.js';
+import {DatabaseDef_Type, DB_Type, TestInputValue} from '../_entity/type/types.js';
 
 export type QueryTestInput = {
 	value: TestInputValue;

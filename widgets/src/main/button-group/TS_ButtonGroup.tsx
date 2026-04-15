@@ -5,7 +5,7 @@ import {ComponentSync} from '../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
 import {InferProps, InferState} from '../_core/component-types.js';
 import {ButtonGroup_Props, ButtonGroup_Props_Controlled, ButtonGroup_State, ButtonGroupItem, ButtonGroupItem_NonControlled} from './types.js';
-import {Button} from '../button/index.js';
+import {Button} from '../button/v1/Button.js';
 
 export class TS_ButtonGroup<ButtonKey extends string = string>
 	extends ComponentSync<ButtonGroup_Props<ButtonKey>, ButtonGroup_State<ButtonKey>> {

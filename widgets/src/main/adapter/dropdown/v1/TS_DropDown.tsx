@@ -25,11 +25,11 @@ import {BadImplementationException, clamp, debounce, Filter, ResolvableContent, 
 import {_className} from '@nu-art/thunder-core';
 import {stopPropagation} from '@nu-art/thunder-core';
 import {Adapter} from '../../Adapter.js';
-import {TS_Overlay} from '../../../components/TS_Overlay/index.js';
-import {TS_Tree} from '../../tree/index.js';
-import {TS_Input} from '../../../input/v1/index.js';
+import {TS_Overlay} from '../../../components/TS_Overlay/TS_Overlay.js';
+import {TS_Tree} from '../../tree/v1/TS_Tree.js';
+import {TS_Input} from '../../../input/v1/TS_Input.js';
 import '../TS_DropDown.scss';
-import {LL_V_L} from '../../../layouts/index.js';
+import {LL_V_L} from '../../../layouts/v1/Layouts.js';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip} from '../../../components/types.js';
 import {ComponentSync} from '../../../_core/ComponentSync.js';
 

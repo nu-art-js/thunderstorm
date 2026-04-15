@@ -6,4 +6,5 @@
 
 export {ModuleBE_SyncManager_Class, ModuleBE_SyncManager, SetupTaskKey_SyncBackfill} from './ModuleBE_SyncManager.js';
 export type {SyncManagerBEConfig, OnSyncEnvCompleted, OnModuleCleanupV2} from './ModuleBE_SyncManager.js';
-export * from './deleted-doc/index.js';
+export * from './deleted-doc/types.js';
+export * from './deleted-doc/db-def.js';

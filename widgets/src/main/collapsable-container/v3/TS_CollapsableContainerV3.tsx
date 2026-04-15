@@ -2,7 +2,7 @@ import * as React from 'react';
 import {useCallback, useState} from 'react';
 import '../v2/TS_CollapsableContainerV2.scss';
 import {_className} from '@nu-art/thunder-core';
-import {LL_H_C, LL_V_L} from '../../layouts/index.js';
+import {LL_H_C, LL_V_L} from '../../layouts/v1/Layouts.js';
 import {exists, resolveContent} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import type {Props_TS_CollapsableContainerV2} from '../v2/TS_CollapsableContainerV2.js';

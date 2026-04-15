@@ -2,7 +2,7 @@ import {firestore, testInstance1} from '../../../_entity/_core/consts.js';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DatabaseDef_Type} from '../../../_entity/type/index.js';
+import {DatabaseDef_Type} from '../../../_entity/type/types.js';
 import {FirestoreCollection} from '../../../../main/firestore/FirestoreCollection.js';
 
 type TestCase_GetAll = { description?: string; input: {}; result: {} };

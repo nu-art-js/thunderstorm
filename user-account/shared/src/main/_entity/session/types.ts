@@ -1,5 +1,5 @@
 import {DB_Object, DB_ProtoSeed, DB_Prototype, DB_UniqueId, VersionsDeclaration} from '@nu-art/db-api-shared';
-import {DatabaseDef_Account} from '../account/index.js';
+import {DatabaseDef_Account} from '../account/types.js';
 
 type VersionTypes = { '1.0.0': DB_Session };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>;

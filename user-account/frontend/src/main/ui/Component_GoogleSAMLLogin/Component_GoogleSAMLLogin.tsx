@@ -1,6 +1,7 @@
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_GoogleSAMLLogin.scss';
-import {ModuleFE_Account, StorageKey_DeviceId} from '../../_entity.js';
+import {ModuleFE_Account} from '../../_entity/account/ModuleFE_Account.js';
+import {StorageKey_DeviceId} from '../../_entity/account/consts.js';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
 import {Button} from '@nu-art/thunder-widgets/v3';
 

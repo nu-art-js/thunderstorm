@@ -2,7 +2,7 @@ import {queryAllTestCases, queryComplexTestCases, QueryTest, queryTestCases, que
 import {CollectionTest, firestore, prepareCollectionTest} from '../_core/consts.js';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, tsValidateMustExist} from '@nu-art/ts-common';
-import {DatabaseDef_Type} from '../_entity.js';
+import {DatabaseDef_Type} from '../_entity/type/types.js';
 
 const dbDef: Database<DatabaseDef_Type> = {
 	modifiablePropsValidator: tsValidateMustExist,

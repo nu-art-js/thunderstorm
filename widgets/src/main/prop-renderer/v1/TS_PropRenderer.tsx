@@ -1,6 +1,6 @@
 import './TS_PropRenderer.scss';
 import * as React from 'react';
-import {LinearLayoutProps, LL_H_B, LL_H_C, LL_H_T, LL_V_L} from '../../layouts/index.js';
+import {LinearLayoutProps, LL_H_B, LL_H_C, LL_H_T, LL_V_L} from '../../layouts/v1/Layouts.js';
 import {_className} from '@nu-art/thunder-core';
 import {resolveContent} from '@nu-art/ts-common';
 

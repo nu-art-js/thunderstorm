@@ -1,5 +1,5 @@
 import {TestSuite} from '@nu-art/testalot';
-import {TestInputValue} from '../_entity.js';
+import {TestInputValue} from '../_entity/type/types.js';
 import {DB_Object, DB_Prototype, DB_ProtoSeed, VersionsDeclaration} from '@nu-art/db-api-shared';
 
 export const FreeForm_DbKey = 'free-form';

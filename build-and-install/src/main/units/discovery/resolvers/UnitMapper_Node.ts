@@ -8,7 +8,7 @@ import {
 	TypeValidator,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {BaseUnit} from '../../index.js';
+import {BaseUnit} from '../../base/BaseUnit.js';
 import {FilesCache} from '../../../core/FilesCache.js';
 import {BaseUnitConfig, UnitConfigJSON_Base, UnitMapper_Base} from './UnitMapper_Base.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';

@@ -4,7 +4,7 @@ import {CreateTest, createTestCases} from './consts.js';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {createTests_dbDef} from './create.js';
-import {DatabaseDef_Type} from '../../_entity/type/shared/index.js';
+import {DatabaseDef_Type} from '../../_entity/type/shared/types.js';
 
 const chai = await import('\'chai\'');
 chai.use(chaiAsPromised);

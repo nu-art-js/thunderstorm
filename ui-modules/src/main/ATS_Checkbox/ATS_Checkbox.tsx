@@ -2,7 +2,7 @@ import {thunderstormATSGroups} from '../consts.js';
 import {ComponentSync, Grid, TS_Checkbox} from '@nu-art/thunder-widgets/v3';
 import './ATS_Checkbox.scss';
 import {voidFunction} from '@nu-art/ts-common';
-import {AppToolsScreen} from '../TS_AppTools/index.js';
+import {AppToolsScreen} from '../TS_AppTools/types.js';
 
 
 type State = {

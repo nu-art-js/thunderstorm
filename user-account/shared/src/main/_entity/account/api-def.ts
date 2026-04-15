@@ -1,7 +1,7 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
 import {Minute} from '@nu-art/ts-common';
 import {AccountType, DatabaseDef_Account, DB_Account, UI_Account} from './types.js';
-import {PasswordAssertionConfig} from '../../_enum/password-assertion/index.js';
+import {PasswordAssertionConfig} from '../../_enum/password-assertion/types.js';
 import {DB_BaseObject} from '@nu-art/db-api-shared';
 import {DB_Session} from '../session/types.js';
 import {QueryParam_RedirectUrl} from '../session/consts.js';

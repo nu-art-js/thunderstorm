@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {generateUUID} from '@nu-art/ts-common';
-import {TS_DialogOverlay} from '../dialog/index.js';
-import {TS_ToastOverlay} from '../toaster/index.js';
-import {TS_MemoryMonitor} from '../_utils/TS_MemoryMonitor/index.js';
+import {TS_DialogOverlay} from '../dialog/TS_DialogOverlay.js';
+import {TS_ToastOverlay} from '../toaster/TS_ToastOverlay.js';
+import {TS_MemoryMonitor} from '../_utils/TS_MemoryMonitor/TS_MemoryMonitor.js';
 import {ComponentSync} from '../_core/ComponentSync.js';
 import {ModuleFE_Routing, TS_Route} from '@nu-art/thunder-routing';
 import {stopPropagation, Thunder} from '@nu-art/thunder-core';

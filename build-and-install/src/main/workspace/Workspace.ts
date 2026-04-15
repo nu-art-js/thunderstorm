@@ -2,7 +2,9 @@ import {_keys, AnyConstructor, arrayToMap, BadImplementationException, flatArray
 import {BaiParams} from '../core/params.js';
 import {UnitsMapper} from '../units/discovery/UnitsMapper.js';
 import {UnitDependentNode, UnitsDependencyMapper} from '../dependencies/UnitsDependencyMapper.js';
-import {BaseUnit, ProjectUnit, Unit_NodeProject} from '../units/index.js';
+import {BaseUnit} from '../units/base/BaseUnit.js';
+import {ProjectUnit} from '../units/base/ProjectUnit.js';
+import {Unit_NodeProject} from '../units/implementations/Unit_NodeProject.js';
 
 /**
  * Central workspace manager for all units in the build system.

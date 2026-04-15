@@ -8,7 +8,7 @@
 import {sortArray} from '@nu-art/ts-common';
 import type {DatabaseDef_PermissionScope, DB_PermissionScope} from '@nu-art/permissions-shared';
 import {getPermissionScopeValues} from '@nu-art/permissions-shared';
-import {ModuleFE_PermissionScope} from '../../_entity.js';
+import {ModuleFE_PermissionScope} from '../../_entity/permission-scope/ModuleFE_PermissionScope.js';
 
 
 export type ScopeDescriptor = { key: string; values: string[] };

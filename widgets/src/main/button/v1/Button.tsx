@@ -3,7 +3,7 @@ import {ComponentSync} from '../../_core/ComponentSync.js';
 import {exists, isPromise, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import '../Button.scss';
 import {_className} from '@nu-art/thunder-core';
-import {LL_H_C} from '../../layouts/index.js';
+import {LL_H_C} from '../../layouts/v1/Layouts.js';
 
 type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'text' | 'dangerous' | (string & {});
 type ButtonProps = Omit<React.HTMLProps<HTMLButtonElement>, 'type' | 'ref'>;

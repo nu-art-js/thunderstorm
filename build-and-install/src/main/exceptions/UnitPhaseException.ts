@@ -1,5 +1,5 @@
 import {CustomException} from '@nu-art/ts-common';
-import {BaseUnit} from '../units/index.js';
+import {BaseUnit} from '../units/base/BaseUnit.js';
 
 /**
  * Exception thrown when a specific phase fails on a specific unit.

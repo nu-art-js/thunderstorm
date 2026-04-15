@@ -4,7 +4,7 @@ import {compare, DB_Object, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/
 import {expect} from 'chai';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {firestore} from '../../_entity/_core/consts.js';
-import {DatabaseDef_Type, DB_Type} from '../_entity.js';
+import {DatabaseDef_Type, DB_Type} from '../_entity/type/types.js';
 import {Database} from '@nu-art/db-api-shared';
 import {tsValidateMustExist} from '@nu-art/ts-common';
 

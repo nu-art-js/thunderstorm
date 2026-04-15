@@ -1,4 +1,4 @@
-import {SearchAddOn, SearchAddOnDef} from '../../../_core/index.js';
+import {SearchAddOn, SearchAddOnDef} from '../../../_core/SearchAddOn.js';
 
 export type AddOnDef_EntityFilter = SearchAddOnDef<'entity', string[] | undefined, 'getEntityKey', string>;
 export const AddOn_EntityFilter: SearchAddOn<AddOnDef_EntityFilter> = {

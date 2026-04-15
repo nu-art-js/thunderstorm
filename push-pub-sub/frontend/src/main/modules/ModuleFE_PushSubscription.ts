@@ -2,7 +2,8 @@ import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {CrudApiDef} from '@nu-art/db-api-shared';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import {buildConfigFromDBDef, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {DBDef_PushSubscription, DatabaseDef_PushSubscription} from '@nu-art/push-pub-sub-shared/push-subscription/index';
+import {DatabaseDef_PushSubscription} from '@nu-art/push-pub-sub-shared/push-subscription/types';
+import {DBDef_PushSubscription} from '@nu-art/push-pub-sub-shared/push-subscription/db-def';
 import {ThunderDispatcher} from '@nu-art/thunder-core';
 
 /** Event type for subscription updates. Uses any for DB type to bridge ts-common DB_PushSubscription with db-api DB_Object. */

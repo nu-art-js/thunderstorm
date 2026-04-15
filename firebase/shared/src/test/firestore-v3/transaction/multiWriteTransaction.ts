@@ -4,7 +4,7 @@ import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {firestore, testInstance1} from '../_core/consts.js';
 import {expect} from 'chai';
 import {FirestoreCollection} from '../../../main/backend/firestore/FirestoreCollection.js';
-import {DB_Type, DatabaseDef_Type} from '../_entity.js';
+import {DB_Type, DatabaseDef_Type} from '../_entity/type/types.js';
 
 type Input = {
 	action: (collection: FirestoreCollection<DatabaseDef_Type>, items: PreDB<DB_Type>[]) => Promise<void>

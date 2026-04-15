@@ -4,7 +4,8 @@ import {LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
 import './ATS_CollapsableContainer.scss';
 import {TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_CollapsableContainer} from '@nu-art/thunder-widgets';
-import {AppToolsScreen, TS_AppTools} from '../TS_AppTools/index.js';
+import {TS_AppTools} from '../TS_AppTools/TS_AppTools.js';
+import {AppToolsScreen} from '../TS_AppTools/types.js';
 
 const lorem = () => <p className={'lorem'}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed sagittis mauris quis elit tristique tempor. Sed in
 	pellentesque nisi, eu

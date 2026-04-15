@@ -9,7 +9,7 @@ import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {FilesCache} from '../../../main/core/FilesCache.js';
 import {CONST_NodeModules} from '../../../main/config/consts.js';
-import {phase_Install, phase_Prepare} from '../../../main/phases/definitions/index.js';
+import {phase_Install, phase_Prepare} from '../../../main/phases/definitions/consts.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {sleep} from '@nu-art/ts-common';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';

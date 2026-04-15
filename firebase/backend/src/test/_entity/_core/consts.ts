@@ -33,7 +33,8 @@ import {
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
-import {DB_Type, DB_Type_Complex, DatabaseDef_Type_Complex, TestInputValue} from '../../firestore-v3/_entity.js';
+import {DB_Type, TestInputValue} from '../../firestore-v3/_entity/type/types.js';
+import {DB_Type_Complex, DatabaseDef_Type_Complex} from '../../firestore-v3/_entity/type-complex/types.js';
 import {FB_ArrayType} from './types.js';
 import {FIREBASE_DEFAULT_PROJECT_ID, FirestoreCollection, ModuleBE_Firebase} from '../../../main/index.js';
 

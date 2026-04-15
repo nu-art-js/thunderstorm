@@ -5,8 +5,8 @@ import chaiAsPromised from 'chai-as-promised';
 import {createTestCases, CreateTestInput} from './consts.js';
 import {expect} from 'chai';
 import {createTests_dbDef} from './create.js';
-import {DatabaseDef_Type} from '../../_entity/type/index.js';
-import {TestInputValue} from '../_entity.js';
+import {DatabaseDef_Type} from '../../_entity/type/types.js';
+import {TestInputValue} from '../_entity/type/types.js';
 import {TestModel} from '@nu-art/testalot';
 
 chai.use(chaiAsPromised);

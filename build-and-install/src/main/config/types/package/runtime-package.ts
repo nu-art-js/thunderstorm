@@ -1,4 +1,4 @@
-import {PackageJson} from '../configs/index.js';
+import {PackageJson} from '../configs/package-json.js';
 import {Package, Package_Sourceless} from './package.js';
 
 

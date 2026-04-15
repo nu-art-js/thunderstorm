@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {TS_JSONViewer as TS_JSONViewerV1} from '../v1/index.js';
+import {TS_JSONViewer as TS_JSONViewerV1} from '../v1/TS_JSONViewer.js';
 
 type Props = {
 	item: Object;

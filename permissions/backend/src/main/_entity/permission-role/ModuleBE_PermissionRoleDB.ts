@@ -1,10 +1,9 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {DatabaseDef_PermissionRole, DBDef_PermissionRole, PermissionScope_Permissions} from '@nu-art/permissions-shared';
+import {DatabaseDef_PermissionRole, DBDef_PermissionRole} from '@nu-art/permissions-shared';
 import {ApiException, asArray, batchActionParallel, dbObjectToId, filterDuplicates} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {ModuleBE_PermissionUserDB} from '../permission-user/index.js';
+import {ModuleBE_PermissionUserDB} from '../permission-user/ModuleBE_PermissionUserDB.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
-import {wireScopePermission} from '../../entity-permissions.js';
 import {MemKey_ServiceAccountId} from '../../consts.js';
 import {ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '../../modules/ModuleBE_Permissions.js';
 
@@ -13,11 +12,6 @@ export class ModuleBE_PermissionRoleDB_Class
 
 	constructor() {
 		super(DBDef_PermissionRole);
-	}
-
-	init() {
-		super.init();
-		wireScopePermission(this, PermissionScope_Permissions, 'admin');
 	}
 
 	protected async preWriteProcessing(instance: DatabaseDef_PermissionRole['dbType'], originalDbInstance: DatabaseDef_PermissionRole['dbType']) {

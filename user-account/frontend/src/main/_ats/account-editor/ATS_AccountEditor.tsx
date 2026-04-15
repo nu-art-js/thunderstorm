@@ -2,7 +2,7 @@ import './ATS_AccountEditor.scss';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor.js';
 import {DB_Account} from '@nu-art/user-account-shared';
 import {generateUUID} from '@nu-art/ts-common';
-import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/index.js';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../_entity/account/ModuleFE_Account.js';
 import {ComponentSync, LL_H_C, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {AppToolsScreen} from '@nu-art/thunder-ui-modules';
 import {Button, LL_V_L} from '@nu-art/thunder-widgets/v3';

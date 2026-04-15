@@ -6,4 +6,5 @@
  */
 
 export * from './index.js';
-export * from './form-v3/index.js';
+export * from './form-v3/types.js';
+export * from './form-v3/FormV3.js';
