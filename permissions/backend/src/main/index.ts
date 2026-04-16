@@ -33,5 +33,7 @@ export * from './_entity/permission-user/module-pack.js';
 export * from './_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 export * from './_entity/user-permissions/ModuleBE_UserPermissionsAPI.js';
 export * from './_entity/user-permissions/module-pack.js';
+export * from './_entity/access-group/ModuleBE_AccessGroupDB.js';
+export * from './_entity/access-group/module-pack.js';
 export * from './document-access-enforcement.js';
 export * from './document-access-api.js';

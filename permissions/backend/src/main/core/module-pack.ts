@@ -24,12 +24,14 @@ import {ModulePackBE_PermissionRole} from '../_entity/permission-role/module-pac
 import {ModulePackBE_PermissionScope} from '../_entity/permission-scope/module-pack.js';
 import {ModulePackBE_PermissionUser} from '../_entity/permission-user/module-pack.js';
 import {ModulePackBE_UserPermissions} from '../_entity/user-permissions/module-pack.js';
+import {ModulePackBE_AccessGroup} from '../_entity/access-group/module-pack.js';
 
 export const ModulePackBE_Permissions: Module[] = [
 	...ModulePackBE_PermissionRole,
 	...ModulePackBE_PermissionScope,
 	...ModulePackBE_PermissionUser,
 	...ModulePackBE_UserPermissions,
+	...ModulePackBE_AccessGroup,
 	ModuleBE_PermissionsAssert,
 	ModuleBE_Permissions,
 ];

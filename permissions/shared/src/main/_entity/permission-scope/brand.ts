@@ -1,5 +1,4 @@
-import {stringToUniqueId} from '@nu-art/db-api-shared';
-import {md5} from '@nu-art/ts-common';
+import {hashToUniqueId} from '@nu-art/db-api-shared';
 import {DatabaseDef_PermissionScope} from './types.js';
 
 /** Type-only brand for PermissionScope; use definePermissionScope() to create valid instances. */
@@ -33,5 +32,5 @@ export function getPermissionScopeValues(key: string): readonly string[] | undef
 
 
 export function permissionScopeId<Scope extends PermissionScope>(key: Scope['key'], value: Scope['values'][number]) {
-	return stringToUniqueId<DatabaseDef_PermissionScope['dbKey']>(md5(`${key}:${value}`));
+	return hashToUniqueId<DatabaseDef_PermissionScope['dbKey']>(`${key}:${value}`);
 }

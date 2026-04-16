@@ -1,4 +1,5 @@
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
+import type {ScopedAccessIds} from '../../document-access.js';
 
 export const UserPermissions_DbKey = 'permissions--user-permissions';
 type DBKey = typeof UserPermissions_DbKey;
@@ -15,4 +16,5 @@ export type UI_UserPermissions = DatabaseDef_UserPermissions['uiType'];
 
 export type DB_UserPermissions = DB_Object<DBKey> & {
 	scopeEntries: string[];
+	accessIds: ScopedAccessIds;
 };

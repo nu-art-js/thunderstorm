@@ -1,5 +1,6 @@
 import {ModuleBE_BaseDB, PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 import {
+	DatabaseDef_AccessGroup,
 	DatabaseDef_PermissionRole,
 	DatabaseDef_PermissionUser,
 	DB_PermissionUser,
@@ -21,8 +22,10 @@ import {
 } from '@nu-art/ts-common';
 import {ModuleBE_PermissionRoleDB} from '../permission-role/ModuleBE_PermissionRoleDB.js';
 import {ModuleBE_PermissionScopeDB} from '../permission-scope/ModuleBE_PermissionScopeDB.js';
+import {ModuleBE_AccessGroupDB} from '../access-group/ModuleBE_AccessGroupDB.js';
 import {ModuleBE_AccountDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {SafeDB_Account} from '@nu-art/user-account-shared';
+import {AccessScope_Self} from '@nu-art/permissions-shared';
 import {MemKey_UserScopePermissions} from '../../consts.js';
 import {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {getScopeValues} from '../../core/function-permission-registry.js';
@@ -82,6 +85,9 @@ export class ModuleBE_PermissionUserDB_Class
 
 				await this.set.all(usersToUpsert);
 				await this.delete.all(usersToDelete);
+
+				for (const account of accounts)
+					await this.ensurePersonalAccessGroup(account);
 			})
 		}];
 	}
@@ -92,6 +98,7 @@ export class ModuleBE_PermissionUserDB_Class
 			if (!isNew) {
 				await this.ensureDefaultRole(account);
 				await this.ensurePersonalRole(account);
+				await this.ensurePersonalAccessGroup(account);
 				await this.checkAdminGrantFlag(account);
 			}
 			await this.resolveAdditionalRoles(account, 'login');
@@ -231,6 +238,8 @@ export class ModuleBE_PermissionUserDB_Class
 				scopeEntries: [],
 			});
 
+			await this.ensurePersonalAccessGroup(account);
+
 			const roles: RoleAssignment[] = [{roleId: RoleId_AppDefault}, {roleId: personalRoleId}];
 
 			const existingUsers = await this.query.custom({limit: 1});
@@ -251,6 +260,22 @@ export class ModuleBE_PermissionUserDB_Class
 		await ModuleBE_PermissionUserDB.collection.uniqueGetOrCreate({_id: permissionUserId}, create);
 		return created;
 	};
+
+	private async ensurePersonalAccessGroup(account: SafeDB_Account) {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		const existing = await ModuleBE_AccessGroupDB.query.unique(personalGroupId);
+		if (existing)
+			return;
+
+		await ModuleBE_AccessGroupDB.create.item({
+			_id: personalGroupId,
+			type: 'personal',
+			key: AccessScope_Self,
+			label: `Personal (${account.email ?? account._id})`,
+			members: [],
+		});
+		this.logInfo(`Created personal access group for user ${account._id}`);
+	}
 
 	async assignPermissions(body: Request_AssignPermissions) {
 		if (!body.targetAccountIds.length)

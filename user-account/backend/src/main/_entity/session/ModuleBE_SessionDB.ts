@@ -7,7 +7,6 @@ import {
 	filterKeys,
 	isErrorOfType,
 	JwtTools,
-	md5,
 	MUSTNeverHappenException,
 	RecursiveObjectOfPrimitives,
 	TypedKeyValue,
@@ -22,7 +21,7 @@ import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {ModuleBE_AccountDB, OnAccountDeleted} from '../account/ModuleBE_AccountDB.js';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
-import {dbObjectToId, stringToUniqueId} from '@nu-art/db-api-shared';
+import {dbObjectToId, hashToUniqueId} from '@nu-art/db-api-shared';
 
 export type BaseSessionClaims = {
 	accountId: DatabaseDef_Account['id'],
@@ -185,7 +184,7 @@ export class ModuleBE_SessionDB_Class
 			byJwt: async (jwt: string) => {
 				return await this.query.uniqueCustom({
 					// We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
-					where: {validSessionJwtMd5s: {$ac: stringToUniqueId<DatabaseDef_Session['dbKey']>(md5(jwt))}},
+					where: {validSessionJwtMd5s: {$ac: hashToUniqueId<DatabaseDef_Session['dbKey']>(jwt)}},
 					orderBy: [{key: '__created', order: 'desc'}],
 					limit: 1
 				});
@@ -199,7 +198,7 @@ export class ModuleBE_SessionDB_Class
 			return jwt;
 		},
 		save: async (content: Props_CreateSession, jwt: string) => {
-			const _id = stringToUniqueId<DatabaseDef_Session['dbKey']>(md5(jwt));
+			const _id = hashToUniqueId<DatabaseDef_Session['dbKey']>(jwt);
 			const validSessionJwtMd5s = content.prevSessions ? [_id, ...content.prevSessions] : [_id];
 			if (validSessionJwtMd5s.length > this.config.maxPrevSession)
 				validSessionJwtMd5s.length = this.config.maxPrevSession;

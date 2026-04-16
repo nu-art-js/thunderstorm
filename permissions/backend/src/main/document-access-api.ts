@@ -7,8 +7,13 @@ import {CapabilityToFieldKey} from '@nu-art/permissions-shared';
 import {MemKey_UserAccessIds} from './consts.js';
 
 
+function getAllAccessIds(): UniqueId[] {
+	const dict = MemKey_UserAccessIds.get();
+	return filterDuplicates(Object.values(dict).flat());
+}
+
 function assertOwnership(doc: Partial<DocumentAccessFields>) {
-	const accessIds = MemKey_UserAccessIds.get();
+	const accessIds = getAllAccessIds();
 	const isOwner = doc._owners?.some(id => accessIds.includes(id));
 	if (!isOwner)
 		throw new ApiException(403, 'Only document owners can manage access');
