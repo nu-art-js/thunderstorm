@@ -1,6 +1,9 @@
 import {_keys, ApiException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, md5, Module, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {stringToUniqueId} from '@nu-art/db-api-shared';
+import type {DB_Prototype} from '@nu-art/db-api-shared';
+import {RuntimeBE_ModulesDB} from '@nu-art/db-api-backend';
+import type {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import type {DatabaseDef_PermissionRole, DatabaseDef_PermissionUser, DatabaseDef_UserPermissions, DB_PermissionRole, DB_PermissionScope, DB_UserPermissions, PermissionScope} from '@nu-art/permissions-shared';
 import {getRegisteredRoleDefinitions, permissionScopeId,} from '@nu-art/permissions-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
@@ -10,7 +13,8 @@ import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_P
 import {ModuleBE_PermissionUserDB} from '../_entity/permission-user/ModuleBE_PermissionUserDB.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {MemKey_ServiceAccountId, MemKey_UserScopePermissions} from '../consts.js';
+import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
+import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
 
 
 // --- Types consumed by app modules via CollectDefaultScopeValues dispatcher ---
@@ -63,6 +67,7 @@ class ModuleBE_Permissions_Class
 	implements PerformProjectSetup {
 
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
+	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
 
 	constructor() {
 		super();
@@ -80,6 +85,21 @@ class ModuleBE_Permissions_Class
 	protected init() {
 		super.init();
 		this.adminGrantFlagRef = ModuleBE_Firebase.createModuleStateFirebaseRef<boolean>(this, 'grantAdminOnLogin');
+		this.wireDocumentAccessToAllModules();
+	}
+
+	setAccessContextResolver<Database extends DB_Prototype>(
+		dbModule: ModuleBE_BaseDB<Database>,
+		resolver: AccessContextResolver<Database>
+	): void {
+		this.accessResolvers.set(dbModule.dbDef.dbKey, resolver);
+	}
+
+	private wireDocumentAccessToAllModules() {
+		for (const dbModule of RuntimeBE_ModulesDB()) {
+			const dbKey = dbModule.dbDef.dbKey;
+			wireDocumentAccess(dbModule, () => this.accessResolvers.get(dbKey));
+		}
 	}
 
 	public getAdminGrantFlagRef(): FirebaseRef<boolean> {
@@ -190,6 +210,7 @@ class ModuleBE_Permissions_Class
 		return memStorage.init(async () => {
 			MemKey_ServiceAccountId.set(saId);
 			MemKey_UserScopePermissions.set(scopes);
+			MemKey_UserAccessIds.set([saId]);
 			return action();
 		});
 	}
