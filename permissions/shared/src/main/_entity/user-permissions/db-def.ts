@@ -1,10 +1,11 @@
-import {tsValidateArray, tsValidateString} from '@nu-art/ts-common';
+import {tsValidateArray, tsValidateDynamicObject, tsValidateString, tsValidator_arrayOfUniqueIds} from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
 import {DatabaseDef_UserPermissions, UserPermissions_DbKey} from './types.js';
 import {PermissionDBGroup} from '../../consts.js';
 
 const Validator_ModifiableProps: DatabaseDef_UserPermissions['modifiablePropsValidator'] = {
 	scopeEntries: tsValidateArray(tsValidateString()),
+	accessIds: tsValidateDynamicObject(tsValidator_arrayOfUniqueIds, tsValidateString()),
 };
 
 const Validator_GeneratedProps: DatabaseDef_UserPermissions['generatedPropsValidator'] = {};

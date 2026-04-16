@@ -21,12 +21,12 @@ import {ApiException, Module} from '@nu-art/ts-common';
 import {stringToUniqueId} from '@nu-art/db-api-shared';
 import type {ServerApi_Middleware} from '@nu-art/http-server';
 import {CollectSessionData, SessionKey_Account_BE} from '@nu-art/user-account-backend';
-import {DatabaseDef_PermissionUser, DatabaseDef_UserPermissions, SessionData_StrictMode} from '@nu-art/permissions-shared';
+import type {DatabaseDef_AccessGroup} from '@nu-art/permissions-shared';
+import {AccessScope_Self, DatabaseDef_UserPermissions, SessionData_StrictMode} from '@nu-art/permissions-shared';
 import {MemKey_UserAccessIds, MemKey_UserEntityContexts, MemKey_UserScopePermissions} from '../consts.js';
 import type {PermissionScope} from '@nu-art/permissions-shared';
 import type {PermissionAssertionContext} from '../assertion-types.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
-import {ModuleBE_PermissionUserDB} from '../_entity/permission-user/ModuleBE_PermissionUserDB.js';
 
 type Config = {
 	strictMode?: boolean
@@ -43,10 +43,8 @@ export class ModuleBE_PermissionsAssert_Class
 		const entity = await ModuleBE_UserPermissionsDB.query.unique(permissionsId);
 		MemKey_UserScopePermissions.set(entity?.scopeEntries ?? []);
 
-		const permissionUserId = stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(account._id);
-		const permissionUser = await ModuleBE_PermissionUserDB.query.unique(permissionUserId);
-		const roleIds = permissionUser?.roles.map(r => r.roleId) ?? [];
-		MemKey_UserAccessIds.set([permissionUserId, ...roleIds]);
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		MemKey_UserAccessIds.set(entity?.accessIds ?? {[AccessScope_Self]: [personalGroupId]});
 	};
 
 	async __collectSessionData(): Promise<SessionData_StrictMode> {

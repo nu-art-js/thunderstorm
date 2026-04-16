@@ -10,14 +10,13 @@ import {
 	hashPasswordWithSalt,
 	md5,
 	Module,
-	MUSTNeverHappenException,
 	Year
 } from '@nu-art/ts-common';
 import {DB_BaseObject} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import {FirestoreQuery} from '@nu-art/firebase-shared';
-import {FirestoreInterface} from '@nu-art/firebase-backend/firestore/FirestoreInterface';
+
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {
 	_SessionKey_Account,
@@ -37,11 +36,10 @@ import {
 	SafeDB_Account,
 	UI_Account
 } from '@nu-art/user-account-shared';
-import {QueryDocumentSnapshot} from 'firebase-admin/firestore';
+
 import {Header_Authorization, MemKey_AccountEmail, MemKey_AccountId, MemKey_AccountType, MemKey_DB_Session, SessionKey_Account_BE} from '../session/consts.js';
 import {BaseSessionClaims, CollectSessionData, ModuleBE_SessionDB} from '../session/ModuleBE_SessionDB.js';
 import {ModuleBE_FailedLoginAttemptDB} from '../failed-login-attempt/ModuleBE_FailedLoginAttemptDB.js';
-import {getActiveTransaction} from '@nu-art/firebase-backend';
 
 
 type BaseAccount = {
@@ -235,25 +233,17 @@ export class ModuleBE_AccountDB_Class
 			await dispatch_onAccountLogin.dispatchModuleAsync(account);
 		},
 		queryUnsafeAccount: async (credentials: AccountEmail) => {
-			const firestoreQuery = FirestoreInterface.buildQuery(this.collection as any, {where: {email: credentials.email}});
-			const transaction = getActiveTransaction();
-			let results;
-			if (transaction)
-				results = (await transaction.get(firestoreQuery)).docs as QueryDocumentSnapshot<DB_Account>[];
-			else
-				results = (await firestoreQuery.get()).docs as QueryDocumentSnapshot<DB_Account>[];
+			const results = await this.query.unManipulatedQuery({where: {email: credentials.email}});
+			if (results.length === 0) {
+				const apiException = new ApiException(401, `There is no account for email '${credentials.email}'.`);
+				await dispatch_onApplicationException.dispatchModuleAsync(apiException, this as Module);
+				throw apiException;
+			}
 
-			if (results.length !== 1)
-				if (results.length === 0) {
-					const apiException = new ApiException(401, `There is no account for email '${credentials.email}'.`);
-					await dispatch_onApplicationException.dispatchModuleAsync(apiException, this as Module);
-					throw apiException;
-				} else if (results.length > 1) {
-					this.logWarningBold(`Too many accounts using this email! '${credentials.email}'`);
-					throw new MUSTNeverHappenException('Too many accounts using this email');
-				}
+			if (results.length > 1)
+				throw new BadImplementationException(`Too many accounts using this email: '${credentials.email}'`);
 
-			return results[0].data();
+			return results[0];
 		},
 		querySafeAccount: async (credentials: AccountEmail) => {
 			const account = await this.impl.queryUnsafeAccount(credentials);

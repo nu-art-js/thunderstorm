@@ -20,7 +20,7 @@
  * Created by tacb0ss on 25/08/2018.
  */
 
-import {ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {composeUrl, ImplementationMissingException, merge, Module, TypedMap} from '@nu-art/ts-common';
 import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin.js';
 import {FirebaseSession} from './auth/firebase-session.js';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword.js";
@@ -37,6 +37,7 @@ export type FirestoreMongoConfig = {
 export type MongoConnectionConfig = {
 	mongoUrl?: string;
 	firestoreMongo?: FirestoreMongoConfig;
+	params?: TypedMap<string | number>;
 };
 
 type ConfigType = {
@@ -93,10 +94,10 @@ export class ModuleBE_Firebase_Class
 		const mongoConfig = this.resolveMongoConfig(authKey);
 
 		if (mongoConfig?.mongoUrl)
-			return mongoConfig.mongoUrl;
+			return composeUrl(mongoConfig.mongoUrl, mongoConfig.params);
 
 		if (mongoConfig?.firestoreMongo)
-			return ModuleBE_Firebase_Class.buildFirestoreMongoUrl(mongoConfig.firestoreMongo);
+			return ModuleBE_Firebase_Class.buildFirestoreMongoUrl(mongoConfig.firestoreMongo, mongoConfig.params);
 
 		throw new ImplementationMissingException(
 			`No MongoDB connection configured for session '${authKey ?? 'default'}'. ` +
@@ -117,12 +118,20 @@ export class ModuleBE_Firebase_Class
 		return undefined;
 	}
 
-	private static buildFirestoreMongoUrl(config: FirestoreMongoConfig): string {
+	private static readonly firestoreMongoDefaults: TypedMap<string | number> = {
+		loadBalanced: 'true',
+		tls: 'true',
+		retryWrites: 'false',
+		connectTimeoutMS: 30000,
+		socketTimeoutMS: 60000,
+		authMechanism: 'MONGODB-OIDC',
+		authMechanismProperties: 'ENVIRONMENT:gcp,TOKEN_RESOURCE:FIRESTORE',
+	};
+
+	private static buildFirestoreMongoUrl(config: FirestoreMongoConfig, overrides?: TypedMap<string | number>): string {
 		const {firestoreUid, firestoreLocation} = config;
-		return `mongodb://${firestoreUid}.${firestoreLocation}.firestore.goog:443/default` +
-			'?loadBalanced=true&tls=true&retryWrites=false' +
-			'&authMechanism=MONGODB-OIDC' +
-			'&authMechanismProperties=ENVIRONMENT:gcp,TOKEN_RESOURCE:FIRESTORE';
+		const baseUrl = `mongodb://${firestoreUid}.${firestoreLocation}.firestore.goog:443/default`;
+		return composeUrl(baseUrl, merge(ModuleBE_Firebase_Class.firestoreMongoDefaults, overrides));
 	}
 
 	createModuleStateFirebaseRef<T>(module: Module, _relativePath: string) {

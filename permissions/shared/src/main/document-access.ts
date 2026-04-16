@@ -1,5 +1,8 @@
 import type {UniqueId} from '@nu-art/ts-common';
 
+export type ScopedAccessIds = Record<string, UniqueId[]>;
+export const AccessScope_Self = '_self';
+
 export type DocumentAccessFields = {
 	_readers: UniqueId[];
 	_writers: UniqueId[];
