@@ -65,7 +65,8 @@ function createQueryInterceptor<Database extends DB_Prototype>(
 		const accessIds = resolveAccessIds(scopedDict, scopeKeysProvider());
 		const where = (query.where ?? {}) as Record<string, unknown>;
 		where.__access = {readers: {$aca: accessIds}};
-		return {...query, where};
+		query.where = where as typeof query.where;
+		return query;
 	};
 }
 
