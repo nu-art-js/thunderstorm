@@ -17,20 +17,15 @@
  * limitations under the License.
  */
 
-export * from './_entity/permission-role/types.js';
-export * from './_entity/permission-role/db-def.js';
 export * from './_entity/permission-scope/types.js';
 export * from './_entity/permission-scope/db-def.js';
 export * from './_entity/permission-scope/brand.js';
-export * from './_entity/permission-user/types.js';
-export * from './_entity/permission-user/db-def.js';
-export * from './_entity/permission-user/api-def.js';
 export * from './_entity/user-permissions/types.js';
 export * from './_entity/user-permissions/db-def.js';
 export * from './_entity/user-permissions/api-def.js';
 export * from './session-data.js';
 export * from './permissions-scopes.js';
-export * from './role-definition.js';
+export * from './group-definition.js';
 export * from './_entity/access-group/types.js';
 export * from './_entity/access-group/db-def.js';
 export * from './document-access.js';

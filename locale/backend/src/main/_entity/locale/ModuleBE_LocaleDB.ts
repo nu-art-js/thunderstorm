@@ -2,7 +2,7 @@ import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_Locale, DBDef_Locale} from '@nu-art/locale-shared';
 import type {UI_Locale} from '@nu-art/locale-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
-import {ModuleBE_Permissions, ServiceAccountId_Bootstrap, SetupTaskKey_PermissionsRoles} from '@nu-art/permissions-backend';
+import {ModuleBE_Permissions, ServiceAccountId_Bootstrap, SetupTaskKey_PermissionsGroups} from '@nu-art/permissions-backend';
 
 export const SetupTaskKey_DefaultLocales = asSetupTaskKey('default-locales');
 
@@ -34,7 +34,7 @@ export class ModuleBE_LocaleDB_Class
 	__performProjectSetup(): SetupTask[] {
 		return [{
 			key: SetupTaskKey_DefaultLocales,
-			dependsOn: [SetupTaskKey_PermissionsRoles],
+			dependsOn: [SetupTaskKey_PermissionsGroups],
 			processor: () => ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.ensureDefaultLocales()),
 		}];
 	}

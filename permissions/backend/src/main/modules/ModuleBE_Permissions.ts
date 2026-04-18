@@ -1,22 +1,33 @@
 import {_keys, ApiException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
-import {RuntimeBE_ModulesDB} from '@nu-art/db-api-backend';
+import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
 import type {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import type {DatabaseDef_AccessGroup, DatabaseDef_PermissionRole, DatabaseDef_PermissionUser, DatabaseDef_UserPermissions, DB_PermissionRole, DB_PermissionScope, DB_UserPermissions, PermissionScope, ScopedAccessIds} from '@nu-art/permissions-shared';
-import {AccessScope_Self, getRegisteredRoleDefinitions, permissionScopeId} from '@nu-art/permissions-shared';
+import {RuntimeBE_ModulesDB} from '@nu-art/db-api-backend';
+import type {
+	DatabaseDef_AccessGroup,
+	DatabaseDef_PermissionScope,
+	DatabaseDef_UserPermissions,
+	DB_AccessGroup,
+	DB_PermissionScope,
+	DB_UserPermissions,
+	DocumentAccessFields,
+	DocumentAccessInner,
+	PermissionScope,
+	ScopedAccessIds
+} from '@nu-art/permissions-shared';
+import {AccessScope_Self, AllDocumentAccessKeys, getRegisteredGroupDefinitions, permissionScopeId} from '@nu-art/permissions-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
 import {getRegisteredFunctionPermissions, getScopeValues} from '../core/function-permission-registry.js';
-import {ModuleBE_PermissionRoleDB} from '../_entity/permission-role/ModuleBE_PermissionRoleDB.js';
 import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
-import {ModuleBE_PermissionUserDB} from '../_entity/permission-user/ModuleBE_PermissionUserDB.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
+import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {ModuleBE_AccessGroupDB} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
-import type {OnAccessGroupMembershipChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
+import {ModuleBE_AccountDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
+import {SafeDB_Account} from '@nu-art/user-account-shared';
 
 
 // --- Types consumed by app modules via CollectDefaultScopeValues dispatcher ---
@@ -30,14 +41,13 @@ export interface CollectDefaultScopeValues {
 	__collectDefaultScopeValues(): DefaultScopeGrant[];
 }
 
-// --- Service account config (module config, managed via config pipeline) ---
-//
-// FUTURE: Service account definitions are currently delivered via the module config pipeline,
-// which means app-level code can override them. This should be hardened so that SA configs
-// are read from a tamper-resistant source (e.g. a private RTDB path with no exposed write API,
-// or hardcoded frozen constants for well-known SAs). The bootstrap SA is safe today because
-// MemKey encapsulation prevents direct permission escalation, but additional SAs for
-// refactoring actions or other elevated operations should be protected against app-level injection.
+// --- Dispatcher for additional group memberships on registration/login ---
+
+export interface ResolveAdditionalGroupMemberships {
+	__resolveAdditionalGroupMemberships(accountId: string, context: 'register' | 'login'): Promise<UniqueId[]>;
+}
+
+// --- Service account config ---
 
 export type ServiceAccountConfig = {
 	readonly scopes: string[];
@@ -51,22 +61,27 @@ type Config = {
 	serviceAccounts: Record<string, ServiceAccountConfig>;
 };
 
-// --- Well-known role IDs ---
+// --- Well-known group IDs ---
 
-export const RoleId_AppDefault = hashToUniqueId<DatabaseDef_PermissionRole['dbKey']>('app/default');
-export const RoleId_PermissionsAdmin = hashToUniqueId<DatabaseDef_PermissionRole['dbKey']>('permissions/admin');
+export const GroupId_AppDefault = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/default');
+export const GroupId_PermissionsAdmin = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/permissions-admin');
+const BootstrapSAGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(ServiceAccountId_Bootstrap);
+
+export const PermissionsInfraGroupIds: Record<keyof DocumentAccessInner, DatabaseDef_AccessGroup['id']> = AllDocumentAccessKeys.reduce((ids, key) => {
+	ids[key] = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`permissions-infra:${key}`);
+	return ids;
+}, {} as Record<keyof DocumentAccessInner, DatabaseDef_AccessGroup['id']>);
 
 // --- Module ---
 
 const dispatcher_collectDefaultScopeValues = new Dispatcher<CollectDefaultScopeValues, '__collectDefaultScopeValues'>('__collectDefaultScopeValues');
+const dispatcher_resolveAdditionalGroupMemberships = new Dispatcher<ResolveAdditionalGroupMemberships, '__resolveAdditionalGroupMemberships'>('__resolveAdditionalGroupMemberships');
 
-export const SetupTaskKey_PermissionsRoles = asSetupTaskKey('permissions-roles');
-
-export const PermissionRole_SuperAdmin_ScopeIds = [permissionScopeId('permissions', 'admin')];
+export const SetupTaskKey_PermissionsGroups = asSetupTaskKey('permissions-groups');
 
 class ModuleBE_Permissions_Class
 	extends Module<Config>
-	implements PerformProjectSetup, OnAccessGroupMembershipChanged {
+	implements PerformProjectSetup, OnAccessGroupChanged, OnUserLogin, OnAccountDeleted {
 
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
 	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
@@ -85,9 +100,33 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
+	private readonly permissionsAccessResolver = (item: any): DocumentAccessFields => {
+		if (item._id === BootstrapSAGroupId)
+			return {
+				__access: {
+					readers: [BootstrapSAGroupId],
+					writers: [BootstrapSAGroupId],
+					deleters: [],
+					owners: [],
+				}
+			};
+
+		return {
+			__access: {
+				readers: [GroupId_PermissionsAdmin],
+				writers: [GroupId_PermissionsAdmin],
+				deleters: [],
+				owners: [],
+			}
+		};
+	};
+
 	protected init() {
 		super.init();
 		this.adminGrantFlagRef = ModuleBE_Firebase.createModuleStateFirebaseRef<boolean>(this, 'grantAdminOnLogin');
+		this.setAccessContextResolver(ModuleBE_AccessGroupDB, this.permissionsAccessResolver);
+		this.setAccessContextResolver(ModuleBE_PermissionScopeDB, this.permissionsAccessResolver);
+		this.setAccessContextResolver(ModuleBE_UserPermissionsDB, this.permissionsAccessResolver);
 		this.wireDocumentAccessToAllModules();
 	}
 
@@ -116,23 +155,160 @@ class ModuleBE_Permissions_Class
 		return this.adminGrantFlagRef;
 	}
 
+	// --- Project setup ---
+
 	__performProjectSetup(): SetupTask[] {
 		return [{
-			key: SetupTaskKey_PermissionsRoles,
+			key: SetupTaskKey_PermissionsGroups,
 			dependsOn: [],
-			processor: () => this.ensurePermissionRoles()
+			processor: () => this.ensureDefinedGroups()
 		}];
 	}
 
-	async ensurePermissionRoles() {
+	async ensureDefinedGroups() {
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			this.logDebug('[FIRST_USER] bootstrap: starting ensureDefinedGroups');
+			await this.ensureBootstrapSAAccessGroup();
+			await this.ensurePermissionsInfraAccessGroups();
 			await this.ensureScopeEntities();
-			await this.createDefaultRoleFromScopeContributions();
-			await this.ensurePermissionsAdminRole();
-			await this.ensureDefinedRoles();
+			await this.createDefaultGroupFromScopeContributions();
+			await this.ensurePermissionsAdminGroup();
+			await this.ensureAppDefinedGroups();
+			await this.syncPersonalGroupsForExistingAccounts();
 			await this.recomputePermissionsForAllUsers();
 			this.logInfoBold('Recomputed UserPermissions for all users');
+			this.logDebug('[FIRST_USER] bootstrap: ensureDefinedGroups complete');
 		});
+	}
+
+	// --- Account lifecycle hooks ---
+
+	async __onUserLogin(account: SafeDB_Account) {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			await this.ensurePersonalAccessGroup(account);
+			await this.addToDefaultGroup(account);
+			await this.promoteIfNoAdmin(account);
+			await this.checkAdminGrantFlag(account);
+			await this.resolveAdditionalGroupMemberships(account, 'login');
+			await this.recomputePermissionsForUsers([account._id]);
+		});
+	}
+
+	async __onAccountDeleted(account: SafeDB_Account) {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+			const personalGroup = await ModuleBE_AccessGroupDB.query.unique(personalGroupId);
+			if (personalGroup)
+				await ModuleBE_AccessGroupDB.delete.unique(personalGroupId);
+
+			const userPermId = stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(account._id);
+			const userPerm = await ModuleBE_UserPermissionsDB.query.unique(userPermId);
+			if (userPerm)
+				await ModuleBE_UserPermissionsDB.delete.unique(userPermId);
+
+			const allGroups = await ModuleBE_AccessGroupDB.query.where({});
+			const groupsContainingUser = allGroups.filter(g => g.members.includes(personalGroupId));
+			for (const group of groupsContainingUser) {
+				group.members = group.members.filter(m => m !== personalGroupId);
+				await ModuleBE_AccessGroupDB.set.item(group);
+			}
+		});
+	}
+
+	private async ensurePersonalAccessGroup(account: SafeDB_Account) {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		const existing = await ModuleBE_AccessGroupDB.query.unique(personalGroupId);
+		this.logDebug(`[FIRST_USER] ensurePersonalAccessGroup: personalGroupId=${personalGroupId}, existing=${!!existing}`);
+		if (existing)
+			return;
+
+		await ModuleBE_AccessGroupDB.create.item({
+			_id: personalGroupId,
+			type: 'user',
+			key: AccessScope_Self,
+			label: `User (${account.email ?? account._id})`,
+			members: [],
+		});
+		const verify = await ModuleBE_AccessGroupDB.query.unique(personalGroupId);
+		this.logDebug(`[FIRST_USER] ensurePersonalAccessGroup: created, verified=${!!verify}`);
+	}
+
+	private async addToDefaultGroup(account: SafeDB_Account) {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		const defaultGroup = await ModuleBE_AccessGroupDB.query.unique(GroupId_AppDefault);
+		this.logDebug(`[FIRST_USER] addToDefaultGroup: defaultGroup=${!!defaultGroup}, members=${defaultGroup?.members?.length}`);
+		if (!defaultGroup)
+			return;
+
+		if (defaultGroup.members.includes(personalGroupId))
+			return;
+
+		defaultGroup.members.push(personalGroupId);
+		await ModuleBE_AccessGroupDB.set.item(defaultGroup);
+		this.logDebug(`[FIRST_USER] addToDefaultGroup: user added, members now=${defaultGroup.members.length}`);
+	}
+
+	private async promoteIfNoAdmin(account: SafeDB_Account) {
+		const adminGroup = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
+		this.logDebug(`[FIRST_USER] promoteIfNoAdmin: adminGroup=${!!adminGroup}, members=${JSON.stringify(adminGroup?.members)}`);
+		if (!adminGroup) {
+			this.logDebug('[FIRST_USER] promoteIfNoAdmin: NO admin group found — returning');
+			return;
+		}
+
+		const hasRealMembers = adminGroup.members.some(m => m !== BootstrapSAGroupId);
+		if (hasRealMembers) {
+			this.logDebug(`[FIRST_USER] promoteIfNoAdmin: admin already has non-SA members — returning`);
+			return;
+		}
+
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		if (adminGroup.members.includes(personalGroupId))
+			return;
+
+		adminGroup.members.push(personalGroupId);
+		await ModuleBE_AccessGroupDB.set.item(adminGroup);
+		this.logDebug(`[FIRST_USER] promoteIfNoAdmin: promoted ${personalGroupId} to admin`);
+	}
+
+	private async checkAdminGrantFlag(account: SafeDB_Account) {
+		const flagValue = await this.adminGrantFlagRef.get(false);
+		if (!flagValue)
+			return;
+
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		const adminGroup = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
+		if (!adminGroup)
+			return;
+
+		if (adminGroup.members.includes(personalGroupId)) {
+			await this.adminGrantFlagRef.set(false);
+			return;
+		}
+
+		adminGroup.members.push(personalGroupId);
+		await ModuleBE_AccessGroupDB.set.item(adminGroup);
+		await this.adminGrantFlagRef.set(false);
+		this.logInfo(`Granted Permissions Admin to user ${account._id} via RTDB flag (one-shot)`);
+	}
+
+	private async resolveAdditionalGroupMemberships(account: SafeDB_Account, context: 'register' | 'login') {
+		const results: UniqueId[][] = await dispatcher_resolveAdditionalGroupMemberships.dispatchModuleAsync(account._id, context);
+		const additionalGroupIds = filterDuplicates(flatArray(results));
+		if (additionalGroupIds.length === 0)
+			return;
+
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		const typedGroupIds = additionalGroupIds.map(id => stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(id));
+		const groups = filterInstances(await ModuleBE_AccessGroupDB.query.all(typedGroupIds));
+		for (const group of groups) {
+			if (group.members.includes(personalGroupId))
+				continue;
+
+			group.members.push(personalGroupId);
+			await ModuleBE_AccessGroupDB.set.item(group);
+			this.logInfo(`Added user ${account._id} to group '${group.label}'`);
+		}
 	}
 
 	// --- Permission recomputation (materialized DB_UserPermissions) ---
@@ -141,15 +317,15 @@ class ModuleBE_Permissions_Class
 		if (!accountIds.length)
 			return;
 
-		const permissionUserIds = accountIds.map(id => stringToUniqueId<DatabaseDef_PermissionUser['dbKey']>(id));
-		const permissionUsers = filterInstances(await ModuleBE_PermissionUserDB.query.all(permissionUserIds));
+		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
+		this.logDebug(`[FIRST_USER] recomputePermissionsForUsers: accountIds=${JSON.stringify(accountIds)}, allGroups=${allGroups.length}`);
 
-		const entitiesToUpsert: DB_UserPermissions[] = await Promise.all(permissionUsers.map(async user => {
-			const userRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(user.roles.map(r => r.roleId)));
-			const scopeEntries = await this.resolveUserScopeEntries(userRoles);
-			const accessIds = await this.materializeAccessIds(user._id);
+		const entitiesToUpsert: DB_UserPermissions[] = await Promise.all(accountIds.map(async accountId => {
+			const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(accountId);
+			const {scopeEntries, accessIds} = await this.materializeFromGroups(personalGroupId, allGroups);
+			this.logDebug(`[FIRST_USER] materialized for ${accountId}: scopes=${scopeEntries.length}, accessIds=${JSON.stringify(accessIds)}`);
 			return {
-				_id: stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(user._id),
+				_id: stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(accountId),
 				scopeEntries,
 				accessIds,
 			} as DB_UserPermissions;
@@ -160,17 +336,16 @@ class ModuleBE_Permissions_Class
 	}
 
 	async recomputePermissionsForAllUsers(): Promise<void> {
-		const allUsers = await ModuleBE_PermissionUserDB.query.where({});
-		if (!allUsers.length)
+		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
+		const userGroups = allGroups.filter(g => g.type === 'user');
+		if (!userGroups.length)
 			return;
 
-		await batchActionParallel(allUsers, 50, async batch => {
-			const entitiesToUpsert: DB_UserPermissions[] = await Promise.all(batch.map(async user => {
-				const userRoles = filterInstances(await ModuleBE_PermissionRoleDB.query.all(user.roles.map(r => r.roleId)));
-				const scopeEntries = await this.resolveUserScopeEntries(userRoles);
-				const accessIds = await this.materializeAccessIds(user._id);
+		await batchActionParallel(userGroups, 50, async batch => {
+			const entitiesToUpsert: DB_UserPermissions[] = await Promise.all(batch.map(async pg => {
+				const {scopeEntries, accessIds} = await this.materializeFromGroups(pg._id, allGroups);
 				return {
-					_id: stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(user._id),
+					_id: stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(pg._id),
 					scopeEntries,
 					accessIds,
 				} as DB_UserPermissions;
@@ -180,18 +355,51 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
-	// --- Access group materialization ---
+	private async materializeFromGroups(personalGroupId: UniqueId, allGroups: DB_AccessGroup[]): Promise<{ scopeEntries: string[]; accessIds: ScopedAccessIds }> {
+		const personalGroup = allGroups.find(g => g._id === personalGroupId);
+		const accessIds: ScopedAccessIds = {
+			[AccessScope_Self]: [personalGroupId],
+		};
 
-	async __onAccessGroupMembershipChanged(changedGroupIds: UniqueId[]): Promise<void> {
+		if (!personalGroup)
+			return {scopeEntries: [], accessIds};
+
+		const reachableGroups = this.walkGroupGraphUp(personalGroupId, allGroups);
+
+		const allScopeIds: UniqueId[] = [];
+		if (personalGroup.scopeEntries?.length)
+			allScopeIds.push(...personalGroup.scopeEntries);
+
+		for (const group of reachableGroups) {
+			if (!accessIds[group.key])
+				accessIds[group.key] = [];
+
+			accessIds[group.key] = filterDuplicates([...accessIds[group.key], group._id]);
+
+			if (group.scopeEntries?.length)
+				allScopeIds.push(...group.scopeEntries);
+		}
+
+		const dedupedScopeIds = filterDuplicates(allScopeIds);
+		const scopeEntries = dedupedScopeIds.length > 0
+			? await this.resolveScopeIdsToStrings(dedupedScopeIds)
+			: [];
+
+		return {scopeEntries, accessIds};
+	}
+
+	// --- Access group change handler ---
+
+	async __onAccessGroupChanged(changedGroupIds: UniqueId[]): Promise<void> {
 		await this.rematerializeForGroups(changedGroupIds);
 	}
 
 	async rematerializeForGroups(changedGroupIds: UniqueId[]): Promise<void> {
 		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
-		const personalGroups = allGroups.filter(g => g.type === 'personal');
+		const userGroups = allGroups.filter(g => g.type === 'user');
 
 		const affectedAccountIds: UniqueId[] = [];
-		for (const personalGroup of personalGroups) {
+		for (const personalGroup of userGroups) {
 			const reachable = this.walkGroupGraphUp(personalGroup._id, allGroups);
 			const isAffected = reachable.some(g => changedGroupIds.includes(g._id));
 			if (isAffected)
@@ -202,33 +410,10 @@ class ModuleBE_Permissions_Class
 			await this.recomputePermissionsForUsers(affectedAccountIds);
 	}
 
-	private async materializeAccessIds(accountId: UniqueId): Promise<ScopedAccessIds> {
-		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(accountId);
-		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
-		const personalGroup = allGroups.find(g => g._id === personalGroupId);
-
-		const result: ScopedAccessIds = {
-			[AccessScope_Self]: [personalGroupId],
-		};
-
-		if (!personalGroup)
-			return result;
-
-		const reachableGroups = this.walkGroupGraphUp(personalGroupId, allGroups);
-		for (const group of reachableGroups) {
-			if (!result[group.key])
-				result[group.key] = [];
-
-			result[group.key] = filterDuplicates([...result[group.key], group._id]);
-		}
-
-		return result;
-	}
-
-	private walkGroupGraphUp(startGroupId: UniqueId, allGroups: DatabaseDef_AccessGroup['dbType'][]): DatabaseDef_AccessGroup['dbType'][] {
+	private walkGroupGraphUp(startGroupId: UniqueId, allGroups: DB_AccessGroup[]): DB_AccessGroup[] {
 		const visited = new Set<UniqueId>();
 		const queue: UniqueId[] = [startGroupId];
-		const result: DatabaseDef_AccessGroup['dbType'][] = [];
+		const result: DB_AccessGroup[] = [];
 
 		while (queue.length > 0) {
 			const currentId = queue.shift()!;
@@ -247,12 +432,9 @@ class ModuleBE_Permissions_Class
 		return result;
 	}
 
-	private async resolveUserScopeEntries(userRoles: DB_PermissionRole[]): Promise<string[]> {
-		const allScopeIds = filterDuplicates(userRoles.flatMap(r => r.scopeEntries ?? []));
-		if (allScopeIds.length === 0)
-			return [];
-
-		const scopeEntities = filterInstances(await ModuleBE_PermissionScopeDB.query.all(allScopeIds));
+	private async resolveScopeIdsToStrings(scopeIds: UniqueId[]): Promise<string[]> {
+		const typedScopeIds = scopeIds.map(id => stringToUniqueId<DatabaseDef_PermissionScope['dbKey']>(id));
+		const scopeEntities = filterInstances(await ModuleBE_PermissionScopeDB.query.all(typedScopeIds));
 		return this.deduplicateScopeEntries(scopeEntities);
 	}
 
@@ -288,13 +470,24 @@ class ModuleBE_Permissions_Class
 			: saConfig.scopes;
 
 		const personalGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(saId);
+		const accessIds = saId === ServiceAccountId_Bootstrap
+			? this.resolveBootstrapAccessIds()
+			: {[AccessScope_Self]: [personalGroupId]};
+
 		const memStorage = new MemStorage();
 		return memStorage.init(async () => {
 			MemKey_ServiceAccountId.set(saId);
 			MemKey_UserScopePermissions.set(scopes);
-			MemKey_UserAccessIds.set({[AccessScope_Self]: [personalGroupId]});
+			MemKey_UserAccessIds.set(accessIds);
 			return action();
 		});
+	}
+
+	private resolveBootstrapAccessIds(): ScopedAccessIds {
+		return {
+			[AccessScope_Self]: [BootstrapSAGroupId],
+			'permissions-admin': [GroupId_PermissionsAdmin],
+		};
 	}
 
 	private resolveBootstrapScopes(): string[] {
@@ -306,10 +499,48 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
+	// --- Bootstrap: ensure service account access group ---
+
+	private async ensureBootstrapSAAccessGroup() {
+		const existing = await ModuleBE_AccessGroupDB.query.unique(BootstrapSAGroupId);
+		if (existing)
+			return;
+
+		await ModuleBE_AccessGroupDB.create.item({
+			_id: BootstrapSAGroupId,
+			type: 'service-account',
+			key: ServiceAccountId_Bootstrap,
+			label: 'Bootstrap Admin (SA)',
+			members: [],
+		});
+		this.logInfoBold('Created bootstrap service account access group');
+	}
+
+	// --- Bootstrap: ensure permissions infrastructure access groups ---
+
+	private async ensurePermissionsInfraAccessGroups() {
+		for (const accessKey of AllDocumentAccessKeys) {
+			const groupId = PermissionsInfraGroupIds[accessKey];
+			const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
+			const members = filterDuplicates([GroupId_PermissionsAdmin, ...(existing?.members ?? [])]);
+
+			this.logDebug(`[FIRST_USER] infra group ${accessKey}: id=${groupId}, existing=${!!existing}, members=${JSON.stringify(members)}`);
+			await ModuleBE_AccessGroupDB.set.all([{
+				_id: groupId,
+				type: 'entity' as const,
+				key: 'permissions',
+				label: `Permissions Infra ${accessKey}`,
+				members,
+			}]);
+		}
+		this.logInfoBold('Ensured permissions infrastructure access groups');
+	}
+
+	// --- Bootstrap: ensure scope entities ---
+
 	private async ensureScopeEntities() {
 		const defs = getRegisteredFunctionPermissions();
 		this.logDebug(`Registered function permissions: ${defs.length} definitions`);
-		defs.forEach(def => this.logDebug(`  scopeKey=${def.scopeKey}  value=${def.value}`));
 
 		const scopeMap = new Map<string, readonly string[]>();
 		for (const def of defs) {
@@ -321,9 +552,6 @@ class ModuleBE_Permissions_Class
 				scopeMap.set(def.scopeKey, values);
 		}
 
-		this.logDebug(`Scope map: ${scopeMap.size} scopes`);
-		scopeMap.forEach((values, key) => this.logDebug(`  ${key} -> [${values.join(', ')}]`));
-
 		const scopeEntities = [...scopeMap.entries()].flatMap(([key, values]) =>
 			values.map(value => ({
 				_id: permissionScopeId(key, value),
@@ -332,39 +560,36 @@ class ModuleBE_Permissions_Class
 			}))
 		);
 
-		if (scopeEntities.length === 0) {
-			this.logDebug('No scope entities to ensure');
+		if (scopeEntities.length === 0)
 			return;
-		}
-
-		this.logDebug(`Writing ${scopeEntities.length} scope entities:`);
-		scopeEntities.forEach(e => this.logDebug(`  _id=${e._id}  key=${e.key}  value=${e.value}`));
 
 		await ModuleBE_PermissionScopeDB.set.all(scopeEntities);
 		this.logInfoBold(`Ensured ${scopeEntities.length} scope entities`);
 	}
 
-	private async createDefaultRoleFromScopeContributions() {
+	// --- Bootstrap: create default group with scope contributions ---
+
+	private async createDefaultGroupFromScopeContributions() {
 		const contributions = flatArray(dispatcher_collectDefaultScopeValues.dispatchModule());
-		this.logDebug(`Collected ${contributions.length} default scope contributions:`);
-		contributions.forEach(c => this.logDebug(`  ${c.scope.key}:${c.value}`));
+		this.logDebug(`Collected ${contributions.length} default scope contributions`);
 
 		const scopeEntries = filterDuplicates(contributions.map(grant => permissionScopeId(grant.scope.key, grant.value)));
 
-		this.logDebug(`Default role _id=${RoleId_AppDefault}  scopeEntries=[${scopeEntries.join(', ')}]`);
-
-		await ModuleBE_PermissionRoleDB.set.all([{
-			_id: RoleId_AppDefault,
+		await ModuleBE_AccessGroupDB.set.all([{
+			_id: GroupId_AppDefault,
+			type: 'custom' as const,
+			key: 'default',
 			label: 'Default',
-			type: 'assignable',
-			system: true,
+			members: (await ModuleBE_AccessGroupDB.query.unique(GroupId_AppDefault))?.members ?? [],
 			scopeEntries,
 		}]);
 
-		this.logInfoBold(`Default role upserted with ${scopeEntries.length} scope entries`);
+		this.logInfoBold(`Default group upserted with ${scopeEntries.length} scope entries`);
 	}
 
-	private async ensurePermissionsAdminRole() {
+	// --- Bootstrap: permissions admin group ---
+
+	private async ensurePermissionsAdminGroup() {
 		const defs = getRegisteredFunctionPermissions();
 		const scopeKeys = new Set(defs.map(d => d.scopeKey));
 		const adminScopeIds = [...scopeKeys].flatMap(key => {
@@ -374,36 +599,56 @@ class ModuleBE_Permissions_Class
 
 			return [permissionScopeId(key, values[values.length - 1])];
 		});
-		adminScopeIds.push(...PermissionRole_SuperAdmin_ScopeIds);
+		adminScopeIds.push(permissionScopeId('permissions', 'admin'));
 
 		const dedupedScopeIds = filterDuplicates(adminScopeIds);
-		this.logDebug(`Permissions Admin role _id=${RoleId_PermissionsAdmin}  scopeEntries=[${dedupedScopeIds.join(', ')}]`);
 
-		await ModuleBE_PermissionRoleDB.set.all([{
-			_id: RoleId_PermissionsAdmin,
+		const existingAdmin = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
+		const adminMembers = filterDuplicates([BootstrapSAGroupId, ...(existingAdmin?.members ?? [])]);
+		this.logDebug(`[FIRST_USER] ensurePermissionsAdminGroup: id=${GroupId_PermissionsAdmin}, existing=${!!existingAdmin}, members=${JSON.stringify(adminMembers)}, scopes=${dedupedScopeIds.length}`);
+		await ModuleBE_AccessGroupDB.set.all([{
+			_id: GroupId_PermissionsAdmin,
+			type: 'custom' as const,
+			key: 'permissions-admin',
 			label: 'Permissions Admin',
-			type: 'assignable',
-			system: true,
+			members: adminMembers,
 			scopeEntries: dedupedScopeIds,
 		}]);
 
-		this.logInfoBold('Permissions Admin role upserted');
+		this.logInfoBold('Permissions Admin group upserted');
 	}
 
-	private async ensureDefinedRoles() {
-		const roleDefs = getRegisteredRoleDefinitions();
-		if (roleDefs.length === 0)
+	// --- Bootstrap: app-defined groups ---
+
+	private async ensureAppDefinedGroups() {
+		const groupDefs = getRegisteredGroupDefinitions();
+		if (groupDefs.length === 0)
 			return;
 
-		await ModuleBE_PermissionRoleDB.set.all(roleDefs.map(def => ({
-			_id: hashToUniqueId<DatabaseDef_PermissionRole['dbKey']>(`role/${def.key}`),
-			label: def.label,
-			type: def.type,
-			system: true as const,
-			scopeEntries: filterDuplicates(def.scopes.map(({scope, value}) => permissionScopeId(scope.key, value))),
-		})));
+		for (const def of groupDefs) {
+			const groupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`group/${def.key}`);
+			const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
+			await ModuleBE_AccessGroupDB.set.all([{
+				_id: groupId,
+				type: 'custom' as const,
+				key: def.key,
+				label: def.label,
+				members: existing?.members ?? [],
+				scopeEntries: filterDuplicates(def.scopes.map(({scope, value}) => permissionScopeId(scope.key, value))),
+			}]);
+		}
 
-		this.logInfoBold(`Ensured ${roleDefs.length} application-defined roles: [${roleDefs.map(d => d.label).join(', ')}]`);
+		this.logInfoBold(`Ensured ${groupDefs.length} application-defined groups: [${groupDefs.map(d => d.label).join(', ')}]`);
+	}
+
+	// --- Bootstrap: sync personal groups for existing accounts ---
+
+	private async syncPersonalGroupsForExistingAccounts() {
+		const accounts = await ModuleBE_AccountDB.query.where({});
+		this.logDebug(`Found ${accounts.length} accounts for personal group sync`);
+
+		for (const account of accounts)
+			await this.ensurePersonalAccessGroup(account);
 	}
 }
 

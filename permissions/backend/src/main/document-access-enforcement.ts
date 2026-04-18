@@ -1,25 +1,23 @@
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {hashToUniqueId} from '@nu-art/db-api-shared';
 import type {ModuleBE_BaseDB, PreWriteInterceptor, QueryInterceptor, PreDeleteInterceptor} from '@nu-art/db-api-backend';
-import type {DatabaseDef_AccessGroup, DocumentAccessFields, ScopedAccessIds} from '@nu-art/permissions-shared';
-import {AccessScope_Self, AllDocumentAccessFieldKeys} from '@nu-art/permissions-shared';
+import type {DatabaseDef_AccessGroup, DocumentAccessFields, DocumentAccessInner, ScopedAccessIds} from '@nu-art/permissions-shared';
+import {AccessScope_Self, AllDocumentAccessKeys} from '@nu-art/permissions-shared';
 import {ApiException, filterDuplicates, tsValidateResult, tsValidator_arrayOfUniqueIds, UniqueId} from '@nu-art/ts-common';
-import {MemKey_ServiceAccountId, MemKey_UserAccessIds} from './consts.js';
+import {MemKey_UserAccessIds} from './consts.js';
 
-const documentAccessFieldsValidator: Record<keyof DocumentAccessFields, typeof tsValidator_arrayOfUniqueIds> = {
-	_readers: tsValidator_arrayOfUniqueIds,
-	_writers: tsValidator_arrayOfUniqueIds,
-	_deleters: tsValidator_arrayOfUniqueIds,
-	_owners: tsValidator_arrayOfUniqueIds,
+type AccessCarrier = { __access?: DocumentAccessInner };
+
+const documentAccessInnerValidator: Record<keyof DocumentAccessInner, typeof tsValidator_arrayOfUniqueIds> = {
+	readers: tsValidator_arrayOfUniqueIds,
+	writers: tsValidator_arrayOfUniqueIds,
+	deleters: tsValidator_arrayOfUniqueIds,
+	owners: tsValidator_arrayOfUniqueIds,
 };
 
 
 export type AccessContextResolver<Database extends DB_Prototype = DB_Prototype> =
 	(item: Database['uiType']) => Promise<DocumentAccessFields> | DocumentAccessFields;
-
-function isServiceAccountContext(): boolean {
-	return MemKey_ServiceAccountId.peak() !== undefined;
-}
 
 function getCallerScopedAccessIds(): ScopedAccessIds | undefined {
 	return MemKey_UserAccessIds.peak();
@@ -34,30 +32,39 @@ function resolveAccessIds(scopedDict: ScopedAccessIds, scopeKeys?: string[]): Un
 	return filterDuplicates([...selfIds, ...scopedIds]);
 }
 
-function defaultResolver(callerAccessIds: UniqueId[]): DocumentAccessFields {
+function defaultAccessFields(callerAccessIds: UniqueId[]): DocumentAccessFields {
 	const callerId = callerAccessIds[0];
 	return {
-		_readers: [callerId],
-		_writers: [callerId],
-		_deleters: [callerId],
-		_owners: [callerId],
+		__access: {
+			readers: [callerId],
+			writers: [callerId],
+			deleters: [callerId],
+			owners: [callerId],
+		}
 	};
+}
+
+function assertCallerAccess(access: Partial<DocumentAccessInner>, callerIds: UniqueId[], ...keys: (keyof DocumentAccessInner)[]): void {
+	if (!keys.some(key => access[key]?.length))
+		return;
+
+	if (keys.some(key => access[key]?.some(id => callerIds.includes(id))))
+		return;
+
+	throw new ApiException(403, 'Insufficient document access');
 }
 
 function createQueryInterceptor<Database extends DB_Prototype>(
 	scopeKeysProvider: () => string[] | undefined
 ): QueryInterceptor<Database> {
 	return (query) => {
-		if (isServiceAccountContext())
-			return query;
-
 		const scopedDict = getCallerScopedAccessIds();
 		if (!scopedDict)
 			return query;
 
 		const accessIds = resolveAccessIds(scopedDict, scopeKeysProvider());
-		const where = (query.where ?? {}) as any;
-		where._readers = {$aca: accessIds};
+		const where = (query.where ?? {}) as Record<string, unknown>;
+		where.__access = {readers: {$aca: accessIds}};
 		return {...query, where};
 	};
 }
@@ -71,34 +78,23 @@ function createPreWriteInterceptor<Database extends DB_Prototype>(
 		if (!scopedDict)
 			return;
 
-		const item = dbItem as any;
+		const item = dbItem as AccessCarrier;
+		delete item.__access;
 
 		if (!original) {
 			const selfIds = scopedDict[AccessScope_Self] ?? [];
 			const resolver = resolverProvider();
-			const context = resolver
-				? await resolver(dbItem)
-				: defaultResolver(selfIds);
-
-			for (const key of AllDocumentAccessFieldKeys)
-				item[key] = [...context[key]];
-
+			const resolved = resolver ? await resolver(dbItem) : defaultAccessFields(selfIds);
+			item.__access = {...resolved.__access};
 			return;
 		}
 
-		if (isServiceAccountContext())
+		const existingAccess = (original as AccessCarrier).__access;
+		if (!existingAccess)
 			return;
 
-		const accessIds = resolveAccessIds(scopedDict, scopeKeysProvider());
-		const existing = original as any as Partial<DocumentAccessFields>;
-		if (!existing._writers && !existing._owners)
-			return;
-
-		const canWrite = existing._writers?.some((id: string) => accessIds.includes(id))
-			|| existing._owners?.some((id: string) => accessIds.includes(id));
-
-		if (!canWrite)
-			throw new ApiException(403, 'No write access to this document');
+		item.__access = {...existingAccess};
+		assertCallerAccess(existingAccess, resolveAccessIds(scopedDict, scopeKeysProvider()), 'writers', 'owners');
 	};
 }
 
@@ -106,45 +102,43 @@ function createPreDeleteInterceptor<Database extends DB_Prototype>(
 	scopeKeysProvider: () => string[] | undefined
 ): PreDeleteInterceptor<Database> {
 	return async (dbItems) => {
-		if (isServiceAccountContext())
-			return;
-
 		const scopedDict = getCallerScopedAccessIds();
 		if (!scopedDict)
 			return;
 
 		const accessIds = resolveAccessIds(scopedDict, scopeKeysProvider());
-		for (const item of dbItems) {
-			const doc = item as any as Partial<DocumentAccessFields>;
-
-			const canDelete = doc._deleters?.some((id: string) => accessIds.includes(id))
-				|| doc._owners?.some((id: string) => accessIds.includes(id));
-
-			if (!canDelete)
+		for (const dbItem of dbItems) {
+			const access = (dbItem as AccessCarrier).__access;
+			if (!access)
 				throw new ApiException(403, 'No delete access to this document');
+
+			assertCallerAccess(access, accessIds, 'deleters', 'owners');
 		}
 	};
 }
 
 export function copyAccessFields(source: Record<string, unknown>): DocumentAccessFields {
-	const doc = source as Partial<DocumentAccessFields>;
+	const access = (source as AccessCarrier).__access;
 	return {
-		_readers: [...(doc._readers ?? [])],
-		_writers: [...(doc._writers ?? [])],
-		_deleters: [...(doc._deleters ?? [])],
-		_owners: [...(doc._owners ?? [])],
+		__access: {
+			readers: [...(access?.readers ?? [])],
+			writers: [...(access?.writers ?? [])],
+			deleters: [...(access?.deleters ?? [])],
+			owners: [...(access?.owners ?? [])],
+		}
 	};
 }
 
-export function deriveEntityGroupId(entityId: UniqueId, fieldKey: keyof DocumentAccessFields): DatabaseDef_AccessGroup['id'] {
-	return hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`${entityId}:${fieldKey}`);
+export function deriveEntityGroupId(entityId: UniqueId, accessKey: keyof DocumentAccessInner): DatabaseDef_AccessGroup['id'] {
+	return hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`${entityId}:${accessKey}`);
 }
 
 export function deriveEntityAccessFields(entityId: UniqueId): DocumentAccessFields {
-	return AllDocumentAccessFieldKeys.reduce((fields, key) => {
+	const inner = AllDocumentAccessKeys.reduce((fields, key) => {
 		fields[key] = [deriveEntityGroupId(entityId, key)];
 		return fields;
-	}, {} as DocumentAccessFields);
+	}, {} as DocumentAccessInner);
+	return {__access: inner};
 }
 
 function patchCollectionValidator<Database extends DB_Prototype>(dbModule: ModuleBE_BaseDB<Database>) {
@@ -159,24 +153,19 @@ function patchCollectionValidator<Database extends DB_Prototype>(dbModule: Modul
 		const originalValidate = collection.validateItem.bind(collection);
 
 		collection.validateItem = (dbItem: any) => {
-			const extracted: Record<string, unknown> = {};
-			for (const key of AllDocumentAccessFieldKeys) {
-				if (!(key in dbItem))
-					continue;
-
-				extracted[key] = dbItem[key];
-				delete dbItem[key];
-			}
+			const extractedAccess = dbItem.__access;
+			delete dbItem.__access;
 
 			originalValidate(dbItem);
 
-			if (Object.keys(extracted).length > 0) {
-				const results = tsValidateResult(extracted as DocumentAccessFields, documentAccessFieldsValidator);
+			if (extractedAccess) {
+				const results = tsValidateResult(extractedAccess as DocumentAccessInner, documentAccessInnerValidator);
 				if (results)
 					throw new ApiException(400, `Invalid document access fields: ${JSON.stringify(results)}`);
 			}
 
-			Object.assign(dbItem, extracted);
+			if (extractedAccess)
+				dbItem.__access = extractedAccess;
 		};
 	});
 }

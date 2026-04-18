@@ -2,8 +2,8 @@ import type {UniqueId} from '@nu-art/ts-common';
 import {ApiException, filterDuplicates, removeItemFromArray} from '@nu-art/ts-common';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import type {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import type {DocumentAccessCapabilities, DocumentAccessFields} from '@nu-art/permissions-shared';
-import {CapabilityToFieldKey} from '@nu-art/permissions-shared';
+import type {DocumentAccessCapabilities, DocumentAccessInner} from '@nu-art/permissions-shared';
+import {CapabilityToAccessKey} from '@nu-art/permissions-shared';
 import {MemKey_UserAccessIds} from './consts.js';
 
 
@@ -12,9 +12,9 @@ function getAllAccessIds(): UniqueId[] {
 	return filterDuplicates(Object.values(dict).flat());
 }
 
-function assertOwnership(doc: Partial<DocumentAccessFields>) {
+function assertOwnership(access: Partial<DocumentAccessInner> | undefined) {
 	const accessIds = getAllAccessIds();
-	const isOwner = doc._owners?.some(id => accessIds.includes(id));
+	const isOwner = access?.owners?.some(id => accessIds.includes(id));
 	if (!isOwner)
 		throw new ApiException(403, 'Only document owners can manage access');
 }
@@ -29,18 +29,21 @@ export async function shareDocument<Database extends DB_Prototype>(
 	if (!doc)
 		throw new ApiException(404, 'Document not found');
 
-	assertOwnership(doc as any);
-
 	const mutable = doc as any;
+	assertOwnership(mutable.__access);
+
+	if (!mutable.__access)
+		mutable.__access = {};
+
 	for (const [cap, enabled] of Object.entries(capabilities) as [keyof DocumentAccessCapabilities, boolean | undefined][]) {
 		if (!enabled)
 			continue;
 
-		const fieldKey = CapabilityToFieldKey[cap];
-		if (!mutable[fieldKey])
-			mutable[fieldKey] = [];
+		const accessKey = CapabilityToAccessKey[cap];
+		if (!mutable.__access[accessKey])
+			mutable.__access[accessKey] = [];
 
-		mutable[fieldKey] = filterDuplicates([...mutable[fieldKey], principalId]);
+		mutable.__access[accessKey] = filterDuplicates([...mutable.__access[accessKey], principalId]);
 	}
 
 	return dbModule.set.item(mutable);
@@ -56,18 +59,21 @@ export async function unshareDocument<Database extends DB_Prototype>(
 	if (!doc)
 		throw new ApiException(404, 'Document not found');
 
-	assertOwnership(doc as any);
-
 	const mutable = doc as any;
+	assertOwnership(mutable.__access);
+
+	if (!mutable.__access)
+		return dbModule.set.item(mutable);
+
 	for (const [cap, enabled] of Object.entries(capabilities) as [keyof DocumentAccessCapabilities, boolean | undefined][]) {
 		if (!enabled)
 			continue;
 
-		const fieldKey = CapabilityToFieldKey[cap];
-		if (!mutable[fieldKey])
+		const accessKey = CapabilityToAccessKey[cap];
+		if (!mutable.__access[accessKey])
 			continue;
 
-		removeItemFromArray(mutable[fieldKey], principalId);
+		removeItemFromArray(mutable.__access[accessKey], principalId);
 	}
 
 	return dbModule.set.item(mutable);
