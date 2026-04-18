@@ -30,6 +30,10 @@ export function getPermissionScopeValues(key: string): readonly string[] | undef
 	return scopeRegistry.get(key)?.values;
 }
 
+export function getAllRegisteredScopes(): PermissionScope[] {
+	return [...scopeRegistry.values()];
+}
+
 
 export function permissionScopeId<Scope extends PermissionScope>(key: Scope['key'], value: Scope['values'][number]) {
 	return hashToUniqueId<DatabaseDef_PermissionScope['dbKey']>(`${key}:${value}`);

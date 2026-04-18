@@ -13,12 +13,11 @@ import type {
 	DB_UserPermissions,
 	DocumentAccessFields,
 	DocumentAccessInner,
-	PermissionScope,
 	ScopedAccessIds
 } from '@nu-art/permissions-shared';
-import {AccessScope_Self, AllDocumentAccessKeys, getRegisteredGroupDefinitions, permissionScopeId} from '@nu-art/permissions-shared';
+import {AccessScope_Self, AllDocumentAccessKeys, getAllRegisteredScopes, getRegisteredGroupDefinitions, permissionScopeId} from '@nu-art/permissions-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
-import {getRegisteredFunctionPermissions, getScopeValues} from '../core/function-permission-registry.js';
+import {getPermissionScopeValues} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
@@ -29,17 +28,6 @@ import {type AccessContextResolver, wireDocumentAccess} from '../document-access
 import {ModuleBE_AccountDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
 import {SafeDB_Account} from '@nu-art/user-account-shared';
 
-
-// --- Types consumed by app modules via CollectDefaultScopeValues dispatcher ---
-
-export type DefaultScopeGrant = {
-	readonly scope: PermissionScope;
-	readonly value: string;
-};
-
-export interface CollectDefaultScopeValues {
-	__collectDefaultScopeValues(): DefaultScopeGrant[];
-}
 
 // --- Dispatcher for additional group memberships on registration/login ---
 
@@ -74,7 +62,6 @@ export const PermissionsInfraGroupIds: Record<keyof DocumentAccessInner, Databas
 
 // --- Module ---
 
-const dispatcher_collectDefaultScopeValues = new Dispatcher<CollectDefaultScopeValues, '__collectDefaultScopeValues'>('__collectDefaultScopeValues');
 const dispatcher_resolveAdditionalGroupMemberships = new Dispatcher<ResolveAdditionalGroupMemberships, '__resolveAdditionalGroupMemberships'>('__resolveAdditionalGroupMemberships');
 
 export const SetupTaskKey_PermissionsGroups = asSetupTaskKey('permissions-groups');
@@ -92,7 +79,7 @@ class ModuleBE_Permissions_Class
 		this.setDefaultConfig({
 			serviceAccounts: {
 				[ServiceAccountId_Bootstrap]: {
-					scopes: ['permissions:admin'],
+					scopes: ['permissions-ui:view', 'access-group:create'],
 					enabled: true,
 					systemOnly: true,
 				}
@@ -171,7 +158,7 @@ class ModuleBE_Permissions_Class
 			await this.ensureBootstrapSAAccessGroup();
 			await this.ensurePermissionsInfraAccessGroups();
 			await this.ensureScopeEntities();
-			await this.createDefaultGroupFromScopeContributions();
+			await this.ensureDefaultGroup();
 			await this.ensurePermissionsAdminGroup();
 			await this.ensureAppDefinedGroups();
 			await this.syncPersonalGroupsForExistingAccounts();
@@ -441,7 +428,7 @@ class ModuleBE_Permissions_Class
 	private deduplicateScopeEntries(scopeEntities: DB_PermissionScope[]): string[] {
 		const scopeMaxIdx: Record<string, { value: string; idx: number }> = {};
 		for (const entity of scopeEntities) {
-			const scopeValues = getScopeValues(entity.key);
+			const scopeValues = getPermissionScopeValues(entity.key);
 			const valueIdx = scopeValues ? scopeValues.indexOf(entity.value) : -1;
 
 			const current = scopeMaxIdx[entity.key];
@@ -491,12 +478,10 @@ class ModuleBE_Permissions_Class
 	}
 
 	private resolveBootstrapScopes(): string[] {
-		const defs = getRegisteredFunctionPermissions();
-		const scopeKeys = new Set(defs.map(d => d.scopeKey));
-		return [...scopeKeys].map(key => {
-			const values = getScopeValues(key);
-			return `${key}:${values![values!.length - 1]}`;
-		});
+		return [
+			'permissions-ui:view',
+			'access-group:create',
+		];
 	}
 
 	// --- Bootstrap: ensure service account access group ---
@@ -539,23 +524,13 @@ class ModuleBE_Permissions_Class
 	// --- Bootstrap: ensure scope entities ---
 
 	private async ensureScopeEntities() {
-		const defs = getRegisteredFunctionPermissions();
-		this.logDebug(`Registered function permissions: ${defs.length} definitions`);
+		const registeredScopes = getAllRegisteredScopes();
+		this.logDebug(`Registered scopes: ${registeredScopes.length} definitions`);
 
-		const scopeMap = new Map<string, readonly string[]>();
-		for (const def of defs) {
-			if (scopeMap.has(def.scopeKey))
-				continue;
-
-			const values = getScopeValues(def.scopeKey);
-			if (values)
-				scopeMap.set(def.scopeKey, values);
-		}
-
-		const scopeEntities = [...scopeMap.entries()].flatMap(([key, values]) =>
-			values.map(value => ({
-				_id: permissionScopeId(key, value),
-				key,
+		const scopeEntities = registeredScopes.flatMap(scope =>
+			scope.values.map(value => ({
+				_id: permissionScopeId(scope.key, value),
+				key: scope.key,
 				value,
 			}))
 		);
@@ -567,52 +542,40 @@ class ModuleBE_Permissions_Class
 		this.logInfoBold(`Ensured ${scopeEntities.length} scope entities`);
 	}
 
-	// --- Bootstrap: create default group with scope contributions ---
+	// --- Bootstrap: ensure default group ---
 
-	private async createDefaultGroupFromScopeContributions() {
-		const contributions = flatArray(dispatcher_collectDefaultScopeValues.dispatchModule());
-		this.logDebug(`Collected ${contributions.length} default scope contributions`);
-
-		const scopeEntries = filterDuplicates(contributions.map(grant => permissionScopeId(grant.scope.key, grant.value)));
-
+	private async ensureDefaultGroup() {
+		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_AppDefault);
 		await ModuleBE_AccessGroupDB.set.all([{
 			_id: GroupId_AppDefault,
 			type: 'custom' as const,
 			key: 'default',
 			label: 'Default',
-			members: (await ModuleBE_AccessGroupDB.query.unique(GroupId_AppDefault))?.members ?? [],
-			scopeEntries,
+			members: existing?.members ?? [],
+			scopeEntries: [],
 		}]);
 
-		this.logInfoBold(`Default group upserted with ${scopeEntries.length} scope entries`);
+		this.logInfoBold('Default group ensured');
 	}
 
 	// --- Bootstrap: permissions admin group ---
 
 	private async ensurePermissionsAdminGroup() {
-		const defs = getRegisteredFunctionPermissions();
-		const scopeKeys = new Set(defs.map(d => d.scopeKey));
-		const adminScopeIds = [...scopeKeys].flatMap(key => {
-			const values = getScopeValues(key);
-			if (!values || values.length === 0)
-				return [];
-
-			return [permissionScopeId(key, values[values.length - 1])];
-		});
-		adminScopeIds.push(permissionScopeId('permissions', 'admin'));
-
-		const dedupedScopeIds = filterDuplicates(adminScopeIds);
+		const scopeEntries = [
+			permissionScopeId('permissions-ui', 'view'),
+			permissionScopeId('access-group', 'create'),
+		];
 
 		const existingAdmin = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
 		const adminMembers = filterDuplicates([BootstrapSAGroupId, ...(existingAdmin?.members ?? [])]);
-		this.logDebug(`[FIRST_USER] ensurePermissionsAdminGroup: id=${GroupId_PermissionsAdmin}, existing=${!!existingAdmin}, members=${JSON.stringify(adminMembers)}, scopes=${dedupedScopeIds.length}`);
+		this.logDebug(`[FIRST_USER] ensurePermissionsAdminGroup: id=${GroupId_PermissionsAdmin}, existing=${!!existingAdmin}, members=${JSON.stringify(adminMembers)}, scopes=${scopeEntries.length}`);
 		await ModuleBE_AccessGroupDB.set.all([{
 			_id: GroupId_PermissionsAdmin,
 			type: 'custom' as const,
 			key: 'permissions-admin',
 			label: 'Permissions Admin',
 			members: adminMembers,
-			scopeEntries: dedupedScopeIds,
+			scopeEntries,
 		}]);
 
 		this.logInfoBold('Permissions Admin group upserted');
