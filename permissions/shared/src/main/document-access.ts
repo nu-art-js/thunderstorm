@@ -3,11 +3,15 @@ import type {UniqueId} from '@nu-art/ts-common';
 export type ScopedAccessIds = Record<string, UniqueId[]>;
 export const AccessScope_Self = '_self';
 
+export type DocumentAccessInner = {
+	readers: UniqueId[];
+	writers: UniqueId[];
+	deleters: UniqueId[];
+	owners: UniqueId[];
+};
+
 export type DocumentAccessFields = {
-	_readers: UniqueId[];
-	_writers: UniqueId[];
-	_deleters: UniqueId[];
-	_owners: UniqueId[];
+	__access: DocumentAccessInner;
 };
 
 export type DocumentAccessCapabilities = {
@@ -17,11 +21,11 @@ export type DocumentAccessCapabilities = {
 	own?: boolean;
 };
 
-export const AllDocumentAccessFieldKeys: (keyof DocumentAccessFields)[] = ['_readers', '_writers', '_deleters', '_owners'];
+export const AllDocumentAccessKeys: (keyof DocumentAccessInner)[] = ['readers', 'writers', 'deleters', 'owners'];
 
-export const CapabilityToFieldKey: Record<keyof DocumentAccessCapabilities, keyof DocumentAccessFields> = {
-	read: '_readers',
-	write: '_writers',
-	delete: '_deleters',
-	own: '_owners',
+export const CapabilityToAccessKey: Record<keyof DocumentAccessCapabilities, keyof DocumentAccessInner> = {
+	read: 'readers',
+	write: 'writers',
+	delete: 'deleters',
+	own: 'owners',
 };

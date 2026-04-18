@@ -1,24 +1,31 @@
 # @nu-art/permissions-frontend
 
-Frontend modules and UI components for the scope-based permissions system.
+Frontend modules and UI components for the permissions system.
 
 ## Key exports
 
 | Symbol | Purpose |
 |---|---|
-| `ModuleFE_PermissionsAssert` | Client-side permission checking — `hasScopeAccess(scope, value)` reads the JWT session data. |
-| `ModuleFE_PermissionUser` | FE module for permission-user entities (IDB cache + smart-sync). |
-| `ModuleFE_PermissionRole` | FE module for permission-role entities. |
+| `ModuleFE_PermissionsAssert` | Client-side scope checking — `hasScopeAccess(scope, value)` reads the user's synced `UserPermissions` data. |
+| `ModuleFE_UserPermissions` | FE module for user-permissions entities (IDB cache + smart-sync). Provides `getScopeEntries()`. |
+| `ModuleFE_AccessGroup` | FE module for access-group entities. |
 | `ModuleFE_PermissionScope` | FE module for permission-scope entities. |
 | `ModulePackFE_Permissions` | Module pack — register in the Thunder builder to enable permission data sync and UI. |
-| `ScopePermissionsEditor` | UI component — displays a matrix of users × scopes with role assignment editing. |
-| `DropDown_PermissionRole` | Dropdown component for selecting permission roles. |
+| `PermissionGuard` | Conditional rendering component based on scope permissions. |
+| `APage_Permissions` | Full permissions management page — access groups with scope labels and member editing. |
+| `Component_ScopeEditor` | Single scope key + value dropdown. |
+| `Component_ScopeListEditor` | Full scope editor — renders all scope keys with value pickers. |
+| `Component_ScopeLabels` | Read-only display of resolved scope entries as tags. |
 
-## ScopePermissionsEditor
+## PermissionGuard
 
-Extends `ComponentSync` and implements `OnPermissionUserUpdated`, `OnPermissionRoleUpdated`, `OnPermissionScopeUpdated`, `OnAccountsUpdated` — automatically re-renders when any of these collections update via smart-sync.
+Conditionally renders children based on the current user's scope permissions:
 
-Scope values are displayed in their defined hierarchical order using the shared `getPermissionScopeValues` registry.
+```typescript
+<PermissionGuard scope={PermissionScope_MyConcept} value="write">
+  <MyProtectedComponent />
+</PermissionGuard>
+```
 
 ## Setup
 
@@ -27,17 +34,19 @@ Add the module pack to the Thunder builder:
 ```typescript
 new Thunder(config)
   .addModulePack(ModulePackFE_Permissions)
-  // ...
   .build();
 ```
+
+This enables IDB caching and smart-sync for permission scopes, user permissions, and access groups.
 
 ## Deps
 
 - `@nu-art/permissions-shared`
 - `@nu-art/db-api-frontend`
+- `@nu-art/db-api-shared`
 - `@nu-art/thunder-core`
 - `@nu-art/thunder-widgets`
-- `@nu-art/thunder-routing`
+- `@nu-art/sync-manager-frontend`
 - `@nu-art/user-account-frontend`
 - `@nu-art/http-client`
 - `@nu-art/ts-common`

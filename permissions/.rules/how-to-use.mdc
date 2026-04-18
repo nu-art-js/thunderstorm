@@ -1,27 +1,50 @@
 ---
-description: How to use permissions: scope-based access control across shared, backend, and frontend
+description: How to use permissions: scope-based action permissions and document-level access control across shared, backend, and frontend
 alwaysApply: false
 ---
 
 # How to use permissions
 
+The permissions system has **two orthogonal axes**:
+
+| Axis | What it protects | Mechanism |
+|------|-----------------|-----------|
+| **Scope permissions** | Actions — any decorated function | `@RequirePermission` decorator checks the caller's scope entries |
+| **Document access** | Data — individual DB documents | `__access` field on every document; enforced by query/write/delete interceptors |
+
 Three packages — shared is always required; backend and frontend are independent:
 
 | Package | Purpose |
 |---------|---------|
-| `@nu-art/permissions-shared` | Scope types, branded IDs, DB definitions, scope registry, session data |
-| `@nu-art/permissions-backend` | Assertion engine, `@RequirePermission`, entity interceptors, service accounts, bootstrap |
-| `@nu-art/permissions-frontend` | FE modules (IDB cache + smart-sync), permission assertion client, UI components |
+| `@nu-art/permissions-shared` | Scope types, branded IDs, DB definitions, scope/group registries, document access types, session data |
+| `@nu-art/permissions-backend` | `@RequirePermission` decorator, assertion engine, document access interceptors, service accounts, bootstrap |
+| `@nu-art/permissions-frontend` | FE modules (IDB cache + smart-sync), scope assertion client, UI components |
 
 ---
 
 ## Concepts you must know
 
-- **PermissionScope** — branded type with a `key` and ordered `values` (lowest → highest privilege). Created only via `definePermissionScope`.
-- **PermissionRole** — a named collection of scope entry IDs. Can be `assignable` or `personal`. System roles have `system: true`.
-- **PermissionUser** — links an account to role assignments. One per account.
-- **Scope entry** — a single `key:value` pair (e.g. `topics:write`), stored as `DB_PermissionScope` in Firestore.
+### Scope permissions (action gating)
+
+- **PermissionScope** — branded type with a `key` and ordered `values` (lowest → highest privilege). Created only via `definePermissionScope`. Scopes represent what a user can **do** — they gate actions, not data.
+- **Scope entry** — a single `key:value` pair (e.g. `topics:write`), stored as `DB_PermissionScope` in Firestore with a deterministic `_id` via `hashToUniqueId('key:value')`.
 - **Privilege hierarchy** — values are ordered left-to-right. A user with `admin` (index 2 in `['read', 'write', 'admin']`) satisfies any check for `read` (index 0) or `write` (index 1).
+
+### Document access (data gating)
+
+- **`__access` field** — every DB document carries `__access: { readers, writers, deleters, owners }`, each an array of access group IDs.
+- **Access is mandatory from creation** — when a document is created, its `__access` must be set correctly with the right access actors. Once set, the permission guards apply to every subsequent interaction (query, write, delete). There is no way to bypass this after creation.
+- **Interceptors** — automatically wired to **all** DB modules on init. Query results are filtered by `readers`; writes require `writers` or `owners`; deletes require `deleters` or `owners`.
+
+### Grouping
+
+- **AccessGroup** — the central grouping entity. Types: `user` (personal, one per account), `service-account` (one per SA), `entity` (document-level access groups for a specific entity or entity class), `custom` (app-defined groups like "Default" or "Permissions Admin").
+- **Group graph** — groups have `members` (child group IDs), forming a DAG. The system walks upward from a user's personal group to find all reachable ancestor groups and their scope entries.
+- **AccessGroupDefinition** — code-defined group templates declared via `defineAccessGroup` in shared packages. Bootstrap creates/upserts the actual `DB_AccessGroup` entities from these definitions, preserving existing members.
+
+### Materialized permissions
+
+- **UserPermissions** — a materialized view per account. Contains the user's effective `scopeEntries` (highest value per scope key) and `accessIds` (a map of group keys → reachable group IDs). Recomputed on registration, login, group changes, and bootstrap.
 
 ---
 
@@ -43,11 +66,11 @@ Export from the shared package's `index.ts`:
 export * from './permission-scope.js';
 ```
 
-`definePermissionScope` freezes the object, brands it, and registers it in the global scope registry (used by the FE for canonical ordering).
+`definePermissionScope` freezes the object, brands it, and registers it in the global scope registry (used by the FE for canonical ordering and the BE for bootstrap).
 
-### Step 2 — Protect API handlers with @RequirePermission
+### Step 2 — Protect functions with @RequirePermission
 
-In the backend module that owns the API, decorate handler methods:
+`@RequirePermission` is a method decorator that gates **any async method** — not just API handlers. It protects a code path by asserting that the caller has the required scope permission.
 
 **Simple (scope + value):**
 
@@ -56,7 +79,7 @@ import {RequirePermission} from '@nu-art/permissions-backend';
 import {PermissionScope_MyConcept} from '@app/my-concept-shared';
 
 @RequirePermission(PermissionScope_MyConcept, 'write')
-async upsertItem(body: API_MyConcept['upsert']['Body']): Promise<API_MyConcept['upsert']['Response']> {
+async performAction(body: MyRequest): Promise<MyResponse> {
 	// only reachable if caller has my-concept:write or higher
 }
 ```
@@ -78,35 +101,26 @@ async editItem(body: EditItemRequest): Promise<void> { }
 
 The `PermissionAssertionContext` provides: `hasScope`, `ownsEntity`, `and`, `or`.
 
-### Step 3 — Wire entity-level write protection on DB modules
+### Step 3 — Wire document access on DB modules
 
-For scope-based write gating on a collection, use `wireScopePermission` during app-level permission wiring:
-
-```typescript
-import {wireScopePermission} from '@nu-art/permissions-backend';
-
-wireScopePermission(ModuleBE_MyEntityDB, PermissionScope_MyConcept, 'write');
-```
-
-This registers a mandatory `PreWriteInterceptor` — the entity module cannot bypass it.
-
-For more complex policies (query filtering, delete gating), use `wireEntityPermissions`:
+Document access is wired **globally to all DB modules** by `ModuleBE_Permissions.init()`. For modules that need custom access resolution (e.g. entity-specific access groups), use `setAccessContextResolver`:
 
 ```typescript
-import {wireEntityPermissions} from '@nu-art/permissions-backend';
+import {ModuleBE_Permissions} from '@nu-art/permissions-backend';
 
-wireEntityPermissions(ModuleBE_MyEntityDB, {
-	preWrite: async (dbItem, original, tx) => {
-		ModuleBE_PermissionsAssert.assertScopePermission(PermissionScope_MyConcept, 'write');
-	},
-	queryInterceptor: (query) => {
-		return query;
-	},
-	preDelete: async (dbItems, tx) => {
-		ModuleBE_PermissionsAssert.assertScopePermission(PermissionScope_MyConcept, 'admin');
-	},
-});
+ModuleBE_Permissions.setAccessContextResolver(ModuleBE_MyEntityDB, (item) => ({
+	__access: {
+		readers: [myReaderGroupId],
+		writers: [myWriterGroupId],
+		deleters: [myDeleterGroupId],
+		owners: [myOwnerGroupId],
+	}
+}));
 ```
+
+If no resolver is set for a module, the default stamps the caller's own access ID as reader/writer/deleter/owner on creation.
+
+**Critical:** When creating a new document, the `__access` field must be populated correctly with the right access actors. Once created, the permission guards apply — there is no way to retroactively bypass them. Design your access resolver carefully.
 
 ### Step 4 — Contribute default scope values (optional)
 
@@ -125,31 +139,57 @@ class MyModule_Class
 }
 ```
 
-These are aggregated into the system Default role during bootstrap.
+These are aggregated into the system Default group during bootstrap.
+
+### Step 5 — Define app-level access groups (optional)
+
+If you need named groups with fixed scope assignments (e.g. an "Editor" group), define them in a shared package using `defineAccessGroup`:
+
+```typescript
+import {defineAccessGroup} from '@nu-art/permissions-shared';
+import {PermissionScope_MyConcept} from './permission-scope.js';
+
+export const AccessGroup_Editor = defineAccessGroup({
+	key: 'editor',
+	label: 'Editor',
+	scopes: [
+		{scope: PermissionScope_MyConcept, value: 'write'},
+	],
+});
+```
+
+Bootstrap creates/upserts the `DB_AccessGroup` from these definitions, preserving existing members.
 
 ---
 
-## When elevating permissions for system operations
+## Service accounts
 
-System operations (bootstrap, login/registration flows) that need to write permission-protected entities must run under a service account:
+Service accounts (SAs) are **not exempt from permissions**. They participate in the permission system like any other actor:
+
+- An SA has its own personal access group ID (derived from its SA ID).
+- `runAsServiceAccount` sets the SA's scope permissions and access IDs on the request-scoped `MemStorage`, exactly as the user middleware does for human users.
+- SA must be included in the relevant `__access` lists of documents it needs to interact with — the document access guards apply to SAs just as they apply to users.
+- The only exception is **document creation** — during creation, `__access` is being stamped (not checked), so the SA can create documents and define their access actors.
 
 ```typescript
 import {ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '@nu-art/permissions-backend';
 
 await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
-	await ModuleBE_PermissionRoleDB.set.all([...]);
+	await ModuleBE_AccessGroupDB.set.all([...]);
 });
 ```
 
-The `bootstrap-admin` SA is registered by default with `permissions:admin`. Service accounts are defined in module config:
+Service accounts are defined in module config:
 
 ```typescript
 type ServiceAccountConfig = {
-	readonly scopes: string[];      // e.g. ['permissions:admin']
+	readonly scopes: string[];      // scope entries like ['permissions:admin']
 	readonly enabled: boolean;
 	readonly systemOnly: boolean;   // if true, cannot be used within a user request context
 };
 ```
+
+The `bootstrap-admin` SA is registered by default. Its scope entries are dynamically resolved to the highest value of every registered scope.
 
 **Do not bypass permissions in any other way.** No flags, no middleware skipping, no direct MemKey manipulation. `runAsServiceAccount` is the only elevation mechanism.
 
@@ -161,8 +201,8 @@ type ServiceAccountConfig = {
 
 1. Add `ModulePackBE_Permissions` to the app backend module pack.
 2. Add `ModuleBE_PermissionsAssert.LoadPermissionsMiddleware` to the HTTP server middleware chain.
-3. Wire scope permissions on your DB modules using `wireScopePermission` or `wireEntityPermissions`.
-4. Decorate API handlers with `@RequirePermission`.
+3. Decorate functions with `@RequirePermission` to gate actions.
+4. Optionally set access context resolvers for DB modules that need custom document access.
 
 ### Frontend
 
@@ -176,21 +216,21 @@ new Thunder(config)
 	.build();
 ```
 
-This enables IDB caching and smart-sync for all three permission entity types (scope, role, user).
+This enables IDB caching and smart-sync for permission scopes, user permissions, and access groups.
 
 ### Reacting to permission data changes in UI
 
-Extend `ComponentSync` and implement the relevant `On*Updated` interfaces:
+Implement the relevant `On*Updated` interfaces:
 
 ```typescript
 import {ComponentSync} from '@nu-art/thunder-widgets';
-import type {OnPermissionUserUpdated} from '@nu-art/permissions-frontend';
+import type {OnUserPermissionsUpdated} from '@nu-art/permissions-frontend';
 
 class MyComponent
 	extends ComponentSync<{}, State>
-	implements OnPermissionUserUpdated {
+	implements OnUserPermissionsUpdated {
 
-	__onPermissionUserUpdated() {
+	__onUserPermissionsUpdated() {
 		this.reDeriveState();
 	}
 }
@@ -206,28 +246,43 @@ if (ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_MyConcept, 'write'
 }
 ```
 
+### PermissionGuard component
+
+Conditionally renders children based on the current user's scope permissions:
+
+```typescript
+import {PermissionGuard} from '@nu-art/permissions-frontend';
+
+<PermissionGuard scope={PermissionScope_MyConcept} value="write">
+	<MyProtectedComponent />
+</PermissionGuard>
+```
+
 ---
 
-## System roles (do not create manually)
+## System groups (do not create manually)
 
 The bootstrap process creates and overwrites these on every startup:
 
-| Role | ID derivation | Purpose |
-|------|---------------|---------|
-| **Default** | `md5('app/default')` | Assigned to all users; scope entries collected from modules via `CollectDefaultScopeValues` |
-| **Permissions Admin** | `md5('permissions/admin')` | Highest scope value for every registered scope; grants full control |
+| Group | ID derivation | Purpose |
+|-------|---------------|---------|
+| **Default** | `hashToUniqueId('group/default')` | All users are members; scope entries collected from modules via `CollectDefaultScopeValues` |
+| **Permissions Admin** | `hashToUniqueId('group/permissions-admin')` | Highest scope value for every registered scope; grants full control |
+| **Permissions Infra (×4)** | `hashToUniqueId('permissions-infra:<accessKey>')` | Document-level access groups for the permissions entities themselves (readers, writers, deleters, owners) |
 
-Both have `system: true` — they can only be modified by the bootstrap service account. Do not create or modify system roles outside of the bootstrap process.
+System groups are managed by bootstrap only. Do not modify them from app-level code.
+
+The first user to register is automatically promoted to Permissions Admin (one-shot). An RTDB flag (`grantAdminOnLogin`) provides a one-shot remote admin grant mechanism.
 
 ---
 
 ## DB entities
 
-| Entity | DB key | Collection |
-|--------|--------|------------|
+| Entity | DB key | Firestore collection |
+|--------|--------|----------------------|
 | `DB_PermissionScope` | `permissions--scope` | `permissions--scopes` |
-| `DB_PermissionRole` | `permissions--role` | `permissions--roles` |
-| `DB_PermissionUser` | `permissions--user` | `permissions--users` |
+| `DB_AccessGroup` | `permissions--access-groups` | `permissions--access-groups` |
+| `DB_UserPermissions` | `permissions--user-permissions` | `permissions--user-permissions` |
 
 All share the `permissions` IDB group on the frontend.
 
@@ -240,7 +295,8 @@ All share the `permissions` IDB group on the frontend.
 | Scope constant | `PermissionScope_<Domain>` |
 | Scope definition file | `permission-scope.ts` in the concept's shared package |
 | Scope entity IDs | `permissionScopeId(key, value)` — deterministic via md5, do not wrap |
-| Role IDs | `RoleId_<Name>` derived via `stringToUniqueId<DatabaseDef_PermissionRole["dbKey"]>(md5('context/name'))` |
+| Group definition constant | `AccessGroup_<Name>` |
+| Group IDs | `hashToUniqueId<DatabaseDef_AccessGroup["dbKey"]>('group/<key>')` |
 | Service account IDs | `ServiceAccountId_<Name>` string constants |
 
 ---
@@ -250,9 +306,10 @@ All share the `permissions` IDB group on the frontend.
 - **Never use the old domain/access-level model** (`PermissionDomain`, `PermissionAccessLevel`, `CollectPermissionsProjects`). Legacy infrastructure — do not use in application code.
 - **Never define scopes in backend-only packages.** Both FE and BE must access the scope registry.
 - **Never create trivial ID wrapper functions.** Use `stringToUniqueId<DatabaseDef_*["dbKey"]>(id)` directly at the call site.
-- **Never bypass permissions** with flags, env vars, or direct MemKey writes. Use `runAsServiceAccount`.
-- **Never modify system roles** from app-level code. They are bootstrap-only.
-- **Every DB collection must be permission-gated.** Wire `wireScopePermission` (or `wireEntityPermissions`) on every DB module as part of the initial implementation. No collection should be writable without scope permission checks.
+- **Never bypass permissions** with flags, env vars, or direct MemKey writes. `runAsServiceAccount` is the only elevation mechanism, and even it participates in the permission system — it does not bypass document access.
+- **Never modify system groups** from app-level code. They are bootstrap-only.
+- **Never create a document without correct `__access` actors.** Once created, the permission guards apply. A document with wrong or missing access actors will be inaccessible.
+- **Every DB collection is automatically permission-gated** via `wireDocumentAccess` on all modules. Set an `AccessContextResolver` for modules that need custom access resolution.
 
 ---
 
@@ -260,5 +317,8 @@ All share the `permissions` IDB group on the frontend.
 
 | Component | Purpose |
 |-----------|---------|
-| `ScopePermissionsEditor` | Full permissions matrix — users × scopes with role assignment editing |
-| `DropDown_PermissionRole` | Role selection dropdown |
+| `APage_Permissions` | Full permissions management page — lists access groups with scope labels and member editing |
+| `PermissionGuard` | Conditional rendering based on scope permissions |
+| `Component_ScopeEditor` | Single scope key + value dropdown |
+| `Component_ScopeListEditor` | Full scope editor — renders all scope keys with value pickers |
+| `Component_ScopeLabels` | Read-only display of resolved scope entries as tags |

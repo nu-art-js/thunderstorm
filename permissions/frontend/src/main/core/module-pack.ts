@@ -19,15 +19,13 @@
 
 import {Module} from '@nu-art/ts-common';
 import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert.js';
-import {ModulePackFE_PermissionRole} from '../_entity/permission-role/module-pack.js';
 import {ModulePackFE_PermissionScope} from '../_entity/permission-scope/module-pack.js';
-import {ModulePackFE_PermissionUser} from '../_entity/permission-user/module-pack.js';
 import {ModulePackFE_UserPermissions} from '../_entity/user-permissions/module-pack.js';
+import {ModulePackFE_AccessGroup} from '../_entity/access-group/module-pack.js';
 
 export const ModulePackFE_Permissions: Module[] = [
 	ModuleFE_PermissionsAssert,
-	...ModulePackFE_PermissionRole,
 	...ModulePackFE_PermissionScope,
-	...ModulePackFE_PermissionUser,
 	...ModulePackFE_UserPermissions,
+	...ModulePackFE_AccessGroup,
 ];
