@@ -255,7 +255,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 		item: async (preDBItem: Proto['uiType']): Promise<Proto['dbType']> => {
 			const session = this.getSession();
 			if (!session)
-				return this.runTransaction(() => this.set.item(preDBItem));
+				return this.runTransaction(() => this.set.item(preDBItem), 'set.item');
 
 			preDBItem._id = this.assertUniqueId(preDBItem);
 			const currDBItem = await this.query.unique(preDBItem._id as Proto['uniqueParam']);
@@ -330,7 +330,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 			const idStr = typeof id !== 'string' ? this.assertUniqueId(id) : id;
 			const session = this.getSession();
 			if (!session)
-				return this.runTransaction(() => this.delete.unique(id));
+				return this.runTransaction(() => this.delete.unique(id), 'delete.unique');
 
 			const dbItem = await this.query.unique(id);
 			if (!dbItem)
@@ -426,13 +426,15 @@ export class MongoCollection<Proto extends DB_Prototype>
 		}}}}}}}
 	});
 
-	runTransaction = async <ReturnType>(processor: () => Promise<ReturnType>): Promise<ReturnType> => {
+	runTransaction = async <ReturnType>(processor: () => Promise<ReturnType>, label?: string): Promise<ReturnType> => {
 		const existingSession = this.getSession();
 		if (existingSession)
 			return processor();
 
+		const tag = label ? `${this.dbDef.dbKey}:${label}` : this.dbDef.dbKey;
 		const client = this.db.client;
 		const session = client.startSession();
+		this.logDebug(`TX-START [${tag}]`);
 		try {
 			let result: ReturnType;
 			const parentStorage = MemStorage.getStore();
@@ -442,6 +444,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 					result = await processor();
 				}, parentStorage);
 			});
+			this.logDebug(`TX-END [${tag}]`);
 			return result!;
 		} finally {
 			await session.endSession();
@@ -449,7 +452,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 	};
 
 	runTransactionInChunks = async <T = any, R = any>(items: T[], processor: (chunk: typeof items) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
-		return batchActionParallel(items, chunkSize, (chunk) => this.runTransaction(() => processor(chunk)));
+		return batchActionParallel(items, chunkSize, (chunk) => this.runTransaction(() => processor(chunk), `chunk(${chunk.length})`));
 	};
 
 	getVersion = () => {

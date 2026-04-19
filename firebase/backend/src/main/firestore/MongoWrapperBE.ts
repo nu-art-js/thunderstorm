@@ -54,12 +54,14 @@ export class MongoWrapperBE
 		this.db = client.db(dbName);
 	}
 
-	runTransaction = async <ReturnType>(processor: () => Promise<ReturnType>): Promise<ReturnType> => {
+	runTransaction = async <ReturnType>(processor: () => Promise<ReturnType>, label?: string): Promise<ReturnType> => {
 		if (getActiveTransaction())
 			return processor();
 
+		const tag = label ?? 'MongoWrapper';
 		const postTransactionActions: (() => Promise<any>)[] = [];
 		const session = this.client.startSession();
+		this.logDebug(`TX-START [${tag}]`);
 		try {
 			let result: ReturnType;
 			const parentStorage = MemStorage.getStore();
@@ -80,6 +82,7 @@ export class MongoWrapperBE
 					}
 				}, parentStorage);
 			});
+			this.logDebug(`TX-END [${tag}]`);
 			await Promise_all_sequentially(postTransactionActions);
 			return result!;
 		} finally {
