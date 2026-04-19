@@ -11,6 +11,8 @@ export type AccessGroupDefinition = {
 	readonly key: string;
 	readonly label: string;
 	readonly scopes: readonly GroupScopeEntry[];
+	readonly memberKeys?: readonly string[];
+	readonly scopeKey?: string;
 };
 
 const groupDefinitionRegistry = new Map<string, AccessGroupDefinition>();
@@ -23,6 +25,9 @@ export function defineAccessGroup(def: AccessGroupDefinition): AccessGroupDefini
 
 	if (groupDefinitionRegistry.has(def.key))
 		throw new BadImplementationException(`Duplicate access group definition for key '${def.key}'`);
+
+	if (def.memberKeys?.includes(def.key))
+		throw new BadImplementationException(`Access group '${def.key}' cannot reference itself as a member`);
 
 	const frozen = Object.freeze(def);
 	groupDefinitionRegistry.set(def.key, frozen);

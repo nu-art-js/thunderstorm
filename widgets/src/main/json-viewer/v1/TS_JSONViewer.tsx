@@ -12,6 +12,8 @@ import {TS_Icons} from '@nu-art/ts-styles';
 type Props = {
 	item: Object;
 	filterGeneratedFields?: boolean;
+	expandAll?: boolean;
+	compact?: boolean;
 };
 type State = {
 	item: Object;
@@ -60,8 +62,12 @@ export class TS_JSONViewer
 			.hideRoot()
 			.setData(tree)
 			.build();
-		return <div className={'ts-json-viewer'}>
-			<TS_Tree adapter={adapter}/>
+		const className = _className('ts-json-viewer', this.props.compact && 'ts-json-viewer--compact');
+		return <div className={className}>
+			<TS_Tree
+				adapter={adapter}
+				{...(this.props.expandAll ? {checkExpanded: () => true} : {})}
+			/>
 		</div>;
 	}
 

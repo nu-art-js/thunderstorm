@@ -124,7 +124,27 @@ export abstract class FirebaseSession<Config>
 			if (!FirebaseSession.mongoUrlResolver)
 				throw new ImplementationMissingException('MongoUrlResolver not set — call FirebaseSession.setMongoUrlResolver() during module init');
 
-			this.mongoClient = new MongoClient(FirebaseSession.mongoUrlResolver(this.firebaseAppName));
+			const url = FirebaseSession.mongoUrlResolver(this.firebaseAppName);
+			this.logInfo(`Creating MongoClient: ${url}`);
+
+			this.mongoClient = new MongoClient(url, {monitorCommands: true});
+
+			this.mongoClient.on('commandStarted', (event) => {
+				this.logDebug(`MongoDB >>> [${event.commandName}] reqId=${event.requestId} ns=${event.databaseName}.${(event.command as Record<string, unknown>)[event.commandName]}`);
+			});
+
+			this.mongoClient.on('commandFailed', (event) => {
+				this.logError(`MongoDB commandFailed [${event.commandName}] reqId=${event.requestId}: ${event.failure.message}`);
+			});
+
+			this.mongoClient.on('commandSucceeded', (event) => {
+				const reply = event.reply as Record<string, unknown>;
+				if (event.commandName === 'find' && !reply?.cursor) {
+					this.logError(`MongoDB <<< [${event.commandName}] reqId=${event.requestId} MISSING CURSOR — reply=${JSON.stringify(reply)}`);
+				} else {
+					this.logDebug(`MongoDB <<< [${event.commandName}] reqId=${event.requestId} ok=${reply?.ok} ${event.duration}ms`);
+				}
+			});
 		}
 
 		if (!this.mongos[dbName])

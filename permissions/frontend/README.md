@@ -12,9 +12,8 @@ Frontend modules and UI components for the permissions system.
 | `ModuleFE_PermissionScope` | FE module for permission-scope entities. |
 | `ModulePackFE_Permissions` | Module pack — register in the Thunder builder to enable permission data sync and UI. |
 | `PermissionGuard` | Conditional rendering component based on scope permissions. |
-| `APage_Permissions` | Full permissions management page — access groups with scope labels and member editing. |
-| `Component_ScopeEditor` | Single scope key + value dropdown. |
-| `Component_ScopeListEditor` | Full scope editor — renders all scope keys with value pickers. |
+| `APage_Permissions` | Two-panel permissions management page — group list + detail with filterable scope multi-select and member editing. |
+| `Component_ScopeMultiSelect` | Filterable multi-select scope list for assigning scopes to access groups. |
 | `Component_ScopeLabels` | Read-only display of resolved scope entries as tags. |
 
 ## PermissionGuard

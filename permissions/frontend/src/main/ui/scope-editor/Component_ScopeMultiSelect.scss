@@ -1,0 +1,151 @@
+.scope-multiselect {
+	gap: var(--space-3);
+	align-items: stretch;
+	width: 100%;
+}
+
+// ── Selected chips ──
+
+.scope-multiselect__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-1);
+}
+
+.scope-multiselect__chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	padding: 2px var(--space-2);
+	border-radius: var(--radius-sm);
+	font-size: var(--text-xs);
+	font-weight: var(--font-weight-medium);
+	background: var(--accent-subtle);
+	color: var(--accent-primary);
+}
+
+.scope-multiselect__chip-remove {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	font-size: var(--text-sm);
+	color: inherit;
+	opacity: 0.6;
+	line-height: 1;
+
+	&:hover {
+		opacity: 1;
+	}
+}
+
+.scope-multiselect__add-btn {
+	align-self: flex-start;
+}
+
+// ── Picker (dropdown-like panel) ──
+
+.scope-multiselect__picker {
+	gap: var(--space-2);
+	align-items: stretch;
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-md);
+	padding: var(--space-3);
+	background: var(--bg-elevated);
+	box-shadow: var(--shadow-sm);
+}
+
+.scope-multiselect__picker-header {
+	gap: var(--space-2);
+	align-items: center;
+
+	.ts-input {
+		flex: 1;
+	}
+}
+
+.scope-multiselect__domain-bar {
+	gap: var(--space-1);
+	flex-wrap: wrap;
+}
+
+.scope-multiselect__domain-pill {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px var(--space-2);
+	border-radius: var(--radius-full);
+	font-size: var(--text-xs);
+	font-weight: var(--font-weight-medium);
+	border: 1px solid var(--border-default);
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast);
+
+	&:hover {
+		background: var(--bg-tertiary);
+		color: var(--text-primary);
+	}
+}
+
+.scope-multiselect__domain-pill--active {
+	background: var(--accent-subtle);
+	color: var(--accent-primary);
+	border-color: var(--accent-primary);
+
+	&:hover {
+		background: var(--accent-subtle);
+		color: var(--accent-primary);
+	}
+}
+
+.scope-multiselect__picker-list {
+	gap: 1px;
+	align-items: stretch;
+	max-height: 280px;
+	overflow-y: auto;
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-sm);
+	background: var(--border-subtle);
+}
+
+.scope-multiselect__picker-row {
+	gap: var(--space-2);
+	align-items: center;
+	padding: var(--space-2) var(--space-3);
+	background: var(--bg-primary);
+	cursor: pointer;
+	transition: background var(--transition-fast);
+
+	&:hover {
+		background: var(--accent-subtle);
+	}
+}
+
+.scope-multiselect__picker-row-key {
+	font-size: var(--text-sm);
+	font-weight: var(--font-weight-medium);
+	color: var(--text-primary);
+}
+
+.scope-multiselect__picker-row-sep {
+	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+}
+
+.scope-multiselect__picker-row-value {
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+}
+
+.scope-multiselect__picker-row-domain {
+	margin-left: auto;
+}
+
+.scope-multiselect__picker-empty {
+	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+	padding: var(--space-3);
+	text-align: center;
+}
