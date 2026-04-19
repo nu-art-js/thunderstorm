@@ -69,3 +69,22 @@ export const scrollToTop = (_child: React.RefObject<HTMLElement> | HTMLElement, 
 	scroll += childRect.top - containerRect.top - offset;
 	container.scroll({top: scroll, behavior: scrollBehavior});
 };
+
+export const scrollToMiddle_Vertical = (_child: React.RefObject<HTMLElement> | HTMLElement, _container: React.RefObject<HTMLElement> | HTMLElement, scrollBehavior: ScrollBehavior = 'smooth', offset: number = 0) => {
+	const child = extractElement(_child);
+	const container = extractElement(_container);
+	if (!child || !container)
+		throw new BadImplementationException('Got no elements');
+
+	const childRect = child.getBoundingClientRect();
+	const containerRect = container.getBoundingClientRect();
+
+	const childMidPoint = childRect.y + (childRect.height / 2);
+	const containerMidPoint = containerRect.y + (containerRect.height / 2);
+	if (childMidPoint === containerMidPoint)
+		return;
+
+	let scroll = container.scrollTop;
+	scroll += childMidPoint - containerMidPoint - offset;
+	container.scroll({top: scroll, behavior: scrollBehavior});
+};
