@@ -317,8 +317,7 @@ All share the `permissions` IDB group on the frontend.
 
 | Component | Purpose |
 |-----------|---------|
-| `APage_Permissions` | Full permissions management page — lists access groups with scope labels and member editing |
+| `APage_Permissions` | Two-panel permissions management page — group list + detail with filterable scope multi-select and member editing |
 | `PermissionGuard` | Conditional rendering based on scope permissions |
-| `Component_ScopeEditor` | Single scope key + value dropdown |
-| `Component_ScopeListEditor` | Full scope editor — renders all scope keys with value pickers |
+| `Component_ScopeMultiSelect` | Filterable multi-select scope list for assigning scopes to access groups |
 | `Component_ScopeLabels` | Read-only display of resolved scope entries as tags |

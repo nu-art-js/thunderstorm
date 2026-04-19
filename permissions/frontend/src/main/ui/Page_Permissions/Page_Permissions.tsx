@@ -10,19 +10,70 @@ import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import type {DB_AccessGroup, DB_PermissionScope, DatabaseDef_PermissionScope} from '@nu-art/permissions-shared';
 import {ModuleFE_PermissionScope, type OnPermissionScopeUpdated} from '../../_entity/permission-scope/ModuleFE_PermissionScope.js';
 import {ModuleFE_AccessGroup, type OnAccessGroupUpdated} from '../../_entity/access-group/ModuleFE_AccessGroup.js';
-import {ComponentSync, LL_H_C, LL_V_L, SimpleListAdapter, TS_DropDown} from '@nu-art/thunder-widgets';
+import {ComponentSync, LL_H_C, LL_H_T, LL_V_L, SimpleListAdapter, TS_DropDown, TS_Input, TS_JSONViewer} from '@nu-art/thunder-widgets';
+import {Component_ScopeMultiSelect} from '../scope-editor/Component_ScopeMultiSelect.js';
 import {Component_ScopeLabels} from '../scope-editor/Component_ScopeLabels.js';
-import {Component_ScopeListEditor} from '../scope-editor/Component_ScopeListEditor.js';
 import './Page_Permissions.scss';
 
 
 type State = {
+	selectedGroupId?: string;
 	editingGroup?: DB_AccessGroup;
+	groupSearch: string;
 };
 
 const memberFilter = new Filter<DB_AccessGroup>(item => [item.label]);
-
 const editableGroupTypes = new Set(['entity', 'custom']);
+
+function resolveGroupLabel(id: string): string {
+	return ModuleFE_AccessGroup.cache.unique(id)?.label ?? id;
+}
+
+function resolveScopeLabel(id: string): string {
+	const entity = ModuleFE_PermissionScope.cache.unique(id);
+	return entity ? `${entity.key}:${entity.value}` : id;
+}
+
+function resolveIds(ids: string[] | undefined, resolver: (id: string) => string): string[] {
+	if (!ids?.length)
+		return [];
+
+	return ids.map(resolver);
+}
+
+function buildResolvedDocument(group: DB_AccessGroup): Record<string, unknown> {
+	const access = (group as Record<string, unknown>).__access as Record<string, string[]> | undefined;
+
+	const result: Record<string, unknown> = {
+		_id: group._id,
+		_v: (group as Record<string, unknown>)._v,
+		type: group.type,
+		key: group.key,
+		label: group.label,
+	};
+
+	const members = resolveIds(group.members as string[], resolveGroupLabel);
+	if (members.length)
+		result.members = members;
+
+	const scopeEntries = resolveIds((group.scopeEntries ?? []) as string[], resolveScopeLabel);
+	if (scopeEntries.length)
+		result.scopeEntries = scopeEntries;
+
+	if (access) {
+		const resolved: Record<string, string[]> = {};
+		for (const [role, ids] of Object.entries(access)) {
+			const labels = resolveIds(ids, resolveGroupLabel);
+			if (labels.length)
+				resolved[role] = labels;
+		}
+
+		if (Object.keys(resolved).length)
+			result.__access = resolved;
+	}
+
+	return result;
+}
 
 class Page_Permissions
 	extends ComponentSync<{}, State>
@@ -37,21 +88,22 @@ class Page_Permissions
 	}
 
 	protected deriveStateFromProps(_nextProps: {}, state: State): State {
-		return {...state};
+		return {
+			...state,
+			groupSearch: state?.groupSearch ?? '',
+		};
 	}
 
-	private readonly expandGroup = (group: DB_AccessGroup) => {
+	private readonly selectGroup = (group: DB_AccessGroup) => {
+		const isEditable = editableGroupTypes.has(group.type);
 		this.setState({
-			editingGroup: {
+			selectedGroupId: group._id,
+			editingGroup: isEditable ? {
 				...group,
 				members: [...group.members],
 				scopeEntries: group.scopeEntries ? [...group.scopeEntries] : [],
-			}
+			} : undefined,
 		});
-	};
-
-	private readonly collapseGroup = () => {
-		this.setState({editingGroup: undefined});
 	};
 
 	private readonly onScopeEntriesChanged = (entries: DatabaseDef_PermissionScope['id'][]) => {
@@ -87,7 +139,24 @@ class Page_Permissions
 			return;
 
 		await ModuleFE_AccessGroup.upsert(draft);
-		this.setState({editingGroup: undefined});
+	};
+
+	private readonly cancelEdit = () => {
+		const selectedId = this.state.selectedGroupId;
+		if (!selectedId)
+			return;
+
+		const original = ModuleFE_AccessGroup.cache.unique(selectedId) as DB_AccessGroup | undefined;
+		if (!original)
+			return;
+
+		this.setState({
+			editingGroup: editableGroupTypes.has(original.type) ? {
+				...original,
+				members: [...original.members],
+				scopeEntries: original.scopeEntries ? [...original.scopeEntries] : [],
+			} : undefined,
+		});
 	};
 
 	render() {
@@ -96,86 +165,138 @@ class Page_Permissions
 			g => g.label
 		);
 
-		return <LL_V_L className={'page page-permissions'}>
-			<LL_H_C className={'page__header'}>
-				<h2>Permissions — Access Groups</h2>
-			</LL_H_C>
-			{groups.length === 0
-				? <div className={'empty-state'}>No access groups</div>
-				: <LL_V_L className={'card-list'}>{groups.map(group => this.renderGroupCard(group))}</LL_V_L>
-			}
+		const filteredGroups = this.state.groupSearch
+			? groups.filter(g => g.label.toLowerCase().includes(this.state.groupSearch.toLowerCase()))
+			: groups;
+
+		const selectedGroup = this.state.selectedGroupId
+			? groups.find(g => g._id === this.state.selectedGroupId)
+			: undefined;
+
+		return <LL_H_T className={'page-permissions'}>
+			{this.renderListPanel(filteredGroups)}
+			{this.renderDetailPanel(selectedGroup)}
+			{this.renderDebugPanel(selectedGroup)}
+		</LL_H_T>;
+	}
+
+	private renderListPanel(groups: DB_AccessGroup[]) {
+		return <LL_V_L className={'page-permissions__list-panel'}>
+			<h2>Access Groups</h2>
+			<TS_Input
+				type={'text'}
+				value={this.state.groupSearch}
+				placeholder={'Filter groups...'}
+				saveEvent={['change']}
+				onChange={value => this.setState({groupSearch: value})}
+			/>
+			<LL_V_L className={'page-permissions__group-list'}>
+				{groups.length === 0
+					? <div className={'empty-state'}>No groups</div>
+					: groups.map(group => this.renderGroupRow(group))
+				}
+			</LL_V_L>
 		</LL_V_L>;
 	}
 
-	private renderGroupCard(group: DB_AccessGroup) {
-		const draft = this.state.editingGroup;
-		const isExpanded = draft?._id === group._id;
-		const isEditable = editableGroupTypes.has(group.type);
+	private renderGroupRow(group: DB_AccessGroup) {
+		const isSelected = this.state.selectedGroupId === group._id;
+		const scopeCount = group.scopeEntries?.length ?? 0;
 
-		return <div key={group._id} className={`card-list__item ${isExpanded ? 'card-list__item--selected' : ''}`}>
-			<LL_H_C className={'card-list__item-header'}>
-				<LL_H_C style={{gap: 'var(--space-3)'}}>
-					<span className={'card-list__item-name'}>{group.label}</span>
-					<span className={'badge badge--info'}>{group.type}</span>
-				</LL_H_C>
-				<button
-					className={'btn btn--ghost btn--sm'}
-					onClick={() => isExpanded ? this.collapseGroup() : this.expandGroup(group)}
-				>{isExpanded ? 'Collapse' : 'Details'}</button>
+		return <div
+			key={group._id}
+			className={`page-permissions__group-row ${isSelected ? 'page-permissions__group-row--selected' : ''}`}
+			onClick={() => this.selectGroup(group)}
+		>
+			<LL_H_C className={'page-permissions__group-row-header'}>
+				<span className={'page-permissions__group-row-name'}>{group.label}</span>
+				<span className={'badge badge--info'}>{group.type}</span>
 			</LL_H_C>
-
-			<Component_ScopeLabels scopeEntries={group.scopeEntries ?? []} emptyMessage={'No scopes'}/>
-
-			{isExpanded && draft && (isEditable ? this.renderGroupEditor(draft) : this.renderGroupReadonly(group))}
+			<span className={'page-permissions__group-row-meta'}>
+				{scopeCount} scope{scopeCount !== 1 ? 's' : ''} · {group.members.length} member{group.members.length !== 1 ? 's' : ''}
+			</span>
 		</div>;
 	}
 
-	private renderGroupReadonly(group: DB_AccessGroup) {
-		return <LL_V_L className={'group-details'}>
-			<div className={'form-group'}>
-				<label className={'form-label'}>Key</label>
-				<span>{group.key}</span>
-			</div>
-			<div className={'form-group'}>
-				<label className={'form-label'}>Members ({group.members.length})</label>
-				{group.members.length === 0
-					? <span className={'card-list__item-meta'}>No members</span>
-					: <div className={'tags'}>{group.members.map(memberId => {
-						const memberGroup = ModuleFE_AccessGroup.cache.unique(memberId);
-						return <span key={memberId} className={'tag tag--accent'}>
-							{memberGroup?.label ?? memberId}
-						</span>;
-					})}</div>
+	private renderDetailPanel(group?: DB_AccessGroup) {
+		if (!group)
+			return <LL_V_L className={'page-permissions__detail-panel page-permissions__detail-panel--empty'}>
+				<div className={'empty-state'}>Select a group to view details</div>
+			</LL_V_L>;
+
+		const isEditable = editableGroupTypes.has(group.type);
+		const draft = this.state.editingGroup;
+
+		return <LL_V_L className={'page-permissions__detail-panel'}>
+			<LL_H_C className={'page-permissions__detail-header'}>
+				<h3>{group.label}</h3>
+				<LL_H_C style={{gap: 'var(--space-2)'}}>
+					<span className={'badge badge--info'}>{group.type}</span>
+					<span className={'page-permissions__detail-key'}>{group.key}</span>
+				</LL_H_C>
+			</LL_H_C>
+
+			<LL_V_L className={'page-permissions__detail-section'}>
+				<h4>Scopes</h4>
+				{isEditable && draft
+					? <Component_ScopeMultiSelect
+						scopeEntries={(draft.scopeEntries ?? []) as DatabaseDef_PermissionScope['id'][]}
+						onChanged={this.onScopeEntriesChanged}
+					/>
+					: <Component_ScopeLabels
+						scopeEntries={group.scopeEntries ?? []}
+						emptyMessage={'No scopes assigned'}
+					/>
 				}
+			</LL_V_L>
+
+			<LL_V_L className={'page-permissions__detail-section'}>
+				<h4>Members ({isEditable && draft ? draft.members.length : group.members.length})</h4>
+				{isEditable && draft
+					? this.renderMemberEditor(draft)
+					: this.renderMemberReadonly(group)
+				}
+			</LL_V_L>
+
+			{isEditable && draft && <LL_H_C className={'editor-panel__actions'}>
+				<button className={'btn btn--primary btn--sm'} onClick={this.saveGroup}>Save</button>
+				<button className={'btn btn--ghost btn--sm'} onClick={this.cancelEdit}>Reset</button>
+			</LL_H_C>}
+		</LL_V_L>;
+	}
+
+	private renderDebugPanel(group?: DB_AccessGroup) {
+		if (!group)
+			return <LL_V_L className={'page-permissions__debug-panel page-permissions__debug-panel--empty'}/>;
+
+		const resolved = buildResolvedDocument(group);
+
+		return <LL_V_L className={'page-permissions__debug-panel'}>
+			<h4>Document</h4>
+			<div className={'page-permissions__debug-tree'}>
+				<TS_JSONViewer item={resolved} expandAll compact/>
 			</div>
 		</LL_V_L>;
 	}
 
-	private renderGroupEditor(draft: DB_AccessGroup) {
-		return <LL_V_L className={'group-details'}>
-			<div className={'form-group'}>
-				<label className={'form-label'}>Key</label>
-				<span>{draft.key}</span>
-			</div>
+	private renderMemberReadonly(group: DB_AccessGroup) {
+		if (group.members.length === 0)
+			return <span className={'card-list__item-meta'}>No members</span>;
 
-			<div className={'form-group'}>
-				<label className={'form-label'}>Scopes</label>
-				<Component_ScopeListEditor
-					scopeEntries={(draft.scopeEntries ?? []) as DatabaseDef_PermissionScope['id'][]}
-					onChanged={this.onScopeEntriesChanged}
-				/>
-			</div>
+		return <div className={'tags'}>
+			{group.members.map(memberId => {
+				const memberGroup = ModuleFE_AccessGroup.cache.unique(memberId);
+				return <span key={memberId} className={'tag tag--accent'}>
+					{memberGroup?.label ?? memberId}
+				</span>;
+			})}
+		</div>;
+	}
 
-			<div className={'form-group'}>
-				<label className={'form-label'}>Members ({draft.members.length})</label>
-				{this.renderMemberTags(draft.members)}
-				{this.renderAddMemberDropdown(draft.members)}
-			</div>
-
-			<LL_H_C className={'editor-panel__actions'}>
-				<button className={'btn btn--primary btn--sm'} onClick={this.saveGroup}>Save</button>
-				<button className={'btn btn--ghost btn--sm'} onClick={this.collapseGroup}>Cancel</button>
-			</LL_H_C>
+	private renderMemberEditor(draft: DB_AccessGroup) {
+		return <LL_V_L className={'page-permissions__member-editor'}>
+			{this.renderMemberTags(draft.members)}
+			{this.renderAddMemberDropdown(draft.members)}
 		</LL_V_L>;
 	}
 
@@ -206,7 +327,7 @@ class Page_Permissions
 			return null;
 
 		return <TS_DropDown<DB_AccessGroup>
-			className={'member-dropdown'}
+			className={'page-permissions__member-dropdown'}
 			adapter={SimpleListAdapter(candidates, node => <>{node.item.label}</>)}
 			filter={memberFilter}
 			placeholder={'Add member...'}

@@ -1,6 +1,6 @@
 /*
  * Scope derivation and resolution utilities.
- * Used by Component_ScopeListEditor and any read-only scope display.
+ * Used by Component_ScopeLabels and other read-only scope display.
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */

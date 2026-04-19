@@ -156,6 +156,7 @@ class ModuleBE_Permissions_Class
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			this.logDebug('[FIRST_USER] bootstrap: starting ensureDefinedGroups');
 			await this.ensureBootstrapSAAccessGroup();
+			await this.ensureServiceAccountAccessGroups();
 			await this.ensurePermissionsInfraAccessGroups();
 			await this.ensureScopeEntities();
 			await this.ensureDefaultGroup();
@@ -459,7 +460,7 @@ class ModuleBE_Permissions_Class
 		const personalGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(saId);
 		const accessIds = saId === ServiceAccountId_Bootstrap
 			? this.resolveBootstrapAccessIds()
-			: {[AccessScope_Self]: [personalGroupId]};
+			: await this.resolveSAAccessIds(personalGroupId);
 
 		const memStorage = new MemStorage();
 		return memStorage.init(async () => {
@@ -467,6 +468,14 @@ class ModuleBE_Permissions_Class
 			MemKey_UserScopePermissions.set(scopes);
 			MemKey_UserAccessIds.set(accessIds);
 			return action();
+		});
+	}
+
+	private async resolveSAAccessIds(personalGroupId: UniqueId): Promise<ScopedAccessIds> {
+		return this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			const allGroups = await ModuleBE_AccessGroupDB.query.where({});
+			const {accessIds} = await this.materializeFromGroups(personalGroupId, allGroups);
+			return accessIds;
 		});
 	}
 
@@ -499,6 +508,27 @@ class ModuleBE_Permissions_Class
 			members: [],
 		});
 		this.logInfoBold('Created bootstrap service account access group');
+	}
+
+	private async ensureServiceAccountAccessGroups() {
+		for (const saId of _keys(this.config.serviceAccounts)) {
+			if (saId === ServiceAccountId_Bootstrap)
+				continue;
+
+			const groupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(saId);
+			const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
+			if (existing)
+				continue;
+
+			await ModuleBE_AccessGroupDB.create.item({
+				_id: groupId,
+				type: 'service-account',
+				key: saId,
+				label: `SA: ${saId}`,
+				members: [],
+			});
+			this.logInfoBold(`Created service account access group: ${saId}`);
+		}
 	}
 
 	// --- Bootstrap: ensure permissions infrastructure access groups ---
@@ -591,12 +621,16 @@ class ModuleBE_Permissions_Class
 		for (const def of groupDefs) {
 			const groupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`group/${def.key}`);
 			const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
+			const declaredMemberIds = (def.memberKeys ?? []).map(key =>
+				hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`group/${key}`)
+			);
+			const mergedMembers = filterDuplicates([...declaredMemberIds, ...(existing?.members ?? [])]);
 			await ModuleBE_AccessGroupDB.set.all([{
 				_id: groupId,
 				type: 'custom' as const,
-				key: def.key,
+				key: def.scopeKey ?? def.key,
 				label: def.label,
-				members: existing?.members ?? [],
+				members: mergedMembers,
 				scopeEntries: filterDuplicates(def.scopes.map(({scope, value}) => permissionScopeId(scope.key, value))),
 			}]);
 		}

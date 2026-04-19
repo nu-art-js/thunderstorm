@@ -84,4 +84,18 @@
     width: 14px;
     height: 14px;
   }
+
+  &.ts-json-viewer--compact {
+    .ts-tree__children-container {
+      padding-left: 12px;
+    }
+
+    .ts-tree__node {
+      margin: 0;
+
+      .clickable {
+        padding: 0 0 0 3px;
+      }
+    }
+  }
 }

@@ -250,7 +250,7 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 
 	validateImpl(_instance: Partial<Database['uiType']>) {
 		const instance = deleteKeysObject(_instance as Database['dbType'], this.keysToStripForValidation);
-		const results = tsValidateResult(instance, this.validator);
+		const results = tsValidateResult(instance, this.validator, undefined, false);
 		if (results)
 			this.onValidationError(_instance as Database['uiType'], results as InvalidResult<Database['dbType']>);
 	}
