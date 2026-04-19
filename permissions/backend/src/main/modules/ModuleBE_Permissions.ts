@@ -289,14 +289,14 @@ class ModuleBE_Permissions_Class
 		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
 		const typedGroupIds = additionalGroupIds.map(id => stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(id));
 		const groups = filterInstances(await ModuleBE_AccessGroupDB.query.all(typedGroupIds));
-		for (const group of groups) {
-			if (group.members.includes(personalGroupId))
-				continue;
 
-			group.members.push(personalGroupId);
-			await ModuleBE_AccessGroupDB.set.item(group);
-			this.logInfo(`Added user ${account._id} to group '${group.label}'`);
-		}
+		const modifiedGroups = groups.filter(group => !group.members.includes(personalGroupId));
+		if (modifiedGroups.length === 0)
+			return;
+
+		modifiedGroups.forEach(group => group.members.push(personalGroupId));
+		await ModuleBE_AccessGroupDB.set.all(modifiedGroups);
+		modifiedGroups.forEach(group => this.logInfo(`Added user ${account._id} to group '${group.label}'`));
 	}
 
 	// --- Permission recomputation (materialized DB_UserPermissions) ---
@@ -511,43 +511,59 @@ class ModuleBE_Permissions_Class
 	}
 
 	private async ensureServiceAccountAccessGroups() {
-		for (const saId of _keys(this.config.serviceAccounts)) {
-			if (saId === ServiceAccountId_Bootstrap)
-				continue;
+		const saKeys = _keys(this.config.serviceAccounts).filter(saId => saId !== ServiceAccountId_Bootstrap);
+		if (saKeys.length === 0)
+			return;
 
-			const groupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(saId);
-			const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
-			if (existing)
-				continue;
+		const entries = saKeys.map(saId => ({
+			saId,
+			groupId: hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(saId),
+		}));
 
-			await ModuleBE_AccessGroupDB.create.item({
-				_id: groupId,
-				type: 'service-account',
-				key: saId,
-				label: `SA: ${saId}`,
+		const existing = filterInstances(await ModuleBE_AccessGroupDB.query.all(entries.map(e => e.groupId)));
+		const existingIds = new Set(existing.map(g => g._id));
+
+		const toCreate = entries
+			.filter(e => !existingIds.has(e.groupId))
+			.map(e => ({
+				_id: e.groupId,
+				type: 'service-account' as const,
+				key: e.saId,
+				label: `SA: ${e.saId}`,
 				members: [],
-			});
-			this.logInfoBold(`Created service account access group: ${saId}`);
-		}
+			}));
+
+		if (toCreate.length === 0)
+			return;
+
+		await ModuleBE_AccessGroupDB.create.all(toCreate);
+		this.logInfoBold(`Created ${toCreate.length} service account access groups`);
 	}
 
 	// --- Bootstrap: ensure permissions infrastructure access groups ---
 
 	private async ensurePermissionsInfraAccessGroups() {
-		for (const accessKey of AllDocumentAccessKeys) {
-			const groupId = PermissionsInfraGroupIds[accessKey];
-			const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
-			const members = filterDuplicates([GroupId_PermissionsAdmin, ...(existing?.members ?? [])]);
+		const entries = AllDocumentAccessKeys.map(accessKey => ({
+			accessKey,
+			groupId: PermissionsInfraGroupIds[accessKey],
+		}));
 
-			this.logDebug(`[FIRST_USER] infra group ${accessKey}: id=${groupId}, existing=${!!existing}, members=${JSON.stringify(members)}`);
-			await ModuleBE_AccessGroupDB.set.all([{
-				_id: groupId,
+		const existing = filterInstances(await ModuleBE_AccessGroupDB.query.all(entries.map(e => e.groupId)));
+		const existingMap = new Map(existing.map(g => [g._id, g]));
+
+		const items = entries.map(e => {
+			const existingGroup = existingMap.get(e.groupId);
+			const members = filterDuplicates([GroupId_PermissionsAdmin, ...(existingGroup?.members ?? [])]);
+			return {
+				_id: e.groupId,
 				type: 'entity' as const,
 				key: 'permissions',
-				label: `Permissions Infra ${accessKey}`,
+				label: `Permissions Infra ${e.accessKey}`,
 				members,
-			}]);
-		}
+			};
+		});
+
+		await ModuleBE_AccessGroupDB.set.all(items);
 		this.logInfoBold('Ensured permissions infrastructure access groups');
 	}
 
@@ -618,23 +634,31 @@ class ModuleBE_Permissions_Class
 		if (groupDefs.length === 0)
 			return;
 
-		for (const def of groupDefs) {
-			const groupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`group/${def.key}`);
-			const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
-			const declaredMemberIds = (def.memberKeys ?? []).map(key =>
+		const entries = groupDefs.map(def => ({
+			def,
+			groupId: hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`group/${def.key}`),
+		}));
+
+		const existing = filterInstances(await ModuleBE_AccessGroupDB.query.all(entries.map(e => e.groupId)));
+		const existingMap = new Map(existing.map(g => [g._id, g]));
+
+		const items = entries.map(e => {
+			const existingGroup = existingMap.get(e.groupId);
+			const declaredMemberIds = (e.def.memberKeys ?? []).map(key =>
 				hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`group/${key}`)
 			);
-			const mergedMembers = filterDuplicates([...declaredMemberIds, ...(existing?.members ?? [])]);
-			await ModuleBE_AccessGroupDB.set.all([{
-				_id: groupId,
+			const mergedMembers = filterDuplicates([...declaredMemberIds, ...(existingGroup?.members ?? [])]);
+			return {
+				_id: e.groupId,
 				type: 'custom' as const,
-				key: def.scopeKey ?? def.key,
-				label: def.label,
+				key: e.def.scopeKey ?? e.def.key,
+				label: e.def.label,
 				members: mergedMembers,
-				scopeEntries: filterDuplicates(def.scopes.map(({scope, value}) => permissionScopeId(scope.key, value))),
-			}]);
-		}
+				scopeEntries: filterDuplicates(e.def.scopes.map(({scope, value}) => permissionScopeId(scope.key, value))),
+			};
+		});
 
+		await ModuleBE_AccessGroupDB.set.all(items);
 		this.logInfoBold(`Ensured ${groupDefs.length} application-defined groups: [${groupDefs.map(d => d.label).join(', ')}]`);
 	}
 

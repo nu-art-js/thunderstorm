@@ -281,14 +281,11 @@ export class ModuleBE_AccountDB_Class
 		login: async (credentials: API_UserAccount['login']['Body']): Promise<API_UserAccount['login']['Response']> => {
 			this.impl.fixEmail(credentials);
 
-			const safeAccount = await this.runTransaction(async () => {
-				const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email});
-				await this.password.assertPasswordMatch(dbAccount, credentials.password);
-				const safeAccount = makeAccountSafe(dbAccount);
-				MemKey_AccountId.set(safeAccount._id);
-				await this.impl.onAccountLogin(safeAccount);
-				return safeAccount;
-			});
+			const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email});
+			await this.password.assertPasswordMatch(dbAccount, credentials.password);
+			const safeAccount = makeAccountSafe(dbAccount);
+			MemKey_AccountId.set(safeAccount._id);
+			await this.impl.onAccountLogin(safeAccount);
 
 			const initialClaims = {
 				accountId: safeAccount._id,
