@@ -18,6 +18,7 @@ export function renderLayers(ctx: ChartRenderContext): React.ReactNode[] {
 		}
 
 		const lineOpacity = layer.opacity ?? 1;
+		const strokeWidth = layer.lineWidth ?? ctx.theme.lineWidth;
 
 		if (layer.style === 'area') {
 			const baselineY = layer.vAxis.baseline != null
@@ -30,7 +31,7 @@ export function renderLayers(ctx: ChartRenderContext): React.ReactNode[] {
 
 			return <Group key={layer.id} listening={false}>
 				<Line points={areaPoints} fill={layer.color} opacity={lineOpacity * 0.15} closed={true} listening={false}/>
-				<Line points={flatPoints} stroke={layer.color} strokeWidth={ctx.theme.lineWidth} opacity={lineOpacity} lineCap={'round'} lineJoin={'round'} listening={false}/>
+				<Line points={flatPoints} stroke={layer.color} strokeWidth={strokeWidth} opacity={lineOpacity} lineCap={'round'} lineJoin={'round'} listening={false}/>
 			</Group>;
 		}
 
@@ -38,7 +39,7 @@ export function renderLayers(ctx: ChartRenderContext): React.ReactNode[] {
 			key={layer.id}
 			points={flatPoints}
 			stroke={layer.color}
-			strokeWidth={ctx.theme.lineWidth}
+			strokeWidth={strokeWidth}
 			lineCap={'round'}
 			lineJoin={'round'}
 			opacity={lineOpacity}

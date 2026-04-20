@@ -2,19 +2,22 @@ import * as React from 'react';
 import {Stage, Layer, Rect} from 'react-konva';
 import type {AxisConfig, ChartLayer, ChartMarker, ChartPadding, ChartTheme} from './types.js';
 import {DefaultChartPadding, DefaultChartTheme} from './types.js';
-import {computeRange, resolveAxisRange, applyZoomFraction} from './chart-range.js';
-import type {ResolvedRange, ZoomFraction} from './chart-range.js';
+import {computeRange, resolveAxisRange, applyZoomFraction, viewportToZoom, zoomToViewport} from './chart-range.js';
+import type {ResolvedRange, ZoomFraction, ChartViewport} from './chart-range.js';
 import {collectAxes, getHoverZone} from './chart-coordinate.js';
 import type {ChartRenderContext} from './chart-render-context.js';
 import {renderGrid, renderBaselines, renderVAxes, renderHAxes} from './chart-axes.js';
 import {renderLayers, renderMarkers} from './chart-layers.js';
 import {renderCrosshair, renderAxisCrosshair} from './chart-crosshair.js';
+import {Icon_ResetZoom} from './Icon_ResetZoom.js';
 
 type Props = {
 	layers: ChartLayer[];
 	markers?: ChartMarker[];
 	width: number;
 	height: number;
+	viewport?: ChartViewport;
+	onViewportChange?: (viewport: ChartViewport | undefined) => void;
 	onClick?: (h: number) => void;
 	onMarkerClick?: (marker: ChartMarker) => void;
 	onMarkerHover?: (marker: ChartMarker | undefined) => void;
@@ -49,8 +52,53 @@ export class Chart extends React.Component<Props, State> {
 		return {...DefaultChartTheme, ...this.props.theme};
 	}
 
+	private get isControlled(): boolean {
+		return this.props.viewport !== undefined;
+	}
+
 	private get isZoomed(): boolean {
-		return this.state.zoom != null;
+		return this.resolveZoom() != null;
+	}
+
+	private resolveZoom(): ZoomFraction | undefined {
+		if (!this.isControlled)
+			return this.state.zoom;
+
+		const full = this.getFullPrimaryHRange();
+		if (!full)
+			return undefined;
+
+		return viewportToZoom(full, this.props.viewport!);
+	}
+
+	private getFullPrimaryHRange(): ResolvedRange | undefined {
+		const {hAxes} = collectAxes(this.props.layers, this.props.markers);
+		if (hAxes.length === 0)
+			return undefined;
+
+		const layers = this.props.layers.filter(l => l.hAxis === hAxes[0]);
+		return resolveAxisRange(hAxes[0], layers, pt => pt.h);
+	}
+
+	private updateZoom(zoom: ZoomFraction | undefined): void {
+		if (this.isControlled) {
+			if (!this.props.onViewportChange)
+				return;
+
+			if (!zoom) {
+				this.props.onViewportChange(undefined);
+				return;
+			}
+
+			const full = this.getFullPrimaryHRange();
+			if (!full)
+				return;
+
+			this.props.onViewportChange(zoomToViewport(full, zoom));
+			return;
+		}
+
+		this.setState({zoom});
 	}
 
 	private computePadding(): ChartPadding {
@@ -76,7 +124,7 @@ export class Chart extends React.Component<Props, State> {
 
 		const layers = this.props.layers.filter(l => l.hAxis === axis);
 		const full = resolveAxisRange(axis, layers, pt => pt.h);
-		cached = applyZoomFraction(full, this.state.zoom);
+		cached = applyZoomFraction(full, this.resolveZoom());
 		this.hRangeCache.set(axis, cached);
 		return cached;
 	};
@@ -178,7 +226,7 @@ export class Chart extends React.Component<Props, State> {
 		if (Math.abs(dx) < DragThreshold)
 			return;
 
-		const {zoom} = this.state;
+		const zoom = this.resolveZoom();
 		if (!zoom)
 			return;
 
@@ -189,8 +237,8 @@ export class Chart extends React.Component<Props, State> {
 
 		this.hRangeCache.clear();
 		this.vRangeCache.clear();
+		this.updateZoom({min: zoom.min - fractionDelta, max: zoom.max - fractionDelta});
 		this.setState({
-			zoom: {min: zoom.min - fractionDelta, max: zoom.max - fractionDelta},
 			drag: {startX: pos.x, startY: pos.y, shift: false},
 			hoverX: undefined,
 		});
@@ -231,7 +279,7 @@ export class Chart extends React.Component<Props, State> {
 		if (!this.isZoomed)
 			return;
 
-		this.setState({zoom: undefined});
+		this.updateZoom(undefined);
 	};
 
 	private applyZoomSelection(startPx: number, endPx: number) {
@@ -246,14 +294,12 @@ export class Chart extends React.Component<Props, State> {
 		const leftFrac = (leftPx - pad.left) / plotWidth;
 		const rightFrac = (rightPx - pad.left) / plotWidth;
 
-		const current = this.state.zoom ?? {min: 0, max: 1};
+		const current = this.resolveZoom() ?? {min: 0, max: 1};
 		const currentSpan = current.max - current.min;
 
-		this.setState({
-			zoom: {
-				min: current.min + leftFrac * currentSpan,
-				max: current.min + rightFrac * currentSpan,
-			},
+		this.updateZoom({
+			min: current.min + leftFrac * currentSpan,
+			max: current.min + rightFrac * currentSpan,
 		});
 	}
 
@@ -276,7 +322,7 @@ export class Chart extends React.Component<Props, State> {
 	}
 
 	private readonly resetZoom = () => {
-		this.setState({zoom: undefined});
+		this.updateZoom(undefined);
 	};
 
 	// --- Selection overlay (kept inline, trivial) ---
@@ -344,19 +390,23 @@ export class Chart extends React.Component<Props, State> {
 			</Stage>
 			{this.isZoomed && <button
 				onClick={this.resetZoom}
+				title={'Reset zoom'}
 				style={{
 					position: 'absolute',
-					top: 4,
-					right: pad.right + 4,
-					padding: '2px 8px',
-					fontSize: 10,
-					background: 'rgba(0,0,0,0.6)',
-					color: '#fff',
+					bottom: 0,
+					left: 0,
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					width: pad.left,
+					height: pad.bottom,
+					padding: 0,
+					background: 'transparent',
+					color: this.theme.axisText,
 					border: 'none',
-					borderRadius: 3,
 					cursor: 'pointer',
 				}}
-			>Reset Zoom</button>}
+			><Icon_ResetZoom size={14}/></button>}
 		</div>;
 	}
 }

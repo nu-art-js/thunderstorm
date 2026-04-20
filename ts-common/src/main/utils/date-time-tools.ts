@@ -43,6 +43,39 @@ const durationUnits: Record<string, number> = {
 const durationPattern = /^(?:\d+[smhdw])+$/;
 const durationSegment = /(\d+)([smhdw])/g;
 
+const durationUnitOrder: {unit: string; ms: number}[] = [
+	{unit: 'd', ms: Day},
+	{unit: 'h', ms: Hour},
+	{unit: 'm', ms: Minute},
+	{unit: 's', ms: Second},
+];
+
+/**
+ * Formats a duration in milliseconds into a compact human-readable string.
+ *
+ * Uses the largest fitting units: `60000` → `"1m"`, `3661000` → `"1h1m1s"`.
+ * Millisecond remainders below 1 second are dropped.
+ *
+ * @param ms - Duration in milliseconds
+ * @returns Compact duration string, e.g. `"1m"`, `"2h30m"`, `"1d12h"`
+ */
+export function formatDuration(ms: number): string {
+	if (ms <= 0)
+		return '0s';
+
+	let remaining = ms;
+	let result = '';
+	for (const {unit, ms: unitMs} of durationUnitOrder) {
+		const count = Math.floor(remaining / unitMs);
+		if (count > 0) {
+			result += `${count}${unit}`;
+			remaining -= count * unitMs;
+		}
+	}
+
+	return result || '0s';
+}
+
 /**
  * Parses a compact duration string into milliseconds.
  *
