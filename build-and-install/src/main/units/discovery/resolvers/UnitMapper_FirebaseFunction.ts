@@ -1,5 +1,6 @@
 import {
 	ImplementationMissingException,
+	mergeObject,
 	tsValidate_OptionalArray,
 	tsValidateAnyNumber,
 	tsValidateAnyString,
@@ -19,11 +20,14 @@ import {resolve} from 'path';
 import {BaiParam_SetEnv} from '../../../core/params.js';
 
 
+type EnvFunctionOverride = Pick<FunctionConfig, 'name'> & Partial<Omit<FunctionConfig, 'name'>>;
+
 type EnvConfig = {
 	defaultConfig?: string,
 	envConfig?: string,
 	projectId: string,
-	isLocal?: boolean
+	isLocal?: boolean,
+	functions?: EnvFunctionOverride[],
 };
 
 type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
@@ -34,13 +38,6 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 	sslCert?: string
 	functions: string[] | FunctionConfig[];
 	mongo?: { port?: number; dbName?: string };
-};
-
-const valuesValidator = {
-	defaultConfig: tsValidateOptionalAnyString,
-	envConfig: tsValidateOptionalAnyString,
-	projectId: tsValidateAnyString,
-	isLocal: tsValidateBoolean(false),
 };
 
 // Docker image name validation: lowercase, alphanumeric with dots, underscores, hyphens
@@ -78,25 +75,74 @@ const functionConfigValidator = {
 };
 
 // Validator for functions array: accepts either string[] or FunctionConfig[]
-// Uses custom validator to check type first, then validate accordingly
 const functionItemValidator = (input?: string | FunctionConfig) => {
-	if (typeof input === 'string') {
-		// Legacy format: just a string (function name)
+	if (typeof input === 'string')
 		return tsValidateResult(input, tsValidateAnyString);
-	}
-	if (typeof input === 'object' && input !== null) {
-		// New format: FunctionConfig object
+
+	if (typeof input === 'object' && input !== null)
 		return tsValidateResult(input, tsValidateOptionalObject(functionConfigValidator));
-	}
+
 	return 'Function item must be either a string (function name) or an object (FunctionConfig)';
 };
 
 const functionsArrayValidator = tsValidate_OptionalArray(functionItemValidator);
 
+// Env override validators — all fields optional except name
+const envFunctionResourceValidator = {
+	...functionResourceConfigValidator,
+	cpu: tsValidateOptionalAnyNumber,
+};
+
+const envFunctionOverrideValidator = {
+	name: tsValidateAnyString,
+	trigger: tsValidateOptionalAnyString,
+	schedule: tsValidateOptionalAnyString,
+	serviceAccountName: tsValidateOptionalAnyString,
+	resources: tsValidateOptionalObject(envFunctionResourceValidator),
+};
+
+const envFunctionsValidator = tsValidate_OptionalArray(
+	(input?: any) => {
+		if (typeof input === 'object' && input !== null)
+			return tsValidateResult(input, tsValidateOptionalObject(envFunctionOverrideValidator));
+
+		return 'Env function override must be an object with a name property';
+	}
+);
+
+const valuesValidator = {
+	defaultConfig: tsValidateOptionalAnyString,
+	envConfig: tsValidateOptionalAnyString,
+	projectId: tsValidateAnyString,
+	isLocal: tsValidateBoolean(false),
+	functions: envFunctionsValidator,
+};
+
 const mongoEmulatorValidator = {
 	port: tsValidateOptionalAnyNumber,
 	dbName: tsValidateOptionalAnyString,
 };
+
+function mergeFunctionConfigs(defaults: (string | FunctionConfig)[], overrides?: EnvFunctionOverride[]): FunctionConfig[] {
+	const normalized = defaults.map<FunctionConfig>(f =>
+		typeof f === 'string' ? {name: f, trigger: 'http'} : f
+	);
+
+	if (!overrides || overrides.length === 0)
+		return normalized;
+
+	for (const override of overrides) {
+		const index = normalized.findIndex(f => f.name === override.name);
+		if (index === -1)
+			throw new ImplementationMissingException(
+				`Env function override references unknown function '${override.name}'. Available: ${normalized.map(f => f.name).join(', ')}`
+			);
+
+		normalized[index] = mergeObject(normalized[index], override) as FunctionConfig;
+	}
+
+	return normalized;
+}
 
 export class UnitMapper_FirebaseFunction_Class
 	extends UnitMapper_Node<Unit_FirebaseFunctionsApp, UnitConfigJSON_FirebaseFunction> {
@@ -136,15 +182,16 @@ export class UnitMapper_FirebaseFunction_Class
 
 		const {type, ...unitConfig} = context.packageJson.unitConfig;
 
-		// Validate functions array is required and non-empty
-		if (!unitConfig.functions || !Array.isArray(unitConfig.functions) || unitConfig.functions.length === 0) {
+		if (!unitConfig.functions || !Array.isArray(unitConfig.functions) || unitConfig.functions.length === 0)
 			throw new ImplementationMissingException(`Missing or empty 'functions' array in unit config for ${context.baseConfig.key}. Functions must be explicitly declared.`);
-		}
+
+		const functions = mergeFunctionConfigs(unitConfig.functions, envUnitConfig?.functions);
 
 		return new Unit_FirebaseFunctionsApp({
 			...context.baseConfig,
 			...Unit_FirebaseFunctionsApp.DefaultConfig_FirebaseFunction,
 			...unitConfig,
+			functions,
 			envConfig,
 			isTopLevelApp: true,
 			hasSelfHotReload: unitConfig.hasSelfHotReload ?? false,

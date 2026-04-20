@@ -102,8 +102,14 @@ export class MongoCollection<Proto extends DB_Prototype>
 		if (!tx)
 			return undefined;
 
-		if ('abortTransaction' in tx)
-			return tx as unknown as ClientSession;
+		if ('abortTransaction' in tx) {
+			const session = tx as unknown as ClientSession;
+			const txState = (session as any).transaction?.state;
+			if (txState && txState !== 'TRANSACTION_IN_PROGRESS' && txState !== 'STARTING_TRANSACTION')
+				this.logWarning(`SESSION-STALE [${this.dbDef.dbKey}] txState=${txState} — using session whose transaction is ${txState}`);
+
+			return session;
+		}
 
 		return undefined;
 	}

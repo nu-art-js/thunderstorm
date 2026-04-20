@@ -94,6 +94,9 @@ export class ModuleFE_FocusedObject_Class
 
 	private initWindowCloseListeners() {
 		window.addEventListener('beforeunload', () => {
+			if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+				return;
+
 			void this.update({focusedEntities: []});
 		});
 	}
@@ -167,6 +170,9 @@ export class ModuleFE_FocusedObject_Class
 
 
 	private updateRTDB = () => {
+		if (ModuleFE_Account.getLoggedStatus() !== LoggedStatus.LOGGED_IN)
+			return;
+
 		const focusedEntities = this.translateCurrentlyFocusedToFocusedEntities();
 		this.update({focusedEntities})
 			.catch(e => {

@@ -233,23 +233,30 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		return `mongo-emu-${this.config.key.replace(/[^a-z0-9-]/gi, '-')}`;
 	}
 
+	private resolveMongoDataPath(): string {
+		return resolve(this.config.fullPath, CONST_TrashDir, 'mongo-data');
+	}
+
 	private async startMongoEmulator() {
 		const port = this.resolveMongoPort();
 		const containerName = this.resolveMongoContainerName();
+		const mongoDataPath = this.resolveMongoDataPath();
 
-		this.logInfo(`Starting MongoDB emulator on port ${port} (container: ${containerName})`);
+		await FileSystemUtils.folder.create(mongoDataPath);
+
+		this.logInfo(`Starting MongoDB emulator on port ${port} (container: ${containerName}, data: ${mongoDataPath})`);
 
 		const stopAction = async () => this.stopMongoEmulator();
 		this.registerTerminatable(stopAction);
 
 		const commando = this.allocateCommando();
-		await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:${port} mongo:7 --replSet rs0 --port ${port}`, (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:${port} -v ${mongoDataPath}:/data/db mongo:7 --replSet rs0 --port ${port}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to start MongoDB emulator container`, stdout, stderr, exitCode);
 		});
 
 		const initCommando = this.allocateCommando();
-		await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${port} --quiet --eval "rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:${port}'}]}); while(!rs.status().members.some(m=>m.stateStr==='PRIMARY')){sleep(200)} print('PRIMARY ready')"`, (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${port} --quiet --eval "try{rs.status()}catch(e){rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:${port}'}]})} while(!rs.status().members.some(m=>m.stateStr==='PRIMARY')){sleep(200)} print('PRIMARY ready')"`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to initiate MongoDB replica set`, stdout, stderr, exitCode);
 		});

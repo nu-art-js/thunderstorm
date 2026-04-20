@@ -24,6 +24,7 @@ export type ChartLayer = {
 	label: string;
 	style: ChartLayerStyle;
 	opacity?: number;
+	lineWidth?: number;
 };
 
 export type ChartMarker = {

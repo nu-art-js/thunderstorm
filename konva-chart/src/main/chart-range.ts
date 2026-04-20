@@ -51,6 +51,21 @@ export function applyZoomFraction(full: ResolvedRange, zoom: ZoomFraction | unde
 	return {min: full.min + zoom.min * span, max: full.min + zoom.max * span};
 }
 
+export type ChartViewport = { min: number; max: number };
+
+export function viewportToZoom(full: ResolvedRange, viewport: ChartViewport): ZoomFraction {
+	const span = full.max - full.min;
+	if (span === 0)
+		return {min: 0, max: 1};
+
+	return {min: (viewport.min - full.min) / span, max: (viewport.max - full.min) / span};
+}
+
+export function zoomToViewport(full: ResolvedRange, zoom: ZoomFraction): ChartViewport {
+	const span = full.max - full.min;
+	return {min: full.min + zoom.min * span, max: full.min + zoom.max * span};
+}
+
 export function findClosestPoint(points: DataPoint[], hValue: number): DataPoint | undefined {
 	if (points.length === 0)
 		return undefined;
