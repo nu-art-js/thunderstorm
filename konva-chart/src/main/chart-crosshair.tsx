@@ -9,10 +9,100 @@ function defaultFormatter(value: number): string {
 	return value.toLocaleString();
 }
 
-export function renderCrosshair(ctx: ChartRenderContext, hoverX: number, hoverY: number | undefined): React.ReactNode[] | null {
+const SnapThresholdPx = 10;
+
+function snapToHIndicators(ctx: ChartRenderContext, rawX: number): number {
+	let bestX = rawX;
+	let bestDist = SnapThresholdPx;
+
+	for (const axis of ctx.hAxes) {
+		const indicators = axis.indicators;
+		if (!indicators || indicators.length === 0)
+			continue;
+
+		const hRange = ctx.getHRange(axis);
+		for (const ind of indicators) {
+			const ix = toCanvasX(ind.value, hRange, ctx.pad, ctx.plotWidth);
+			const dist = Math.abs(rawX - ix);
+			if (dist < bestDist) {
+				bestDist = dist;
+				bestX = ix;
+			}
+		}
+	}
+
+	return bestX;
+}
+
+function snapToVIndicators(ctx: ChartRenderContext, rawY: number): number {
+	let bestY = rawY;
+	let bestDist = SnapThresholdPx;
+
+	for (const axis of ctx.vAxes) {
+		const indicators = axis.indicators;
+		if (!indicators || indicators.length === 0)
+			continue;
+
+		const vRange = ctx.getVRange(axis);
+		for (const ind of indicators) {
+			const iy = toCanvasY(ind.value, vRange, ctx.pad, ctx.plotHeight);
+			const dist = Math.abs(rawY - iy);
+			if (dist < bestDist) {
+				bestDist = dist;
+				bestY = iy;
+			}
+		}
+	}
+
+	return bestY;
+}
+
+function renderHTimestampLabels(
+	nodes: React.ReactNode[],
+	ctx: ChartRenderContext,
+	hValue: number,
+	anchorX: number,
+	plotBottom: number,
+	keyPrefix: string,
+) {
+	const {theme} = ctx;
+	const primaryHAxis = ctx.hAxes[0];
+	const hTooltipFmt = primaryHAxis.tooltipFormatter;
+	const hFmts = primaryHAxis.formatters ?? [defaultFormatter];
+	const labelW = 72;
+	const labelH = 14;
+	const labelPadH = 2;
+	const labelPadW = 4;
+
+	const lineCount = hTooltipFmt ? 1 : hFmts.length;
+	const blockH = lineCount * labelH + labelPadH * 2;
+
+	nodes.push(<Rect
+		key={`${keyPrefix}-bg`}
+		x={anchorX - labelW / 2 - labelPadW}
+		y={plotBottom + 4 - labelPadH}
+		width={labelW + labelPadW * 2}
+		height={blockH}
+		fill={theme.background}
+		cornerRadius={2}
+		listening={false}
+	/>);
+
+	if (hTooltipFmt) {
+		nodes.push(<Text key={keyPrefix} x={anchorX - labelW / 2} y={plotBottom + 4} text={hTooltipFmt(hValue)} fontSize={theme.fontSize - 1} fill={theme.crosshair} width={labelW} align={'center'} fontStyle={'bold'} listening={false}/>);
+	} else {
+		hFmts.forEach((fmt, fmtIdx) => {
+			nodes.push(<Text key={`${keyPrefix}-${fmtIdx}`} x={anchorX - labelW / 2} y={plotBottom + 4 + fmtIdx * labelH} text={fmt(hValue)} fontSize={theme.fontSize - 1} fill={theme.crosshair} width={labelW} align={'center'} fontStyle={'bold'} listening={false}/>);
+		});
+	}
+}
+
+export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hoverY: number | undefined): React.ReactNode[] | null {
 	const {pad, plotWidth, plotHeight, theme, layers, hAxes} = ctx;
 	if (hAxes.length === 0)
 		return null;
+
+	const hoverX = snapToHIndicators(ctx, rawHoverX);
 
 	const primaryHAxis = hAxes[0];
 	const hRange = ctx.getHRange(primaryHAxis);
@@ -85,15 +175,7 @@ export function renderCrosshair(ctx: ChartRenderContext, hoverX: number, hoverY:
 		/>);
 	});
 
-	const hFmts = primaryHAxis.formatters ?? [defaultFormatter];
-	const hTooltipFmt = primaryHAxis.tooltipFormatter;
-	if (hTooltipFmt) {
-		nodes.push(<Text key={'h-tip'} x={hoverX - 30} y={plotBottom + 6} text={hTooltipFmt(hValue)} fontSize={theme.fontSize - 1} fill={theme.axisText} width={60} align={'center'} fontStyle={'bold'} listening={false}/>);
-	} else {
-		hFmts.forEach((fmt, fmtIdx) => {
-			nodes.push(<Text key={`h-tip-${fmtIdx}`} x={hoverX - 30} y={plotBottom + 6 + fmtIdx * 14} text={fmt(hValue)} fontSize={theme.fontSize - 1} fill={theme.axisText} width={60} align={'center'} fontStyle={'bold'} listening={false}/>);
-		});
-	}
+	renderHTimestampLabels(nodes, ctx, hValue, hoverX, plotBottom, 'h-tip');
 
 	return nodes;
 }
@@ -106,12 +188,13 @@ export function renderAxisCrosshair(ctx: ChartRenderContext, hoverX: number | un
 		const targetPosition = zone === 'left-axis' ? 'left' : 'right';
 		const matchingAxes = vAxes.filter(a => (a.position ?? 'left') === targetPosition);
 
-		nodes.push(<Line key={'axis-h-line'} points={[pad.left, hoverY, pad.left + plotWidth, hoverY]} stroke={theme.crosshair} strokeWidth={1} dash={[4, 4]} opacity={0.6} listening={false}/>);
+		const snappedY = snapToVIndicators(ctx, hoverY);
+		nodes.push(<Line key={'axis-h-line'} points={[pad.left, snappedY, pad.left + plotWidth, snappedY]} stroke={theme.crosshair} strokeWidth={1} dash={[4, 4]} opacity={0.6} listening={false}/>);
 
 		const tipEntries: { text: string; color: string }[] = [];
 		for (const axis of matchingAxes) {
 			const range = ctx.getVRange(axis);
-			const value = range.max - ((hoverY - pad.top) / plotHeight) * (range.max - range.min);
+			const value = range.max - ((snappedY - pad.top) / plotHeight) * (range.max - range.min);
 			const fmt = axis.tooltipFormatter ?? axis.formatters?.[0] ?? defaultFormatter;
 			tipEntries.push({text: fmt(value), color: ctx.getAxisColor(axis)});
 		}
@@ -133,24 +216,16 @@ export function renderAxisCrosshair(ctx: ChartRenderContext, hoverX: number | un
 	}
 
 	if (zone === 'bottom-axis' && hoverX !== undefined) {
-		const clampedX = Math.max(pad.left, Math.min(pad.left + plotWidth, hoverX));
+		const rawClampedX = Math.max(pad.left, Math.min(pad.left + plotWidth, hoverX));
+		const clampedX = snapToHIndicators(ctx, rawClampedX);
 		nodes.push(<Line key={'axis-v-line'} points={[clampedX, pad.top, clampedX, pad.top + plotHeight]} stroke={theme.crosshair} strokeWidth={1} dash={[4, 4]} opacity={0.6} listening={false}/>);
 
 		if (hAxes.length > 0) {
 			const primaryHAxis = hAxes[0];
 			const hRange = ctx.getHRange(primaryHAxis);
 			const hValue = hRange.min + ((clampedX - pad.left) / plotWidth) * (hRange.max - hRange.min);
-			const hTooltipFmt = primaryHAxis.tooltipFormatter;
 			const plotBottom = pad.top + plotHeight;
-
-			if (hTooltipFmt) {
-				nodes.push(<Text key={'axis-h-tip'} x={clampedX - 30} y={plotBottom + 6} text={hTooltipFmt(hValue)} fontSize={theme.fontSize - 1} fill={theme.axisText} width={60} align={'center'} fontStyle={'bold'} listening={false}/>);
-			} else {
-				const hFmts = primaryHAxis.formatters ?? [defaultFormatter];
-				hFmts.forEach((fmt, fmtIdx) => {
-					nodes.push(<Text key={`axis-h-tip-${fmtIdx}`} x={clampedX - 30} y={plotBottom + 6 + fmtIdx * 14} text={fmt(hValue)} fontSize={theme.fontSize - 1} fill={theme.axisText} width={60} align={'center'} fontStyle={'bold'} listening={false}/>);
-				});
-			}
+			renderHTimestampLabels(nodes, ctx, hValue, clampedX, plotBottom, 'axis-h-tip');
 		}
 	}
 
