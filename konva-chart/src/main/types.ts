@@ -6,11 +6,13 @@ export type DataPoint = {
 export type AxisPosition = 'left' | 'right' | 'top' | 'bottom' | 'none';
 
 export type AxisConfig = {
+	key?: string;
 	range?: [number | undefined, number | undefined];
 	formatters?: ((value: number) => string)[];
 	tooltipFormatter?: (value: number) => string;
 	position?: AxisPosition;
 	baseline?: number;
+	indicators?: ChartIndicator[];
 };
 
 export type ChartLayerStyle = 'line' | 'dashed' | 'area';
@@ -33,6 +35,15 @@ export type ChartMarker = {
 	axis: AxisConfig;
 	label: string;
 	color: string;
+};
+
+export type ChartIndicator = {
+	id: string;
+	value: number;
+	color: string;
+	label?: string;
+	dash?: number[];
+	width?: number;
 };
 
 export type ChartPadding = {

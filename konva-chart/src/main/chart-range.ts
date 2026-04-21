@@ -52,6 +52,7 @@ export function applyZoomFraction(full: ResolvedRange, zoom: ZoomFraction | unde
 }
 
 export type ChartViewport = { min: number; max: number };
+export type ChartViewportMap = Record<string, ChartViewport>;
 
 export function viewportToZoom(full: ResolvedRange, viewport: ChartViewport): ZoomFraction {
 	const span = full.max - full.min;

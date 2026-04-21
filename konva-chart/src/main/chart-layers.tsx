@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Line, Group, Circle, Text} from 'react-konva';
+import {Circle, Group, Line, Text} from 'react-konva';
 import {toCanvasX, toCanvasY} from './chart-coordinate.js';
 import type {ChartRenderContext} from './chart-render-context.js';
 import type {ChartMarker} from './types.js';
@@ -47,6 +47,87 @@ export function renderLayers(ctx: ChartRenderContext): React.ReactNode[] {
 			listening={false}
 		/>;
 	});
+}
+
+export function renderIndicators(ctx: ChartRenderContext): React.ReactNode[] {
+	const nodes: React.ReactNode[] = [];
+	const plotBottom = ctx.pad.top + ctx.plotHeight;
+	const plotRight = ctx.pad.left + ctx.plotWidth;
+	const fontSize = ctx.theme.fontSize - 1;
+
+	for (const axis of ctx.hAxes) {
+		const indicators = axis.indicators;
+		if (!indicators || indicators.length === 0)
+			continue;
+
+		const hRange = ctx.getHRange(axis);
+		const fmt = axis.tooltipFormatter ?? axis.formatters?.[0];
+		for (const ind of indicators) {
+			const x = toCanvasX(ind.value, hRange, ctx.pad, ctx.plotWidth);
+			if (x < ctx.pad.left || x > plotRight)
+				continue;
+
+			nodes.push(<Line
+				key={`ind-h-${ind.id}`}
+				points={[x, ctx.pad.top, x, plotBottom]}
+				stroke={ind.color}
+				strokeWidth={ind.width ?? 1}
+				dash={ind.dash ?? [6, 4]}
+				opacity={0.7}
+				listening={false}
+			/>);
+
+			const text = ind.label || (fmt ? fmt(ind.value) : String(ind.value));
+			nodes.push(<Text
+				key={`ind-h-lbl-${ind.id}`}
+				x={x + 3}
+				y={ctx.pad.top + 2}
+				text={text}
+				fontSize={fontSize}
+				fill={ind.color}
+				fontStyle={'bold'}
+				listening={false}
+			/>);
+		}
+	}
+
+	for (const axis of ctx.vAxes) {
+		const indicators = axis.indicators;
+		if (!indicators || indicators.length === 0)
+			continue;
+
+		const vRange = ctx.getVRange(axis);
+		const fmt = axis.tooltipFormatter ?? axis.formatters?.[0];
+		const isRight = (axis.position ?? 'left') === 'right';
+		for (const ind of indicators) {
+			const y = Math.max(ctx.pad.top, Math.min(plotBottom, toCanvasY(ind.value, vRange, ctx.pad, ctx.plotHeight)));
+
+			nodes.push(<Line
+				key={`ind-v-${ind.id}`}
+				points={[ctx.pad.left, y, plotRight, y]}
+				stroke={ind.color}
+				strokeWidth={ind.width ?? 1}
+				dash={ind.dash ?? [6, 4]}
+				opacity={0.7}
+				listening={false}
+			/>);
+
+			const text = ind.label || (fmt ? fmt(ind.value) : String(ind.value));
+			const labelX = isRight ? plotRight + 4 : ctx.pad.left + 4;
+			nodes.push(<Text
+				key={`ind-v-lbl-${ind.id}`}
+				x={labelX}
+				y={y - fontSize - 2}
+				text={text}
+				fontSize={fontSize}
+				fill={ind.color}
+				fontStyle={'bold'}
+				listening={false}
+			/>);
+		}
+	}
+
+	return nodes;
 }
 
 export function renderMarkers(
