@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Circle, Group, Line, Text} from 'react-konva';
+import {Circle, Group, Line, Rect, Text} from 'react-konva';
 import {toCanvasX, toCanvasY} from './chart-coordinate.js';
 import type {ChartRenderContext} from './chart-render-context.js';
 import type {ChartMarker} from './types.js';
@@ -49,6 +49,16 @@ export function renderLayers(ctx: ChartRenderContext): React.ReactNode[] {
 	});
 }
 
+const DefaultFillOpacity = 0.12;
+
+function formatIndicatorLabel(fmt: ((v: number) => string) | undefined, from: number, to: number): string {
+	const fmtVal = (v: number) => fmt ? fmt(v) : String(v);
+	if (from === to)
+		return fmtVal(from);
+
+	return `${fmtVal(from)} – ${fmtVal(to)}`;
+}
+
 export function renderIndicators(ctx: ChartRenderContext): React.ReactNode[] {
 	const nodes: React.ReactNode[] = [];
 	const plotBottom = ctx.pad.top + ctx.plotHeight;
@@ -63,24 +73,44 @@ export function renderIndicators(ctx: ChartRenderContext): React.ReactNode[] {
 		const hRange = ctx.getHRange(axis);
 		const fmt = axis.tooltipFormatter ?? axis.formatters?.[0];
 		for (const ind of indicators) {
-			const x = toCanvasX(ind.value, hRange, ctx.pad, ctx.plotWidth);
-			if (x < ctx.pad.left || x > plotRight)
-				continue;
+			const xFrom = toCanvasX(ind.from, hRange, ctx.pad, ctx.plotWidth);
+			const xTo = toCanvasX(ind.to, hRange, ctx.pad, ctx.plotWidth);
+			const isRange = ind.from !== ind.to;
 
-			nodes.push(<Line
-				key={`ind-h-${ind.id}`}
-				points={[x, ctx.pad.top, x, plotBottom]}
-				stroke={ind.color}
-				strokeWidth={ind.width ?? 1}
-				dash={ind.dash ?? [6, 4]}
-				opacity={0.7}
-				listening={false}
-			/>);
+			if (isRange) {
+				const left = Math.max(ctx.pad.left, Math.min(xFrom, xTo));
+				const right = Math.min(plotRight, Math.max(xFrom, xTo));
+				if (right <= ctx.pad.left || left >= plotRight)
+					continue;
 
-			const text = ind.label || (fmt ? fmt(ind.value) : String(ind.value));
+				nodes.push(<Rect
+					key={`ind-h-fill-${ind.id}`}
+					x={left}
+					y={ctx.pad.top}
+					width={right - left}
+					height={ctx.plotHeight}
+					fill={ind.color}
+					opacity={ind.fillOpacity ?? DefaultFillOpacity}
+					listening={false}
+				/>);
+
+				if (xFrom >= ctx.pad.left && xFrom <= plotRight)
+					nodes.push(<Line key={`ind-h-from-${ind.id}`} points={[xFrom, ctx.pad.top, xFrom, plotBottom]} stroke={ind.color} strokeWidth={ind.width ?? 1} dash={ind.dash ?? [6, 4]} opacity={0.7} listening={false}/>);
+
+				if (xTo >= ctx.pad.left && xTo <= plotRight)
+					nodes.push(<Line key={`ind-h-to-${ind.id}`} points={[xTo, ctx.pad.top, xTo, plotBottom]} stroke={ind.color} strokeWidth={ind.width ?? 1} dash={ind.dash ?? [6, 4]} opacity={0.7} listening={false}/>);
+			} else {
+				if (xFrom < ctx.pad.left || xFrom > plotRight)
+					continue;
+
+				nodes.push(<Line key={`ind-h-${ind.id}`} points={[xFrom, ctx.pad.top, xFrom, plotBottom]} stroke={ind.color} strokeWidth={ind.width ?? 1} dash={ind.dash ?? [6, 4]} opacity={0.7} listening={false}/>);
+			}
+
+			const labelX = isRange ? Math.max(ctx.pad.left, Math.min(xFrom, xTo)) + 3 : xFrom + 3;
+			const text = ind.label || formatIndicatorLabel(fmt, ind.from, ind.to);
 			nodes.push(<Text
 				key={`ind-h-lbl-${ind.id}`}
-				x={x + 3}
+				x={labelX}
 				y={ctx.pad.top + 2}
 				text={text}
 				fontSize={fontSize}
@@ -100,30 +130,47 @@ export function renderIndicators(ctx: ChartRenderContext): React.ReactNode[] {
 		const fmt = axis.tooltipFormatter ?? axis.formatters?.[0];
 		const isRight = (axis.position ?? 'left') === 'right';
 		for (const ind of indicators) {
-			const y = Math.max(ctx.pad.top, Math.min(plotBottom, toCanvasY(ind.value, vRange, ctx.pad, ctx.plotHeight)));
+			const yFrom = Math.max(ctx.pad.top, Math.min(plotBottom, toCanvasY(ind.from, vRange, ctx.pad, ctx.plotHeight)));
+			const yTo = Math.max(ctx.pad.top, Math.min(plotBottom, toCanvasY(ind.to, vRange, ctx.pad, ctx.plotHeight)));
+			const isRange = ind.from !== ind.to;
 
-			nodes.push(<Line
-				key={`ind-v-${ind.id}`}
-				points={[ctx.pad.left, y, plotRight, y]}
-				stroke={ind.color}
-				strokeWidth={ind.width ?? 1}
-				dash={ind.dash ?? [6, 4]}
-				opacity={0.7}
-				listening={false}
-			/>);
+			if (isRange) {
+				const top = Math.min(yFrom, yTo);
+				const bottom = Math.max(yFrom, yTo);
 
-			const text = ind.label || (fmt ? fmt(ind.value) : String(ind.value));
-			const labelX = isRight ? plotRight + 4 : ctx.pad.left + 4;
-			nodes.push(<Text
-				key={`ind-v-lbl-${ind.id}`}
-				x={labelX}
-				y={y - fontSize - 2}
-				text={text}
-				fontSize={fontSize}
-				fill={ind.color}
-				fontStyle={'bold'}
-				listening={false}
-			/>);
+				nodes.push(<Rect
+					key={`ind-v-fill-${ind.id}`}
+					x={ctx.pad.left}
+					y={top}
+					width={ctx.plotWidth}
+					height={bottom - top}
+					fill={ind.color}
+					opacity={ind.fillOpacity ?? DefaultFillOpacity}
+					listening={false}
+				/>);
+
+				nodes.push(<Line key={`ind-v-from-${ind.id}`} points={[ctx.pad.left, yFrom, plotRight, yFrom]} stroke={ind.color} strokeWidth={ind.width ?? 1} dash={ind.dash ?? [6, 4]} opacity={0.7} listening={false}/>);
+				nodes.push(<Line key={`ind-v-to-${ind.id}`} points={[ctx.pad.left, yTo, plotRight, yTo]} stroke={ind.color} strokeWidth={ind.width ?? 1} dash={ind.dash ?? [6, 4]} opacity={0.7} listening={false}/>);
+			} else {
+				nodes.push(<Line key={`ind-v-${ind.id}`} points={[ctx.pad.left, yFrom, plotRight, yFrom]} stroke={ind.color} strokeWidth={ind.width ?? 1} dash={ind.dash ?? [6, 4]} opacity={0.7} listening={false}/>);
+			}
+
+			const text = ind.label || formatIndicatorLabel(fmt, ind.from, ind.to);
+			const bandHeight = isRange ? Math.abs(yFrom - yTo) : Infinity;
+			if (text && bandHeight > fontSize + 4) {
+				const labelX = isRight ? plotRight + 4 : ctx.pad.left + 4;
+				const labelY = isRange ? Math.min(yFrom, yTo) - fontSize - 2 : yFrom - fontSize - 2;
+				nodes.push(<Text
+					key={`ind-v-lbl-${ind.id}`}
+					x={labelX}
+					y={labelY}
+					text={text}
+					fontSize={fontSize}
+					fill={ind.color}
+					fontStyle={'bold'}
+					listening={false}
+				/>);
+			}
 		}
 	}
 

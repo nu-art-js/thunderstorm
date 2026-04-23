@@ -22,6 +22,7 @@ export * from './button/v3/index.js';
 export * from './checkbox-group/v3/TS_CheckboxGroup.js';
 export * from './checkbox/v3/index.js';
 export * from './collapsable-container/v3/index.js';
+export * from './color-swatch/TS_ColorSwatch.js';
 export * from './component-transition/v3/TS_ComponentTransition.js';
 export * from './components/HeightBounder.js';
 export * from './components/Show.js';

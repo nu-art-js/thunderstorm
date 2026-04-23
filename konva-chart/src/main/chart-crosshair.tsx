@@ -22,11 +22,13 @@ function snapToHIndicators(ctx: ChartRenderContext, rawX: number): number {
 
 		const hRange = ctx.getHRange(axis);
 		for (const ind of indicators) {
-			const ix = toCanvasX(ind.value, hRange, ctx.pad, ctx.plotWidth);
-			const dist = Math.abs(rawX - ix);
-			if (dist < bestDist) {
-				bestDist = dist;
-				bestX = ix;
+			for (const val of [ind.from, ind.to]) {
+				const ix = toCanvasX(val, hRange, ctx.pad, ctx.plotWidth);
+				const dist = Math.abs(rawX - ix);
+				if (dist < bestDist) {
+					bestDist = dist;
+					bestX = ix;
+				}
 			}
 		}
 	}
@@ -45,11 +47,13 @@ function snapToVIndicators(ctx: ChartRenderContext, rawY: number): number {
 
 		const vRange = ctx.getVRange(axis);
 		for (const ind of indicators) {
-			const iy = toCanvasY(ind.value, vRange, ctx.pad, ctx.plotHeight);
-			const dist = Math.abs(rawY - iy);
-			if (dist < bestDist) {
-				bestDist = dist;
-				bestY = iy;
+			for (const val of [ind.from, ind.to]) {
+				const iy = toCanvasY(val, vRange, ctx.pad, ctx.plotHeight);
+				const dist = Math.abs(rawY - iy);
+				if (dist < bestDist) {
+					bestDist = dist;
+					bestY = iy;
+				}
 			}
 		}
 	}
@@ -132,6 +136,12 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 		const tooltipFmt = layer.vAxis.tooltipFormatter ?? defaultFormatter;
 		nodes.push(<Circle key={`dot-${layer.id}`} x={cx} y={cy} radius={4} fill={layer.color} listening={false}/>);
 		tipEntries.push({text: tooltipFmt(closest.v), color: layer.color});
+
+		if (layer.tooltipExtras) {
+			const extras = layer.tooltipExtras(layer.data, closest);
+			for (const extra of extras)
+				tipEntries.push(extra);
+		}
 	});
 
 	if (tipEntries.length === 0)

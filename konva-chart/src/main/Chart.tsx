@@ -1,14 +1,14 @@
 import * as React from 'react';
-import {Stage, Layer, Rect} from 'react-konva';
+import {Layer, Rect, Stage} from 'react-konva';
 import type {AxisConfig, ChartLayer, ChartMarker, ChartPadding, ChartTheme} from './types.js';
 import {DefaultChartPadding, DefaultChartTheme} from './types.js';
-import {computeRange, resolveAxisRange, applyZoomFraction, viewportToZoom, zoomToViewport} from './chart-range.js';
-import type {ResolvedRange, ZoomFraction, ChartViewportMap} from './chart-range.js';
+import type {ChartViewportMap, ResolvedRange, ZoomFraction} from './chart-range.js';
+import {applyZoomFraction, computeRange, viewportToZoom, zoomToViewport} from './chart-range.js';
 import {collectAxes, getHoverZone} from './chart-coordinate.js';
 import type {ChartRenderContext} from './chart-render-context.js';
-import {renderGrid, renderBaselines, renderVAxes, renderHAxes} from './chart-axes.js';
+import {AxisColumnWidth, renderBaselines, renderGrid, renderHAxes, renderVAxes} from './chart-axes.js';
 import {renderIndicators, renderLayers, renderMarkers} from './chart-layers.js';
-import {renderCrosshair, renderAxisCrosshair} from './chart-crosshair.js';
+import {renderAxisCrosshair, renderCrosshair} from './chart-crosshair.js';
 import {Icon_ResetZoom} from './Icon_ResetZoom.js';
 
 type Props = {
@@ -19,6 +19,7 @@ type Props = {
 	viewport?: ChartViewportMap;
 	onViewportChange?: (viewport: ChartViewportMap | undefined) => void;
 	onClick?: (h: number) => void;
+	onContextClick?: (h: number, position: { x: number; y: number }) => void;
 	onMarkerClick?: (marker: ChartMarker) => void;
 	onMarkerHover?: (marker: ChartMarker | undefined) => void;
 	theme?: Partial<ChartTheme>;
@@ -172,9 +173,12 @@ export class Chart extends React.Component<Props, State> {
 			for (const pt of layer.data)
 				values.push(pt.h);
 
-		if (axis.indicators)
-			for (const ind of axis.indicators)
-				values.push(ind.value);
+		if (axis.indicators && axis.indicators.length > 0) {
+			for (const ind of axis.indicators) {
+				values.push(ind.from);
+				values.push(ind.to);
+			}
+		}
 
 		cached = computeRange(axis, values);
 		this.fullHRangeCache.set(axis, cached);
@@ -203,9 +207,12 @@ export class Chart extends React.Component<Props, State> {
 			}
 		}
 
-		if (axis.indicators)
-			for (const ind of axis.indicators)
-				values.push(ind.value);
+		if (axis.indicators && axis.indicators.length > 0) {
+			for (const ind of axis.indicators) {
+				values.push(ind.from);
+				values.push(ind.to);
+			}
+		}
 
 		cached = computeRange(axis, values);
 		this.fullVRangeCache.set(axis, cached);
@@ -245,14 +252,17 @@ export class Chart extends React.Component<Props, State> {
 		const base = {...DefaultChartPadding, ...this.props.padding};
 		const axes = collectAxes(this.props.layers, this.props.markers);
 
-		const hasRight = axes.vAxes.some(a => (a.position ?? 'left') === 'right');
+		const rightCount = axes.vAxes.filter(a => (a.position ?? 'left') === 'right').length;
+		const leftCount = axes.vAxes.filter(a => (a.position ?? 'left') === 'left').length;
 		const hasTop = axes.hAxes.some(a => a.position === 'top');
+		const hasLabels = axes.vAxes.some(a => a.label);
 		const maxHFormatters = Math.max(1, ...axes.hAxes.map(a => a.formatters?.length ?? 1));
 
 		return {
 			...base,
-			right: hasRight ? Math.max(base.right, 60) : base.right,
-			top: hasTop ? Math.max(base.top, 40) : base.top,
+			left: Math.max(base.left, leftCount * AxisColumnWidth),
+			right: rightCount > 0 ? Math.max(base.right, rightCount * AxisColumnWidth) : base.right,
+			top: hasLabels ? Math.max(base.top, 44) : (hasTop ? Math.max(base.top, 40) : base.top),
 			bottom: Math.max(base.bottom, 20 + maxHFormatters * 14),
 		};
 	}
@@ -485,6 +495,29 @@ export class Chart extends React.Component<Props, State> {
 		this.props.onClick(value);
 	}
 
+	private readonly onContextMenu = (e: React.MouseEvent) => {
+		if (!this.props.onContextClick)
+			return;
+
+		e.preventDefault();
+		const pos = this.getRelativePos(e);
+		if (!pos)
+			return;
+
+		const pad = this.computePadding();
+		const plotWidth = this.props.width - pad.left - pad.right;
+		if (pos.x < pad.left || pos.x > pad.left + plotWidth)
+			return;
+
+		const {hAxes} = collectAxes(this.props.layers, this.props.markers);
+		if (hAxes.length === 0)
+			return;
+
+		const hRange = this.getHRange(hAxes[0]);
+		const value = hRange.min + ((pos.x - pad.left) / plotWidth) * (hRange.max - hRange.min);
+		this.props.onContextClick(value, {x: e.clientX, y: e.clientY});
+	};
+
 	private readonly resetZoom = () => {
 		this.resetAllZoom();
 	};
@@ -587,6 +620,7 @@ export class Chart extends React.Component<Props, State> {
 			onMouseUp={this.onMouseUp}
 			onMouseLeave={this.onMouseLeave}
 			onDoubleClick={this.onDblClick}
+			onContextMenu={this.onContextMenu}
 		>
 			<Stage width={width} height={height}>
 				<Layer>

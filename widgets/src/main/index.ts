@@ -18,6 +18,7 @@ export {ThreeDotsLoader, TS_ButtonLoader} from './loaders/ThreeDotsLoader.js';
 export * from './checkbox-group/v1/TS_CheckboxGroup.js';
 export * from './checkbox/v2/index.js';
 export * from './collapsable-container/v2/index.js';
+export * from './color-swatch/TS_ColorSwatch.js';
 export * from './component-transition/v1/TS_ComponentTransition.js';
 export * from './components/HeightBounder.js';
 export * from './components/Show.js';

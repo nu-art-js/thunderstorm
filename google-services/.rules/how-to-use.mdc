@@ -1,0 +1,46 @@
+---
+description: How to use the google-services secret manager — SecretKey, secret-backed DB entities, lifecycle pattern
+alwaysApply: false
+---
+
+# How to use secrets (google-services)
+
+The `@nu-art/google-services` backend package provides `ModuleBE_SecretManager` and the `SecretKey` abstraction for managing secrets in GCP Secret Manager.
+
+---
+
+## Secret-backed DB entities
+
+When a DB entity owns a secret (or any external resource) via a stored reference, the **entire lifecycle** must be wired at implementation time. A partial implementation (e.g. create without delete) leaves orphaned secrets in Secret Manager.
+
+The pattern has four mandatory parts:
+
+### 1. The raw value is never persisted in the DB
+
+The request type carries an optional `rawSecret?: string` field — the DB type stores only a `secretId: string` reference. The raw value is transient: present in the API request body, consumed by the handler, never written to the collection.
+
+### 2. A custom upsert endpoint handles secret creation
+
+Standard CRUD `upsert` cannot manage secrets — a dedicated `@ApiHandler` receives the raw value, creates/updates the secret in Secret Manager via `SecretKey.set()`, and persists only the `secretId` reference in the DB entity:
+
+- **On create:** generate a unique secret name and store.
+- **On update with raw value:** overwrite the existing secret.
+- **On update without raw value:** keep the existing `secretId` unchanged (the user didn't change the secret).
+
+### 3. A pre-delete interceptor destroys the secret
+
+Register via `registerPreDeleteInterceptor` on the DB module. When entities are deleted, look up each item's `secretId` and call `SecretKey.delete()`. Also invalidate any in-memory caches (e.g. key pools, resolved tokens) that reference the deleted resource.
+
+### 4. The frontend never sees the raw value
+
+The UI sends the raw value only on create (required) and optionally on edit. The DB entity type that syncs to the frontend contains only the `secretId` — never the actual secret. UI shows a masked placeholder and only sends a new value when the user explicitly provides one.
+
+---
+
+## Checklist for secret-backed entities
+
+- [ ] Request type has `rawSecret?: string`; DB type has `secretId: string`
+- [ ] Custom upsert endpoint creates/updates the secret via `SecretKey.set()`
+- [ ] Pre-delete interceptor destroys the secret via `SecretKey.delete()`
+- [ ] Frontend never receives or displays the raw secret value
+- [ ] In-memory caches are invalidated on delete
