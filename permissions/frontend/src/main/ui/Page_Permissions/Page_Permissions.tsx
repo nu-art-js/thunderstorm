@@ -319,7 +319,7 @@ class Page_Permissions
 		const memberSet = new Set(currentMembers);
 		const candidates = sortArray(
 			(ModuleFE_AccessGroup.cache.allMutable() as DB_AccessGroup[])
-				.filter(g => (g.type === 'user' || g.type === 'service-account') && !memberSet.has(g._id)),
+				.filter(g => g._id !== this.state.selectedGroupId && !memberSet.has(g._id)),
 			g => g.label
 		);
 

@@ -141,9 +141,9 @@ class MyModule_Class
 
 These are aggregated into the system Default group during bootstrap.
 
-### Step 5 — Define app-level access groups (optional)
+### Step 5 — Define access groups
 
-If you need named groups with fixed scope assignments (e.g. an "Editor" group), define them in a shared package using `defineAccessGroup`:
+Define named groups with fixed scope assignments in a shared package using `defineAccessGroup`. This is **required** for a package to be permission-functional — see the [Permission bootstrap checklist](#permission-bootstrap-checklist-per-package) below.
 
 ```typescript
 import {defineAccessGroup} from '@nu-art/permissions-shared';
@@ -159,6 +159,55 @@ export const AccessGroup_Editor = defineAccessGroup({
 ```
 
 Bootstrap creates/upserts the `DB_AccessGroup` from these definitions, preserving existing members.
+
+---
+
+## Permission bootstrap checklist (per package)
+
+Defining scopes alone does **not** make a package's permissions functional. A package is permission-complete only when **all** of the following artifacts exist. Scopes without access groups means no assignable roles; access groups without document access wiring means documents are invisible or locked to their creator; API handlers without `@RequirePermission` means actions are ungated.
+
+### Required artifacts (in order)
+
+| # | Artifact | Where | Why |
+|---|----------|-------|-----|
+| 1 | **Permission scopes** | `<concept>/shared/src/main/permission-scope.ts` | Define what actions exist (view, create, etc.) |
+| 2 | **Access groups with hierarchy** | `<concept>/shared/src/main/access-groups.ts` | Define assignable roles (Read, Write, Admin) that grant scopes. Use `memberKeys` to chain groups so higher roles inherit lower ones. |
+| 3 | **Group IDs for document access** | Same file, exported constants | `hashToUniqueId<DatabaseDef_AccessGroup["dbKey"]>('group/<key>')` — these are used by the document access wiring to stamp `__access` on new documents. |
+| 4 | **`@RequirePermission` on API handlers** | `<concept>/backend/src/main/` on relevant modules | Gate actions so only callers with the right scope can invoke them. |
+| 5 | **Document access wiring** | `<concept>/backend/src/main/<concept>-access-wiring.ts` | Call `ModuleBE_Permissions.setAccessContextResolver` for every DB module the package owns. Without this, new documents get only the creator's personal access group — other users and automated flows cannot read/write them. |
+| 6 | **Call the wiring function** | App backend init (e.g. module `init()` or app-level setup) | The wiring function from step 5 must be **called** during app initialization — creating and exporting it is not enough. Find where analogous wiring functions are invoked (e.g. `wireYoutubeDocumentAccess()`) and add the new call alongside them. |
+| 7 | **Service account** (if automated operations exist) | Scope ID in `permission-scope.ts`, SA group ID in `access-groups.ts` | Packages with scheduled/automated operations (polling, syncing, background processing) need a service account so those operations run with proper permissions. Without an SA, automated flows either fail or depend on whichever user triggered them. |
+| 8 | **Exports** | `<concept>/shared/src/main/index.ts`, `<concept>/backend/src/main/index.ts` | All scopes, access groups, group IDs, and wiring functions must be exported from their package's public surface. |
+
+### Group hierarchy pattern
+
+Follow the Read → Write → Delete → Admin pattern with `memberKeys` chaining:
+
+```
+Admin (top) — memberKeys: ['<domain>-admin'] or domain parent
+  ├── Delete — memberKeys: ['<domain>-admin']
+  ├── Write — memberKeys: ['<domain>-admin'], scopes: [entity:create, ...]
+  └── Read — memberKeys: ['<domain>-admin'], scopes: [ui:view]
+```
+
+Admin inherits all lower groups via membership. A user added to Write automatically gets Read-level access because Write's `memberKeys` includes Admin, and Admin includes Read. Assign a user to the lowest group that covers their needs.
+
+### Canonical example
+
+`market/youtube/sampler` is the reference implementation:
+
+- `shared/src/main/permission-scope.ts` — 10 scopes + service account ID
+- `shared/src/main/access-groups.ts` — full group hierarchy (Content Read/Write/Delete/Admin, Sampling Read/Write/Delete/Admin, Domain Admin) with `memberKeys` chaining and exported group IDs
+- `backend/src/main/youtube-access-wiring.ts` — `wireYoutubeDocumentAccess()` calling `setAccessContextResolver` for every DB module
+
+### Warning
+
+If a package defines scopes but skips steps 2–6, the result is:
+
+- **No assignable roles** — admins cannot grant users access through the Permissions UI because there are no groups to add them to.
+- **Invisible documents** — without custom access wiring, new documents are stamped with only the creator's personal group. Other users cannot query, write, or delete them.
+- **Ungated APIs** — without `@RequirePermission`, any authenticated user can call any API handler.
+- **Broken automation** — without a service account, automated backend operations have no permission context and will fail or behave unpredictably.
 
 ---
 
@@ -298,6 +347,12 @@ All share the `permissions` IDB group on the frontend.
 | Group definition constant | `AccessGroup_<Name>` |
 | Group IDs | `hashToUniqueId<DatabaseDef_AccessGroup["dbKey"]>('group/<key>')` |
 | Service account IDs | `ServiceAccountId_<Name>` string constants |
+
+---
+
+## Permission routing
+
+Associate a permission with the context that actually **consumes/displays** the data, not with a parent or related context in the entity hierarchy. Ask "where is this consumed?" — not "what owns it structurally." A UI view scope maps to the entity being displayed on that view, not to the entity's parent in the domain model.
 
 ---
 

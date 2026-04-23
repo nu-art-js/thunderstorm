@@ -7,6 +7,7 @@ export type AxisPosition = 'left' | 'right' | 'top' | 'bottom' | 'none';
 
 export type AxisConfig = {
 	key?: string;
+	label?: string;
 	range?: [number | undefined, number | undefined];
 	formatters?: ((value: number) => string)[];
 	tooltipFormatter?: (value: number) => string;
@@ -16,6 +17,8 @@ export type AxisConfig = {
 };
 
 export type ChartLayerStyle = 'line' | 'dashed' | 'area';
+
+export type TooltipExtra = { text: string; color: string };
 
 export type ChartLayer = {
 	id: string;
@@ -27,6 +30,7 @@ export type ChartLayer = {
 	style: ChartLayerStyle;
 	opacity?: number;
 	lineWidth?: number;
+	tooltipExtras?: (data: DataPoint[], closest: DataPoint) => TooltipExtra[];
 };
 
 export type ChartMarker = {
@@ -39,8 +43,10 @@ export type ChartMarker = {
 
 export type ChartIndicator = {
 	id: string;
-	value: number;
+	from: number;
+	to: number;
 	color: string;
+	fillOpacity?: number;
 	label?: string;
 	dash?: number[];
 	width?: number;

@@ -51,28 +51,49 @@ export function renderBaselines(ctx: ChartRenderContext): React.ReactNode[] {
 	return nodes;
 }
 
+export const AxisColumnWidth = 55;
+
 export function renderVAxes(ctx: ChartRenderContext): React.ReactNode[] {
-	const {pad, plotWidth, plotHeight, theme, vAxes, getVRange} = ctx;
+	const {pad, plotWidth, plotHeight, theme, vAxes, getVRange, getAxisColor} = ctx;
 	const nodes: React.ReactNode[] = [];
 	const steps = 4;
+
+	let leftIdx = 0;
+	let rightIdx = 0;
 
 	vAxes.forEach((axis, axisIdx) => {
 		const position = axis.position ?? 'left';
 		if (position === 'none' || position === 'top' || position === 'bottom')
 			return;
 
+		const sideIdx = position === 'left' ? leftIdx++ : rightIdx++;
 		const range = getVRange(axis);
 		const fmts = axis.formatters ?? [defaultFormatter];
+		const color = getAxisColor(axis);
+
+		if (axis.label) {
+			const labelY = pad.top - theme.fontSize * 2 - 4;
+			if (position === 'left') {
+				const labelX = sideIdx * AxisColumnWidth;
+				nodes.push(<Text key={`vl-label-${axisIdx}`} x={labelX} y={labelY} text={axis.label} fontSize={theme.fontSize} fontStyle={'bold'} fill={color} listening={false}/>);
+			} else {
+				const labelX = pad.left + plotWidth + 5 + sideIdx * AxisColumnWidth;
+				nodes.push(<Text key={`vr-label-${axisIdx}`} x={labelX} y={labelY} text={axis.label} fontSize={theme.fontSize} fontStyle={'bold'} fill={color} listening={false}/>);
+			}
+		}
 
 		for (let i = 0; i <= steps; i++) {
 			const v = range.max - (i / steps) * (range.max - range.min);
 			const y = pad.top + (i / steps) * plotHeight;
 
 			fmts.forEach((fmt, fmtIdx) => {
-				if (position === 'left')
-					nodes.push(<Text key={`vl-${axisIdx}-${i}-${fmtIdx}`} x={0} y={y - 6} width={pad.left - 5} text={fmt(v)} fontSize={theme.fontSize} fill={theme.axisText} align={'right'} listening={false}/>);
-				else
-					nodes.push(<Text key={`vr-${axisIdx}-${i}-${fmtIdx}`} x={pad.left + plotWidth + 5} y={y - 6} width={pad.right - 5} text={fmt(v)} fontSize={theme.fontSize} fill={theme.axisText} align={'left'} listening={false}/>);
+				if (position === 'left') {
+					const colX = sideIdx * AxisColumnWidth;
+					nodes.push(<Text key={`vl-${axisIdx}-${i}-${fmtIdx}`} x={colX} y={y - 6} width={AxisColumnWidth - 5} text={fmt(v)} fontSize={theme.fontSize} fill={color} align={'right'} listening={false}/>);
+				} else {
+					const colX = pad.left + plotWidth + 5 + sideIdx * AxisColumnWidth;
+					nodes.push(<Text key={`vr-${axisIdx}-${i}-${fmtIdx}`} x={colX} y={y - 6} width={AxisColumnWidth - 5} text={fmt(v)} fontSize={theme.fontSize} fill={color} align={'left'} listening={false}/>);
+				}
 			});
 		}
 	});
