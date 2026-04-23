@@ -292,3 +292,59 @@ export function convertUpperCamelCase(upperCamelCase: string, delimiter: string 
 	return upperCamelCase.replace(/([a-z0-9])([A-Z])/g, `$1${delimiter}$2`);
 }
 
+const _volumeSuffixes: { suffix: string; value: number }[] = [
+	{suffix: 'T', value: 1e12},
+	{suffix: 'G', value: 1e9},
+	{suffix: 'M', value: 1e6},
+	{suffix: 'K', value: 1e3},
+];
+
+const _volumeSuffixMap = Object.fromEntries(_volumeSuffixes.map(s => [s.suffix, s.value]));
+const _volumePattern = /^(-?\d+\.?\d*)\s*([KMGT])?$/;
+
+/**
+ * Parse and format numbers using volume shorthand notation (K/M/G/T).
+ *
+ * - `parse("76M")` → `76_000_000`
+ * - `format(76_000_000)` → `"76M"`
+ */
+export const StringFormat_Volume = {
+	parse(input: string): number {
+		const trimmed = input.trim();
+		if (!trimmed)
+			throw new Error('Empty volume input');
+
+		const match = trimmed.match(_volumePattern);
+		if (!match)
+			throw new Error(`Invalid volume format: "${input}" — expected pattern like 76M, 1.5G, 300K`);
+
+		const coefficient = Number(match[1]);
+		const suffix = match[2];
+		if (!suffix)
+			return coefficient;
+
+		const multiplier = _volumeSuffixMap[suffix];
+		if (multiplier === undefined)
+			throw new Error(`Unknown volume suffix: "${suffix}"`);
+
+		return coefficient * multiplier;
+	},
+
+	format(value: number): string {
+		if (value === 0)
+			return '0';
+
+		for (const {suffix, value: threshold} of _volumeSuffixes) {
+			if (Math.abs(value) < threshold)
+				continue;
+
+			const coefficient = value / threshold;
+			const rounded = Math.round(coefficient * 100) / 100;
+			if (rounded * threshold === value)
+				return `${rounded}${suffix}`;
+		}
+
+		return String(value);
+	},
+};
+

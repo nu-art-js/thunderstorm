@@ -135,7 +135,7 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 
 		const tooltipFmt = layer.vAxis.tooltipFormatter ?? defaultFormatter;
 		nodes.push(<Circle key={`dot-${layer.id}`} x={cx} y={cy} radius={4} fill={layer.color} listening={false}/>);
-		tipEntries.push({text: tooltipFmt(closest.v), color: layer.color});
+		tipEntries.push({text: `${layer.label}: ${tooltipFmt(closest.v)}`, color: layer.color});
 
 		if (layer.tooltipExtras) {
 			const extras = layer.tooltipExtras(layer.data, closest);
@@ -152,7 +152,7 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 	const lineH = 14;
 	const tipPadH = 4;
 	const tipPadW = 6;
-	const tipBlockW = 120;
+	const tipBlockW = Math.max(120, ...tipEntries.map(e => e.text.length * 6.5 + tipPadW * 2));
 	const tipBlockH = tipEntries.length * lineH + tipPadH * 2;
 	const mouseInTopHalf = (hoverY ?? 0) < plotMidY;
 	const tipY = mouseInTopHalf ? plotBottom - tipBlockH - 4 : pad.top + 4;

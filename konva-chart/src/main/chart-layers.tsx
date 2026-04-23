@@ -106,18 +106,28 @@ export function renderIndicators(ctx: ChartRenderContext): React.ReactNode[] {
 				nodes.push(<Line key={`ind-h-${ind.id}`} points={[xFrom, ctx.pad.top, xFrom, plotBottom]} stroke={ind.color} strokeWidth={ind.width ?? 1} dash={ind.dash ?? [6, 4]} opacity={0.7} listening={false}/>);
 			}
 
-			const labelX = isRange ? Math.max(ctx.pad.left, Math.min(xFrom, xTo)) + 3 : xFrom + 3;
 			const text = ind.label || formatIndicatorLabel(fmt, ind.from, ind.to);
-			nodes.push(<Text
-				key={`ind-h-lbl-${ind.id}`}
-				x={labelX}
-				y={ctx.pad.top + 2}
-				text={text}
-				fontSize={fontSize}
-				fill={ind.color}
-				fontStyle={'bold'}
-				listening={false}
-			/>);
+			const estTextWidth = text.length * fontSize * 0.6;
+			const labelY = ctx.pad.top + 2;
+
+			if (isRange) {
+				const left = Math.max(ctx.pad.left, Math.min(xFrom, xTo));
+				const right = Math.min(plotRight, Math.max(xFrom, xTo));
+				const gap = right - left;
+
+				if (gap >= estTextWidth + 8) {
+					nodes.push(<Text key={`ind-h-lbl-${ind.id}`} x={left + (gap - estTextWidth) / 2} y={labelY} text={text} fontSize={fontSize} fill={ind.color} fontStyle={'bold'} listening={false}/>);
+				} else {
+					const spaceRight = plotRight - right;
+					const spaceLeft = left - ctx.pad.left;
+					const labelX = spaceRight >= estTextWidth + 6 ? right + 3 : spaceLeft >= estTextWidth + 6 ? left - estTextWidth - 3 : right + 3;
+					nodes.push(<Text key={`ind-h-lbl-${ind.id}`} x={labelX} y={labelY} text={text} fontSize={fontSize} fill={ind.color} fontStyle={'bold'} listening={false}/>);
+				}
+			} else {
+				const spaceRight = plotRight - xFrom;
+				const labelX = spaceRight >= estTextWidth + 6 ? xFrom + 3 : xFrom - estTextWidth - 3;
+				nodes.push(<Text key={`ind-h-lbl-${ind.id}`} x={labelX} y={labelY} text={text} fontSize={fontSize} fill={ind.color} fontStyle={'bold'} listening={false}/>);
+			}
 		}
 	}
 
@@ -156,20 +166,19 @@ export function renderIndicators(ctx: ChartRenderContext): React.ReactNode[] {
 			}
 
 			const text = ind.label || formatIndicatorLabel(fmt, ind.from, ind.to);
-			const bandHeight = isRange ? Math.abs(yFrom - yTo) : Infinity;
-			if (text && bandHeight > fontSize + 4) {
-				const labelX = isRight ? plotRight + 4 : ctx.pad.left + 4;
-				const labelY = isRange ? Math.min(yFrom, yTo) - fontSize - 2 : yFrom - fontSize - 2;
-				nodes.push(<Text
-					key={`ind-v-lbl-${ind.id}`}
-					x={labelX}
-					y={labelY}
-					text={text}
-					fontSize={fontSize}
-					fill={ind.color}
-					fontStyle={'bold'}
-					listening={false}
-				/>);
+			const labelX = isRight ? plotRight + 4 : ctx.pad.left + 4;
+
+			if (isRange) {
+				const topY = Math.min(yFrom, yTo);
+				const bottomY = Math.max(yFrom, yTo);
+				const gap = bottomY - topY;
+
+				if (gap >= fontSize + 4)
+					nodes.push(<Text key={`ind-v-lbl-${ind.id}`} x={labelX} y={topY + (gap - fontSize) / 2} text={text} fontSize={fontSize} fill={ind.color} fontStyle={'bold'} listening={false}/>);
+				else
+					nodes.push(<Text key={`ind-v-lbl-${ind.id}`} x={labelX} y={bottomY + 2} text={text} fontSize={fontSize} fill={ind.color} fontStyle={'bold'} listening={false}/>);
+			} else {
+				nodes.push(<Text key={`ind-v-lbl-${ind.id}`} x={labelX} y={yFrom + 2} text={text} fontSize={fontSize} fill={ind.color} fontStyle={'bold'} listening={false}/>);
 			}
 		}
 	}
