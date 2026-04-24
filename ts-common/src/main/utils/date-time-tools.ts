@@ -51,54 +51,49 @@ const durationUnitOrder: {unit: string; ms: number}[] = [
 ];
 
 /**
- * Formats a duration in milliseconds into a compact human-readable string.
+ * Parse and format durations using compact notation (s/m/h/d/w).
  *
- * Uses the largest fitting units: `60000` → `"1m"`, `3661000` → `"1h1m1s"`.
- * Millisecond remainders below 1 second are dropped.
- *
- * @param ms - Duration in milliseconds
- * @returns Compact duration string, e.g. `"1m"`, `"2h30m"`, `"1d12h"`
+ * - `parse("3h1m30s")` → `10890000` (ms)
+ * - `format(10890000)` → `"3h1m30s"`
  */
-export function formatDuration(ms: number): string {
-	if (ms <= 0)
-		return '0s';
+export const StringFormat_Duration = {
+	format(ms: number): string {
+		if (ms <= 0)
+			return '0s';
 
-	let remaining = ms;
-	let result = '';
-	for (const {unit, ms: unitMs} of durationUnitOrder) {
-		const count = Math.floor(remaining / unitMs);
-		if (count > 0) {
-			result += `${count}${unit}`;
-			remaining -= count * unitMs;
+		let remaining = ms;
+		let result = '';
+		for (const {unit, ms: unitMs} of durationUnitOrder) {
+			const count = Math.floor(remaining / unitMs);
+			if (count > 0) {
+				result += `${count}${unit}`;
+				remaining -= count * unitMs;
+			}
 		}
-	}
 
-	return result || '0s';
-}
+		return result || '0s';
+	},
 
-/**
- * Parses a compact duration string into milliseconds.
- *
- * Supports segments: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), `w` (weeks).
- * Segments can be combined: `3h1m30s` → 3 hours + 1 minute + 30 seconds.
- *
- * @param duration - Duration string, e.g. `"5s"`, `"1m"`, `"3h1m30s"`
- * @returns Duration in milliseconds
- * @throws BadImplementationException if the format is invalid
- */
-export function parseDuration(duration: string): number {
-	if (!durationPattern.test(duration))
-		throw new BadImplementationException(`Invalid duration format: "${duration}" — expected segments like 5s, 1m, 3h1m30s`);
+	parse(duration: string): number {
+		if (!durationPattern.test(duration))
+			throw new BadImplementationException(`Invalid duration format: "${duration}" — expected segments like 5s, 1m, 3h1m30s`);
 
-	let total = 0;
-	let match: RegExpExecArray | null;
-	durationSegment.lastIndex = 0;
-	while ((match = durationSegment.exec(duration)) !== null) {
-		total += parseInt(match[1]) * durationUnits[match[2]];
-	}
+		let total = 0;
+		let match: RegExpExecArray | null;
+		durationSegment.lastIndex = 0;
+		while ((match = durationSegment.exec(duration)) !== null) {
+			total += parseInt(match[1]) * durationUnits[match[2]];
+		}
 
-	return total;
-}
+		return total;
+	},
+};
+
+/** @see StringFormat_Duration.format */
+export const formatDuration = StringFormat_Duration.format;
+
+/** @see StringFormat_Duration.parse */
+export const parseDuration = StringFormat_Duration.parse;
 
 /** Predefined timestamp format strings */
 export const Format_HHmmss_DDMMYYYY = 'HH:mm:ss_DD-MM-YYYY';
