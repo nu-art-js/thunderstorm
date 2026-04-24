@@ -24,7 +24,7 @@ export function interpolateAt(data: DataPoint[], t: number): number {
 	return data[lo].v + (data[hi].v - data[lo].v) * (t - data[lo].h) / dt;
 }
 
-export function resampledDelta(accumulated: DataPoint[], bucketMs: number): DataPoint[] {
+export function resampledDelta(accumulated: DataPoint[], bucketMs: number, origin: number = 0): DataPoint[] {
 	if (accumulated.length < 2)
 		return [];
 
@@ -33,7 +33,7 @@ export function resampledDelta(accumulated: DataPoint[], bucketMs: number): Data
 	if (tMax - tMin < bucketMs)
 		return [];
 
-	const alignedStart = Math.ceil(tMin / bucketMs) * bucketMs;
+	const alignedStart = origin + Math.ceil((tMin - origin) / bucketMs) * bucketMs;
 	const result: DataPoint[] = [];
 	let prevValue = interpolateAt(accumulated, alignedStart);
 
@@ -46,11 +46,11 @@ export function resampledDelta(accumulated: DataPoint[], bucketMs: number): Data
 	return result;
 }
 
-export function bucketDeltas(deltas: DataPoint[], bucketMs: number): DataPoint[] {
+export function bucketDeltas(deltas: DataPoint[], bucketMs: number, origin: number = 0): DataPoint[] {
 	if (deltas.length === 0)
 		return [];
 
-	const firstMarker = Math.ceil(deltas[0].h / bucketMs) * bucketMs;
+	const firstMarker = origin + Math.ceil((deltas[0].h - origin) / bucketMs) * bucketMs;
 	const result: DataPoint[] = [];
 	let nextMarker = firstMarker;
 	let sum = 0;
