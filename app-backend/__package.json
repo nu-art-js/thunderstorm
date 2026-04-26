@@ -53,7 +53,6 @@
     "firebase-functions-test": "^0.1.6",
     "@slack/web-api": "?",
     "body-parser": "^1.18.3",
-    "file-type": "^16.3.0",
     "compression": "^1.7.4",
     "debug": "^3.1.0",
     "express": "?",
