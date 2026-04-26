@@ -17,7 +17,6 @@
  */
 import {BadImplementationException, currentTimeMillis, Exception, JwtTools, Minute, Module} from '@nu-art/ts-common';
 import {Octokit, RestEndpointMethodTypes} from '@octokit/rest';
-import {OctokitResponse, ReposGetContentResponseData} from '@octokit/types';
 import * as path from 'path';
 
 
@@ -103,7 +102,7 @@ export class GithubModule_Class
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
-		let contents: OctokitResponse<RestEndpointMethodTypes['repos']['getContent']['response']['data']>;
+		let contents: RestEndpointMethodTypes['repos']['getContent']['response'];
 
 		try {
 			contents = await client.repos.getContent(
@@ -158,7 +157,7 @@ export class GithubModule_Class
 
 	private async getFileBySha(client: Octokit, repo: string, filePath: string, branch: string) {
 		const parentPath = path.dirname(filePath);
-		let parentDirectoryResponse: OctokitResponse<RestEndpointMethodTypes['repos']['getContent']['response']['data']>;
+		let parentDirectoryResponse: RestEndpointMethodTypes['repos']['getContent']['response'];
 		try {
 			const request = {
 				owner: this.config.gitOwner,
@@ -273,7 +272,7 @@ export class GithubModule_Class
 	 *
 	 * This API has an upper limit of 1,000 files for a directory.
 	 */
-	async listDirectoryContents(repo: string, branch: string, _path: string): Promise<ReposGetContentResponseData | undefined> {
+	async listDirectoryContents(repo: string, branch: string, _path: string): Promise<RestEndpointMethodTypes['repos']['getContent']['response']['data'] | undefined> {
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
