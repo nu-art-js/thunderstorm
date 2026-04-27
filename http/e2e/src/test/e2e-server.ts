@@ -5,10 +5,11 @@
  */
 
 import {execSync} from 'child_process';
-import {HttpServer} from '@nu-art/http-server';
+import {HttpServer, _ServerBodyApi, _ServerQueryApi} from '@nu-art/http-server';
+import {ApiCaller, ApiCallback, ApiDef, GeneralApi, HttpClient} from '@nu-art/http-client';
 
-/** Fixed port for E2E tests; must be free when tests run. Distinct from server integration port (39482). */
 export const E2EPort = 39483;
+export const origin = `http://127.0.0.1:${E2EPort}`;
 
 const e2eServerConfig = {
 	tag: 'e2e-test',
@@ -32,4 +33,45 @@ export function killProcessOnPort(port: number): void {
 	} catch {
 		// lsof exits non-zero when no process found; ignore
 	}
+}
+
+/**
+ * Creates a fresh server, registers routes via setup(), starts it, runs test(), then terminates.
+ * Guarantees terminate() even if the test throws.
+ */
+export async function withServer<T>(
+	setup: (server: HttpServer) => void,
+	test: (client: HttpClient) => Promise<T>
+): Promise<T> {
+	const server = createE2EServer();
+	await server.init();
+	setup(server);
+	await server.startServer();
+	try {
+		return await test(new HttpClient({origin}));
+	} finally {
+		await server.terminate();
+	}
+}
+
+/** Registers a GET/DELETE route handler directly (no decorator boilerplate). */
+export function queryRoute(server: HttpServer, apiDef: ApiDef<any>, handler: (params: any) => Promise<any>): void {
+	server.addRoute(new _ServerQueryApi(apiDef, handler));
+}
+
+/** Registers a POST/PUT/PATCH route handler directly (no decorator boilerplate). */
+export function bodyRoute(server: HttpServer, apiDef: ApiDef<any>, handler: (body: any) => Promise<any>): void {
+	server.addRoute(new _ServerBodyApi(apiDef, handler));
+}
+
+/**
+ * Generic typed proxy that uses @ApiCaller under the hood.
+ * Lets E2E tests call any API through the same decorator path real consumers use,
+ * without writing a dedicated service class per test.
+ */
+export class ApiProxy<API extends GeneralApi> {
+	constructor(readonly apiDef: ApiDef<API>, readonly httpClient: HttpClient) {}
+
+	@ApiCaller((self: any) => self.apiDef, {httpClient: (self: any) => self.httpClient})
+	async call(_payload: API['P'] | API['B'], _callback?: ApiCallback<API>): Promise<API['R']> { return undefined!; }
 }

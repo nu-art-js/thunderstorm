@@ -7,7 +7,6 @@ alwaysApply: true
 
 - **API / server or client:** Use the **http** lib patterns (`ApiDef`, decorators). See index → Consuming.
 - **DB / CRUD entities:** Use the **db-api** lib patterns. See index → Consuming.
-- **Build, test, install:** Use **BAI** only; never use pnpm. BAI is a CLI, not run via pnpm. See index → Operational for commands and project structure.
 
 ---
 
