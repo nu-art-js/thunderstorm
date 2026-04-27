@@ -27,6 +27,7 @@ const DefaultHeaders: string[] = ['content-type', 'content-encoding'];
 
 export type HttpServerConfig = {
 	tag: string
+	port?: number;
 	baseUrl: string;
 	pathPrefix?: string;
 	cors: {
@@ -264,7 +265,7 @@ export class HttpServer
 	public async startServer(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			this.server = this.createServer();
-			this.server.listen();
+			this.server.listen(this.config.port);
 			this.server.on('connection', (socket: Socket) => {
 				this.logInfo(`New connection (${this.socketId++}): ${socket}`);
 			});

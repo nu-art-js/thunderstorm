@@ -36,6 +36,7 @@ import {DebugFlag, DebugFlags} from './debug-flags.js';
  * }
  * ```
  */
+
 export class Logger {
 
 	/** Logging tag/identifier for this logger */

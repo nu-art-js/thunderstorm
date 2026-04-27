@@ -15,7 +15,7 @@ const pingApiDef = {method: 'get' as const, path: '/ping'};
 describe('HttpServer integration - Supertest (in-process)', () => {
 	before(() => ensureBeLoggedTerminal());
 
-	it('GET /ping returns 200 and JSON { ok: true }', async () => {
+	it('GET /ping returns 200, application/json content-type, and correct body', async () => {
 		const server = createTestServer();
 		await server.init();
 
@@ -31,7 +31,7 @@ describe('HttpServer integration - Supertest (in-process)', () => {
 		const res = await request(server.getExpress())
 			.get('/ping')
 			.expect(200)
-			.expect('Content-Type', /json/);
+			.expect('Content-Type', /application\/json/);
 		expect(res.body).to.deep.equal({ok: true});
 	});
 
@@ -50,22 +50,5 @@ describe('HttpServer integration - Supertest (in-process)', () => {
 
 		const res = await request(server.getExpress()).get('/nonexistent');
 		expect(res.status).to.equal(404);
-	});
-
-	it('GET /ping response has content-type application/json', async () => {
-		const server = createTestServer();
-		await server.init();
-
-		class PingApi {
-			@ApiHandler(() => pingApiDef, {httpServer: () => server})
-			async get(_params: unknown): Promise<{ ok: boolean }> {
-				return {ok: true};
-			}
-		}
-
-		new PingApi();
-
-		const res = await request(server.getExpress()).get('/ping');
-		expect(res.headers['content-type']).to.match(/application\/json/);
 	});
 });

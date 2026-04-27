@@ -16,7 +16,6 @@ describe('HttpServer - addRoute', () => {
 	it('addRoute registers route and calls api.route with express, pathPrefix, baseUrl', () => {
 		const server = new HttpServer({
 			tag: 'test',
-			port: 0,
 			baseUrl: '/api',
 			cors: {headers: [], responseHeaders: []},
 		});
@@ -36,7 +35,6 @@ describe('HttpServer - addRoute', () => {
 	it('addRoute throws when same path is registered twice', () => {
 		const server = new HttpServer({
 			tag: 'test',
-			port: 0,
 			baseUrl: '',
 			cors: {headers: [], responseHeaders: []},
 		});
