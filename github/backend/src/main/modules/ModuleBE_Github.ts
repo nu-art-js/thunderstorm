@@ -64,7 +64,7 @@ export class GithubModule_Class
 		const installations = await client.apps.listInstallations();
 		// Get installations that match GIT_OWNER.
 		const filteredInstallations = installations.data.filter((installation) => {
-			return installation.account.login === this.config.gitOwner;
+			return installation.account?.login === this.config.gitOwner;
 		});
 
 		// Handle/log cases where the number of matching installations of the Github App is different than one.
@@ -130,7 +130,7 @@ export class GithubModule_Class
 		if (Array.isArray(contents.data)) {
 			throw new BadImplementationException('Invalid response of method repos.getContent');
 		}
-		if (!contents || !contents.data || !contents.data.content) {
+		if (!contents || !contents.data || !('content' in contents.data) || !contents.data.content) {
 			throw new Exception('Failed to get file contents from Github');
 		}
 
