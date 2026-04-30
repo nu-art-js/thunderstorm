@@ -14,9 +14,25 @@ Thunderstorm provides UI components and utilities that **must** be used instead 
 | Raw element | Use instead | Notes |
 |-------------|-------------|-------|
 | `<button>` | Infra button component | Define style variants (primary, ghost, small, etc.) as app-level SCSS classes — either in `app.scss` or dedicated style files imported into `app.scss`. Multiple variants are expected; they must be defined once and reused everywhere. |
-| `<select>` | `TS_DropDown` | Two flavors: one for DB entity selection (editable-item pattern) and one for simple enum/value selection. Customize appearance via app-level SCSS classes. |
+| `<select>` | `TS_DropDown` | **Recurring violation — this is banned.** Two flavors: one for DB entity selection (editable-item pattern) and one for simple enum/value selection. Customize appearance via app-level SCSS classes. Never reach for `<select>` even for "quick" pickers. |
 | `<label>` | `TS_PropRenderer.Horizontal` / `TS_PropRenderer.Vertical` | From `@nu-art/thunder-widgets`. Accepts a `label` prop (string or ReactNode) and renders children as the field content, with proper layout via `LL_H_C`/`LL_V_L` and a consistent `.ts-prop-renderer__label` class for styling. |
 | `<span>` | Minimize usage | Spans have no semantic meaning and interact poorly with flexbox/grid layouts. Prefer semantic or framework elements that carry meaning and behave predictably. When text display is genuinely needed, use the appropriate infra component or a semantically correct element. |
+
+---
+
+---
+
+## Routing — never use `window.location` or `openUrl`
+
+**Always use `ModuleFE_Routing` for all in-app navigation and URL access.**
+
+| Raw approach | Use instead |
+|---|---|
+| `window.location.search` / `URLSearchParams` | `ModuleFE_Routing.getQueryParameter(key)` |
+| `window.location.href = ...` / `openUrl(..., '_self')` | `ModuleFE_Routing.goToRoute(route, params)` |
+| Manual history manipulation | `ModuleFE_Routing.push(path)` / `.replace(path)` |
+
+`openUrl` causes a full page reload, losing React state and breaking browser history. `ModuleFE_Routing` handles URL encoding, history management, and React Router integration correctly. This applies to all in-app navigation — even "just reading a query param."
 
 ---
 

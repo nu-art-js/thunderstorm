@@ -1,0 +1,102 @@
+---
+description: When building UI — how to decide component boundaries, handle visual variants, and avoid copy-paste JSX
+alwaysApply: false
+---
+
+# UI Component Granularity
+
+## The rule
+
+**Every discrete visual concept that can be named = one component. No exceptions.**
+
+If you can name it ("status badge", "metric count", "card header", "empty state"), it is a component. Inline rendering inside a parent's render/return is only acceptable for layout wiring — arranging children. Rendering a named concept inline is always wrong.
+
+The test: *if you removed this JSX and had to explain what you removed to someone, would they understand it as a distinct thing?* If yes — it's a component.
+
+---
+
+## Variants
+
+**Behavioral variants** (what the component shows or does) → props.
+
+**Visual variants** (size, color, density, spacing) → parent SCSS class. The component has no context knowledge. Its root element carries one CSS class; the parent's SCSS scopes the appearance.
+
+```tsx
+// Component — context-agnostic
+<Badge value="Active" variant="active" />
+
+// In sampling dashboard SCSS — compact
+.sd__card .badge { font-size: 11px; }
+
+// In market card SCSS — prominent
+.market-card .badge { font-size: 13px; font-weight: 600; }
+```
+
+The component never carries inline styles for appearance. Never adds a class based on which parent it thinks it's in.
+
+---
+
+## Three-tier hierarchy
+
+Build in this order. Each tier composes the one below it.
+
+### Tier 1 — Atoms
+
+Single visual unit. No internal composition.
+
+Examples: `<Badge>`, `<Toggle>`, `<StatCount>`, `<Tag>`, `<HintIcon>`, `<CountLabel>`, `<EmptyState>`, `<StatusBanner>`, `<AsyncButton>`
+
+### Tier 2 — Molecules
+
+Atoms composed into one semantic unit — a thing that has one job and one name.
+
+Examples: `<CardHeader>` (name + badges left, actions right), `<CardActions>` (toggle + edit + optional delete), `<MetaRow>` (label: value line), `<EditorActions>` (save/cancel/delete row), `<FilterBar>` (horizontal selects row)
+
+### Tier 3 — Organisms
+
+Page-level structural shells. They wire molecules and atoms into a layout but own no visual primitives themselves.
+
+Examples: `<CardListItem>`, `<EditorPanel>`, `<PageHeader>`
+
+---
+
+## Where components live
+
+All in applicative packages (`common/frontend` or equivalent). These components carry the app's visual language and do not belong in framework packages.
+
+---
+
+## Checklist when writing or reviewing UI
+
+1. Does any JSX repeat more than once anywhere in the app? → extract it.
+2. Does a concept have visual differences across locations? → one component, scope via parent CSS.
+3. Does a concept have behavioral differences? → add a prop.
+4. Any inline styles for appearance? → move to a CSS class scoped by the parent.
+5. Is the same pattern copy-pasted with only data varying? → parameterize it.
+
+---
+
+## Copy-paste is always wrong
+
+If the same structure appears twice with only data different — that is one component with props, not two instances. This applies at every scale: list items, form fields, tab items, stat counts.
+
+---
+
+## Recurring dialogs are components, not functions
+
+When the same dialog pattern appears more than once (same layout: title, body, cancel/confirm buttons), create a **dialog component** that accepts props — not a utility function that wraps the dialog call.
+
+```tsx
+// Wrong — utility function wrapping dialog logic
+function showDeleteConfirm(onConfirm: () => void) { ... }
+
+// Correct — component with props
+<ConfirmDialog
+    title="Delete Layer"
+    message="This cannot be undone."
+    actionLabel="Delete"
+    onConfirm={handleDelete}
+/>
+```
+
+The component owns its layout and styling. Callers pass data (title, message, callbacks), not JSX. This is not a special case — it is the same "every named concept = one component" rule applied to dialogs.

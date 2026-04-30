@@ -119,6 +119,21 @@ export abstract class FirebaseSession<Config>
 		this.mongoClient = client;
 	}
 
+	public async reconnectMongo(): Promise<void> {
+		if (!this.mongoClient)
+			return;
+
+		this.logWarning('Reconnecting MongoDB — closing existing client');
+		try {
+			await this.mongoClient.close();
+		} catch (e) {
+			this.logWarning(`Error closing MongoDB client during reconnect: ${e}`);
+		}
+		this.mongoClient = undefined;
+		for (const key of Object.keys(this.mongos))
+			delete this.mongos[key];
+	}
+
 	public getMongo(dbName: string): MongoWrapperBE {
 		if (!this.mongoClient) {
 			if (!FirebaseSession.mongoUrlResolver)
