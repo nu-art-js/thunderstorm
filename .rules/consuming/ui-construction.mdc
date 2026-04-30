@@ -1,0 +1,500 @@
+---
+description: How to build UI with Thunderstorm — component naming, SCSS conventions, design tokens, layout primitives, state management, and anti-patterns. Read when creating or modifying any React/SCSS component.
+alwaysApply: false
+---
+
+# UI Construction
+
+This rule governs how to write UI in a Thunderstorm project. It covers React component structure, SCSS conventions, design token usage, and the integration patterns between them. Treat every item here as non-negotiable.
+
+---
+
+## 1. Component file naming
+
+Every component file has a type-prefix that describes its role in the hierarchy. The prefix determines what the component does, not where it lives.
+
+| Prefix | Role |
+|--------|------|
+| `Page_` | Full-page owner. Mounts in a route. Owns workspace layout, module-to-state wiring, edit/view mode orchestration. |
+| `Manager_` | WorkHub slot component. Receives `WorkHubItem` + `renderArgs`. Composes panels and editors for one domain object. |
+| `Editor_` | Focused edit surface for a domain object. Holds `EditableDBItemV3`, tab structure, and save logic. |
+| `Renderer_` | Read or edit rendering of a sub-section. May receive an `editable` prop and an `editMode` flag. Not independently routed. |
+| `Panel_` | A vertical slice of a workspace (list panel, detail panel). Receives selection state from parent. |
+| `Component_` | Self-contained, reusable, feature-complete unit. Has its own internal state. Cross-domain. |
+| `Header_` | Bar or title region for an entity view — back nav, title, action buttons. |
+| `Dialog_` | Modal content component. Always co-located with its open trigger. |
+| `Field_` | Single atomic form field: label + input + validation display, bound to one prop of an editable. |
+
+**Naming pattern:** `[Prefix]_[Domain][SubDomain]` — PascalCase, underscored separator.
+
+```
+Manager_DiseaseProfile
+Editor_DiseaseProfile
+Renderer_PathwayStateEditor
+Panel_MultiVarList
+Header_PathwayState
+Dialog_DuplicatePathway
+Field_DiseaseLabel
+```
+
+The file name matches the class/function name exactly. The SCSS file has the same base name.
+
+---
+
+## 2. SCSS class naming
+
+### Root class
+
+Every component gets one root CSS class. Derive it from the component name using these abbreviations:
+
+| Component prefix | CSS prefix |
+|-----------------|-----------|
+| `Manager_` | `m__` |
+| `Editor_` | `e__` |
+| `Renderer_` | `r__` |
+| `Panel_` | `p__` |
+| `Page_` | `pg__` |
+| `Component_` | `c__` |
+| `Header_` | `h__` |
+| `Dialog_` | `d__` |
+
+Then append the domain in kebab-case.
+
+```
+Manager_DiseaseProfile  →  .m__disease-profile
+Editor_DiseaseProfile   →  .e__disease-profile
+Panel_MultiVarList      →  .p__multi-var-list
+Renderer_PathwayStateEditor  →  .r__pathway-state-editor
+```
+
+The root class is **always a class selector, never an ID**. IDs are reserved for mouse-interactivity pop-up anchors registered with `openContent`.
+
+### Sub-element naming
+
+Use the root class as SCSS nesting root. Sub-elements append `__element` to the root. Nesting handles depth — do not flatten into long chains.
+
+```scss
+// Correct — nested, readable
+.m__disease-profile {
+  .m__disease-profile__selector {
+    .m__disease-profile__selector-header { }
+    .m__disease-profile__selector-title { }
+  }
+}
+
+// Wrong — overly deep flat selectors
+.manager__disease-profile__disease-variable-data__header__title { }
+```
+
+When a sub-element is only meaningful inside its parent block, it can use a shorter contextual name within the nesting:
+
+```scss
+.m__disease-profile {
+  &__selector { }         // shorthand nesting only when nesting makes context obvious
+  &__selector-header { }
+}
+```
+
+### Modifiers
+
+Use single modifier classes (`.selected`, `.edit-mode`, `.disabled`, `.active`, `.error`). Do not use double-dash BEM modifiers — they're verbose and SCSS nesting already provides context.
+
+```scss
+.m__disease-profile__vars__item {
+  &.selected { background: C.$secondary-06; }
+  &.edit-mode { border-color: transparent; }
+}
+```
+
+---
+
+## 3. Design tokens — always use them, never bypass them
+
+### Colors
+
+**Never write a hex value or rgb() in component SCSS.** Use the `C` namespace from `@app/styles/color`.
+
+```scss
+@use '@app/styles/color' as C;
+
+// Correct
+color: C.$primary-02;
+border-color: C.$secondary-05;
+background: C.red(4);
+
+// Wrong — hardcoded values
+color: #4f4f4f;
+border: 1px solid #e3e9f2;
+background: #f6f8fc;
+```
+
+Palette functions: `C.red($i)`, `C.gray($i)`, `C.green($i)` etc. where `$i` is 1–7 (1 = lightest, 7 = darkest).
+
+**No local color variables.** Do not define `$font-color: #333` or similar at the top of a component SCSS file. That color belongs in the design system — find or add it there.
+
+### Mixins
+
+Use the `S` namespace from `@nu-art/ts-styles` for all interaction and utility mixins.
+
+```scss
+@use '@nu-art/ts-styles' as S;
+
+@include S.mouse-interactive-background(C.$secondary-06, C.$secondary-05);
+@include S.mouse-interactive-text(C.$primary-02, #fff);
+@include S.color-svg(C.$primary-02);
+@include S.mouse-interactive-icon(C.$primary-02);
+@include S.text-ellipsis;
+@include S.customScrollbar('vertical', true);
+```
+
+Do not write raw `&:hover { background: X; } &:active { background: Y; }` chains. The mixin handles hover + active + disabled correctly in one call.
+
+### Inline styles
+
+The only acceptable use of inline `style={{}}` in TSX is for values that come from data — a color stored in the database, a dynamically computed pixel offset. Never use it for design decisions.
+
+```tsx
+// Correct — color comes from DB record
+<div style={{ background: dpColor.colors[0] }} />
+
+// Wrong — design decision belongs in SCSS
+<div style={{ padding: '30px', gap: '10px' }} />
+```
+
+---
+
+## 4. Design application pattern — parent scopes children
+
+Library components (`TS_DropDown`, `TS_Input`, `TS_Textarea`, `TS_Tabs`, `TS_Checkbox`, `.ts-prop-renderer`) have no default visual design. They render minimal structure. **The Manager or Page is responsible for applying the design system to its descendant library components.**
+
+Do this by extending `%KM2Design_*` placeholders within the Manager/Page SCSS root scope:
+
+```scss
+// Manager_DiseaseProfile.scss
+.m__disease-profile {
+  .ts-prop-renderer { @extend %KM2Design_PropRenderer; }
+  .ts-dropdown     { @extend %KM2Design_DropDown; }
+  .ts-input        { @extend %KM2Design_Input; }
+  .ts-textarea     { @extend %KM2Design_TextArea; }
+  .ts-radio        { @extend %KM2Design_Radio; }
+}
+```
+
+The `%KM2Design_*` placeholders live in `@app/styles/km2`. Import with:
+
+```scss
+@use '@app/styles/km2' as *;
+```
+
+Never apply design tokens at the individual child component level — the child component has no knowledge of which design context it lives in. Visual variants across contexts are handled by the parent's SCSS scope.
+
+### consts.scss for shared placeholders within a component family
+
+When a component family (e.g., all tabs inside `Editor_DiseaseProfile`) shares a layout pattern, define it once as a placeholder in `consts.scss` next to the parent:
+
+```scss
+// Editor_DiseaseProfile/consts.scss
+%DPEditor_TabDesign {
+  padding: 24px 0;
+  & > .fade-scroll-wrapper__content > .ts-grid {
+    column-gap: 48px;
+    row-gap: 12px;
+    grid-template-columns: max-content 1fr;
+  }
+}
+```
+
+Tab SCSS files then extend it:
+
+```scss
+// Editor_DiseaseProfile_General.scss
+.e__dp__general {
+  @extend %DPEditor_TabDesign;
+}
+```
+
+---
+
+## 5. Layout primitives — always use them
+
+Never write `display: flex; flex-direction: column` or `display: flex; align-items: center` on a raw `<div>`. Use layout primitives from `@nu-art/thunderstorm-frontend`:
+
+| Component | Renders as | Use for |
+|-----------|-----------|---------|
+| `LL_V_L` | `div` flex column, align left | Default vertical stack |
+| `LL_V_C` | `div` flex column, align center | Centered column content |
+| `LL_H_C` | `div` flex row, align center | Horizontal row, vertically centered |
+| `LL_H_T` | `div` flex row, align top | Row where items have different heights |
+| `LL_H_B` | `div` flex row, align bottom | Row aligned to bottom |
+| `LL_VH_C` | `div` flex, centered both axes | Full-height centered container |
+| `Grid` | `div` CSS grid | Any grid layout |
+
+```tsx
+// Correct
+<LL_H_C className={'h__pathway-state'}>
+  <LL_V_L className={'h__pathway-state__info'}>
+    <span>{title}</span>
+  </LL_V_L>
+</LL_H_C>
+
+// Wrong
+<div style={{ display: 'flex', alignItems: 'center' }}>
+  <div style={{ display: 'flex', flexDirection: 'column' }}>
+```
+
+All layout primitives pass `className` and all standard div props through.
+
+---
+
+## 6. SCSS file organization
+
+```
+MyComponent/
+  MyComponent.tsx
+  MyComponent.scss       ← always co-located, always same base name
+  consts.scss            ← only when siblings share placeholders
+  types.ts               ← shared types for this component family
+```
+
+**One SCSS file per TSX file.** A component that has no SCSS (pure composition) needs no `.scss` file.
+
+### Import order in SCSS files
+
+```scss
+@use '@nu-art/ts-styles' as S;      // 1. Thunderstorm mixins
+@use '@app/styles/color' as C;      // 2. Color tokens
+@use '@app/styles/km2' as *;        // 3. KM2 design placeholders (if needed)
+@use './consts' as *;               // 4. Local component family consts (if exists)
+```
+
+**Never use `@import`** — it is deprecated in modern SCSS. Always `@use`.
+
+**Never use wildcard imports (`as *`) for external packages** — only for local `consts.scss` within the same component family where all exported names are known.
+
+---
+
+## 7. React component structure
+
+### Class structure
+
+```tsx
+export class Editor_DiseaseProfile extends ComponentSync<Props, State>
+  implements DispatcherInterface<DispatcherType_DiseaseProfile> {
+
+  // ######################## Lifecycle ########################
+
+  protected deriveStateFromProps(nextProps: Props, state: State) { ... }
+
+  // ######################## Logic ########################
+
+  private someLogicMethod = () => { ... };
+
+  // ######################## Render ########################
+
+  render() { return <LL_V_L className={'e__disease-profile'}>{...}</LL_V_L>; }
+
+  private renderHeader = () => { ... };
+  private renderForm = () => { ... };
+}
+```
+
+Section comments (`// ####`) are part of the standard — keep them. They create fast navigation landmarks.
+
+### Props and State type definitions
+
+Always define `Props` and `State` as local types at the top of the file. Never use inline object types in the class signature.
+
+```tsx
+type Props = {
+  workHubItem: WorkHubItem<WorkHubArgs_DiseaseProfile>;
+  renderArgs: WorkHubArgs_DiseaseProfile;
+  tabId: string;
+};
+
+type State = {
+  editable: EditableDBItemV3<DBProto_DiseaseProfile>;
+  renderArgs: WorkHubArgs_DiseaseProfile;
+};
+```
+
+### deriveStateFromProps
+
+Use for all prop-to-state mapping. Do not use `componentDidMount` + manual `setState` for initialization.
+
+```tsx
+protected deriveStateFromProps(nextProps: Props, state: State) {
+  state.tabId = nextProps.tabId;
+  state.renderArgs = nextProps.renderArgs;
+  if (state.tabId !== this.state?.tabId)
+    state.editable = this.buildEditable(state.renderArgs.diseaseProfileId);
+  return state;
+}
+```
+
+---
+
+## 8. State management — EditableDBItemV3
+
+**All DB entity editing goes through `EditableDBItemV3`.** Never mutate a cached entity directly. This is covered in detail in [editable-item-pattern.mdc](editable-item-pattern.mdc) — this section covers how to chain it correctly in this codebase.
+
+Standard pattern for an editor that auto-saves:
+
+```tsx
+private buildEditable(diseaseProfileId: UniqueId): EditableDBItemV3<DBProto_DiseaseProfile> {
+  const diseaseProfile = ModuleFE_DiseaseProfile.cache.unique(diseaseProfileId);
+  if (!diseaseProfile)
+    throw new BadImplementationException(`Could not find disease profile for id ${diseaseProfileId}`);
+
+  return new EditableDBItemV3(diseaseProfile, ModuleFE_DiseaseProfile)
+    .setAutoSave(true)
+    .setDebounceTimeout(200)
+    .setOnChanged(async () => this.forceUpdate())
+    .setOnSaveCompleted(() => this.forceUpdate());
+}
+```
+
+Standard pattern for an editor with explicit save button:
+
+```tsx
+private buildEditable(item: DB_SomeEntity): EditableDBItemV3<DBProto_SomeEntity> {
+  return new EditableDBItemV3(item, ModuleFE_SomeEntity)
+    .setAutoSave(false);
+}
+
+private onSave = async () => {
+  if (!this.canSave()) return;
+  await this.state.editable.save();
+  this.props.functions.deselectItem();
+};
+```
+
+---
+
+## 9. Edit/view mode pattern
+
+### Full mode switch via Component_SwitchView
+
+Use `Component_SwitchView` when a component has a complete view mode and a complete edit mode with different layouts:
+
+```tsx
+private pathwayStateEditor(editable: EditableItem<UI_PathwayState>) {
+  return <Component_SwitchView
+    mode={this.getModeKey()}
+    modes={[
+      {
+        key: viewKey,
+        renderer: () => <Renderer_PathwayStateDetails editable={editable} toggleEdit={this.toggleEdit} />
+      },
+      {
+        key: editKey,
+        permissionKey: this.permissionKey_Edit,
+        renderer: () => <Renderer_PathwayStateEditor editable={editable} toggleMode={this.toggleEdit} />
+      }
+    ]}
+  />;
+}
+```
+
+### Field-level edit/view via disabled prop
+
+When the component is structurally the same in both modes (same layout, same fields) and only field interactivity changes, pass `editMode` down and use the KM2 disabled design:
+
+```tsx
+<TS_Input
+  type={'text'}
+  value={editable.item.label}
+  onChange={this.onLabelChange}
+  disabled={!props.editMode}
+/>
+```
+
+`%KM2Design_Input` handles the disabled visual automatically: transparent border, no cursor, plain text display. Do not add custom disabled styling — the design system handles it.
+
+---
+
+## 10. Tabs — typed constants, not string arrays
+
+Tab UIDs and option lists must be typed constants or string literal union types. Never use raw string arrays.
+
+```tsx
+// Correct
+type ProfileTab = 'general' | 'scores' | 'epidemiology' | 'prognosis' | 'references';
+
+const tabs: Tab[] = [
+  { uid: 'general',       title: 'General',       content: () => <Editor_DiseaseProfile_General ... /> },
+  { uid: 'scores',        title: 'Scores',        content: () => <Editor_DiseaseProfile_Scores ... /> },
+  { uid: 'epidemiology',  title: 'Epidemiology',  content: () => <Editor_DiseaseProfile_Epidemiology ... /> },
+];
+
+// Wrong
+const varOptions = ['Overview', 'Disease Info', 'Snomed Info', ...];
+```
+
+---
+
+## 11. Prohibited patterns
+
+| Pattern | Why | Use instead |
+|---------|-----|-------------|
+| `<button>` raw HTML | Bypasses infra, inconsistent styling | Infra button component with variant SCSS class |
+| `<select>` raw HTML | Never acceptable | `TS_DropDown` |
+| `<label>` raw HTML | Layout inconsistencies, no error integration | `TS_PropRenderer.Horizontal` / `TS_PropRenderer.Vertical` |
+| `<span>` for layout | Interacts poorly with flex/grid | Use layout primitives or semantic elements |
+| `#id` as component root | Collides with `openContent` pop-up anchors, non-reusable | Use `.class` selector |
+| Hardcoded hex colors | Breaks design system, un-themeable | `C.$primary-02`, `C.gray(5)`, etc. |
+| Local `$font-color`, `$font-family` variables | Duplicates design system | Use `C.*` and `S.*` directly |
+| `@import` in SCSS | Deprecated, causes duplication | `@use` with namespace |
+| Wildcard `@use '...' as *` on external packages | Hides where names come from | Always alias external packages |
+| `!important` | Sign of specificity conflict — fix the specificity | Restructure SCSS scope |
+| `display: flex` / `flex-direction` on raw `<div>` | Bypasses layout primitives | `LL_H_C`, `LL_V_L`, etc. |
+| `style={{ padding, gap, margin }}` | Design decisions belong in SCSS | SCSS class |
+| `window.location` | Breaks routing history | `ModuleFE_Routing` |
+| Direct entity mutation | Bypasses concurrency control | `EditableDBItemV3` |
+| String arrays for tab/option lists | Untyped, no completion | String literal unions or typed constants |
+
+---
+
+## 12. Spotting old code — what to flag and why
+
+When reviewing or refactoring existing code, the following are immediate signals of pre-standard patterns that should be migrated:
+
+| Signal in code | What it tells you | What it should be |
+|----------------|------------------|-------------------|
+| `#manager__disease-profile { }` | ID-root SCSS | `.m__disease-profile { }` |
+| `$font-color: #333;` at top of SCSS | Local design token | Use `C.$primary-02` or appropriate C token |
+| `.manager__disease-profile__disease-variable-data__header__title` | Over-deep flat BEM | SCSS nesting with shorter element names |
+| `display: flex; align-items: center` on div | Missing layout primitive | `<LL_H_C>` |
+| `style={{ padding: '30px', gap: '10px' }}` | Inline design | SCSS class |
+| `color: #4f4f4f` | Hardcoded color | `C.$primary-02` or `C.gray(5)` |
+| `const varOptions = ['Overview', 'Disease Info', ...]` | Untyped string list | Typed string literal union |
+| `@import` in SCSS | Old SCSS import | `@use` with namespace |
+| `EditableDBItemV2` or raw `module.cache.unique()` + setState | Old entity editing | `EditableDBItemV3` with `.setAutoSave().setOnChanged()` |
+| `if (!editMode) return <viewJSX>; else return <editJSX>` | Ad-hoc mode branching | `Component_SwitchView` or `disabled={!editMode}` |
+
+---
+
+## 13. SCSS specificity — how overrides work
+
+Because all SCSS is global (no CSS modules), specificity is managed by scope. The contract:
+
+- **Library component SCSS** (e.g., `TS_DropDown.scss`) defines the component's structure with low specificity.
+- **Application Manager SCSS** applies design via `@extend %KM2Design_*` within its root class scope — higher specificity wins naturally.
+- **Never target library internals from an unrelated component scope.** Only override library component classes from your direct ancestor scope.
+
+```scss
+// Correct — Manager scopes its dropdown override
+.m__disease-profile {
+  .ts-dropdown { @extend %KM2Design_DropDown; }
+}
+
+// Wrong — reaching into library from unrelated scope
+.some-other-component .ts-dropdown { color: red; }
+```
+
+When a specific instance needs an override beyond the KM2 design (e.g., a wider dropdown), add a modifier class to the component in TSX and scope the override under it:
+
+```scss
+.m__disease-profile {
+  .ts-dropdown.variable-dropdown .ts-dropdown__selected { color: C.$primary-01; }
+}
+```

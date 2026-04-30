@@ -148,7 +148,7 @@ export class Component_Login
 				{this.errorRenderer()}
 			</LL_H_C>
 			<Button
-				variant={'tertiary'}
+				variant={'primary'}
 				className={`ts-account__action-button`}
 				actionInProgress={this.state.submitting}
 				disabled={exists(this.state.blockedUntil)}

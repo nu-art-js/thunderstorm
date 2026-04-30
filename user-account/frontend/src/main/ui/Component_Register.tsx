@@ -198,9 +198,10 @@ export class Component_Register
 			)}
 			{this.renderErrorMessages()}
 			<Button
+				variant={'primary'}
 				onClick={this.registerClicked}
 				actionInProgress={this.state.submitting}
-				className={`clickable ts-account__action-button`}
+				className={`ts-account__action-button`}
 				disabled={!!this.state.passwordFailureReport}
 			>Register</Button>
 		</LL_V_C>;

@@ -1,0 +1,52 @@
+---
+description: When adding new fields to DB entities — backward compatibility via prewrite defaults, not optional fields
+alwaysApply: false
+---
+
+# Prewrite Defaults and DB Migrations
+
+## The rule
+
+**Backward compatibility for new fields is handled in prewrite processing — not by making the field optional.**
+
+When a new required field is added to an existing DB entity type, the correct migration strategy is:
+
+1. Add the field as **required** in the type definition.
+2. In the module's `preWriteProcessing()` hook, set a default value for the field when it is missing (e.g. `item.newField ??= defaultValue`).
+
+This ensures every record gets a concrete value the first time it is touched — without spreading `undefined` uncertainty throughout the codebase.
+
+---
+
+## Why not optional fields?
+
+Making a field optional to "preserve backward compat" seems safe but has a compounding cost:
+
+- Every call site must null-check or provide a fallback — in backend handlers, frontend displays, validators, and tests.
+- The "implied default" lives nowhere in particular and gets reimplemented inconsistently.
+- Removing the `?` later requires touching every consumer again.
+
+A prewrite default gives every record a concrete value from the moment it is touched, without polluting the type signature.
+
+---
+
+## Pattern
+
+```typescript
+// In the module's preWriteProcessing():
+protected async preWriteProcessing(dbItem: DB_MyEntity, originalDbItem?: DB_MyEntity): Promise<void> {
+    // New field added in v2 — default for existing records
+    dbItem.newField ??= DefaultValues.newField;
+}
+```
+
+The constant lives in the `shared/` package (SSOT). All consumers — backend handlers, frontend defaults, reset logic — import from that constant.
+
+---
+
+## Checklist
+
+- [ ] New field is required (not optional) in the type.
+- [ ] Default value is defined as a named constant in `shared/`, not hardcoded.
+- [ ] `preWriteProcessing()` sets the default via `??=` when the field is absent.
+- [ ] No null checks for the field appear in any call site that runs after a write cycle.

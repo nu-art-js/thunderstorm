@@ -1,0 +1,70 @@
+---
+description: Package structure conventions for library and application packages
+alwaysApply: false
+---
+
+# Package Structure
+
+## Key Configuration Files
+
+### `__package.json`
+All packages use a `__package.json` template file as the source of truth. Detailed formatting, template params, and `unitConfig` rules are defined in [Package JSON Format](./json-format.mdc).
+
+### Root `package.json`
+The root `package.json` is generated from the root `__package.json` template during BAI prepare/init.
+
+## Library Structure
+### Library Packages
+
+```
+{package-name}/
+├── _docs        # Will hold all the mds describing the package          
+├── shared/                  # Shared types and interfaces        (unitConfig.type: "typescript-lib")
+├   ├── LICENSE      
+├   ├── /src/main
+├   ├   └── {db-entity-name} (when have db entities)
+├── frontend                 # Frontend modules and UI components (unitConfig.type: "typescript-lib")
+├   ├── LICENSE      
+├   ├── /src/main
+├   ├   ├── components (where applicable)
+├   ├   ├── utils (where applicable)
+├   ├   ├── pages (where applicable, each will be exposed only by its route and will not be disclosed from the package)
+├   ├   ├── modules (will hold all the modules and a single module-pack or contextual module-packs for the package)    
+├   ├   └── index.ts (will contextually export package function, if the package is small, everything would be exported from the default export)
+├   └── src/test (where applicable)
+└── backend/src/main         # Backend modules and services       (unitConfig.type: "typescript-lib")
+    ├── LICENSE      
+    ├   ├── components (where applicable)
+    ├   ├── utils (where applicable)
+    ├   ├── pages (where applicable, each will be exposed only by its route and will not be disclosed from the package)
+    ├   ├── modules (will hold all the modules and a single module-pack or contextual module-packs for the package)    
+    ├   └── index.ts (will contextually export package function, if the package is small, everything would be exported from the default export)
+    └── src/test (where applicable)
+```
+
+### Application Packages
+
+```
+app/
+├── frontend/        # Frontend application (unitConfig.type: "firebase-hosting")
+└── backend/         # Backend application (unitConfig.type: "firebase-function")
+```
+
+### All Package contains:
+- `src/main/` with module exports
+- `src/test/` where applicable
+- `tsconfig.json` in auto generated into the source folders (main / test / etc) unless explicitly defined in the unit config
+
+## Adding a New Library
+
+1. Create directory structure
+2. Add `src/main`, `src/test` or other where applicable
+3. Create `__package.json` with appropriate `unitConfig.type`
+4. Add relavent dependencies and devDependencies
+5. Create minimal `src/main/index.ts`
+6. Modules go
+
+## See Also
+
+- [Package Maintenance](./maintenance.mdc) - Package maintenance standards
+- [Package JSON Format](./json-format.mdc) - package.json writing standards
