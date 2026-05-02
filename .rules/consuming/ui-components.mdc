@@ -47,3 +47,4 @@ When the infrastructure provides a utility, **always** use it — never substitu
 | Query params | `composeQueryParams()` from `@nu-art/ts-common` | Hand-built query strings |
 
 The infra utilities handle edge cases and maintain consistency. Reaching for raw language features is a code smell that you missed an existing capability.
+you
