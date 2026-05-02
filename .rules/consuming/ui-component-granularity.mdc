@@ -64,6 +64,11 @@ Examples: `<CardListItem>`, `<EditorPanel>`, `<PageHeader>`
 
 All in applicative packages (`common/frontend` or equivalent). These components carry the app's visual language and do not belong in framework packages.
 
+### Folder placement
+
+- **Enclosed component** (used by one parent only) → lives in the parent's folder.
+- **Shared component** (used by multiple parents) → lives in a domain-named sibling folder (`{domain}-widgets/` or `{domain}-components/`). Never use generic folder names (`widgets/`, `components/`, `shared/`).
+
 ---
 
 ## Checklist when writing or reviewing UI
