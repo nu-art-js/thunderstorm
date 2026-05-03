@@ -67,7 +67,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype, Config extend
 		}
 	)
 	async query(queryBody: CrudApiTypes<Database>['query']['Body']): Promise<Database['dbType'][]> {
-		const items = await this.dbModule.query.where(queryBody as FirestoreQuery<Database['dbType']>);
+		const items = await this.dbModule.query.custom(queryBody as FirestoreQuery<Database['dbType']>);
 		await this.dbModule.upgradeInstances(items);
 		return items;
 	}

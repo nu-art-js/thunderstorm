@@ -106,6 +106,7 @@ export class ModuleFE_SyncManager_Class
 
 	private syncDebouncer?: VoidFunction;
 	private syncQueue: QueueV2<NoNeedToSyncModule | DeltaSyncModule | FullSyncModule>;
+	private excludedDbKeys: Set<string> = new Set<string>();
 
 	constructor() {
 		super();
@@ -132,6 +133,10 @@ export class ModuleFE_SyncManager_Class
 		this.cleanIDBOnFullSync = cleanIDBOnFullSync;
 	};
 
+	public excludeFromSync = (dbKey: string) => {
+		this.excludedDbKeys.add(dbKey);
+	};
+
 	public getPermissibleModuleNames = () => this.syncedModules.map(moduleSyncData => moduleSyncData.dbKey);
 
 	public getCurrentlySyncingModules = () => this.currentlySyncingModules.map(module => module.module);
@@ -149,7 +154,8 @@ export class ModuleFE_SyncManager_Class
 
 	// ######################### Smart Sync #########################
 
-	private getModulesToSync = () => RuntimeFE_ModulesAPI();
+	private getModulesToSync = () => RuntimeFE_ModulesAPI()
+		.filter(m => !this.excludedDbKeys.has(m.config.dbKey));
 
 	private getLocalSyncData = (): SyncDbData[] => {
 		const existingDBModules = this.getModulesToSync();
