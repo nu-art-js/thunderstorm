@@ -77,16 +77,7 @@ interface PerformProjectSetup {
 
 ## Startup integration
 
-The app backend wires all setup tasks to run at startup via a single post-build action:
-
-```typescript
-import {runProjectSetup} from '@nu-art/action-processor-backend';
-
-new Storm(Environment)
-    .addModulePack(/* ... */)
-    .addPostBuildAction(runProjectSetup)
-    .build();
-```
+The app backend wires `runProjectSetup` as a post-build action on `Storm` — see [project-backend-setup.mdc](project-backend-setup.mdc) for where it goes in the entry point.
 
 `runProjectSetup()` triggers the same dispatcher and topological executor as the `setup-project` action. **Do not add per-module post-build actions for setup/seed work** — implement `PerformProjectSetup` instead and the unified hook runs everything.
 
