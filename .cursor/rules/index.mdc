@@ -53,6 +53,7 @@ Paths are relative to the project root (monorepo root).
 
 | Want to… | Read |
 |-----------|------|
+| Set up or modify a project backend (Storm, modules, middleware, API function) | [_thunderstorm/.rules/consuming/project-backend-setup.mdc](_thunderstorm/.rules/consuming/project-backend-setup.mdc) |
 | Use db-api (CRUD, shared + backend + frontend) | [_thunderstorm/db-api/.rules/how-to-use.mdc](_thunderstorm/db-api/.rules/how-to-use.mdc) |
 | Use permissions (scopes, assertions, service accounts) | [_thunderstorm/permissions/.rules/how-to-use.mdc](_thunderstorm/permissions/.rules/how-to-use.mdc) |
 | Use http (client and/or server) | [_thunderstorm/http/.rules/how-to-use.mdc](_thunderstorm/http/.rules/how-to-use.mdc) |

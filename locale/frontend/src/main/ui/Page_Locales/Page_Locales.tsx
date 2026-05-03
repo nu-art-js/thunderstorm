@@ -3,7 +3,6 @@ import {ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunder-wi
 import {DB_Locale, DatabaseDef_Locale, UI_Locale} from '@nu-art/locale-shared';
 import {ModuleFE_Locale, OnLocalesUpdated} from '../../_entity/locale/ModuleFE_Locale.js';
 import {EditableDBItem} from '@nu-art/editable-item';
-import {Input_Text} from '@app/common-frontend';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
 import './Page_Locales.scss';
 
@@ -86,11 +85,23 @@ class Page_Locales
 		const editable = this.state.editable!;
 		return <LL_V_L className={'editor-panel'}>
 			<TS_PropRenderer.Vertical label={'Code'}>
-				<Input_Text editable={editable as any} prop={'code'} placeholder={'e.g. en_US, he_IL, ar_*'}/>
+				<input
+					type={'text'}
+					className={'input input--text'}
+					placeholder={'e.g. en_US, he_IL, ar_*'}
+					value={String(editable.item.code ?? '')}
+					onChange={e => void editable.updateObj({code: e.target.value})}
+				/>
 			</TS_PropRenderer.Vertical>
 
 			<TS_PropRenderer.Vertical label={'Display Name'}>
-				<Input_Text editable={editable as any} prop={'displayName'} placeholder={'e.g. English - United States'}/>
+				<input
+					type={'text'}
+					className={'input input--text'}
+					placeholder={'e.g. English - United States'}
+					value={String(editable.item.displayName ?? '')}
+					onChange={e => void editable.updateObj({displayName: e.target.value})}
+				/>
 			</TS_PropRenderer.Vertical>
 
 			<label className={'toggle'}>
