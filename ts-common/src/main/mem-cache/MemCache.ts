@@ -135,9 +135,8 @@ export class MemCache<T extends object> {
 	onEntriesUpdated(itemsUpdated: T[]) {
 		const frozen = itemsUpdated.map(item => Object.freeze(item) as Readonly<T>);
 		const ids = new Set(itemsUpdated.map(this.getId));
-		const toCache = this.filter(i => !ids.has(this.getId(i as T))) as T[];
-		toCache.push(...(frozen as T[]));
-		this.setCache(toCache);
+		const retained = this.filter(i => !ids.has(this.getId(i as T)));
+		this.setCache(retained.concat(frozen as Readonly<T>[]));
 	}
 
 	protected setCache(cacheArray: Readonly<T>[]) {

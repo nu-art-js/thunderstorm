@@ -32,36 +32,44 @@ export const Route_Page_MyPage: TS_Route = { ... };
 
 ---
 
-## 1. Define a route (concept library)
+## 1. Define routes (concept library)
 
-Each page in a concept library gets a `route.ts` file next to its component:
+Each concept library defines a single `routes.ts` at the UI root — **not** per-page `route.ts` files. Routes use `React.lazy` for the `Component` field so page modules are loaded on demand, not at import time.
 
 ```
-my-concept/frontend/src/main/ui/Page_MyPage/
-├── Page_MyPage.tsx
-├── route.ts
-└── index.ts
+my-concept/frontend/src/main/ui/
+├── routes.ts                    ← all routes for this package
+├── Page_MyPage/
+│   └── Page_MyPage.tsx
+├── Page_OtherPage/
+│   └── Page_OtherPage.tsx
 ```
 
-**`route.ts`:**
+**`routes.ts`:**
 
 ```typescript
-import {TS_Route} from '@nu-art/thunder-routing';
-import {Page_MyPage} from './Page_MyPage.js';
+import {lazy} from 'react';
+import type {TS_Route} from '@nu-art/thunder-routing';
 
 export const Route_Page_MyPage: TS_Route = {
 	path: 'my-page',
 	key: 'my-page',
-	Component: Page_MyPage,
+	Component: lazy(() => import('./Page_MyPage/Page_MyPage.js').then(m => ({default: m.APage_MyPage}))),
+};
+
+export const Route_Page_OtherPage: TS_Route = {
+	path: 'other-page',
+	key: 'other-page',
+	Component: lazy(() => import('./Page_OtherPage/Page_OtherPage.js').then(m => ({default: m.APage_OtherPage}))),
 };
 ```
 
-**`index.ts`** (barrel — re-exports everything for the page folder):
+**Why centralized + lazy:**
+- Per-page `route.ts` files eagerly import page components. When two pages navigate to each other, the mutual `route.ts` imports create a circular dependency that causes `ReferenceError: Cannot access before initialization`.
+- `React.lazy(() => import(...))` defers component resolution to render time — no page module is synchronously imported, so no cycle is possible.
+- Bundlers (Vite, webpack) automatically code-split at `import()` boundaries — each page becomes its own chunk, loaded on demand.
 
-```typescript
-export * from './Page_MyPage.js';
-export * from './route.js';
-```
+**Note:** The `.then(m => ({default: m.APage_MyPage}))` adapter is needed because `React.lazy` expects a default export. This maps the named export to the shape `lazy` requires.
 
 ### Naming convention
 
@@ -73,17 +81,19 @@ export * from './route.js';
 
 ## 2. Export from package barrel
 
-The concept library's top-level barrel must re-export the route and the module pack:
+The concept library's top-level barrel re-exports the centralized routes file, page components, and the module pack:
 
 **`my-concept/frontend/src/main/index.ts`:**
 
 ```typescript
-export * from './_entity/myEntity/index.js';
-export * from './ui/Page_MyPage/index.js';
+export * from './_entity/myEntity/ModuleFE_MyEntity.js';
+export * from './ui/routes.js';
+export * from './ui/Page_MyPage/Page_MyPage.js';
+export * from './ui/Page_OtherPage/Page_OtherPage.js';
 export * from './module-pack.js';
 ```
 
-This makes `Route_Page_MyPage` and `ModulePackFE_MyConcept` importable from `@app/my-concept-frontend`.
+This makes `Route_Page_MyPage` and `ModulePackFE_MyConcept` importable from `@app/my-concept-frontend`. Note: there are no per-page barrel `index.ts` files — each file is exported directly.
 
 ---
 
@@ -158,11 +168,12 @@ Two things must happen here:
 
 ---
 
-## 6. Layout component with `<Outlet/>`
+## 6. Layout component with `<Outlet/>` and `<Suspense>`
 
-The root page component (`Page_Main`) renders shared layout (sidebar, header) and an `<Outlet/>` where matched child routes render:
+The root page component (`Page_Main`) renders shared layout (sidebar, header) and an `<Outlet/>` where matched child routes render. Because routes use `React.lazy`, a `<Suspense>` boundary must wrap the outlet:
 
 ```typescript
+import {Suspense} from 'react';
 import {Outlet} from 'react-router-dom';
 
 export class Page_Main extends AppPage {
@@ -170,14 +181,16 @@ export class Page_Main extends AppPage {
 		return <LL_H_T className={'app-layout'}>
 			{this.renderSidebar()}
 			<div className={'app-layout__content'}>
-				<Outlet/>
+				<Suspense>
+					<Outlet/>
+				</Suspense>
 			</div>
 		</LL_H_T>;
 	}
 }
 ```
 
-Any route with `children` acts as a layout boundary — its `Component` must render `<Outlet/>` for children to appear.
+Any route with `children` acts as a layout boundary — its `Component` must render `<Outlet/>` for children to appear. The `<Suspense>` boundary is required so React can show a fallback while lazy-loaded page chunks are being fetched.
 
 ---
 
@@ -254,6 +267,21 @@ export const Route_Page_ArticleDetail: TS_Route<{ articleId: string }> = {
 ---
 
 ## 11. Navigation
+
+### Cross-page navigation imports
+
+Pages that navigate to other pages import route descriptors from the centralized `routes.ts` — **never** from per-page files or other page component files:
+
+```typescript
+// Correct — from the package's centralized routes
+import {Route_Page_OtherPage} from '../routes.js';
+
+// Correct — from another package (goes through its barrel)
+import {Route_Page_ExternalPage} from '@app/other-concept-frontend';
+
+// Wrong — per-page route.ts (creates circular deps)
+import {Route_Page_OtherPage} from '../Page_OtherPage/route.js';
+```
 
 ### Declarative: `TS_NavLink`
 
@@ -377,9 +405,9 @@ This is a special case — normal concept pages should define routes as plain `T
 ## Checklist: adding a new page
 
 1. Create `Page_MyPage.tsx` component under `my-concept/frontend/src/main/ui/Page_MyPage/`
-2. Create `route.ts` next to it — export `Route_Page_MyPage: TS_Route` with explicit type
-3. Create `index.ts` barrel re-exporting both the component and route
-4. Re-export from the package barrel (`src/main/index.ts`)
-5. Add route to `Route_Page_Main.children` in `app/frontend-vite/src/main/ui/pages/Page_Main/route.ts`
-6. Ensure `ModulePackFE_MyConcept` is registered in `app/frontend-vite/src/main/index.tsx` via `.addModulePack()`
-7. Add nav entry in `Page_Main.tsx` sidebar (if the page should appear in navigation)
+2. Add a `React.lazy` route entry in the package's centralized `ui/routes.ts`
+3. Re-export the page component from the package barrel (`src/main/index.ts`) — routes are already exported via `routes.js`
+4. Add route to `Route_Page_Main.children` in `app/frontend-vite/src/main/ui/pages/Page_Main/route.ts`
+5. Ensure `ModulePackFE_MyConcept` is registered in `app/frontend-vite/src/main/index.tsx` via `.addModulePack()`
+6. Add nav entry in `Page_Main.tsx` sidebar (if the page should appear in navigation)
+7. Verify the app shell wraps `<Outlet/>` with `<Suspense>` (should already be in place)

@@ -508,7 +508,60 @@ Never escalate to `!important` to win a specificity conflict — that signals th
 
 ---
 
-## 13. Self-check — signals of non-compliant code
+## 13. Route definitions — centralized with lazy loading
+
+### No per-page route files
+
+Do not create a `route.ts` file inside each page folder. Per-page route files import the page component eagerly, which creates circular dependencies when pages navigate to each other.
+
+### Centralized routes
+
+Each package defines a single `routes.ts` at the UI root (`ui/routes.ts`). This file contains all route definitions for the package, using `React.lazy` for the `Component` field:
+
+```tsx
+import {lazy} from 'react';
+import type {TS_Route} from '@nu-art/thunder-routing';
+
+export const Route_Page_SamplingDashboard: TS_Route = {
+	path: 'youtube/sampling',
+	key: 'youtube-sampling-dashboard',
+	Component: lazy(() => import('./Page_SamplingDashboard/Page_SamplingDashboard.js').then(m => ({default: m.APage_SamplingDashboard}))),
+};
+```
+
+**Why this works:**
+- Route descriptors (`key`, `path`) are pure metadata — pages can import them freely for navigation without pulling in other page components.
+- `React.lazy(() => import(...))` defers component resolution to render time, so no page module is synchronously imported at definition time. No circular dependency is possible.
+- Vite (and other bundlers) automatically code-split at `import()` boundaries — each page becomes its own chunk, loaded on demand.
+
+**Note:** `React.lazy` with dynamic `import()` is the **one sanctioned use** of dynamic imports. The general ban on inline imports (see coding rule) exists to prevent dependency workarounds — `React.lazy` in route definitions is an intentional performance and architecture pattern, not a workaround.
+
+### Suspense boundary
+
+Lazy-loaded components require a `<Suspense>` boundary above them in the React tree. The app shell must wrap the route `<Outlet/>` with `<Suspense>`:
+
+```tsx
+<Suspense>
+	<Outlet/>
+</Suspense>
+```
+
+### Pages navigate via route descriptors
+
+Pages import route objects from the centralized `routes.ts` for navigation — never from other pages:
+
+```tsx
+// Correct — import from centralized routes
+import {Route_Page_LayerLibrary} from '../routes.js';
+onClick={() => ModuleFE_Routing.goToRoute(Route_Page_LayerLibrary)}
+
+// Wrong — import from per-page route.ts (creates circular deps)
+import {Route_Page_LayerLibrary} from '../Page_LayerLibrary/route.js';
+```
+
+---
+
+## 14. Self-check — signals of non-compliant code
 
 | Signal in code | What is wrong | What it should be |
 |----------------|--------------|-------------------|
@@ -524,3 +577,4 @@ Never escalate to `!important` to win a specificity conflict — that signals th
 | `if (!editMode) return <A>; else return <B>;` ad-hoc branching | Undeclared mode pattern | `Component_SwitchView` or `disabled` prop |
 | `// #### Section ####` banner comments | Noise; signals class is too large | Decompose into smaller components |
 | `!important` anywhere | Specificity conflict | Fix the scope |
+| Per-page `route.ts` with eager `Component: APage_*` | Circular dependency risk | Centralized `routes.ts` with `React.lazy` |

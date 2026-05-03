@@ -5,12 +5,13 @@ alwaysApply: false
 
 # How to use sync-manager
 
-Two packages — the frontend sync module lives in `@nu-art/thunder-core`:
+Three packages:
 
 | Package | Purpose |
 |---------|---------|
 | `@nu-art/sync-manager-shared` | Sync types, API definitions, deleted-doc DB def |
 | `@nu-art/sync-manager-backend` | RTDB sync state, smart-sync HTTP API, automatic post-write timestamp updates |
+| `@nu-art/sync-manager-frontend` | `ModuleFE_SyncManager` — RTDB listener, smart-sync client, per-module sync orchestration, `AwaitModules` component |
 
 ---
 
@@ -18,8 +19,9 @@ Two packages — the frontend sync module lives in `@nu-art/thunder-core`:
 
 - RTDB timestamps are updated **automatically** via `PostWriteInterceptor` on every DB module. You do not need to call `onPostWrite` manually.
 - Smart-sync compares per-collection `lastUpdated` timestamps between frontend (IDB) and backend (RTDB) to decide: no sync, delta sync, or full sync.
-- Each `ModuleFE_BaseApi` participates in smart-sync when registered via a module pack in the Thunder builder.
+- Each `ModuleFE_BaseApi` participates in smart-sync when registered via a module pack in the Thunder builder — unless explicitly excluded.
 - Entities with the same `frontend.group` in their DB definition share an IDB database and sync together.
+- High-volume collections that should not be fully synced can be excluded via `ModuleFE_SyncManager.excludeFromSync(dbKey)` — see "Excluding a collection from sync" below.
 
 ---
 
@@ -45,6 +47,108 @@ During `init()`, the sync manager:
 3. On first smart-sync request, `getOrCreateSyncData()` initializes any missing collections in RTDB — empty collections start with `lastUpdated: 0`, which updates on first write.
 
 **You do not need to wire anything per collection.** Every `ModuleBE_BaseDB` is automatically covered.
+
+---
+
+## Frontend (`@nu-art/sync-manager-frontend`)
+
+### How it works
+
+`ModuleFE_SyncManager` listens to an RTDB node for per-collection `lastUpdated` timestamps. When a timestamp changes (backend wrote data), it debounces then sends a smart-sync request with every registered `ModuleFE_BaseApi`'s local `IDB.getLastSync()`. The backend responds with per-module instructions (no-sync, delta, full). The sync manager queues and executes them — full sync calls `query({where: {}})`, delta applies item updates/deletes — then sets `DataStatus.ContainsData` on each module.
+
+### Starting and stopping
+
+Sync is driven by login state. Start listening after login, stop on logout:
+
+```typescript
+ModuleFE_SyncManager.startListening();   // subscribes to RTDB
+ModuleFE_SyncManager.stopListening();    // unsubscribes
+ModuleFE_SyncManager.cancelSync();       // aborts in-flight syncs
+```
+
+### AwaitModules
+
+Pages wrap content in `<AwaitModules modules={[...]}>` to wait until listed modules reach `DataStatus.ContainsData` before rendering. Only include modules whose data must be present before the page can render.
+
+```tsx
+<AwaitModules modules={[ModuleFE_MyEntity, ModuleFE_OtherEntity]}>
+	<MyPage/>
+</AwaitModules>
+```
+
+### Configuration
+
+| Method | Purpose |
+|--------|---------|
+| `setNodeContext(resolver)` | Override the RTDB path (must match backend) |
+| `setSmartSyncUrl(resolver)` | Override the smart-sync API URL |
+| `setShouldCleanIDBOnFullSync(boolean)` | Whether to clear IDB before full sync (default `true`) |
+| `setDebounceTimeout(ms)` | Debounce delay before sync fires |
+| `setDebounceMaxTimeout(ms)` | Max debounce delay |
+| `setOnSyncCompleted(callback)` | Hook after smart-sync response is processed |
+| `setOnSyncDataChanged(callback)` | Hook when RTDB snapshot changes |
+| `excludeFromSync(dbKey)` | Exclude a collection from smart-sync (see below) |
+
+---
+
+## Excluding a collection from sync
+
+Some collections grow too large for full-collection sync (e.g. high-frequency time-series data). Use `excludeFromSync` to remove a collection from the smart-sync cycle while keeping its `ModuleFE_BaseApi` fully functional for on-demand queries.
+
+```typescript
+ModuleFE_SyncManager.excludeFromSync(dbKey);
+```
+
+**Where to call it:** In the FE module's `init()` — the module knows its own nature:
+
+```typescript
+export class ModuleFE_MyHighVolumeEntity_Class
+	extends ModuleFE_BaseApi<DatabaseDef_MyEntity> {
+
+	protected init() {
+		super.init();
+		ModuleFE_SyncManager.excludeFromSync(this.config.dbKey);
+	}
+}
+```
+
+**What changes:**
+- The module is **not** included in the smart-sync request payload.
+- The module's cache starts **empty** — it is not pre-populated on login.
+- `query()`, `upsert()`, `delete()`, `cache`, `IDB` all work normally.
+- The module's dispatcher still fires after queries, so `ComponentSync` listeners re-derive as usual.
+
+**On-demand query pattern:** Components that need data from an excluded module query it scoped to what they display. Track the last-queried key to avoid redundant requests:
+
+```typescript
+class MyPage extends ComponentSync<Props, State>
+	implements OnMyEntityUpdated {
+
+	private lastQueriedId?: string;
+
+	__onMyEntityUpdated() {
+		this.reDeriveState();
+	}
+
+	protected deriveStateFromProps(): State {
+		const item = resolveCurrentItem();
+
+		if (item && this.lastQueriedId !== item._id) {
+			this.lastQueriedId = item._id;
+			ModuleFE_MyHighVolumeEntity.query({where: {parentId: item._id}});
+		}
+
+		const relatedData = ModuleFE_MyHighVolumeEntity.cache.allMutable()
+			.filter(d => d.parentId === item?._id);
+
+		return {item, relatedData};
+	}
+}
+```
+
+The flow: first render shows empty data → scoped query fires → cache populated → dispatcher triggers `reDeriveState()` → re-render with data.
+
+**AwaitModules:** Remove excluded modules from `<AwaitModules>` lists — they will never reach `ContainsData` via sync, so including them would block the page indefinitely.
 
 ---
 
@@ -121,8 +225,16 @@ Config for cleanup retention:
 
 ## Deps
 
+### Backend
 - `@nu-art/sync-manager-shared`
 - `@nu-art/db-api-backend` — `RuntimeBE_ModulesDB`, `ModuleBE_BaseDB` (for `PostWriteInterceptor` registration)
 - `@nu-art/firebase-backend` — Firestore + RTDB access
 - `@nu-art/http-server` — smart-sync API endpoint
 - `@nu-art/ts-common` — `Module`, `asArray`, logging
+
+### Frontend
+- `@nu-art/sync-manager-shared`
+- `@nu-art/db-api-frontend` — `ModuleFE_BaseApi`, `RuntimeFE_ModulesAPI`, `DataStatus`
+- `@nu-art/firebase-frontend` — RTDB listener
+- `@nu-art/http-client` — smart-sync HTTP call
+- `@nu-art/ts-common` — `Module`, debounce, queue
