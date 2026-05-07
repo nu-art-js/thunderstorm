@@ -64,10 +64,15 @@ export class MongoWrapperBE
 		this.logDebug(`TX-START [${tag}]`);
 		try {
 			let result: ReturnType;
+			const wrapper = {
+				transaction: session as any,
+				active: true,
+				writeCount: 0,
+				beginTransaction: () => session.startTransaction(),
+			};
 			const parentStorage = MemStorage.getStore();
-			await session.withTransaction(async () => {
+			try {
 				await new MemStorage().init(async () => {
-					const wrapper = {transaction: session as any, active: true};
 					MemKey_FirestoreTransaction.set(wrapper);
 
 					// @ts-ignore
@@ -75,14 +80,21 @@ export class MongoWrapperBE
 						postTransactionActions.push(action);
 					};
 
-					try {
-						result = await processor();
-					} finally {
-						wrapper.active = false;
-					}
+					result = await processor();
 				}, parentStorage);
-			});
-			this.logDebug(`TX-END [${tag}]`);
+			} catch (e) {
+				wrapper.active = false;
+				if (wrapper.writeCount > 0)
+					await session.abortTransaction();
+
+				throw e;
+			}
+
+			wrapper.active = false;
+			if (wrapper.writeCount > 0)
+				await session.commitTransaction();
+
+			this.logDebug(`TX-END [${tag}] writes=${wrapper.writeCount}`);
 			await Promise_all_sequentially(postTransactionActions);
 			return result!;
 		} finally {

@@ -9,6 +9,8 @@ export const canDeleteDispatcher = new Dispatcher<CanDeleteDBEntitiesProto, '__c
 export type TransactionWrapper = {
 	transaction: Transaction;
 	active: boolean;
+	writeCount?: number;
+	beginTransaction?: () => void;
 };
 
 export const MemKey_FirestoreTransaction = new MemKey<TransactionWrapper>('firestore--transaction');
@@ -19,6 +21,17 @@ export function getActiveTransaction(): Transaction | undefined {
 		return undefined;
 
 	return wrapper.transaction;
+}
+
+export function markTransactionWrite(): void {
+	const wrapper = MemKey_FirestoreTransaction.peak();
+	if (!wrapper?.active)
+		return;
+
+	if (wrapper.writeCount === 0)
+		wrapper.beginTransaction?.();
+
+	wrapper.writeCount = (wrapper.writeCount ?? 0) + 1;
 }
 
 export type MemKey_DeletedDocs_Type = {
