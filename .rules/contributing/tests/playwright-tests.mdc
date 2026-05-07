@@ -247,3 +247,7 @@ export default defineConfig({
 ### Type errors with inline configs
 
 Use explicit generic type parameters when TypeScript can't infer from inline objects.
+
+## See Also
+
+- [UI Component Tests](./ui-component-tests.mdc) — extends this pattern for rendering real React components with seeded module data and asserting on visual output. Uses the same Playwright + Vite infrastructure but with a component-rendering test entry instead of `window`-exposed APIs.

@@ -43,3 +43,8 @@ for example, user login and session management (these are both modules that util
 **Use When**: Testing frontend code that must run in a real browser environment.
 for example, IndexedDB operations, DOM manipulation, browser-specific APIs, or any code that cannot be tested in Node.js.
 Uses Vite dev server for ESM module resolution and Playwright for browser automation.
+
+### 5. [UI Component Tests](./ui-component-tests.mdc)
+**Use When**: Testing rendered React components that depend on the Thunder module lifecycle, IDB-backed data, or Thunderstorm UI primitives.
+The component under test remains exactly as it is used in the app — real modules, real IDB, real dispatchers. Data is seeded via `onEntriesUpdated` instead of backend sync.
+Uses the same Playwright infrastructure as browser tests but with a component-rendering test entry.

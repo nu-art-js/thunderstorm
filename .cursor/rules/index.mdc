@@ -45,6 +45,7 @@ Paths are relative to the project root (monorepo root).
 | Workspace / file system tests | [_thunderstorm/.rules/contributing/tests/workspace-tests.mdc](_thunderstorm/.rules/contributing/tests/workspace-tests.mdc) |
 | Firebase / Storm module tests | [_thunderstorm/.rules/contributing/tests/firebase-tests.mdc](_thunderstorm/.rules/contributing/tests/firebase-tests.mdc) |
 | Playwright browser tests | [_thunderstorm/.rules/contributing/tests/playwright-tests.mdc](_thunderstorm/.rules/contributing/tests/playwright-tests.mdc) |
+| UI component tests (Thunder + React) | [_thunderstorm/.rules/contributing/tests/ui-component-tests.mdc](_thunderstorm/.rules/contributing/tests/ui-component-tests.mdc) |
 | How to run tests with BAI | [_thunderstorm/.rules/contributing/tests/running-tests.mdc](_thunderstorm/.rules/contributing/tests/running-tests.mdc) |
 
 ---

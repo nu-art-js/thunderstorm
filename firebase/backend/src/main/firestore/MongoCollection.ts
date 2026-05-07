@@ -49,7 +49,7 @@ import {
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {composeDbObjectUniqueId, _EmptyQuery, maxBatch} from '@nu-art/firebase-shared';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
-import {addDeletedToTransaction, getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
+import {addDeletedToTransaction, getActiveTransaction, markTransactionWrite, MemKey_FirestoreTransaction} from './consts.js';
 import {MongoInterface} from './MongoInterface.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
 import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb} from 'mongodb';
@@ -105,8 +105,8 @@ export class MongoCollection<Proto extends DB_Prototype>
 		if ('abortTransaction' in tx) {
 			const session = tx as unknown as ClientSession;
 			const txState = (session as any).transaction?.state;
-			if (txState && txState !== 'TRANSACTION_IN_PROGRESS' && txState !== 'STARTING_TRANSACTION')
-				this.logWarning(`SESSION-STALE [${this.dbDef.dbKey}] txState=${txState} — using session whose transaction is ${txState}`);
+			if (txState === 'TRANSACTION_COMMITTED' || txState === 'TRANSACTION_ABORTED')
+				this.logWarning(`SESSION-STALE [${this.dbDef.dbKey}] txState=${txState}`);
 
 			return session;
 		}
@@ -241,6 +241,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 	create = Object.freeze({
 		item: async (preDBItem: Proto['uiType']): Promise<Proto['dbType']> => {
 			const dbItem = await this.prepareForCreate(preDBItem);
+			markTransactionWrite();
 			await this.mongoCollection.insertOne(dbItem as any, this.sessionOpts());
 			await this.hooks?.postWriteProcessing?.({updated: dbItem}, 'create');
 			return dbItem;
@@ -251,6 +252,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 
 			const dbItems = await Promise.all(preDBItems.map(item => this.prepareForCreate(item)));
 			this.assertNoDuplicatedIds(dbItems, 'create.all');
+			markTransactionWrite();
 			await this.mongoCollection.insertMany(dbItems as any[], this.sessionOpts());
 			await this.hooks?.postWriteProcessing?.({updated: dbItems}, 'create');
 			return dbItems;
@@ -270,6 +272,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 				throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.dbDef.backend.name}/${currDBItem?._id} is outdated`);
 
 			const dbItem = await this.prepareForSet(preDBItem as Proto['dbType'], currDBItem, false);
+			markTransactionWrite();
 			await this.mongoCollection.replaceOne({_id: dbItem._id} as any, dbItem as any, {upsert: true, ...this.sessionOpts()});
 			await this.hooks?.postWriteProcessing?.({before: currDBItem, updated: dbItem}, 'set');
 			return dbItem;
@@ -310,6 +313,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 			}
 		}));
 
+		markTransactionWrite();
 		await this.mongoCollection.bulkWrite(ops as any[], this.sessionOpts());
 		if (preparedItems.length)
 			await this.hooks?.postWriteProcessing?.({before: existingItems, updated: preparedItems}, 'set');
@@ -326,6 +330,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 		});
 
 		await this.hooks?.canDeleteItems(items);
+		markTransactionWrite();
 		await this.mongoCollection.deleteMany({_id: {$in: ids}} as any, this.sessionOpts());
 		await this.hooks?.postWriteProcessing?.({deleted: items}, 'delete');
 		return items;
@@ -344,6 +349,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 
 			addDeletedToTransaction({dbKey: this.dbDef.entityName, ids: [dbItem._id]});
 			await this.hooks?.canDeleteItems([dbItem]);
+			markTransactionWrite();
 			await this.mongoCollection.deleteOne({_id: idStr} as any, this.sessionOpts());
 			await this.hooks?.postWriteProcessing?.({deleted: dbItem}, 'delete');
 			return dbItem;
@@ -426,6 +432,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 		},
 		yes: {iam: {sure: {iwant: {todelete: {the: {collection: {
 			delete: async () => {
+				markTransactionWrite();
 				await this.mongoCollection.deleteMany({}, this.sessionOpts());
 				await this.hooks?.postWriteProcessing?.({deleted: null}, 'delete');
 			}
@@ -443,14 +450,31 @@ export class MongoCollection<Proto extends DB_Prototype>
 		this.logDebug(`TX-START [${tag}]`);
 		try {
 			let result: ReturnType;
+			const wrapper = {
+				transaction: session as any,
+				active: true,
+				writeCount: 0,
+				beginTransaction: () => session.startTransaction(),
+			};
 			const parentStorage = MemStorage.getStore();
-			await session.withTransaction(async () => {
+			try {
 				await new MemStorage().init(async () => {
-					MemKey_FirestoreTransaction.set({transaction: session as any, active: true});
+					MemKey_FirestoreTransaction.set(wrapper);
 					result = await processor();
 				}, parentStorage);
-			});
-			this.logDebug(`TX-END [${tag}]`);
+			} catch (e) {
+				wrapper.active = false;
+				if (wrapper.writeCount > 0)
+					await session.abortTransaction();
+
+				throw e;
+			}
+
+			wrapper.active = false;
+			if (wrapper.writeCount > 0)
+				await session.commitTransaction();
+
+			this.logDebug(`TX-END [${tag}] writes=${wrapper.writeCount}`);
 			return result!;
 		} finally {
 			await session.endSession();
