@@ -3,6 +3,7 @@ import {Line, Text, Rect, Circle} from 'react-konva';
 import {toCanvasX, toCanvasY} from './chart-coordinate.js';
 import type {HoverZone} from './chart-coordinate.js';
 import {findClosestPoint} from './chart-range.js';
+import {interpolateAt} from './data-utils.js';
 import type {ChartRenderContext} from './chart-render-context.js';
 
 function defaultFormatter(value: number): string {
@@ -107,6 +108,7 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 		return null;
 
 	const hoverX = snapToHIndicators(ctx, rawHoverX);
+	const snapped = hoverX !== rawHoverX;
 
 	const primaryHAxis = hAxes[0];
 	const hRange = ctx.getHRange(primaryHAxis);
@@ -125,17 +127,28 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 
 		const layerHRange = ctx.getHRange(layer.hAxis);
 		const vRange = ctx.getVRange(layer.vAxis);
+
+		if (snapped) {
+			const firstH = layer.data[0].h;
+			const lastH = layer.data[layer.data.length - 1].h;
+			if (hValue < firstH || hValue > lastH)
+				return;
+		}
+
 		const closest = findClosestPoint(layer.data, hValue);
 		if (!closest)
 			return;
 
-		const cx = toCanvasX(closest.h, layerHRange, pad, plotWidth);
-		const rawCy = toCanvasY(closest.v, vRange, pad, plotHeight);
+		const displayValue = snapped ? interpolateAt(layer.data, hValue) : closest.v;
+		const displayH = snapped ? hValue : closest.h;
+
+		const cx = toCanvasX(displayH, layerHRange, pad, plotWidth);
+		const rawCy = toCanvasY(displayValue, vRange, pad, plotHeight);
 		const cy = Math.max(pad.top, Math.min(plotBottom, rawCy));
 
 		const tooltipFmt = layer.vAxis.tooltipFormatter ?? defaultFormatter;
 		nodes.push(<Circle key={`dot-${layer.id}`} x={cx} y={cy} radius={4} fill={layer.color} listening={false}/>);
-		tipEntries.push({text: `${layer.label}: ${tooltipFmt(closest.v)}`, color: layer.color});
+		tipEntries.push({text: `${layer.label}: ${tooltipFmt(displayValue)}`, color: layer.color});
 
 		if (layer.tooltipExtras) {
 			const extras = layer.tooltipExtras(layer.data, closest);
