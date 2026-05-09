@@ -88,3 +88,4 @@ export function findClosestPoint(points: DataPoint[], hValue: number): DataPoint
 	const curr = points[lo];
 	return Math.abs(prev.h - hValue) <= Math.abs(curr.h - hValue) ? prev : curr;
 }
+
