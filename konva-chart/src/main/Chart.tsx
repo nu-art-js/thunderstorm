@@ -60,6 +60,7 @@ export class Chart extends React.Component<Props, State> {
 	private vRangeCache = new Map<AxisConfig, ResolvedRange>();
 	private fullHRangeCache = new Map<AxisConfig, ResolvedRange>();
 	private fullVRangeCache = new Map<AxisConfig, ResolvedRange>();
+	private stableFullVRangeCache = new Map<AxisConfig, ResolvedRange>();
 
 	private get theme(): ChartTheme {
 		return {...DefaultChartTheme, ...this.props.theme};
@@ -105,7 +106,7 @@ export class Chart extends React.Component<Props, State> {
 			if (!vp)
 				return undefined;
 
-			const full = this.getFullVRange(axis);
+			const full = this.getStableFullVRange(axis);
 			return viewportToZoom(full, vp);
 		}
 
@@ -132,7 +133,7 @@ export class Chart extends React.Component<Props, State> {
 				if (!axis)
 					return;
 
-				const full = kind === 'h' ? this.getFullHRange(axis) : this.getFullVRange(axis);
+				const full = kind === 'h' ? this.getFullHRange(axis) : this.getStableFullVRange(axis);
 				current[key] = zoomToViewport(full, zoom);
 			}
 
@@ -185,7 +186,30 @@ export class Chart extends React.Component<Props, State> {
 		return cached;
 	}
 
-	private getFullVRange(axis: AxisConfig): ResolvedRange {
+	private getStableFullVRange(axis: AxisConfig): ResolvedRange {
+		let cached = this.stableFullVRangeCache.get(axis);
+		if (cached)
+			return cached;
+
+		const layers = this.props.layers.filter(l => l.vAxis === axis);
+		const values: number[] = [];
+		for (const layer of layers)
+			for (const pt of layer.data)
+				values.push(pt.v);
+
+		if (axis.indicators && axis.indicators.length > 0) {
+			for (const ind of axis.indicators) {
+				values.push(ind.from);
+				values.push(ind.to);
+			}
+		}
+
+		cached = computeRange(axis, values);
+		this.stableFullVRangeCache.set(axis, cached);
+		return cached;
+	}
+
+	private getAutoScaledVRange(axis: AxisConfig): ResolvedRange {
 		let cached = this.fullVRangeCache.get(axis);
 		if (cached)
 			return cached;
@@ -236,9 +260,14 @@ export class Chart extends React.Component<Props, State> {
 		if (cached)
 			return cached;
 
-		const full = this.getFullVRange(axis);
 		const zoom = this.resolveVAxisZoom(axis);
-		cached = zoom ? applyZoomFraction(full, zoom) : full;
+		if (zoom) {
+			const stable = this.getStableFullVRange(axis);
+			cached = applyZoomFraction(stable, zoom);
+		} else {
+			cached = this.getAutoScaledVRange(axis);
+		}
+
 		this.vRangeCache.set(axis, cached);
 		return cached;
 	};
@@ -432,6 +461,8 @@ export class Chart extends React.Component<Props, State> {
 		const plotHeight = this.props.height - pad.top - pad.bottom;
 		const {hAxes, vAxes} = collectAxes(this.props.layers, this.props.markers);
 
+		const updates: {key: string; zoom: ZoomFraction; kind: 'h' | 'v'}[] = [];
+
 		if (mode === 'x' || mode === 'xy') {
 			const leftPx = Math.max(Math.min(startPx, endPx), pad.left);
 			const rightPx = Math.min(Math.max(startPx, endPx), pad.left + plotWidth);
@@ -446,10 +477,11 @@ export class Chart extends React.Component<Props, State> {
 
 					const current = this.resolveAxisZoom(axis) ?? {min: 0, max: 1};
 					const span = current.max - current.min;
-					this.updateAxisZoom(axis.key, {
-						min: current.min + leftFrac * span,
-						max: current.min + rightFrac * span,
-					}, 'h');
+					updates.push({
+						key: axis.key,
+						zoom: {min: current.min + leftFrac * span, max: current.min + rightFrac * span},
+						kind: 'h',
+					});
 				}
 			}
 		}
@@ -468,13 +500,47 @@ export class Chart extends React.Component<Props, State> {
 
 					const current = this.resolveVAxisZoom(axis) ?? {min: 0, max: 1};
 					const span = current.max - current.min;
-					this.updateAxisZoom(axis.key, {
-						min: current.min + (1 - bottomFrac) * span,
-						max: current.min + (1 - topFrac) * span,
-					}, 'v');
+					updates.push({
+						key: axis.key,
+						zoom: {min: current.min + (1 - bottomFrac) * span, max: current.min + (1 - topFrac) * span},
+						kind: 'v',
+					});
 				}
 			}
 		}
+
+		if (updates.length > 0)
+			this.applyZoomBatch(updates);
+	}
+
+	private applyZoomBatch(updates: {key: string; zoom: ZoomFraction; kind: 'h' | 'v'}[]): void {
+		if (this.isControlled) {
+			if (!this.props.onViewportChange)
+				return;
+
+			const current = {...(this.props.viewport ?? {})};
+			const {hAxes, vAxes} = collectAxes(this.props.layers, this.props.markers);
+
+			for (const {key, zoom, kind} of updates) {
+				const axis = [...hAxes, ...vAxes].find(a => a.key === key);
+				if (!axis)
+					continue;
+
+				const full = kind === 'h' ? this.getFullHRange(axis) : this.getStableFullVRange(axis);
+				current[key] = zoomToViewport(full, zoom);
+			}
+
+			this.props.onViewportChange(Object.keys(current).length > 0 ? current : undefined);
+			return;
+		}
+
+		this.setState(prev => {
+			const next = {...prev.zoom};
+			for (const {key, zoom} of updates)
+				next[key] = zoom;
+
+			return {zoom: next};
+		});
 	}
 
 	private fireClick(px: number) {
@@ -527,6 +593,7 @@ export class Chart extends React.Component<Props, State> {
 		this.vRangeCache.clear();
 		this.fullHRangeCache.clear();
 		this.fullVRangeCache.clear();
+		this.stableFullVRangeCache.clear();
 	}
 
 	// --- Selection overlay ---
