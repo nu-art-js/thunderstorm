@@ -1,7 +1,13 @@
 import {PermissionKey_FE} from '../PermissionKey_FE.js';
-import {PermissionKey_DeveloperAdmin, PermissionKey_DeveloperViewer, PermissionKey_DeveloperWriter} from '@nu-art/permissions-shared';
+import {
+	PermissionKey_AccountManagementAdmin,
+	PermissionKey_DeveloperAdmin,
+	PermissionKey_DeveloperViewer,
+	PermissionKey_DeveloperWriter
+} from '@nu-art/permissions-shared';
 
 
 export const PermissionKeyFE_DeveloperViewer = new PermissionKey_FE(PermissionKey_DeveloperViewer);
 export const PermissionKeyFE_DeveloperEditor = new PermissionKey_FE(PermissionKey_DeveloperWriter);
 export const PermissionKeyFE_DeveloperAdmin = new PermissionKey_FE(PermissionKey_DeveloperAdmin);
+export const PermissionKeyFE_AccountManagementAdmin = new PermissionKey_FE(PermissionKey_AccountManagementAdmin);

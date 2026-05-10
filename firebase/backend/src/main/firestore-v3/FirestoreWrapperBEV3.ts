@@ -71,7 +71,7 @@ export class FirestoreWrapperBEV3
 				} as unknown as DocumentSnapshot<T>;
 			};
 
-			const updateTransactionUpdates = async <T extends DB_Object>(data: T | DocumentReference<T>, exists: boolean = true) => {
+			const updateTransactionUpdates = async <T extends DB_Object>(data: T | DocumentReference<T>, path: string, exists: boolean = true) => {
 				let _data: DB_Object;
 				let _id: UniqueId;
 
@@ -83,24 +83,24 @@ export class FirestoreWrapperBEV3
 					_data = data;
 				}
 
-				transactionUpdates[_id] = getMockDocumentSnapshot(_data, _id, exists);
+				transactionUpdates[path] = getMockDocumentSnapshot(_data, _id, exists);
 			};
 
 			transaction.set = <T>(documentRef: FirebaseFirestore.DocumentReference<T>, data: FirebaseFirestore.WithFieldValue<T>) => {
-				updateTransactionUpdates(data as DB_Object);
+				updateTransactionUpdates(data as DB_Object, documentRef.path);
 				writeActions.push(() => originSet(documentRef, data));
 				return transaction;
 			};
 
 			transaction.create = <T>(documentRef: FirebaseFirestore.DocumentReference<T>, data: FirebaseFirestore.WithFieldValue<T>) => {
-				updateTransactionUpdates(data as DB_Object);
+				updateTransactionUpdates(data as DB_Object, documentRef.path);
 				writeActions.push(() => originCreate(documentRef, data));
 				return transaction;
 			};
 
 			transaction.delete = (documentRef: DocumentReference<any>, precondition?: FirebaseFirestore.Precondition) => {
 				// update deletions
-				updateTransactionUpdates(documentRef, false);
+				updateTransactionUpdates(documentRef, documentRef.path, false);
 				writeActions.push(() => originDelete(documentRef, precondition));
 				return transaction;
 			};
@@ -117,7 +117,7 @@ export class FirestoreWrapperBEV3
 					if (!document)
 						return doc;
 
-					return transactionUpdates[document._id] ?? doc;
+					return transactionUpdates[doc.ref.path] ?? doc;
 				}
 
 				// handle query snapshot
@@ -130,7 +130,7 @@ export class FirestoreWrapperBEV3
 							const _doc = doc.data();
 							if (!_doc) return doc;
 
-							return transactionUpdates[(_doc as DB_Object)._id] ?? doc;
+							return transactionUpdates[doc.ref.path] ?? doc;
 						}) as QueryDocumentSnapshot<any>[]
 					};
 				}
@@ -146,7 +146,7 @@ export class FirestoreWrapperBEV3
 					if (!_doc)
 						return doc;
 
-					return transactionUpdates[(_doc as unknown as DB_Object)._id] ?? doc;
+					return transactionUpdates[doc.ref.path] ?? doc;
 				});
 			};
 

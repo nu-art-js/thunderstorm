@@ -65,7 +65,7 @@ export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInpu
 
 	static getDerivedStateFromProps(props: TS_BaseInputProps<any, any>, state: InputState) {
 		if (props.id === state.id && state.name === props.name && state.initialValue === props.value)
-			return {value: state.value};
+			return {value: state.value, placeholder: props.placeholder};
 
 		return TS_BaseInput.getInitialState(props);
 	}

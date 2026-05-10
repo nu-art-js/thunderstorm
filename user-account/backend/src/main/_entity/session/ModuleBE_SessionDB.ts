@@ -17,14 +17,14 @@ import {
 } from '@nu-art/ts-common';
 import {firestore} from 'firebase-admin';
 import {DBApiConfigV3, ModuleBE_BaseDB} from '@nu-art/thunderstorm-backend';
-import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session} from '@nu-art/user-account-shared';
+import {AccountType_Service, DB_Session, DBDef_Session, DBProto_Session, SafeDB_Account} from '@nu-art/user-account-shared';
 import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
 import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/consts';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/thunderstorm-shared';
 import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
-import {ModuleBE_AccountDB} from '../account/ModuleBE_AccountDB.js';
+import {ModuleBE_AccountDB, OnAccountDeleted} from '../account/ModuleBE_AccountDB.js';
 import Transaction = firestore.Transaction;
 
 export type BaseSessionClaims = {
@@ -58,9 +58,13 @@ type Config = DBApiConfigV3<DBProto_Session> & {
 
 export class ModuleBE_SessionDB_Class
 	extends ModuleBE_BaseDB<DBProto_Session, Config>
-	implements CollectSessionData<TypedKeyValue<'session', { deviceId: string }>> {
+	implements CollectSessionData<TypedKeyValue<'session', { deviceId: string }>>, OnAccountDeleted {
 
 	private jwtHandler!: JWT_Handler<BaseSessionClaims & RecursiveObjectOfPrimitives>;
+
+	__onAccountDeleted = async (account: SafeDB_Account, transaction: Transaction) => {
+		await this.delete.where({accountId: account._id}, transaction);
+	};
 
 	constructor() {
 		super(DBDef_Session);
@@ -294,7 +298,15 @@ export class ModuleBE_SessionDB_Class
 	private async locateSession(jwt: string) {
 		try {
 			const {dbSession, claims} = await this.runTransaction(async t => {
-				let dbSession = await this._session.query.byJwt(jwt);
+				let dbSession: DB_Session;
+				try {
+					dbSession = await this._session.query.byJwt(jwt);
+				} catch (err: any) {
+					if (isErrorOfType(err, ApiException)?.responseCode === HttpCodes._4XX.NOT_FOUND.code)
+						throw HttpCodes._4XX.UNAUTHORIZED('JWT received in request was not found', err);
+
+					throw err;
+				}
 				const latestJwtValidationResult = await this.jwtHandler.verifySignature(dbSession.sessionIdJwt);
 				if (!latestJwtValidationResult.validated)
 					throw new MUSTNeverHappenException(`JWT received from DB is invalid Session id = ${dbSession._id}`);
@@ -306,9 +318,7 @@ export class ModuleBE_SessionDB_Class
 			MemKey_DB_Session.set(dbSession);
 			MemKey_SessionData.set(claims);
 			MemKey_Jwt.set(dbSession.sessionIdJwt);
-
 			MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, dbSession.sessionIdJwt);
-
 		} catch (err: any) {
 			if (isErrorOfType(err, ApiException))
 				throw err;
@@ -346,12 +356,13 @@ export class ModuleBE_SessionDB_Class
 					sessionIdsToDelete.add(session._id);
 				}
 			}
-			session.validSessionJwtMd5s.forEach(id => {
-				if (id !== session._id)
-					sessionIdsToDelete.add(id);
-			});
-			if (!session.validSessionJwtMd5s.length)
+			if (!session.validSessionJwtMd5s?.length)
 				sessionIdsToDelete.add(session._id);
+			else
+				session.validSessionJwtMd5s.forEach(id => {
+					if (id !== session._id)
+						sessionIdsToDelete.add(id);
+				});
 		});
 
 		//Second pass - collect all sessions that are expired or has the old "sessionData" property in their decoded data

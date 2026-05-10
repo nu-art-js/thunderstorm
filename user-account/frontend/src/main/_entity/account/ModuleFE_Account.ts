@@ -81,7 +81,10 @@ class ModuleFE_Account_Class
 			changeThumbnail: apiWithBody(ApiDef_Account._v1.changeThumbnail, this.onThumbnailChanged),
 			loginSaml: apiWithQuery(ApiDef_SAML._v1.loginSaml, this.onLoginCompletedSAML),
 			assertSAML: apiWithBody(ApiDef_SAML._v1.assertSAML),
-			getPasswordAssertionConfig: apiWithQuery(ApiDef_Account._v1.getPasswordAssertionConfig, this.onPasswordAssertionConfig)
+			getPasswordAssertionConfig: apiWithQuery(ApiDef_Account._v1.getPasswordAssertionConfig, this.onPasswordAssertionConfig),
+			deleteAccount: apiWithQuery(ApiDef_Account._v1.deleteAccount, async response => {
+				await this.onEntryDeleted(response.account);
+			}),
 		};
 	}
 

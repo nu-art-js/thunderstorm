@@ -19,6 +19,7 @@ type SearchAddOnsKeyExtractor<A extends AddOnTuple> = {
 export type SearchItem<Proto extends DBProto<any>, A extends AddOnTuple> = Readonly<{
 	module: ModuleFE_BaseDB<Proto>;
 	entityLabel: string;
+	globalFilter?: (item: Proto['dbType']) => boolean;
 	addOnMethods: Readonly<SearchAddOnsMethodExtractor<A>>;
 	compatibleAddOnKeys: Readonly<SearchAddOnsKeyExtractor<A>>;
 	resultRenderer: (result: SearchResult, style?: CSSProperties) => ReactNode;

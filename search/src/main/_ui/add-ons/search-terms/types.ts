@@ -15,6 +15,7 @@ export const AddOn_SearchTerms: SearchAddOn<AddOnDef_SearchTerms> = {
 	key: 'searchTerms',
 	methodName: 'getSearchTerms',
 	isActive: (param) => !!param && param.length >= 3,
+	valueTransform: value => value.toLowerCase(),
 	resultFilter: (value, result) => {
 		const terms = result.filterResults[AddOn_SearchTerms.key].value as string[];
 		let index: number;

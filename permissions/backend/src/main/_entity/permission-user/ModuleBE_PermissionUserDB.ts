@@ -22,21 +22,21 @@ import {
 	Year
 } from '@nu-art/ts-common';
 import {ModuleBE_PermissionGroupDB} from '../permission-group/ModuleBE_PermissionGroupDB.js';
-import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
+import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {Transaction} from 'firebase-admin/firestore';
-import {UI_Account} from '@nu-art/user-account-shared';
+import {SafeDB_Account, UI_Account} from '@nu-art/user-account-shared';
 import {MemKey_UserPermissions} from '../../consts.js';
 import {CollectionActionType, PostWriteProcessingData} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
 import {DefaultDef_ServiceAccount, dispatcher_collectServiceAccounts} from '@nu-art/thunderstorm-backend/modules/_tdb/service-accounts';
 
 
-type Config = DBApiConfigV3<DBProto_PermissionUser> & {}
+type Config = DBApiConfigV3<DBProto_PermissionUser> & {
+	defaultPermissionGroupIds?: UniqueId[];
+}
 
 export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDB<DBProto_PermissionUser, Config>
-	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup {
-
-	private defaultPermissionGroups?: () => Promise<User_Group[]>;
+	implements OnNewUserRegistered, OnUserLogin, PerformProjectSetup, OnAccountDeleted {
 
 	constructor() {
 		super(DBDef_PermissionUser);
@@ -81,6 +81,10 @@ export class ModuleBE_PermissionUserDB_Class
 	async __onNewUserRegistered(account: UI_Account, transaction: Transaction) {
 		await this.insertIfNotExist(account as UI_Account & DB_BaseObject, transaction);
 	}
+
+	__onAccountDeleted = async (account: SafeDB_Account, transaction: Transaction) => {
+		await this.delete.unique(account._id, transaction);
+	};
 
 	// protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
 	// 	const conflicts: DB_PermissionUser[] = [];
@@ -128,14 +132,10 @@ export class ModuleBE_PermissionUserDB_Class
 
 	insertIfNotExist = async (uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) => {
 		const create = async (transaction?: Transaction) => {
-			const defaultPermissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups ? await ModuleBE_PermissionUserDB.defaultPermissionGroups() : [];
-			const permissionGroups = ModuleBE_PermissionUserDB.defaultPermissionGroups
-				? filterInstances(await ModuleBE_PermissionGroupDB.query.all(defaultPermissionGroups.map(item => item.groupId)))
-				: [];
-			this.logInfo(`Received ${defaultPermissionGroups.length} groups to assign, ${permissionGroups.length} of which exist`);
+			const defaultPermissionGroups = await this.getDefaultPermissionGroups();
 			const permissionsUserToCreate = {
 				_id: uiAccount._id,
-				groups: permissionGroups.map(group => ({groupId: group._id})),
+				groups: defaultPermissionGroups.map(group => ({groupId: group._id})),
 				_auditorId: MemKey_AccountId.get()
 			};
 
@@ -197,12 +197,11 @@ export class ModuleBE_PermissionUserDB_Class
 		await this.set.multi(usersToUpdate);
 	}
 
-	public setDefaultPermissionGroups = (groupsGetter: () => Promise<User_Group[]>) => {
-		this.defaultPermissionGroups = groupsGetter;
-	};
+	private getDefaultPermissionGroups = async () => {
+		if (!this.config.defaultPermissionGroupIds?.length)
+			return [];
 
-	public clearDefaultPermissionGroups = () => {
-		delete this.defaultPermissionGroups;
+		return ModuleBE_PermissionGroupDB.query.where({_id: {$in: this.config.defaultPermissionGroupIds}});
 	};
 
 	/**

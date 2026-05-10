@@ -24,6 +24,7 @@ import {
 	Account_ChangeThumbnail,
 	Account_CreateAccount,
 	Account_CreateToken,
+	Account_Delete,
 	Account_Login,
 	Account_RegisterAccount,
 	Account_SetPassword,
@@ -57,7 +58,6 @@ import {ModuleBE_FailedLoginAttemptDB} from '../failed-login-attempt/index.js';
 import {QueryDocumentSnapshot} from 'firebase-admin/firestore';
 import Transaction = firestore.Transaction;
 
-
 type BaseAccount = {
 	email: string,
 	type: AccountType,
@@ -84,6 +84,12 @@ export const dispatch_onAccountLogin = new Dispatcher<OnUserLogin, '__onUserLogi
 
 const dispatch_onAccountRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 export const dispatch_onPreLogout = new Dispatcher<OnPreLogout, '__onPreLogout'>('__onPreLogout');
+
+export interface OnAccountDeleted {
+	__onAccountDeleted: (account: SafeDB_Account, transaction: Transaction) => Promise<void>;
+}
+
+const dispatch_OnAccountDeleted = new Dispatcher<OnAccountDeleted, '__onAccountDeleted'>('__onAccountDeleted');
 
 type Config = {
 	canRegister: boolean
@@ -122,11 +128,12 @@ export class ModuleBE_AccountDB_Class
 			createBodyServerApi(ApiDef_Account._v1.setPassword, this.account.setPassword),
 			createQueryServerApi(ApiDef_Account._v1.getSessions, this.account.getSessions),
 			createBodyServerApi(ApiDef_Account._v1.changeThumbnail, this.account.changeThumbnail),
+			createQueryServerApi(ApiDef_Account._v1.deleteAccount, this.account.delete),
 			createQueryServerApi(ApiDef_Account._v1.getPasswordAssertionConfig, async () => ({
 				config: this.config.ignorePasswordAssertion
 					? undefined
 					: this.config.passwordAssertion
-			}))
+			})),
 		]);
 	}
 
@@ -137,9 +144,9 @@ export class ModuleBE_AccountDB_Class
 		};
 	}
 
-	canDeleteItems(dbItems: DB_Account[], transaction?: FirebaseFirestore.Transaction): Promise<void> {
-		throw HttpCodes._5XX.NOT_IMPLEMENTED('Account Deletion is not implemented yet');
-	}
+	// canDeleteItems(dbItems: DB_Account[], transaction?: FirebaseFirestore.Transaction): Promise<void> {
+	// 	throw HttpCodes._5XX.NOT_IMPLEMENTED('Account Deletion is not implemented yet');
+	// }
 
 	async __collectSessionData(data: BaseSessionClaims) {
 		const account = await this.query.uniqueAssert(data.accountId);
@@ -393,6 +400,27 @@ export class ModuleBE_AccountDB_Class
 			return {
 				account: (await account.get())!,
 			};
+		},
+		delete: async (request: Account_Delete['request']): Promise<Account_Delete['response']> => {
+			return await this.runTransaction(async t => {
+				const account = await this.query.unique(request.accountId);
+				if (!account)
+					throw HttpCodes._4XX.NOT_FOUND(`Account with id ${request.accountId} Not Found!`);
+
+				try {
+					const safeAccount = makeAccountSafe(account);
+					await dispatch_OnAccountDeleted.dispatchModuleAsyncSerial(safeAccount, t);
+					await this.delete.item(account, t);
+					return {account};
+				} catch (err: any) {
+					const error = err as ApiException;
+					if (error.responseCode === 422)
+						throw error;
+
+					this.logError('Failed deleting account', err);
+					throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Failed to delete account', error.message, error);
+				}
+			});
 		}
 	};
 

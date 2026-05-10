@@ -622,6 +622,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @protected
 	 */
 	protected async autoSaveImpl() {
+		this.preSaveAction?.(this.item);
 		if (this.validate())
 			this.debounceInstance();
 

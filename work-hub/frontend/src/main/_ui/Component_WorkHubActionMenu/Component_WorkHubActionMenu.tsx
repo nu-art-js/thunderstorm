@@ -13,7 +13,7 @@ import {WorkHubItem_MenuAction, WorkHubItem_MenuSection} from './types.js';
 import {ModuleFE_WorkHub} from '../../_module/index.js';
 import './Component_WorkHubActionMenu.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {generateHex} from '@nu-art/ts-common';
+import {exists, generateHex, resolveContent} from '@nu-art/ts-common';
 import {isWorkHubTabGroup, WorkHubTabGroup} from '@nu-art/work-hub-shared';
 
 type Props = {
@@ -77,6 +77,16 @@ export class Component_WorkHubActionMenu
 		ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
 	};
 
+	private hasVisibleActions = (item: WorkHubItem_MenuSection | WorkHubItem_MenuAction) => {
+		if ('actions' in item)
+			return item.actions.some(this.hasVisibleActions);
+
+		if (exists(item.visible))
+			return item.visible;
+
+		return item.innerActions?.length ? item.innerActions.some(this.hasVisibleActions) : true;
+	};
+
 	// ######################## Render ########################
 
 	render() {
@@ -85,6 +95,9 @@ export class Component_WorkHubActionMenu
 	}
 
 	private render_Section = (section: WorkHubItem_MenuSection, index: number) => {
+		if (!this.hasVisibleActions(section))
+			return;
+
 		return <LL_V_L key={index} className={'action-menu__section'}>
 			{!!section.label?.length && <div className={'action-menu__section-label'}>{section.label}</div>}
 			{section.actions.map(this.render_Action)}
@@ -92,6 +105,9 @@ export class Component_WorkHubActionMenu
 	};
 
 	private render_Action = (action: WorkHubItem_MenuAction, index: number) => {
+		if(!this.hasVisibleActions(action))
+			return;
+
 		if (action.action)
 			return this.render_ActionButton(action, index);
 
@@ -99,10 +115,11 @@ export class Component_WorkHubActionMenu
 	};
 
 	private render_ActionButton = (action: WorkHubItem_MenuAction, index: number) => {
+		const disabled = resolveContent(action.disabled);
 		return <Fragment key={index}>
 			<Button
 				variant={'work-hub-menu-action'}
-				disabled={action.disabled}
+				disabled={disabled}
 				onClick={async () => {
 					await action.action!();
 					this.closeMenu();

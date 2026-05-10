@@ -23,9 +23,7 @@
     "@nu-art/thunderstorm-backend": "?",
     "@nu-art/thunderstorm-shared": "?",
     "@nu-art/ts-common": "?",
-    "@octokit/plugin-paginate-rest": "2.2.1",
-    "@octokit/rest": "18.0.9",
-    "@octokit/types": "^5.5.0",
+    "@octokit/rest": "21.1.1",
     "jsonwebtoken": "^9.0.0"
   },
   "devDependencies": {

@@ -56,8 +56,7 @@
   "devDependencies": {
     "@types/react": "?",
     "@types/express": "?",
-    "@types/history": "^4.7.2",
-    "@types/request": "^2.48.1"
+    "@types/history": "^4.7.2"
   },
   "unitConfig": {
     "type": "typescript-lib"

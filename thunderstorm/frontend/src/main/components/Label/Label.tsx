@@ -5,115 +5,122 @@ import './Label.scss';
 import {OnWindowResized} from '../../modules/ModuleFE_Window.js';
 
 type Props = React.PropsWithChildren<{
-    tooltip?: React.ReactNode; //The content that will appear in the tooltip
-    className?: string;
-    containerSelector?: string; //A container for the tooltip direction calculation
-    onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+	tooltip?: React.ReactNode; //The content that will appear in the tooltip
+	className?: string;
+	containerSelector?: string; //A container for the tooltip direction calculation
+	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+	forceUpdate?: boolean;
 }>;
 
 type State = {
-    tooltip: React.ReactNode;
-    className?: string;
-    containerSelector?: string;
+	tooltip: React.ReactNode;
+	className?: string;
+	containerSelector?: string;
+	forceUpdate: boolean;
 };
 
 export class Label
-    extends ComponentSync<Props, State>
-    implements OnWindowResized {
+	extends ComponentSync<Props, State>
+	implements OnWindowResized {
 
-    private readonly labelRef = React.createRef<HTMLDivElement>();
-    private readonly activeTruncationClass = 'truncate-active';
-    private readonly activeTooltipClass = 'tooltip-active';
-    private readonly invertTooltipClass = 'invert-tooltip';
+	private readonly labelRef = React.createRef<HTMLDivElement>();
+	private readonly activeTruncationClass = 'truncate-active';
+	private readonly activeTooltipClass = 'tooltip-active';
+	private readonly invertTooltipClass = 'invert-tooltip';
 
-    // ######################## Life Cycle ########################
+	// ######################## Life Cycle ########################
 
-    __onWindowResized() {
-        this.checkOverflow();
-    }
+	__onWindowResized() {
+		this.checkOverflow();
+	}
 
-    protected deriveStateFromProps(nextProps: Props, state: State): State {
-        state.tooltip = nextProps.tooltip ?? '';
-        state.className = nextProps.className;
-        state.containerSelector = nextProps.containerSelector;
-        return state;
-    }
+	protected deriveStateFromProps(nextProps: Props, state: State): State {
+		state.tooltip = nextProps.tooltip ?? '';
+		state.className = nextProps.className;
+		state.containerSelector = nextProps.containerSelector;
+		state.forceUpdate = !!nextProps.forceUpdate;
+		return state;
+	}
 
-    componentDidMount() {
-        this.checkOverflow();
-    }
+	public shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+		return nextState.forceUpdate || super.shouldComponentUpdate(nextProps, nextState, nextContext);
+	}
 
-    componentDidUpdate() {
-        this.checkOverflow();
-    }
+	componentDidMount() {
+		this.checkOverflow();
+	}
 
-    // ######################## Logic ########################
+	componentDidUpdate() {
+		this.checkOverflow();
+	}
 
-    private checkOverflow = () => {
-        const el = this.labelRef.current;
-        if (!el)
-            return;
+	// ######################## Logic ########################
 
-        const overflowing = el.scrollWidth > el.clientWidth;
-        //Not overflowing - make sure truncation and tooltip classes aren't applied
-        if (!overflowing) {
-            if (el.classList.contains(this.activeTruncationClass))
-                el.classList.remove(this.activeTruncationClass);
+	private checkOverflow = () => {
+		const el = this.labelRef.current;
+		if (!el)
+			return;
 
-            if (el.classList.contains(this.activeTooltipClass))
-                el.classList.remove(this.activeTooltipClass);
+		const overflowing = el.scrollWidth > el.clientWidth;
+		//Not overflowing - make sure truncation and tooltip classes aren't applied
+		if (!overflowing) {
+			if (el.classList.contains(this.activeTruncationClass))
+				el.classList.remove(this.activeTruncationClass);
 
-            return;
-        }
-        //Overflowing
-        //Always apply truncation
-        if (!el.classList.contains(this.activeTruncationClass))
-            el.classList.add(this.activeTruncationClass);
+			if (el.classList.contains(this.activeTooltipClass))
+				el.classList.remove(this.activeTooltipClass);
 
-        //Apply tooltip if one is provided
-        if (!el.classList.contains(this.activeTooltipClass) && this.state.tooltip)
-            el.classList.add(this.activeTooltipClass);
-    };
+			return;
+		}
+		//Overflowing
+		//Always apply truncation
+		if (!el.classList.contains(this.activeTruncationClass))
+			el.classList.add(this.activeTruncationClass);
 
-    private checkTooltipDir = () => {
-        const el = this.labelRef.current;
-        if (!el || !this.state.containerSelector)
-            return;
+		//Apply tooltip if one is provided
+		if (!el.classList.contains(this.activeTooltipClass) && this.state.tooltip)
+			el.classList.add(this.activeTooltipClass);
+	};
 
-        const container = el.closest(this.state.containerSelector);
-        if (!container)
-            return;
+	private checkTooltipDir = () => {
+		const el = this.labelRef.current;
+		if (!el || !this.state.containerSelector)
+			return;
 
-        const containerTop = container.getBoundingClientRect().top;
-        const labelRect = el.getBoundingClientRect();
-        const distance = labelRect.top - containerTop;
-        //Should be inverted
-        if (distance <= labelRect.height * 2.5) {
-            if (!el.classList.contains(this.invertTooltipClass))
-                el.classList.add(this.invertTooltipClass);
-        } else { //Should not be inverted
-            if (el.classList.contains(this.invertTooltipClass))
-                el.classList.remove(this.invertTooltipClass);
-        }
-    };
+		const container = el.closest(this.state.containerSelector);
+		if (!container)
+			return;
 
-    private getProps = () => {
-        const {tooltip, className, containerSelector, onClick, ...rest} = this.props;
-        return {
-            ...rest,
-            className: _className('ts-label', className),
-            'data-tooltip': this.state.tooltip,
-            onMouseEnter: this.checkTooltipDir,
-            onClick,
-            ref: this.labelRef,
-        }
-    }
+		const containerTop = container.getBoundingClientRect().top;
+		const labelRect = el.getBoundingClientRect();
+		const distance = labelRect.top - containerTop;
+		//Should be inverted
+		if (distance <= labelRect.height * 2.5) {
+			if (!el.classList.contains(this.invertTooltipClass))
+				el.classList.add(this.invertTooltipClass);
+		} else { //Should not be inverted
+			if (el.classList.contains(this.invertTooltipClass))
+				el.classList.remove(this.invertTooltipClass);
+		}
+	};
 
-    // ######################## Render ########################
+	private getProps = () => {
+		const {tooltip, className, containerSelector, onClick, forceUpdate, ...rest} = this.props;
+		return {
+			...rest,
+			className: _className('ts-label', className),
+			'data-tooltip': this.state.tooltip,
+			onMouseEnter: this.checkTooltipDir,
+			onClick,
+			ref: this.labelRef,
+		};
+	};
 
-    render() {
-        return <div {...this.getProps()}>
-            <div className={'ts-label__content'}>{this.props.children}</div>
-        </div>;
-    }
+	// ######################## Render ########################
+
+	render() {
+		return <div {...this.getProps()}>
+			<div className={'ts-label__content'}>{this.props.children}</div>
+		</div>;
+	}
 }

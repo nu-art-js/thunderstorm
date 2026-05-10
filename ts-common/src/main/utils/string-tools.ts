@@ -189,7 +189,7 @@ export function capitalizeAllFirstLetters(value: string) {
  * @returns String with first letter uppercase and rest lowercase
  */
 export function capitalizeFirstLetter(value: string) {
-	return value.charAt(0).toUpperCase() + value.substr(1).toLowerCase();
+	return value.charAt(0).toUpperCase() + value.substring(1);
 }
 
 /**
