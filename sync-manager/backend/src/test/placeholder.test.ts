@@ -5,17 +5,11 @@
  */
 
 import {assert} from 'chai';
-import {ModuleBE_SyncManager_Class} from '../main/index.js';
+import {ModuleBE_SyncManager} from '../main/index.js';
 
 describe('sync-manager-backend', () => {
-	let instance: ModuleBE_SyncManager_Class;
-
-	before(() => {
-		instance = new ModuleBE_SyncManager_Class();
-	});
-
-	it('class can be instantiated', () => {
-		assert.exists(instance);
-		assert.typeOf(instance.queryDeleted, 'function');
+	it('singleton exists and exposes queryDeleted', () => {
+		assert.exists(ModuleBE_SyncManager);
+		assert.typeOf(ModuleBE_SyncManager.queryDeleted, 'function');
 	});
 });

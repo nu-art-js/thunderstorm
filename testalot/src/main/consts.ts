@@ -5,10 +5,10 @@
  */
 
 import {TestCase_Error, TestModel} from './types.js';
-import chai, {expect} from 'chai';
+import {expect, use} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 
-chai.use(chaiAsPromised);
+use(chaiAsPromised);
 
 /**
  * Resolves content that can be either a value or a function.

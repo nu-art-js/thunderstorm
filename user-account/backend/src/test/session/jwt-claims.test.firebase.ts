@@ -1,6 +1,6 @@
 import {generateHex, JwtTools, RecursiveObjectOfPrimitives, tsValidate, tsValidateMustExist, tsValidateValue} from '@nu-art/ts-common';
 import {runSingleTestCase} from '@nu-art/testalot';
-import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
+import {stormTester, StormTestInput} from '@nu-art/storm-testalot';
 import {expect} from 'chai';
 import {DefaultStormTestConfig_Session, ModuleDummy_Claims} from '../utils/helpers.js';
 import {BaseSessionClaims, ModuleBE_SessionDB} from '../_main.js';

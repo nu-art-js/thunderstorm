@@ -39,3 +39,4 @@ imports-*.svg
 **/*.tgz
 fixture.txt
 _fixture.txt
+test-results

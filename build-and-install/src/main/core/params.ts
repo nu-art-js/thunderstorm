@@ -181,6 +181,15 @@ export const BaiParam_TestDebugPort: BaseCliParam<'testDebugPort', number> = {
 	dependencies: [{param: BaiParam_Test, value: true}],
 };
 
+export const BaiParam_KeepGoing: BaseCliParam<'keepGoing', boolean> = {
+	keys: ['--keep-going', '-kg'],
+	keyName: 'keepGoing',
+	type: 'boolean',
+	group: 'Test',
+	description: 'When running tests, continue testing remaining packages even if a package\'s tests fail. All failures are reported at the end.',
+	dependencies: [{param: BaiParam_Test, value: true}],
+};
+
 export const BaiParam_Launch: BaseCliParam<'launch', boolean> = {
 	keys: ['--launch', '-l'],
 	keyName: 'launch',
@@ -482,6 +491,7 @@ export const AllBaiParams = [
 	BaiParam_TestFile,
 	BaiParam_TestCase,
 	BaiParam_TestDebugPort,
+	BaiParam_KeepGoing,
 	BaiParam_Launch,
 	BaiParam_Deploy,
 	BaiParam_BuildPushImage,

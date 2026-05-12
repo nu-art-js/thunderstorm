@@ -5,15 +5,15 @@
  */
 
 import {assert} from 'chai';
-import {DBKey_AppConfig, EntityName_AppConfig} from '../main/types.js';
+import {DBDef_AppConfig} from '../main/db-def.js';
 import type {RequestBody_GetResolverByKey} from '../main/api-def.js';
 
 describe('app-config-shared', () => {
-	it('DBKey_AppConfig is app-configs', () => {
-		assert.equal(DBKey_AppConfig, 'app-configs');
+	it('DBDef_AppConfig.dbKey is app-configs', () => {
+		assert.equal(DBDef_AppConfig.dbKey, 'app-configs');
 	});
-	it('EntityName_AppConfig is AppConfig', () => {
-		assert.equal(EntityName_AppConfig, 'AppConfig');
+	it('DBDef_AppConfig.entityName is AppConfig', () => {
+		assert.equal(DBDef_AppConfig.entityName, 'AppConfig');
 	});
 	it('RequestBody_GetResolverByKey has key', () => {
 		const r: RequestBody_GetResolverByKey = {key: 'test-key'};

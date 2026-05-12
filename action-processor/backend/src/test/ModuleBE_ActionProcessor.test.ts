@@ -36,10 +36,10 @@ describe('ModuleBE_ActionProcessor', () => {
 		});
 	});
 
-	describe('refactor', () => {
+	describe('execute', () => {
 		it('throws ApiException 404 for unknown action key', async () => {
 			try {
-				await ModuleBE_ActionProcessor.refactor({key: 'nonexistent-key'});
+				await ModuleBE_ActionProcessor.execute({key: 'nonexistent-key'});
 				expect.fail('expected ApiException');
 			} catch (e) {
 				expect(e).to.be.instanceOf(ApiException);
@@ -53,7 +53,7 @@ describe('ModuleBE_ActionProcessor', () => {
 			const previous = Dispatcher.modulesResolver;
 			try {
 				Dispatcher.modulesResolver = () => [];
-				await ModuleBE_ActionProcessor.refactor({key: 'setup-project'});
+				await ModuleBE_ActionProcessor.execute({key: 'setup-project'});
 			} finally {
 				Dispatcher.modulesResolver = previous;
 			}

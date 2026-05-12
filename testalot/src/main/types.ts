@@ -52,6 +52,17 @@ export type TestModel<Input, ExpectedResult> = {
 		})
 
 /**
+ * A named collection of test cases.
+ *
+ * @template Input - Input type
+ * @template ExpectedResult - Expected result type
+ */
+export type TestSuite<Input, ExpectedResult> = {
+	label: string;
+	testcases: TestModel<Input, ExpectedResult>[];
+}
+
+/**
  * Function that processes a test case.
  *
  * @template Input - Input type
