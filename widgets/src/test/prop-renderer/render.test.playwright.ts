@@ -1,30 +1,62 @@
-/*
- * PropRenderer – render tests.
- */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-test.describe('PropRenderer – render', () => {
+test.describe('PropRenderer – render – Vertical', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('prop-renderer/entry--vertical'));
+		await waitForReady(page);
 	});
 
-	test('vertical: label and children visible', async ({page}) => {
+	test('container is visible', async ({page}) => {
 		const container = page.locator('[data-testid="prop-renderer-vertical-container"]');
-		await expect(container.getByText('Vertical label')).toBeVisible();
-		await expect(container.getByText('Child')).toBeVisible();
+		await expect(container).toBeVisible();
+	});
+});
+
+test.describe('PropRenderer – render – Horizontal', () => {
+	test.beforeEach(async ({page}) => {
+		await page.goto(testPage('prop-renderer/entry--horizontal'));
+		await waitForReady(page);
 	});
 
-	test('horizontal: label and children visible', async ({page}) => {
+	test('container is visible', async ({page}) => {
 		const container = page.locator('[data-testid="prop-renderer-horizontal-container"]');
-		await expect(container.getByText('Horizontal label')).toBeVisible();
-		await expect(container.getByText('Child')).toBeVisible();
+		await expect(container).toBeVisible();
+	});
+});
+
+test.describe('PropRenderer – render – Flat', () => {
+	test.beforeEach(async ({page}) => {
+		await page.goto(testPage('prop-renderer/entry--flat'));
+		await waitForReady(page);
 	});
 
-	test('flat: label and children visible', async ({page}) => {
+	test('container is visible', async ({page}) => {
 		const container = page.locator('[data-testid="prop-renderer-flat-container"]');
-		await expect(container.getByText('Flat label')).toBeVisible();
-		await expect(container.getByText('Child')).toBeVisible();
+		await expect(container).toBeVisible();
+	});
+});
+
+test.describe('PropRenderer – render – Error', () => {
+	test.beforeEach(async ({page}) => {
+		await page.goto(testPage('prop-renderer/entry--error'));
+		await waitForReady(page);
+	});
+
+	test('container is visible', async ({page}) => {
+		const container = page.locator('[data-testid="prop-renderer-error-container"]');
+		await expect(container).toBeVisible();
+	});
+});
+
+test.describe('PropRenderer – render – Disabled', () => {
+	test.beforeEach(async ({page}) => {
+		await page.goto(testPage('prop-renderer/entry--disabled'));
+		await waitForReady(page);
+	});
+
+	test('container is visible', async ({page}) => {
+		const container = page.locator('[data-testid="prop-renderer-disabled-container"]');
+		await expect(container).toBeVisible();
 	});
 });

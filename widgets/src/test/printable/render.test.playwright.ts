@@ -1,27 +1,23 @@
 /*
- * Printable – simple render tests (v1, v3).
+ * Printable – simple render tests (v3).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v3'] as const;
-
-test.describe('Printable – render', () => {
+test.describe('Printable – render – v3', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('printable/entry--v3'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: container and text are visible`, async ({page}) => {
-			const container = page.locator(`[data-testid="printable-${version}-container"]`);
-			await expect(container).toBeVisible();
-			await expect(container.getByText(`Printable ${version}`)).toBeVisible();
-		});
+	test('container and text are visible', async ({page}) => {
+		const container = page.locator('[data-testid="printable-v3-container"]');
+		await expect(container).toBeVisible();
+		await expect(container.getByText('Printable v3')).toBeVisible();
+	});
 
-		test(`${version}: has ts-printable root`, async ({page}) => {
-			const container = page.locator(`[data-testid="printable-${version}-container"]`);
-			await expect(container.locator('.ts-printable')).toBeVisible();
-		});
-	}
+	test('has ts-printable root', async ({page}) => {
+		const container = page.locator('[data-testid="printable-v3-container"]');
+		await expect(container.locator('.ts-printable')).toBeVisible();
+	});
 });

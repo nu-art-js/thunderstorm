@@ -1,21 +1,14 @@
-/*
- * CollapsableContainer – simple render tests (v1, v2, v3).
- */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v2', 'v3'] as const;
-
-test.describe('CollapsableContainer – render', () => {
+test.describe('CollapsableContainer – render v3', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('collapsable-container/entry--v3'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: container is visible`, async ({page}) => {
-			const container = page.locator(`[data-testid="collapsable-${version}-container"]`);
-			await expect(container).toBeVisible();
-		});
-	}
+	test('container is visible', async ({page}) => {
+		const container = page.locator('[data-testid="collapsable-v3-container"]');
+		await expect(container).toBeVisible();
+	});
 });

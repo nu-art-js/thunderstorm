@@ -1,9 +1,5 @@
-/**
- * Shared constants and helpers for Playwright tests.
- * Each component test folder imports from here for consistency.
- */
-export const TEST_PAGE_PATH = '/src/test/index.html';
+export const testPage = (entry: string) => `/src/test/index.html?entry=${entry}`;
 
-export async function waitForAppReady(page: { waitForFunction: (fn: () => boolean) => Promise<unknown> }): Promise<void> {
-	await page.waitForFunction(() => (window as unknown as { WidgetsTestReady?: boolean }).WidgetsTestReady === true);
+export async function waitForReady(page: { waitForFunction: (fn: () => boolean) => Promise<unknown> }): Promise<void> {
+	await page.waitForFunction(() => (window as unknown as { TestReady?: boolean }).TestReady === true);
 }

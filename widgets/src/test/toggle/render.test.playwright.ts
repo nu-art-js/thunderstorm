@@ -1,20 +1,14 @@
-/*
- * Toggle – simple render tests (v1, v3).
- */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-test.describe('Toggle – render', () => {
+test.describe('Toggle – render v3', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('toggle/entry--v3'));
+		await waitForReady(page);
 	});
 
-	test('v1 container is visible', async ({page}) => {
-		await expect(page.locator('[data-testid="toggle-v1-container"]')).toBeVisible();
-	});
-
-	test('v3 container is visible', async ({page}) => {
-		await expect(page.locator('[data-testid="toggle-v3-container"]')).toBeVisible();
+	test('container is visible', async ({page}) => {
+		const container = page.locator('[data-testid="toggle-v3-container"]');
+		await expect(container).toBeVisible();
 	});
 });

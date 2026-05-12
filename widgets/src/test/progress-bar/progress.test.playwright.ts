@@ -2,12 +2,12 @@
  * ProgressBar – progress/segments tests.
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
 test.describe('ProgressBar – progress', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('progress-bar/entry--v1'));
+		await waitForReady(page);
 	});
 
 	test('progress bar has segments', async ({page}) => {

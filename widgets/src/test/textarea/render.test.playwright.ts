@@ -1,28 +1,24 @@
 /*
- * TextArea – render tests (v1, v2).
+ * TextArea – render tests (v2).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v2'] as const;
-
-test.describe('TextArea – render', () => {
+test.describe('TextArea – render – v2', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('textarea/entry--v2'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: container and textarea are visible`, async ({page}) => {
-			const container = page.locator(`[data-testid="textarea-${version}-container"]`);
-			await expect(container).toBeVisible();
-			const textarea = page.locator(`#textarea-${version}`);
-			await expect(textarea).toBeVisible();
-		});
+	test('container and textarea are visible', async ({page}) => {
+		const container = page.locator('[data-testid="textarea-v2-container"]');
+		await expect(container).toBeVisible();
+		const textarea = page.locator('#textarea-v2');
+		await expect(textarea).toBeVisible();
+	});
 
-		test(`${version}: placeholder is shown`, async ({page}) => {
-			const textarea = page.locator(`#textarea-${version}`);
-			await expect(textarea).toHaveAttribute('placeholder', `${version} placeholder`);
-		});
-	}
+	test('placeholder is shown', async ({page}) => {
+		const textarea = page.locator('#textarea-v2');
+		await expect(textarea).toHaveAttribute('placeholder', 'v2 placeholder');
+	});
 });

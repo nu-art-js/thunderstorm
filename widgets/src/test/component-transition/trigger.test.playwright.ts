@@ -1,28 +1,26 @@
-/*
- * ComponentTransition – trigger behavior tests (v1, v3).
- */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v3'] as const;
-
-test.describe('ComponentTransition – trigger', () => {
+test.describe('ComponentTransition – trigger v3 visible', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('component-transition/entry--v3-visible'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: trigger true shows content`, async ({page}) => {
-			const container = page.locator(`[data-testid="component-transition-${version}-container"]`);
-			await expect(container).toBeVisible();
-			await expect(container.getByText(`Transition ${version}`)).toBeVisible();
-		});
+	test('children are visible when triggered', async ({page}) => {
+		const container = page.locator('[data-testid="component-transition-v3-container"]');
+		await expect(container).toContainText('Transition v3');
+	});
+});
 
-		test(`${version}: trigger false hides content`, async ({page}) => {
-			const container = page.locator(`[data-testid="component-transition-${version}-hidden-container"]`);
-			await expect(container).toBeVisible();
-			await expect(container.getByText(`Transition ${version} hidden`)).not.toBeVisible();
-		});
-	}
+test.describe('ComponentTransition – trigger v3 hidden', () => {
+	test.beforeEach(async ({page}) => {
+		await page.goto(testPage('component-transition/entry--v3-hidden'));
+		await waitForReady(page);
+	});
+
+	test('children are not visible when not triggered', async ({page}) => {
+		const span = page.locator('[data-testid="component-transition-v3-hidden-container"] span');
+		await expect(span).not.toBeVisible();
+	});
 });

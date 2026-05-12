@@ -1,13 +1,16 @@
 # Widgets test suite
 
-Playwright tests are split **per component** in dedicated folders. Each component has its own tests from simple (render) to more complex (value, behaviour, content).
+Each component is tested in **complete isolation** — one component, one page, one point of failure. No shared rendering page.
 
 ## Layout
 
-- **`_helpers/test-constants.ts`** – shared `TEST_PAGE_PATH` and `waitForAppReady(page)` for all tests.
+- **`index.html`** – single HTML shell that loads `_bootstrap/loader.tsx`.
+- **`_bootstrap/loader.tsx`** – initializes Thunder, reads `?entry=` from URL, dynamically imports the matching entry file, renders it, and sets `window.TestReady`.
+- **`_helpers/test-constants.ts`** – shared `testPage(entry)` (builds URL) and `waitForReady(page)` (waits for `TestReady` flag).
 - **`<component>/`** – one folder per component, e.g. `input/`, `checkbox/`, `button/`.
-  - **`render.test.playwright.ts`** – naive tests: container/element visible, basic content.
-  - **`value.test.playwright.ts`**, **`toggle.test.playwright.ts`**, **`content.test.playwright.ts`**, etc. – behaviour and more complex scenarios as needed.
+  - **`entry--<variant>.tsx`** – renders exactly one component instance with one set of props. Default export.
+  - **`render.test.playwright.ts`** – visibility tests per variant.
+  - **`value.test.playwright.ts`**, **`toggle.test.playwright.ts`**, etc. – behaviour tests, each navigating to the specific entry page.
 
 ## Component folders – full coverage
 

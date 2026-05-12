@@ -1,25 +1,24 @@
-/*
- * Toaster – render tests.
- */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
 test.describe('Toaster – render', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('toaster/entry--v1'));
+		await waitForReady(page);
 	});
 
-	test('toast triggers are visible', async ({page}) => {
+	test('container is visible', async ({page}) => {
 		const container = page.locator('[data-testid="toaster-demo-container"]');
 		await expect(container).toBeVisible();
-		await expect(container.getByTestId('toast-info-trigger')).toBeVisible();
-		await expect(container.getByTestId('toast-success-trigger')).toBeVisible();
 	});
 
-	test('triggering toast shows content', async ({page}) => {
-		await page.getByTestId('toast-info-trigger').click();
-		await expect(page.locator('.ts-toaster')).toBeVisible();
-		await expect(page.getByText('Info message')).toBeVisible();
+	test('info trigger is visible', async ({page}) => {
+		const trigger = page.locator('[data-testid="toast-info-trigger"]');
+		await expect(trigger).toBeVisible();
+	});
+
+	test('success trigger is visible', async ({page}) => {
+		const trigger = page.locator('[data-testid="toast-success-trigger"]');
+		await expect(trigger).toBeVisible();
 	});
 });

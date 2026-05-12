@@ -9,9 +9,30 @@ alwaysApply: false
 
 **Builds on**: [Playwright Browser Tests](./playwright-tests.mdc) — same infrastructure (Playwright + Vite + `index.html` + `*.test.playwright.ts`). This rule only documents what differs. For shared infrastructure (test HTML page, running tests, debugging, common issues), see that rule.
 
-## Core Principle
+## Core Principles
 
 The component is the real component. The modules are the real modules. IDB is real. The only difference from production is where the data comes from — `onEntriesUpdated` instead of `smartSync`.
+
+### One component, one page, one point of failure
+
+Each test renders **exactly one component with one set of props** on its own page. Never render multiple components — or even multiple variants of the same component — on a shared page.
+
+Why: components on a shared page are coupled. An overlay steals clicks from an unrelated button test. A crash in one component unmounts the React tree and cascades false failures to every other test. You debug the wrong thing.
+
+One test entry = one `index.html` + one `test-entry.tsx` = one component instance. If you need to test 3 prop variants, that's 3 entries and 3 pages.
+
+### Thunder initialization
+
+Components extending `ComponentSync` / `BaseComponent` call `Thunder.getInstance()` on mount and unmount for UI listener registration. If no `Thunder` instance exists, the entire React tree crashes.
+
+Every test entry that renders a Thunder component must create a `Thunder` instance before rendering — even for "pure-props" components:
+
+```tsx
+import {Thunder} from '@nu-art/thunder-core';
+new Thunder({configUrl: '/test-config.json'});
+```
+
+This goes at the top of the file, before any component imports that might trigger module-level side effects.
 
 ## What Differs from Playwright Browser Tests
 
@@ -26,46 +47,64 @@ The component is the real component. The modules are the real modules. IDB is re
 
 ## Package Structure
 
-Identical to [Playwright Browser Tests](./playwright-tests.mdc) with two additions:
+Identical to [Playwright Browser Tests](./playwright-tests.mdc) with two differences: per-component isolation and a package-local Vite config.
+
+Each component gets its own folder under `test/` with an isolated entry point:
 
 ```
 {PackageRoot}/
 ├── src/
 │   ├── main/
 │   └── test/
-│       ├── index.html                     # Same as Playwright rule
-│       ├── test-entry.tsx                 # Boots modules, seeds data, renders component (JSX)
-│       └── {component}.test.playwright.ts # Playwright assertions on rendered DOM
-├── playwright.config.ts                   # Points at vite.test.config.ts (not the shared config)
-└── vite.test.config.ts                    # Package-local Vite config for monorepo resolution
+│       ├── {component-a}/
+│       │   ├── index.html                     # Loads only this component's entry
+│       │   ├── test-entry.tsx                 # Boots modules, seeds data, renders ONE component
+│       │   └── {component-a}.test.playwright.ts
+│       ├── {component-b}/
+│       │   ├── index.html
+│       │   ├── test-entry.tsx
+│       │   └── {component-b}.test.playwright.ts
+│       └── _helpers/                          # Shared constants, utilities (no rendering)
+│           └── test-constants.ts
+├── playwright.config.ts                       # Points at vite.test.config.ts (not the shared config)
+└── vite.test.config.ts                        # Package-local Vite config for monorepo resolution
 ```
+
+Each `index.html` loads only its sibling `test-entry.tsx`. Each test file navigates to its own `index.html`. No shared rendering page.
 
 ## Test Entry (`test-entry.tsx`)
 
-The test entry is one file that does three things in order: boot modules (if needed), seed data, render the component.
+Each test entry renders **one component with one set of props**. It does three things in order: initialize Thunder, boot modules (if needed), render the component.
 
 **Pure-props component** (no module dependencies):
 
 ```tsx
+import {Thunder} from '@nu-art/thunder-core';
+new Thunder({configUrl: '/test-config.json'});
+
 import * as React from 'react';
 import {createRoot} from 'react-dom/client';
-import {MyComponent} from '../main/ui/MyComponent.js';
+import {MyComponent} from '../../main/ui/MyComponent.js';
 
 const root = createRoot(document.getElementById('test-root')!);
 root.render(<MyComponent title={'Test Title'} count={42} />);
+
+window.TestReady = true;
 ```
 
 **Component with module dependencies:**
 
 ```tsx
+import {Thunder} from '@nu-art/thunder-core';
+new Thunder({configUrl: '/test-config.json'});
+
 import * as React from 'react';
 import {createRoot} from 'react-dom/client';
-import {ModuleManager} from '@nu-art/ts-common';
-import {ModuleFE_Channel} from '../main/modules/ModuleFE_Channel.js';
-import {ChannelList} from '../main/ui/ChannelList.js';
+import {ModuleFE_Channel} from '../../main/modules/ModuleFE_Channel.js';
+import {ChannelList} from '../../main/ui/ChannelList.js';
 
 const init = async () => {
-	await new ModuleManager()
+	await new Thunder({configUrl: '/test-config.json'})
 		.addModulePack([ModuleFE_Channel])
 		.build();
 
@@ -75,24 +114,10 @@ const init = async () => {
 
 	const root = createRoot(document.getElementById('test-root')!);
 	root.render(<ChannelList />);
+	window.TestReady = true;
 };
 
 init();
-```
-
-**Multiple scenarios in one entry** (use `data-testid` to target each):
-
-```tsx
-root.render(
-	<div>
-		<div data-testid="active">
-			<StatusBadge status={'active'} count={100} />
-		</div>
-		<div data-testid="archived">
-			<StatusBadge status={'archived'} count={50} />
-		</div>
-	</div>
-);
 ```
 
 ## Vite Config (`vite.test.config.ts`)
@@ -101,7 +126,8 @@ Product packages in a pnpm monorepo need a package-local Vite config. The shared
 
 Key settings:
 - **`preserveSymlinks: false`** — lets Vite follow pnpm symlinks to the real package location, where each package's own dependencies are properly linked.
-- **SVG stub plugin** — thunder-widgets transitively imports SVG icons via `@nu-art/ts-styles`. These need `vite-plugin-svgr` (which is only available in the app package). A lightweight stub avoids adding that dependency for tests.
+- **`vite-plugin-svgr`** — packages that transitively import SVG icons (e.g. via `@nu-art/ts-styles`) need `vite-plugin-svgr` with `include: '**/*.svg'`, `svgrOptions: { exportType: 'named', namedExport: 'ReactComponent' }`. Add it as a devDependency.
+- **React deduplication** — packages using React components need `resolve.dedupe: ['react', 'react-dom', 'scheduler']` and `optimizeDeps.include` for React to prevent duplicate React instances in pnpm's strict layout.
 - **`server.fs.allow`** — must include the monorepo root so Vite can serve files from any linked package.
 
 Reference implementation: `market/youtube/sampler/frontend/vite.test.config.ts`.
@@ -112,7 +138,7 @@ The `playwright.config.ts` is the same as the [Playwright rule](./playwright-tes
 
 The core pattern for module-dependent components:
 
-1. **Boot**: `new ModuleManager().addModulePack([...modules]).build()`
+1. **Boot**: `new Thunder({configUrl: '/test-config.json'}).addModulePack([...modules]).build()`
 2. **Seed**: `ModuleFE_X.onEntriesUpdated([...fixtures])` — writes to IDB and populates MemCache
 3. **Render**: `root.render(<Component />)` — component reads from cache via normal dispatcher flow
 
@@ -124,23 +150,22 @@ For most component tests, login is irrelevant — the component renders from cac
 
 ## Writing Tests
 
-Use Playwright locators to assert on what the component renders — not `page.evaluate()` return values:
+Each test file navigates to its own component's `index.html`. Use Playwright locators to assert on what the component renders — not `page.evaluate()` return values:
 
 ```typescript
 import {expect, test} from '@playwright/test';
 
-const testPagePath = '/src/test/index.html';
+const testPagePath = '/src/test/status-badge/index.html';
 
-test.describe('StatusBadge', () => {
+test.describe('StatusBadge – active', () => {
 	test.beforeEach(async ({page}) => {
 		await page.goto(testPagePath);
-		await page.waitForSelector('[data-testid="active"]');
+		await page.waitForFunction(() => (window as any).TestReady === true);
 	});
 
-	test('active status shows correct badge and count', async ({page}) => {
-		const container = page.locator('[data-testid="active"]');
-		await expect(container.locator('.badge')).toHaveText('active');
-		await expect(container.locator('.count')).toContainText('100');
+	test('shows correct badge and count', async ({page}) => {
+		await expect(page.locator('.badge')).toHaveText('active');
+		await expect(page.locator('.count')).toContainText('100');
 	});
 });
 ```
@@ -151,8 +176,8 @@ For visual regression, use snapshot matching:
 
 ```typescript
 test('card renders correctly', async ({page}) => {
-	await page.goto(testPagePath);
-	await page.waitForSelector('[data-testid="card"]');
+	await page.goto('/src/test/card/index.html');
+	await page.waitForFunction(() => (window as any).TestReady === true);
 	const screenshot = await page.locator('[data-testid="card"]').screenshot();
 	expect(screenshot).toMatchSnapshot('card.png');
 });

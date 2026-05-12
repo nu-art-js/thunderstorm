@@ -2,12 +2,12 @@
  * Tabs – selection tests (v1).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
 test.describe('Tabs – selection', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('tabs/entry--v1'));
+		await waitForReady(page);
 	});
 
 	test('clicking Tab 2 switches content', async ({page}) => {

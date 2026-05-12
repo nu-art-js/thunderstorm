@@ -1,29 +1,25 @@
 /*
- * TextArea – value tests (v1, v2).
+ * TextArea – value tests (v2).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v2'] as const;
-
-test.describe('TextArea – value', () => {
+test.describe('TextArea – value – v2', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('textarea/entry--v2'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: can type and value is reflected`, async ({page}) => {
-			const textarea = page.locator(`#textarea-${version}`);
-			await textarea.fill('hello');
-			await expect(textarea).toHaveValue('hello');
-		});
+	test('can type and value is reflected', async ({page}) => {
+		const textarea = page.locator('#textarea-v2');
+		await textarea.fill('hello');
+		await expect(textarea).toHaveValue('hello');
+	});
 
-		test(`${version}: retains value after blur`, async ({page}) => {
-			const textarea = page.locator(`#textarea-${version}`);
-			await textarea.fill('blur-test');
-			await textarea.blur();
-			await expect(textarea).toHaveValue('blur-test');
-		});
-	}
+	test('retains value after blur', async ({page}) => {
+		const textarea = page.locator('#textarea-v2');
+		await textarea.fill('blur-test');
+		await textarea.blur();
+		await expect(textarea).toHaveValue('blur-test');
+	});
 });

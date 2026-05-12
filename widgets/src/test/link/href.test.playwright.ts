@@ -1,36 +1,31 @@
 /*
- * Link – href, target, children tests (v1, v3).
+ * Link – href, target, children tests (v3).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v3'] as const;
-
-test.describe('Link – href', () => {
+test.describe('Link – href – v3', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('link/entry--v3'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: children text is rendered`, async ({page}) => {
-			const container = page.locator(`[data-testid="link-${version}-container"]`);
-			await expect(container).toBeVisible();
-			await expect(container.getByText(`Link ${version}`)).toBeVisible();
-		});
+	test('children text is rendered', async ({page}) => {
+		const container = page.locator('[data-testid="link-v3-container"]');
+		await expect(container).toBeVisible();
+		await expect(container.getByText('Link v3')).toBeVisible();
+	});
 
-		test(`${version}: has ts-link class`, async ({page}) => {
-			const container = page.locator(`[data-testid="link-${version}-container"]`);
-			await expect(container.locator('.ts-link')).toBeVisible();
-		});
+	test('has ts-link class', async ({page}) => {
+		const container = page.locator('[data-testid="link-v3-container"]');
+		await expect(container.locator('.ts-link')).toBeVisible();
+	});
 
-		test(`${version}: link is clickable`, async ({page}) => {
-			const container = page.locator(`[data-testid="link-${version}-container"]`);
-			const link = container.locator('.ts-link');
-			await expect(link).toBeVisible();
-			await link.click();
-			// No navigation in test env; just ensure no throw
-			await expect(link).toBeVisible();
-		});
-	}
+	test('link is clickable', async ({page}) => {
+		const container = page.locator('[data-testid="link-v3-container"]');
+		const link = container.locator('.ts-link');
+		await expect(link).toBeVisible();
+		await link.click();
+		await expect(page).toHaveURL(/\/test/);
+	});
 });

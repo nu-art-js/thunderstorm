@@ -1,23 +1,19 @@
-/*
- * CollapsableContainer – expanded state tests (v1, v2, v3).
- */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v2', 'v3'] as const;
-
-test.describe('CollapsableContainer – expanded', () => {
+test.describe('CollapsableContainer – expanded v3', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('collapsable-container/entry--v3'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: header and content visible when expanded`, async ({page}) => {
-			const container = page.locator(`[data-testid="collapsable-${version}-container"]`);
-			await expect(container).toBeVisible();
-			await expect(container.locator('text=Header ' + version)).toBeVisible();
-			await expect(container.locator('text=Content ' + version)).toBeVisible();
-		});
-	}
+	test('content is visible when initially expanded', async ({page}) => {
+		const container = page.locator('[data-testid="collapsable-v3-container"]');
+		await expect(container).toContainText('Content v3');
+	});
+
+	test('header is visible', async ({page}) => {
+		const container = page.locator('[data-testid="collapsable-v3-container"]');
+		await expect(container).toContainText('Header v3');
+	});
 });

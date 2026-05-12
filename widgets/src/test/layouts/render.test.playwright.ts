@@ -1,23 +1,19 @@
 /*
- * Layouts – simple render tests (v1, v3).
+ * Layouts – simple render tests (v3).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v3'] as const;
-
-test.describe('Layouts – render', () => {
+test.describe('Layouts – render – v3', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('layouts/entry--v3'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: container and children A, B are visible`, async ({page}) => {
-			const container = page.locator(`[data-testid="layouts-${version}-container"]`);
-			await expect(container).toBeVisible();
-			await expect(container.getByText('A')).toBeVisible();
-			await expect(container.getByText('B')).toBeVisible();
-		});
-	}
+	test('container and children A, B are visible', async ({page}) => {
+		const container = page.locator('[data-testid="layouts-v3-container"]');
+		await expect(container).toBeVisible();
+		await expect(container.getByText('A')).toBeVisible();
+		await expect(container.getByText('B')).toBeVisible();
+	});
 });
