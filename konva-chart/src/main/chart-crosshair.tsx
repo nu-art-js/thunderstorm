@@ -118,7 +118,7 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 	const plotBottom = pad.top + plotHeight;
 	const plotMidY = pad.top + plotHeight / 2;
 
-	type TipEntry = { text: string; color: string };
+	type TipEntry = { text: string; color: string; timestamp: number };
 	const tipEntries: TipEntry[] = [];
 
 	layers.forEach((layer) => {
@@ -148,12 +148,12 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 
 		const tooltipFmt = layer.vAxis.tooltipFormatter ?? defaultFormatter;
 		nodes.push(<Circle key={`dot-${layer.id}`} x={cx} y={cy} radius={4} fill={layer.color} listening={false}/>);
-		tipEntries.push({text: `${layer.label}: ${tooltipFmt(displayValue)}`, color: layer.color});
+		tipEntries.push({text: `${layer.label}: ${tooltipFmt(displayValue)}`, color: layer.color, timestamp: closest.h});
 
 		if (layer.tooltipExtras) {
 			const extras = layer.tooltipExtras(layer.data, closest);
 			for (const extra of extras)
-				tipEntries.push(extra);
+				tipEntries.push({...extra, timestamp: closest.h});
 		}
 	});
 
@@ -162,11 +162,41 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 
 	nodes.unshift(<Line key={'crosshair'} points={[hoverX, pad.top, hoverX, plotBottom]} stroke={theme.crosshair} strokeWidth={1} dash={[4, 4]} opacity={0.6} listening={false}/>);
 
+	const hTooltipFmt = primaryHAxis.tooltipFormatter ?? primaryHAxis.formatters?.[0] ?? defaultFormatter;
+	const roundToSecond = (ms: number) => Math.round(ms / 1000) * 1000;
+
+	const groups = new Map<number, TipEntry[]>();
+	for (const entry of tipEntries) {
+		const key = roundToSecond(entry.timestamp);
+		const list = groups.get(key);
+		if (list)
+			list.push(entry);
+		else
+			groups.set(key, [entry]);
+	}
+
+	const sortedKeys = [...groups.keys()].sort((a, b) => a - b);
+	const showHeaders = sortedKeys.length > 1;
+
 	const lineH = 14;
 	const tipPadH = 4;
 	const tipPadW = 6;
-	const tipBlockW = Math.max(120, ...tipEntries.map(e => e.text.length * 6.5 + tipPadW * 2));
-	const tipBlockH = tipEntries.length * lineH + tipPadH * 2;
+	let totalLines = 0;
+	const allTexts: string[] = [];
+	for (const key of sortedKeys) {
+		if (showHeaders) {
+			totalLines++;
+			allTexts.push(hTooltipFmt(key));
+		}
+
+		const entries = groups.get(key)!;
+		totalLines += entries.length;
+		for (const e of entries)
+			allTexts.push(e.text);
+	}
+
+	const tipBlockW = Math.max(120, ...allTexts.map(t => t.length * 6.5 + tipPadW * 2));
+	const tipBlockH = totalLines * lineH + tipPadH * 2;
 	const mouseInTopHalf = (hoverY ?? 0) < plotMidY;
 	const tipY = mouseInTopHalf ? plotBottom - tipBlockH - 4 : pad.top + 4;
 
@@ -185,18 +215,37 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 		listening={false}
 	/>);
 
-	tipEntries.forEach((entry, i) => {
-		nodes.push(<Text
-			key={`tip-${i}`}
-			x={tipX}
-			y={tipY + i * lineH}
-			text={entry.text}
-			fontSize={theme.fontSize}
-			fill={entry.color}
-			fontStyle={'bold'}
-			listening={false}
-		/>);
-	});
+	let lineIdx = 0;
+	for (const key of sortedKeys) {
+		if (showHeaders) {
+			nodes.push(<Text
+				key={`tip-hdr-${key}`}
+				x={tipX}
+				y={tipY + lineIdx * lineH}
+				text={hTooltipFmt(key)}
+				fontSize={theme.fontSize}
+				fill={theme.axisText}
+				fontStyle={'bold'}
+				listening={false}
+			/>);
+			lineIdx++;
+		}
+
+		const entries = groups.get(key)!;
+		for (const entry of entries) {
+			nodes.push(<Text
+				key={`tip-${lineIdx}`}
+				x={tipX + (showHeaders ? 8 : 0)}
+				y={tipY + lineIdx * lineH}
+				text={entry.text}
+				fontSize={theme.fontSize}
+				fill={entry.color}
+				fontStyle={'bold'}
+				listening={false}
+			/>);
+			lineIdx++;
+		}
+	}
 
 	renderHTimestampLabels(nodes, ctx, hValue, hoverX, plotBottom, 'h-tip');
 
