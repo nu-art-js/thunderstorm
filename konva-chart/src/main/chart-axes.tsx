@@ -114,8 +114,11 @@ export function renderHAxes(ctx: ChartRenderContext): React.ReactNode[] {
 		const range = getHRange(axis);
 		const fmts = axis.formatters ?? [defaultFormatter];
 
-		for (let i = 0; i <= steps; i++) {
-			const v = range.min + (i / steps) * (range.max - range.min);
+		const ticks = axis.tickValues
+			? axis.tickValues.filter(v => v >= range.min && v <= range.max)
+			: Array.from({length: steps + 1}, (_, i) => range.min + (i / steps) * (range.max - range.min));
+
+		ticks.forEach((v, i) => {
 			const x = toCanvasX(v, range, pad, plotWidth);
 
 			fmts.forEach((fmt, fmtIdx) => {
@@ -125,7 +128,7 @@ export function renderHAxes(ctx: ChartRenderContext): React.ReactNode[] {
 
 				nodes.push(<Text key={`h-${axisIdx}-${i}-${fmtIdx}`} x={x - 25} y={baseY} text={fmt(v)} fontSize={theme.fontSize - 1} fill={theme.axisText} width={50} align={'center'} listening={false}/>);
 			});
-		}
+		});
 	});
 
 	return nodes;
