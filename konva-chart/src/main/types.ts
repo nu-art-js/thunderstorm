@@ -14,6 +14,7 @@ export type AxisConfig = {
 	position?: AxisPosition;
 	baseline?: number;
 	indicators?: ChartIndicator[];
+	tickValues?: number[];
 };
 
 export type ChartLayerStyle = 'line' | 'dashed' | 'area';
