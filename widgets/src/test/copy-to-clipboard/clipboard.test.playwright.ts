@@ -2,12 +2,12 @@
  * CopyToClipboard – clipboard write test (v1).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
 test.describe('CopyToClipboard – clipboard', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('copy-to-clipboard/entry--v1'));
+		await waitForReady(page);
 	});
 
 	test('click copies text to clipboard', async ({page, context}) => {

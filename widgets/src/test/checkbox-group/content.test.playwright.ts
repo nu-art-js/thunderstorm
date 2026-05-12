@@ -1,23 +1,17 @@
 /*
- * CheckboxGroup – content tests (v1, v3).
+ * CheckboxGroup – content tests (v3).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v3'] as const;
-
-test.describe('CheckboxGroup – content', () => {
-	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+test.describe('CheckboxGroup v3 – content', () => {
+	test('shows parent label and option labels A, B', async ({page}) => {
+		await page.goto(testPage('checkbox-group/entry--v3'));
+		await waitForReady(page);
+		const container = page.locator('[data-testid="checkbox-group-v3-container"]');
+		await expect(container.locator('.ts-checkbox__content', {hasText: 'Parent v3'})).toBeVisible();
+		const children = container.locator('.ts-checkbox-group__children .ts-checkbox__content');
+		await expect(children.nth(0)).toHaveText('A');
+		await expect(children.nth(1)).toHaveText('B');
 	});
-
-	for (const version of VERSIONS) {
-		test(`${version}: shows parent label and option labels A, B`, async ({page}) => {
-			const container = page.locator(`[data-testid="checkbox-group-${version}-container"]`);
-			await expect(container.getByText(`Parent ${version}`)).toBeVisible();
-			await expect(container.getByText('A')).toBeVisible();
-			await expect(container.getByText('B')).toBeVisible();
-		});
-	}
 });

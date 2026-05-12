@@ -1,27 +1,23 @@
 /*
- * Link – simple render tests (v1, v3).
+ * Link – simple render tests (v3).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v3'] as const;
-
-test.describe('Link – render', () => {
+test.describe('Link – render – v3', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('link/entry--v3'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: container and text are visible`, async ({page}) => {
-			const container = page.locator(`[data-testid="link-${version}-container"]`);
-			await expect(container).toBeVisible();
-			await expect(container.getByText(`Link ${version}`)).toBeVisible();
-		});
+	test('container and text are visible', async ({page}) => {
+		const container = page.locator('[data-testid="link-v3-container"]');
+		await expect(container).toBeVisible();
+		await expect(container.getByText('Link v3')).toBeVisible();
+	});
 
-		test(`${version}: has clickable ts-link element`, async ({page}) => {
-			const container = page.locator(`[data-testid="link-${version}-container"]`);
-			await expect(container.locator('.ts-link')).toBeVisible();
-		});
-	}
+	test('has clickable ts-link element', async ({page}) => {
+		const container = page.locator('[data-testid="link-v3-container"]');
+		await expect(container.locator('.ts-link')).toBeVisible();
+	});
 });

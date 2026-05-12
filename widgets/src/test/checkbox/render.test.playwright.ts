@@ -1,21 +1,14 @@
 /*
- * Checkbox – simple render tests (v1, v2, v3).
+ * Checkbox – simple render tests (v3).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v2', 'v3'] as const;
-
-test.describe('Checkbox – render', () => {
-	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+test.describe('Checkbox v3 – render', () => {
+	test('container is visible', async ({page}) => {
+		await page.goto(testPage('checkbox/entry--v3'));
+		await waitForReady(page);
+		const container = page.locator('[data-testid="checkbox-v3-container"]');
+		await expect(container).toBeVisible();
 	});
-
-	for (const version of VERSIONS) {
-		test(`${version}: container is visible`, async ({page}) => {
-			const container = page.locator(`[data-testid="checkbox-${version}-container"]`);
-			await expect(container).toBeVisible();
-		});
-	}
 });

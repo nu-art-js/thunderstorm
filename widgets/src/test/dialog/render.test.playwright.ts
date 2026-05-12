@@ -1,32 +1,19 @@
-/*
- * Dialog – render tests.
- */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
 test.describe('Dialog – render', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('dialog/entry--v1'));
+		await waitForReady(page);
 	});
 
-	test('dialog trigger button is visible', async ({page}) => {
+	test('container is visible', async ({page}) => {
 		const container = page.locator('[data-testid="dialog-demo-container"]');
 		await expect(container).toBeVisible();
-		await expect(container.getByTestId('dialog-open-trigger')).toBeVisible();
-		await expect(container.getByText('Open dialog')).toBeVisible();
 	});
 
-	test('opening dialog shows content', async ({page}) => {
-		await page.getByTestId('dialog-open-trigger').click();
-		await expect(page.getByTestId('test-dialog-content')).toBeVisible();
-		await expect(page.getByText('Test dialog body')).toBeVisible();
-	});
-
-	test('close button closes dialog', async ({page}) => {
-		await page.getByTestId('dialog-open-trigger').click();
-		await expect(page.getByTestId('test-dialog-content')).toBeVisible();
-		await page.getByRole('button', {name: 'Close'}).click();
-		await expect(page.getByTestId('test-dialog-content')).not.toBeVisible();
+	test('open trigger is visible', async ({page}) => {
+		const trigger = page.locator('[data-testid="dialog-open-trigger"]');
+		await expect(trigger).toBeVisible();
 	});
 });

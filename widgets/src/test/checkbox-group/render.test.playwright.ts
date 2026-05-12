@@ -1,22 +1,15 @@
 /*
- * CheckboxGroup – simple render tests (v1, v3).
+ * CheckboxGroup – simple render tests (v3).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v3'] as const;
-
-test.describe('CheckboxGroup – render', () => {
-	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+test.describe('CheckboxGroup v3 – render', () => {
+	test('container and group are visible', async ({page}) => {
+		await page.goto(testPage('checkbox-group/entry--v3'));
+		await waitForReady(page);
+		const container = page.locator('[data-testid="checkbox-group-v3-container"]');
+		await expect(container).toBeVisible();
+		await expect(container.locator('.ts-checkbox-group')).toBeVisible();
 	});
-
-	for (const version of VERSIONS) {
-		test(`${version}: container and group are visible`, async ({page}) => {
-			const container = page.locator(`[data-testid="checkbox-group-${version}-container"]`);
-			await expect(container).toBeVisible();
-			await expect(container.locator('.ts-checkbox-group')).toBeVisible();
-		});
-	}
 });

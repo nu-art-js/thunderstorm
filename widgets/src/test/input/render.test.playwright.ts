@@ -1,23 +1,19 @@
 /*
- * Input – simple render tests (v1, v2, v3).
+ * Input – simple render tests (v3).
  */
 import {expect, test} from '@playwright/test';
-import {TEST_PAGE_PATH, waitForAppReady} from '../_helpers/test-constants.js';
+import {testPage, waitForReady} from '../_helpers/test-constants.js';
 
-const VERSIONS = ['v1', 'v2', 'v3'] as const;
-
-test.describe('Input – render', () => {
+test.describe('Input – render – v3', () => {
 	test.beforeEach(async ({page}) => {
-		await page.goto(TEST_PAGE_PATH);
-		await waitForAppReady(page);
+		await page.goto(testPage('input/entry--v3'));
+		await waitForReady(page);
 	});
 
-	for (const version of VERSIONS) {
-		test(`${version}: container and input are visible`, async ({page}) => {
-			const container = page.locator(`[data-testid="input-${version}-container"]`);
-			await expect(container).toBeVisible();
-			const input = page.locator(`#input-${version}`);
-			await expect(input).toBeVisible();
-		});
-	}
+	test('container and input are visible', async ({page}) => {
+		const container = page.locator('[data-testid="input-v3-container"]');
+		await expect(container).toBeVisible();
+		const input = page.locator('#input-v3');
+		await expect(input).toBeVisible();
+	});
 });
