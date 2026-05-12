@@ -4,18 +4,11 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {Module} from '@nu-art/ts-common';
+import type {StormTestInput} from '@nu-art/storm-testalot';
 import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {ModulePackBE_Permissions} from '../../main/core/module-pack.js';
 
-export type PermissionsTestConfig = {
-	modules: Module[];
-	config: Record<string, unknown>;
-	before?: () => Promise<void>;
-	after?: () => Promise<void>;
-};
-
-export const DefaultStormTestConfig_Permissions: PermissionsTestConfig = {
+export const DefaultStormTestConfig_Permissions: StormTestInput = {
 	modules: [
 		ModuleBE_AccountDB,
 		ModuleBE_SessionDB,

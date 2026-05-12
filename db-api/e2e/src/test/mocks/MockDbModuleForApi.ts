@@ -6,7 +6,7 @@
  * Mirrors db-api-backend test helper for E2E isolation.
  */
 
-import type {FirestoreCollectionV3} from '@nu-art/firebase-backend/firestore-v3/FirestoreCollectionV3';
+import type {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import type {BaseDBApiConfig, BaseDBDefBE} from '@nu-art/db-api-backend';
 import {createMockFirestoreCollectionV3} from './MockFirestoreCollectionV3.js';
@@ -21,11 +21,11 @@ const DEFAULT_DB_DEF: BaseDBDefBE = {
 
 export class MockModuleBE_BaseDB_Class
 	extends ModuleBE_BaseDB<any> {
-	mockCollection: FirestoreCollectionV3<any>;
+	mockCollection: FirestoreCollection<any>;
 
 	constructor(
 		dbDef: BaseDBDefBE = DEFAULT_DB_DEF,
-		mockCollection: FirestoreCollectionV3<any>,
+		mockCollection: FirestoreCollection<any>,
 		appConfig?: BaseDBApiConfig,
 	) {
 		super(dbDef, appConfig ?? {chunksSize: 200});
@@ -38,7 +38,7 @@ export class MockModuleBE_BaseDB_Class
 }
 
 export function createMockDbModuleForApi(
-	mockCollection: FirestoreCollectionV3<any> = createMockFirestoreCollectionV3(),
+	mockCollection: FirestoreCollection<any> = createMockFirestoreCollectionV3(),
 	dbKey: string                              = DEFAULT_DB_KEY
 ): MockModuleBE_BaseDB_Class {
 	const dbDef: BaseDBDefBE = {

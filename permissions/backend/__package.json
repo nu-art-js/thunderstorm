@@ -58,6 +58,7 @@
   },
   "devDependencies": {
     "@nu-art/testalot": "?",
+    "@nu-art/storm-testalot": "?",
     "@types/react": "?",
     "@types/express": "?",
     "@types/react-dom": "?",

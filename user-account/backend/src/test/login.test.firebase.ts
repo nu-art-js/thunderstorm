@@ -2,7 +2,7 @@ import {MemKey_HttpResponse} from '@nu-art/thunderstorm-backend/modules/server/c
 import {TestSuite} from '@nu-art/testalot';
 import {runSingleTestCase} from '@nu-art/testalot';
 import {generateHex} from '@nu-art/ts-common';
-import {stormTester, StormTestInput} from '@nu-art/thunderstorm-backend/test/StormTest';
+import {stormTester, StormTestInput} from '@nu-art/storm-testalot';
 import {DefaultStormTestConfig_SessionAndAccount} from './utils/helpers.js';
 import {Account_Login, Request_RegisterAccount} from '@nu-art/user-account-shared';
 import {ModuleBE_AccountDB, ModuleBE_FailedLoginAttemptDB} from './_main.js';

@@ -1,6 +1,7 @@
 import {addItemToArray, BadImplementationException, exists, flatArray, Logger, removeItemFromArray, timeCounter, TypedMap} from '@nu-art/ts-common';
 import {RunningStatusHandler} from '../runtime/RunningStatusHandler.js';
 import type {Phase} from './definitions/types.js';
+import {phaseKey_Test} from './definitions/consts.js';
 import {BaseUnit} from '../units/base/BaseUnit.js';
 import {PhaseAggregatedException} from '../exceptions/PhaseAggregatedException.js';
 import {UnitPhaseException} from '../exceptions/UnitPhaseException.js';
@@ -203,6 +204,10 @@ export class PhaseManager
 	 */
 	async execute(_steps: ScheduledStep[]) {
 		this.runningUnits = [];
+		const keepGoing = this.runningStatus.runtimeParams.keepGoing;
+		const allErrors: UnitPhaseException[] = [];
+		let firstFailedStep: ScheduledStep | undefined;
+
 		for (let i = this.runningStatus.startIndex; i < _steps.length; i++) {
 			if (this.killed)
 				break;
@@ -246,8 +251,17 @@ export class PhaseManager
 							this.logInfo(`Phase(${phase.name}) - Completed${operationDuration} - ${unit.config.key}`);
 						} catch (error: any) {
 							this.logError(`Phase(${phase.name}) - Error - ${unit.config.key}`, error);
-							errors.push(new UnitPhaseException(error, unit, phase.key));
-							failedStep = scheduledStep;
+							const unitError = new UnitPhaseException(error, unit, phase.key);
+							errors.push(unitError);
+							allErrors.push(unitError);
+							failedStep ??= scheduledStep;
+							firstFailedStep ??= scheduledStep;
+
+							if (keepGoing && phase.key === phaseKey_Test) {
+								failed = true;
+								break;
+							}
+
 							this.killed = true;
 							failed = true;
 							break;
@@ -260,12 +274,14 @@ export class PhaseManager
 				})
 			);
 
-			if (failedStep && errors.length) {
+			if (!keepGoing && failedStep && errors.length)
 				throw new PhaseAggregatedException(errors, failedStep);
-			}
 
 			await this.runningStatus.onStepEnded();
 		}
+
+		if (allErrors.length && firstFailedStep)
+			throw new PhaseAggregatedException(allErrors, firstFailedStep);
 
 		this.logInfo('All steps completed.');
 	}

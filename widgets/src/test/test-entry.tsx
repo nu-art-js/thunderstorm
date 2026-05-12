@@ -4,6 +4,10 @@
  */
 import * as React from 'react';
 import {createRoot} from 'react-dom/client';
+import {Thunder} from '@nu-art/thunder-core';
+
+new Thunder({configUrl: '/test-config.json'});
+
 import {TS_Input as TS_InputV1} from '../main/input/v1/TS_Input.js';
 import {TS_Input as TS_InputFromV2} from '../main/input/v2/index.js';
 import {TS_Input as TS_InputFromV3} from '../main/input/v3/index.js';
@@ -458,16 +462,11 @@ function ButtonGroupDemo() {
 			<div data-testid="button-group-horizontal-container">
 				<TS_ButtonGroup
 					direction="horizontal"
-					buttons={{
-						left: {
-							key: 'left', label: 'Left', onClick: () => {
-							}
-						},
-						right: {
-							key: 'right', label: 'Right', onClick: () => {
-							}
-						},
-					}}
+					controlled={undefined}
+					buttons={[
+						{key: 'left', label: 'Left', onClick: () => {}},
+						{key: 'right', label: 'Right', onClick: () => {}},
+					]}
 					defaultButtonKey="left"
 				/>
 			</div>
@@ -475,10 +474,10 @@ function ButtonGroupDemo() {
 				<TS_ButtonGroup
 					direction="vertical"
 					controlled
-					buttons={{
-						up: {key: 'up', label: 'Up'},
-						down: {key: 'down', label: 'Down'},
-					}}
+					buttons={[
+						{key: 'up', label: 'Up'},
+						{key: 'down', label: 'Down'},
+					]}
 					selectedKey={selected}
 					clickCallback={(k) => setSelected(k)}
 				/>
