@@ -220,9 +220,11 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				const containerName = `mongo-test-${config.key.replace(/[^a-z0-9-]/gi, '-')}`;
 				this.logInfo(`Starting MongoDB test container on port ${mongoPort} (container: ${containerName})`);
 
+				const rmCommando = this.allocateCommando();
+				await this.executeAsyncCommando(rmCommando, `docker rm -f ${containerName} 2>/dev/null || true`, () => {});
 				await this.releasePorts([`${mongoPort}`]);
 				const commando = this.allocateCommando();
-				await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${mongoPort}:${mongoPort} mongo:7 --replSet rs0 --port ${mongoPort}`, (stdout, stderr, exitCode) => {
+				await this.executeAsyncCommando(commando, `docker run -d --name ${containerName} -p ${mongoPort}:${mongoPort} mongo:7 --replSet rs0 --port ${mongoPort}`, (stdout, stderr, exitCode) => {
 					if (exitCode !== 0)
 						throw new CommandoException('Failed to start MongoDB test container', stdout, stderr, exitCode);
 				});
