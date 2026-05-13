@@ -100,7 +100,7 @@ class ModuleBE_Permissions_Class
 
 		return {
 			__access: {
-				readers: [GroupId_PermissionsAdmin],
+				readers: [GroupId_PermissionsAdmin, item._id],
 				writers: [GroupId_PermissionsAdmin],
 				deleters: [],
 				owners: [],
@@ -172,13 +172,20 @@ class ModuleBE_Permissions_Class
 	// --- Account lifecycle hooks ---
 
 	async __onUserLogin(account: SafeDB_Account) {
+		this.logDebug(`__onUserLogin: processing permissions for _id='${account._id}' email='${account.email}'`);
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			await this.ensurePersonalAccessGroup(account);
+			this.logDebug(`__onUserLogin: ensurePersonalAccessGroup done`);
 			await this.addToDefaultGroup(account);
+			this.logDebug(`__onUserLogin: addToDefaultGroup done`);
 			await this.promoteIfNoAdmin(account);
+			this.logDebug(`__onUserLogin: promoteIfNoAdmin done`);
 			await this.checkAdminGrantFlag(account);
+			this.logDebug(`__onUserLogin: checkAdminGrantFlag done`);
 			await this.resolveAdditionalGroupMemberships(account, 'login');
+			this.logDebug(`__onUserLogin: resolveAdditionalGroupMemberships done`);
 			await this.recomputePermissionsForUsers([account._id]);
+			this.logDebug(`__onUserLogin: recomputePermissionsForUsers done`);
 		});
 	}
 

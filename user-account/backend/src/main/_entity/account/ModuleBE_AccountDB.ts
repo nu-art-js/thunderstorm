@@ -227,13 +227,21 @@ export class ModuleBE_AccountDB_Class
 			MemKey_AccountEmail.set(account.email!);
 		},
 		onAccountCreated: async (account: SafeDB_Account) => {
+			this.logDebug(`onAccountCreated: dispatching for _id='${account._id}' email='${account.email}'`);
 			await dispatch_onAccountRegistered.dispatchModuleAsync(account);
+			this.logDebug(`onAccountCreated: dispatch complete`);
 		},
 		onAccountLogin: async (account: SafeDB_Account) => {
+			this.logDebug(`onAccountLogin: dispatching for _id='${account._id}' email='${account.email}'`);
 			await dispatch_onAccountLogin.dispatchModuleAsync(account);
+			this.logDebug(`onAccountLogin: dispatch complete`);
 		},
 		queryUnsafeAccount: async (credentials: AccountEmail) => {
+			this.logDebug(`queryUnsafeAccount: looking up email='${credentials.email}'`);
+			const allAccounts = await this.query.unManipulatedQuery({} as FirestoreQuery<DB_Account>);
+			this.logDebug(`queryUnsafeAccount: total accounts in collection=${allAccounts.length}, emails=${allAccounts.map(a => a.email).join(', ')}`);
 			const results = await this.query.unManipulatedQuery({where: {email: credentials.email}});
+			this.logDebug(`queryUnsafeAccount: found ${results.length} result(s) for email='${credentials.email}'`);
 			if (results.length === 0) {
 				const apiException = new ApiException(401, `There is no account for email '${credentials.email}'.`);
 				await dispatch_onApplicationException.dispatchModuleAsync(apiException, this as Module);
@@ -279,10 +287,13 @@ export class ModuleBE_AccountDB_Class
 			return {...dbSafeAccount};
 		},
 		login: async (credentials: API_UserAccount['login']['Body']): Promise<API_UserAccount['login']['Response']> => {
+			this.logDebug(`login: attempting for email='${credentials.email}' deviceId='${credentials.deviceId}'`);
 			this.impl.fixEmail(credentials);
 
 			const dbAccount = await this.impl.queryUnsafeAccount({email: credentials.email});
+			this.logDebug(`login: account found _id='${dbAccount._id}' type='${dbAccount.type}'`);
 			await this.password.assertPasswordMatch(dbAccount, credentials.password);
+			this.logDebug(`login: password match OK`);
 			const safeAccount = makeAccountSafe(dbAccount);
 			MemKey_AccountId.set(safeAccount._id);
 			await this.impl.onAccountLogin(safeAccount);
@@ -294,6 +305,7 @@ export class ModuleBE_AccountDB_Class
 			};
 
 			await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
+			this.logDebug(`login: session created for _id='${safeAccount._id}'`);
 			return safeAccount;
 		},
 		create: async (createAccountRequest: API_UserAccount['createAccount']['Body']): Promise<API_UserAccount['createAccount']['Response']> => {
