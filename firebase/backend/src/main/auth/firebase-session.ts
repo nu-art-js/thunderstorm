@@ -142,8 +142,9 @@ export abstract class FirebaseSession<Config>
 			const url = FirebaseSession.mongoUrlResolver(this.firebaseAppName);
 			this.logInfo(`Creating MongoClient: ${url}`);
 
-			this.mongoClient = new MongoClient(url, {monitorCommands: true});
+			this.mongoClient = new MongoClient(url, {monitorCommands: true, serverMonitoringMode: 'poll'});
 
+			// --- Command monitoring ---
 			this.mongoClient.on('commandStarted', (event) => {
 				this.logDebug(`MongoDB >>> [${event.commandName}] reqId=${event.requestId} ns=${event.databaseName}.${(event.command as Record<string, unknown>)[event.commandName]}`);
 			});
@@ -159,6 +160,61 @@ export abstract class FirebaseSession<Config>
 				} else {
 					this.logDebug(`MongoDB <<< [${event.commandName}] reqId=${event.requestId} ok=${reply?.ok} ${event.duration}ms`);
 				}
+			});
+
+			// --- Server heartbeat monitoring ---
+			this.mongoClient.on('serverHeartbeatSucceeded', (event) => {
+				this.logDebug(`MongoDB heartbeat OK: ${event.connectionId} duration=${event.duration}ms`);
+			});
+
+			this.mongoClient.on('serverHeartbeatFailed', (event) => {
+				this.logError(`MongoDB HEARTBEAT FAILED: ${event.connectionId} duration=${event.duration}ms failure=${event.failure?.message}`);
+			});
+
+			// --- Topology monitoring ---
+			this.mongoClient.on('topologyDescriptionChanged', (event) => {
+				const prev = event.previousDescription.type;
+				const next = event.newDescription.type;
+				const servers = Array.from(event.newDescription.servers.entries())
+					.map(([addr, desc]: [string, any]) => `${addr}(${desc.type})`).join(', ');
+				if (prev !== next) {
+					this.logWarning(`MongoDB TOPOLOGY CHANGED: ${prev} → ${next} servers=[${servers}]`);
+				} else {
+					this.logDebug(`MongoDB topology update: ${next} servers=[${servers}]`);
+				}
+			});
+
+			this.mongoClient.on('serverDescriptionChanged', (event) => {
+				const prev = event.previousDescription.type;
+				const next = event.newDescription.type;
+				if (prev !== next) {
+					this.logWarning(`MongoDB SERVER STATE CHANGED: ${event.address} ${prev} → ${next}`);
+				}
+			});
+
+			this.mongoClient.on('serverClosed', (event) => {
+				this.logError(`MongoDB SERVER CLOSED: ${event.address}`);
+			});
+
+			this.mongoClient.on('topologyClosed', () => {
+				this.logError(`MongoDB TOPOLOGY CLOSED — all connections lost`);
+			});
+
+			// --- Connection pool monitoring ---
+			this.mongoClient.on('connectionPoolCleared', (event) => {
+				this.logWarning(`MongoDB POOL CLEARED: ${event.address}`);
+			});
+
+			this.mongoClient.on('connectionPoolClosed', (event) => {
+				this.logError(`MongoDB POOL CLOSED: ${event.address}`);
+			});
+
+			this.mongoClient.on('connectionClosed', (event) => {
+				this.logDebug(`MongoDB connection closed: ${event.address} connId=${event.connectionId} reason=${event.reason}`);
+			});
+
+			this.mongoClient.on('connectionCheckOutFailed', (event) => {
+				this.logError(`MongoDB CONNECTION CHECKOUT FAILED: ${event.address} reason=${event.reason}`);
 			});
 		}
 

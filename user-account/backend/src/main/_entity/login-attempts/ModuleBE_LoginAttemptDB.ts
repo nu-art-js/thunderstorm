@@ -35,6 +35,7 @@ export class ModuleBE_LoginAttemptDB_Class
 	 * @param account The logged in account id
 	 */
 	__onUserLogin(account: SafeDB_Account) {
+		this.logDebug(`__onUserLogin: recording success for _id='${account._id}'`);
 		return this.createLoginAttempt(account._id, LoginStatus_Success);
 	}
 

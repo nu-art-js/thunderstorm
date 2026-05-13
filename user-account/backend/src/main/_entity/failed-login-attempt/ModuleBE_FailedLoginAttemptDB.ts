@@ -43,6 +43,7 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 	}
 
 	__onUserLogin(account: SafeDB_Account) {
+		this.logDebug(`__onUserLogin: clearing failed attempts for _id='${account._id}'`);
 		return this.onLoginSuccessful(account._id);
 	}
 

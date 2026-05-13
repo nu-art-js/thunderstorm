@@ -83,6 +83,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 	readonly uniqueKeys: Proto['uniqueKeys'][] | string[];
 	private readonly validator;
 	readonly hooks?: FirestoreCollectionHooks<Proto['dbType']>;
+	private lastKnownCount = 0;
 
 	constructor(db: MongoDriverDb, _dbDef: Database<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
 		super();
@@ -135,6 +136,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 			tsQuery = this.hooks?.manipulateQuery?.(deepClone(tsQuery)) ?? tsQuery;
 
 		const compiled = MongoInterface.buildQuery<Proto['dbType']>(tsQuery);
+		this.logDebug(`_customQuery [${this.dbDef.dbKey}] filter=${__stringify(compiled.filter)} manipulated=${canManipulateQuery}`);
 		let cursor = this.mongoCollection.find(compiled.filter, this.sessionOpts());
 
 		if (compiled.sort)
@@ -149,13 +151,22 @@ export class MongoCollection<Proto extends DB_Prototype>
 		if (compiled.limit)
 			cursor = cursor.limit(compiled.limit);
 
-		return await cursor.toArray() as Proto['dbType'][];
+		const results = await cursor.toArray() as Proto['dbType'][];
+		if (results.length > this.lastKnownCount)
+			this.lastKnownCount = results.length;
+
+		if (results.length === 0 && this.lastKnownCount > 0 && Object.keys(compiled.filter).length > 0)
+			this.logWarning(`_customQuery [${this.dbDef.dbKey}] returned 0 results but collection previously had ${this.lastKnownCount} items — filter=${__stringify(compiled.filter)}`);
+
+		this.logDebug(`_customQuery [${this.dbDef.dbKey}] results=${results.length} ids=${results.map(r => r._id).join(',')}`);
+		return results;
 	}
 
 	query = Object.freeze({
 		unique: async (_id: Proto['uniqueParam']): Promise<Proto['dbType'] | undefined> => {
 			const idStr = typeof _id !== 'string' ? this.assertUniqueId(_id) : _id;
 			const result = await this.mongoCollection.findOne({_id: idStr} as any, this.sessionOpts());
+			this.logDebug(`query.unique [${this.dbDef.dbKey}] _id=${idStr} found=${!!result}`);
 			return result as Proto['dbType'] | undefined;
 		},
 		uniqueAssert: async (_id: Proto['uniqueParam']): Promise<Proto['dbType']> => {
@@ -242,7 +253,9 @@ export class MongoCollection<Proto extends DB_Prototype>
 		item: async (preDBItem: Proto['uiType']): Promise<Proto['dbType']> => {
 			const dbItem = await this.prepareForCreate(preDBItem);
 			markTransactionWrite();
-			await this.mongoCollection.insertOne(dbItem as any, this.sessionOpts());
+			this.logDebug(`create.item [${this.dbDef.dbKey}] _id=${dbItem._id}`);
+			const result = await this.mongoCollection.insertOne(dbItem as any, this.sessionOpts());
+			this.logDebug(`create.item [${this.dbDef.dbKey}] acknowledged=${result.acknowledged} insertedId=${result.insertedId}`);
 			await this.hooks?.postWriteProcessing?.({updated: dbItem}, 'create');
 			return dbItem;
 		},
