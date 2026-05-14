@@ -1,39 +1,7 @@
-/*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import {ModuleBE_AssetsTemp} from '../modules/ModuleBE_AssetsTemp.js';
-import {ModuleBE_AssetsDB} from '../modules/ModuleBE_AssetsDB.js';
-import {ModuleBE_BucketListener} from '../modules/ModuleBE_BucketListener.js';
-import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub-backend';
-import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader.js';
-import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI.js';
 import {createApisForDBModule} from '@nu-art/db-api-backend';
-import {ModuleBE_AssetsStorage} from '../modules/ModuleBE_AssetsStorage.js';
-import {ModuleBE_AssetsDeleted} from '../modules/ModuleBE_AssetsDeleted.js';
+import {ModuleBE_FileUpload} from '../modules/ModuleBE_FileUpload.js';
 
 
-export const ModulePackBE_FileUploader = [
-	...ModulePackBE_PushPubSub,
-	ModuleBE_AssetUploader,
-	ModuleBE_AssetsTemp, createApisForDBModule(ModuleBE_AssetsTemp),
-	ModuleBE_AssetsDeleted,
-	ModuleBE_AssetsStorage,
-	ModuleBE_AssetsDB, createApisForDBModule(ModuleBE_AssetsDB), ModuleBE_AssetsAPI,
-	ModuleBE_BucketListener
+export const ModulePackBE_FileUpload = [
+	ModuleBE_FileUpload, createApisForDBModule(ModuleBE_FileUpload),
 ];

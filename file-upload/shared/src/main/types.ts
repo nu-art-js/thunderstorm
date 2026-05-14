@@ -1,41 +1,65 @@
-/*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
+import {TS_Object} from '@nu-art/ts-common';
 
-export const PushKey_FileUploaded = 'file-uploaded';
 
-export enum FileStatus {
-	Idle                    = 'Idle',
-	ObtainingUrl            = 'ObtainingUrl',
-	UrlObtained             = 'UrlObtained',
-	UploadingFile           = 'UploadingFile',
-	WaitingForProcessing    = 'WaitingForProcessing',
-	Processing              = 'Processing',
-	PostProcessing          = 'PostProcessing',
-	Completed               = 'Completed',
-	ErrorWhileProcessing    = 'ErrorWhileProcessing',
-	ErrorMakingPublic       = 'ErrorMakingPublic',
-	ErrorNoValidator        = 'ErrorNoValidator',
-	ErrorNoConfig           = 'ErrorNoConfig',
-	ErrorRetrievingMetadata = 'ErrorRetrievingMetadata',
-	Error                   = 'Error'
+export const AssetDBGroup = 'asset';
+
+const Assets_DbKey = 'assets';
+
+export enum AssetStatus {
+	Pending = 'pending',
+	Validated = 'validated',
+	Failed = 'failed',
 }
 
-export interface OnFileStatusChanged {
-	__onFileStatusChanged: (id: string) => void;
-}
+export type AssetData = {
+	key: string
+	name: string
+	ext: string
+	mimeType: string
+	status: AssetStatus
+	path: string
+	bucketName: string
+	md5Hash?: string
+	public?: boolean
+	metadata?: TS_Object
+	signedUrl?: {
+		url: string
+		validUntil: number
+	}
+};
+
+export type DB_Asset = DB_Object<typeof Assets_DbKey> & AssetData;
+
+type VersionTypes_Asset = {
+	'1.0.0': DB_Asset
+};
+
+type Versions = VersionsDeclaration<['1.0.0'], VersionTypes_Asset>;
+type UniqueKeys = '_id';
+type GeneratedKeys =
+	'signedUrl'
+	| 'md5Hash'
+	| 'path'
+	| 'bucketName'
+	| 'status'
+	| 'public'
+	| 'metadata';
+
+export type DatabaseDef_Assets = DB_Prototype<DB_ProtoSeed<DB_Asset, typeof Assets_DbKey, GeneratedKeys, Versions, UniqueKeys>>;
+export type UI_Asset = DatabaseDef_Assets['uiType'];
+
+export type UploadRequest = {
+	name: string
+	mimeType: string
+	key?: string
+	public?: boolean
+	metadata?: TS_Object
+};
+
+export type PendingUpload = {
+	signedUrl: string
+	asset: DB_Asset
+};
+
+export type UploadProgressEvent = { loaded: number; total?: number };

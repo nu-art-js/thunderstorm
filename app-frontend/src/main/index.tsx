@@ -26,7 +26,7 @@ import {ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub-frontend/index';
 import {ModuleFE_BugReport} from '@nu-art/bug-report-frontend/index';
 import {Module} from '@nu-art/ts-common';
-import {ModulePack_Frontend_Uploader} from '@nu-art/file-upload-frontend/index';
+import {ModulePackFE_FileUpload} from '@nu-art/file-upload-frontend/index';
 import {ModuleFE_Permissions} from '@nu-art/permissions-frontend/index';
 
 
@@ -41,7 +41,7 @@ new Thunder()
 	.setConfig(require('./config.js').config)
 	.addModules(...ModulePack_Frontend_PushPubSub)
 	.addModules(...ModulePack_Frontend_LiveDocs)
-	.addModules(...ModulePack_Frontend_Uploader)
+	.addModules(...ModulePackFE_FileUpload)
 	.addModules(...modules)
 	.setMainApp(App)
 	.build();

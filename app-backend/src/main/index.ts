@@ -32,7 +32,7 @@ import {Module} from '@nu-art/ts-common';
 import {ModulePackBE_Permissions} from '@nu-art/permissions-backend';
 import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report-backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub-backend';
-import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload-backend';
+import {ModulePackBE_FileUpload} from '@nu-art/file-upload-backend';
 import {Firebase_ExpressFunction} from '@nu-art/firebase-backend-functions';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
 import {PubsubExample} from '@modules/PubsubExample';
@@ -62,7 +62,7 @@ const _exports = new Storm()
 	.addModulePack(ModulePack_Backend_BugReport)
 	.addModulePack(ModulePack_Backend_LiveDocs)
 	.addModulePack(ModulePackBE_Permissions)
-	.addModulePack(ModulePack_Backend_Uploader)
+	.addModulePack(ModulePackBE_FileUpload)
 	.addModulePack(modules)
 	.setInitialRouteResolver(new RouteResolver_ModulePath(HttpServer.getExpress(), __dirname))
 	.setEnvironment(Environment.name)
