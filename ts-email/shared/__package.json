@@ -1,0 +1,23 @@
+{
+  "name": "@nu-art/ts-email-shared",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Email infrastructure shared types — adapter interface, email types for Thunderstorm",
+  "keywords": ["TacB0sS", "infra", "nu-art", "email", "thunderstorm", "typescript"],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+  "repository": {"type": "git", "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"},
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {"build": "tsc"},
+  "dependencies": {
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {},
+  "unitConfig": {"type": "typescript-lib"},
+  "type": "module",
+  "exports": {
+    ".": {"types": "./index.d.ts", "import": "./index.js"},
+    "./*": {"types": "./*.d.ts", "import": "./*.js"}
+  }
+}
