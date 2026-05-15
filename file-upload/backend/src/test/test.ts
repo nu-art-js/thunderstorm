@@ -1,43 +1,35 @@
-/*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import {__custom, __scenario} from '@nu-art/testelot';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {MyTester} from './core.js';
-import {StaticLogger} from '@nu-art/ts-common';
+import {ModulePackBE_FileUpload, ModuleBE_FileUpload} from '../main/index.js';
 
-const mainScenario = __scenario('File Uploading Testing');
-const googleCall = __custom(async () => {
-	try {
-		const res = await fetch('https://google.com/', {method: 'GET', headers: {'a': 'b'}});
-		if (!res.ok)
-			throw new Error(`HTTP ${res.status}`);
-		StaticLogger.logInfo('works');
-	} catch (e: unknown) {
-		StaticLogger.logError('breaks');
-		StaticLogger.logError(e);
-	}
-}).setLabel('Headers');
-mainScenario.add(googleCall);
-// mainScenario.add(parseApk);
+
+const mainScenario = __scenario('File Upload Backend Testing');
+
+const testRegisterValidator = __custom(async () => {
+	ModuleBE_FileUpload.registerValidator('test-image', {
+		allowedMimeTypes: ['image/png', 'image/jpeg'],
+		maxSize: 5 * 1024 * 1024,
+	});
+}).setLabel('Register validator for test-image key');
+
+const testRegisterDuplicateValidator = __custom(async () => {
+	ModuleBE_FileUpload.registerValidator('duplicate-key', {
+		allowedMimeTypes: ['text/plain'],
+	});
+	ModuleBE_FileUpload.registerValidator('duplicate-key', {
+		allowedMimeTypes: ['application/pdf'],
+	});
+}).setLabel('Duplicate validator registration throws');
+
+// @ts-ignore — expectToFail exists on testelot __custom
+testRegisterDuplicateValidator.expectToFail(Error, (e: Error) => e.message.includes('already registered'));
+
+mainScenario.add(testRegisterValidator);
+mainScenario.add(testRegisterDuplicateValidator);
 
 module.exports = new MyTester()
 	.addModules(ModuleBE_Firebase)
+	.addModules(...ModulePackBE_FileUpload)
 	.setScenario(mainScenario)
 	.build();

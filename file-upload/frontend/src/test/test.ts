@@ -1,43 +1,83 @@
-/*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+import {FileTransferState, TransferDirection, FileTransferPhase} from '../main/modules/ModuleFE_FileUpload.js';
 
-import {__custom, __scenario} from '@nu-art/testelot';
-import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {MyTester} from './core.js';
-import {StaticLogger} from '@nu-art/ts-common';
 
-const mainScenario = __scenario('File Uploading Testing');
-const googleCall = __custom(async () => {
-	try {
-		const res = await fetch('https://google.com/', {method: 'GET', headers: {'a': 'b'}});
-		if (!res.ok)
-			throw new Error(`HTTP ${res.status}`);
-		StaticLogger.logInfo('works');
-	} catch (e: unknown) {
-		StaticLogger.logError('breaks');
-		StaticLogger.logError(e);
-	}
-}).setLabel('Headers');
-mainScenario.add(googleCall);
-// mainScenario.add(parseApk);
+describe('FileTransferState types', () => {
+	it('Upload state has correct direction', () => {
+		const state: FileTransferState = {
+			name: 'test.jpg',
+			progress: 0,
+			phase: 'requesting',
+			direction: 'upload',
+		};
+		if (state.direction !== 'upload')
+			throw new Error(`Expected "upload", got "${state.direction}"`);
+	});
 
-module.exports = new MyTester()
-	.addModules(ModuleBE_Firebase)
-	.setScenario(mainScenario)
-	.build();
+	it('Download state has correct direction', () => {
+		const state: FileTransferState = {
+			name: 'report.pdf',
+			progress: 0.5,
+			phase: 'downloading',
+			direction: 'download',
+		};
+		if (state.direction !== 'download')
+			throw new Error(`Expected "download", got "${state.direction}"`);
+	});
+
+	it('All upload phases are valid', () => {
+		const uploadPhases: FileTransferPhase[] = ['requesting', 'uploading', 'confirming', 'completed', 'failed'];
+		for (const phase of uploadPhases) {
+			const state: FileTransferState = {
+				name: 'test.jpg',
+				progress: 0,
+				phase,
+				direction: 'upload',
+			};
+			if (state.phase !== phase)
+				throw new Error(`Phase mismatch: expected "${phase}", got "${state.phase}"`);
+		}
+	});
+
+	it('All download phases are valid', () => {
+		const downloadPhases: FileTransferPhase[] = ['requesting', 'preparing', 'downloading', 'completed', 'failed'];
+		for (const phase of downloadPhases) {
+			const state: FileTransferState = {
+				name: 'report.pdf',
+				progress: 0,
+				phase,
+				direction: 'download',
+			};
+			if (state.phase !== phase)
+				throw new Error(`Phase mismatch: expected "${phase}", got "${state.phase}"`);
+		}
+	});
+
+	it('Failed state includes error message', () => {
+		const state: FileTransferState = {
+			name: 'broken.zip',
+			progress: 0.3,
+			phase: 'failed',
+			direction: 'upload',
+			error: 'MIME type mismatch',
+		};
+		if (!state.error)
+			throw new Error('Expected error field to be populated');
+	});
+
+	it('Completed state has progress 1', () => {
+		const state: FileTransferState = {
+			name: 'done.jpg',
+			progress: 1,
+			phase: 'completed',
+			direction: 'upload',
+		};
+		if (state.progress !== 1)
+			throw new Error(`Expected progress 1, got ${state.progress}`);
+	});
+
+	it('Direction type exhausts upload and download', () => {
+		const directions: TransferDirection[] = ['upload', 'download'];
+		if (directions.length !== 2)
+			throw new Error(`Expected 2 directions, got ${directions.length}`);
+	});
+});

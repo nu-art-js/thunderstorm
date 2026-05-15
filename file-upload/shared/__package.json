@@ -34,7 +34,9 @@
     "@nu-art/db-api-shared": "?",
     "@nu-art/ts-common": "?"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
   "unitConfig": {
     "type": "typescript-lib"
   },
