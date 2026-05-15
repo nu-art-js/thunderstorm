@@ -40,7 +40,11 @@
     "@google-cloud/storage": "?",
     "file-type": "^21.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@nu-art/testalot": "?",
+    "@nu-art/google-services-backend": "?",
+    "chai": "?"
+  },
   "unitConfig": {
     "type": "typescript-lib"
   },

@@ -3,6 +3,7 @@ import {_className} from '@nu-art/thunder-core';
 import {
 	FileTransferPhase,
 	FileTransferState,
+	ModuleFE_FileUpload,
 	OnFileTransferStateChanged,
 	TransferDirection,
 } from '../../modules/ModuleFE_FileUpload.js';
@@ -259,6 +260,11 @@ export class TransferBubble
 		const files = new Map(this.state.files);
 		files.delete(fileState.assetId);
 		this.setState({files});
+
+		if (fileState.direction === 'upload')
+			ModuleFE_FileUpload.retryUpload(fileState.assetId);
+		else
+			ModuleFE_FileUpload.retryDownload(fileState.assetId, fileState.name);
 	};
 
 	// ── Render ──
@@ -472,7 +478,10 @@ export class TransferBubble
 			return null;
 
 		return <div className="ts-transfer-bubble__footer">
-			<button className="ts-transfer-bubble__footer-cancel" onClick={() => this.setState({visible: false, trayOpen: false, files: new Map()})}>
+			<button className="ts-transfer-bubble__footer-cancel" onClick={() => {
+				ModuleFE_FileUpload.cancelAll();
+				this.setState({visible: false, trayOpen: false, files: new Map()});
+			}}>
 				Cancel all
 			</button>
 		</div>;

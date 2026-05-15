@@ -25,6 +25,8 @@ The file-upload lib provides a complete file transfer pipeline — signed-URL up
 - **Frontend dispatches state**: `OnFileTransferStateChanged` is the integration point. The default `TransferBubble` widget subscribes to it. Custom UIs implement the same interface.
 - **Parallel transfers**: Frontend uses `QueueV2` with configurable parallelism (default: 3) for both uploads and downloads.
 - **Structured errors**: `confirmUpload` returns `{ asset, error? }` — never throws on validation failure. The `error` field carries the human-readable reason.
+- **Retry**: Failed uploads are cached in the module. Call `retryUpload(assetId)` to re-initiate from the cached `File`. Downloads retry via `retryDownload(assetId, name)`.
+- **Cancel**: `cancelAll()` aborts in-flight fetch requests and cancels queued items via `QueueV2.cancelAll()`.
 - **Direction-aware UI**: The `TransferBubble` handles both uploads and downloads. Direction tabs appear only when both directions are active simultaneously.
 
 ---
@@ -231,3 +233,4 @@ If no adapter is set before init, GCS is used automatically.
 - **Do not rely on exception messages for validation errors** — use `ConfirmUploadResponse.error` (the structured field).
 - **Do not set inline styles on `TransferBubble`** — override via SCSS custom properties and class selectors only.
 - **Do not import `StorageAdapter_GCS` in consuming packages** — it is an internal implementation. Use `ModuleBE_FileUpload.setStorageAdapter()` if swapping.
+- **Do not call `retryUpload` for an asset that wasn't uploaded via `ModuleFE_FileUpload.upload()`** — the module caches the `File` object only for uploads it initiated. Returns `undefined` if no cached entry exists.

@@ -50,12 +50,22 @@ type DownloadQueueItem = {
 	state: FileTransferState
 };
 
+type FailedUploadEntry = {
+	file: File
+	key: string
+	isPublic: boolean
+};
+
 const DefaultParallelTransfers = 3;
 
 export class ModuleFE_FileUpload_Class
 	extends Module {
 
 	private readonly dispatch_transferStateChange = new ThunderDispatcher<OnFileTransferStateChanged, '__onFileTransferStateChanged'>('__onFileTransferStateChanged');
+	private readonly failedUploads = new Map<string, FailedUploadEntry>();
+	private readonly activeAbortControllers = new Set<AbortController>();
+	private activeUploadQueue?: QueueV2<UploadQueueItem, DB_Asset>;
+	private activeDownloadQueue?: QueueV2<DownloadQueueItem, void>;
 
 	// ── Upload ──
 
@@ -83,18 +93,24 @@ export class ModuleFE_FileUpload_Class
 		const results: DB_Asset[] = [];
 		const queue = new QueueV2<UploadQueueItem, DB_Asset>('file-upload', (item) => this.processUpload(item))
 			.setParallelCount(DefaultParallelTransfers);
+		this.activeUploadQueue = queue;
 
 		for (let i = 0; i < pendingUploads.length; i++) {
 			const state = states[i];
 			state.assetId = pendingUploads[i].asset._id;
+			this.failedUploads.set(pendingUploads[i].asset._id, {file: files[i], key, isPublic});
 
 			queue.addItemImpl(
 				{pending: pendingUploads[i], file: files[i], state},
-				(asset) => results.push(asset),
+				(asset) => {
+					this.failedUploads.delete(asset._id);
+					results.push(asset);
+				},
 			);
 		}
 
 		await queue.executeSync();
+		this.activeUploadQueue = undefined;
 		return results;
 	}
 
@@ -166,16 +182,20 @@ export class ModuleFE_FileUpload_Class
 
 		const queue = new QueueV2<DownloadQueueItem, void>('file-download', (item) => this.processDownload(item))
 			.setParallelCount(DefaultParallelTransfers);
+		this.activeDownloadQueue = queue;
 
 		for (let i = 0; i < assetIds.length; i++) {
 			queue.addItemImpl({assetId: assetIds[i], name: states[i].name, state: states[i]});
 		}
 
 		await queue.executeSync();
+		this.activeDownloadQueue = undefined;
 	}
 
 	private async processDownload(item: DownloadQueueItem): Promise<void> {
 		const {assetId, name, state} = item;
+		const abortController = new AbortController();
+		this.activeAbortControllers.add(abortController);
 
 		try {
 			state.phase = 'preparing';
@@ -186,7 +206,7 @@ export class ModuleFE_FileUpload_Class
 			state.phase = 'downloading';
 			this.dispatch_transferStateChange.dispatchUI(state);
 
-			const response = await fetch(signedUrl);
+			const response = await fetch(signedUrl, {signal: abortController.signal});
 			if (!response.ok)
 				throw new Error(`Download failed: ${response.status} ${response.statusText}`);
 
@@ -222,6 +242,8 @@ export class ModuleFE_FileUpload_Class
 			state.error = e.message ?? 'Download failed';
 			this.dispatch_transferStateChange.dispatchUI(state);
 			throw e;
+		} finally {
+			this.activeAbortControllers.delete(abortController);
 		}
 	}
 
@@ -232,6 +254,33 @@ export class ModuleFE_FileUpload_Class
 		anchor.download = fileName;
 		anchor.click();
 		URL.revokeObjectURL(url);
+	}
+
+	// ── Retry ──
+
+	async retryUpload(assetId: string): Promise<DB_Asset | undefined> {
+		const cached = this.failedUploads.get(assetId);
+		if (!cached)
+			return undefined;
+
+		this.failedUploads.delete(assetId);
+		const results = await this.upload([cached.file], cached.key, cached.isPublic);
+		return results[0];
+	}
+
+	async retryDownload(assetId: string, name: string): Promise<void> {
+		return this.download([assetId], [name]);
+	}
+
+	// ── Cancel ──
+
+	cancelAll() {
+		this.activeUploadQueue?.cancelAll();
+		this.activeDownloadQueue?.cancelAll();
+		for (const controller of this.activeAbortControllers) {
+			controller.abort();
+		}
+		this.activeAbortControllers.clear();
 	}
 
 	// ── Shared ──
