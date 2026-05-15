@@ -36,7 +36,8 @@
     "@nu-art/db-api-shared": "?",
     "@nu-art/http-server": "?",
     "@nu-art/ts-common": "?",
-    "@nu-art/api-types": "?"
+    "@nu-art/api-types": "?",
+    "@nu-art/ts-email-backend": "?"
   },
   "devDependencies": {
     "@nu-art/testalot": "?",

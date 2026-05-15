@@ -5,3 +5,5 @@ export * from './ui/Component_Login/Component_Login.js';
 export * from './ui/Component_Register.js';
 export * from './ui/Component_ChangePassword/Component_ChangePassword.js';
 export * from './ui/Component_LoginBlocked/Component_LoginBlocked.js';
+export * from './ui/Component_ForgotPassword/Component_ForgotPassword.js';
+export * from './ui/Component_ResetPassword/Component_ResetPassword.js';
