@@ -27,7 +27,9 @@ export class ModuleBE_MessagingApi_Class
 
 	private async queryMessages(request: PaginatedMessagesRequest): Promise<PaginatedMessagesResponse> {
 		const limit = request.limit ?? DefaultPageSize;
-		const where: Record<string, any> = {topicId: request.topicId};
+
+		// Build MongoDB-style where clause — typed as Record because of $exists/$lt operators
+		const where: Record<string, unknown> = {topicId: request.topicId};
 
 		if (request.parentMessageId)
 			where.parentMessageId = request.parentMessageId;
@@ -37,7 +39,8 @@ export class ModuleBE_MessagingApi_Class
 		if (request.cursor)
 			where.__created = {$lt: Number(request.cursor)};
 
-		const messages = await ModuleBE_MessageDB.query.custom({where: where as any, limit: limit + 1, orderBy: [{key: '__created' as any, order: 'desc'}]});
+		// @ts-ignore — query.custom where/orderBy types don't cover MongoDB operators or DB_Object meta fields
+		const messages = await ModuleBE_MessageDB.query.custom({where, limit: limit + 1, orderBy: [{key: '__created', order: 'desc'}]});
 		const hasMore = messages.length > limit;
 		const page = hasMore ? messages.slice(0, limit) : messages;
 		const nextCursor = hasMore && page.length > 0 ? String(page[page.length - 1].__created) : undefined;

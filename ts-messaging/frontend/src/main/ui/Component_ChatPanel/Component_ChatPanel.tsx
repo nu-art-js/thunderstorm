@@ -35,16 +35,21 @@ export class Component_ChatPanel
 
 	private readonly loadMessages = async () => {
 		this.setState({loading: true});
-		const response: PaginatedMessagesResponse = await ModuleFE_Message.getMessagesForTopic({
-			topicId: this.props.topicId,
-			cursor: this.state.nextCursor,
-		});
-		this.setState(prev => ({
-			messages: [...response.messages.reverse(), ...prev.messages],
-			hasMore: response.hasMore,
-			nextCursor: response.nextCursor,
-			loading: false,
-		}));
+		try {
+			const response: PaginatedMessagesResponse = await ModuleFE_Message.getMessagesForTopic({
+				topicId: this.props.topicId,
+				cursor: this.state.nextCursor,
+			});
+			this.setState(prev => ({
+				messages: [...response.messages.reverse(), ...prev.messages],
+				hasMore: response.hasMore,
+				nextCursor: response.nextCursor,
+				loading: false,
+			}));
+		} catch (e: any) {
+			this.logError('Failed to load messages', e);
+			this.setState({loading: false});
+		}
 	};
 
 	private readonly onSend = async (text: string) => {

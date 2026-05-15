@@ -1,5 +1,4 @@
 import {ComponentSync} from '@nu-art/thunder-widgets';
-import {_className} from '@nu-art/thunder-core';
 import type {DB_Message} from '@nu-art/ts-messaging-shared';
 import './Component_MessageBubble.scss';
 
@@ -26,7 +25,7 @@ export class Component_MessageBubble
 		const timestamp = message.__created ? new Date(message.__created).toLocaleTimeString() : '';
 
 		return (
-			<div className={_className('ts-messaging__bubble')}>
+			<div className="ts-messaging__bubble">
 				<div className="ts-messaging__bubble__header">
 					<span className="ts-messaging__bubble__sender">{message._auditorId}</span>
 					<span className="ts-messaging__bubble__time">{timestamp}</span>
