@@ -71,3 +71,5 @@ Paths are relative to the project root (monorepo root).
 | UI construction (naming, SCSS, design tokens, layout primitives, state, edit/view mode) | [_thunderstorm/.rules/consuming/ui-construction.mdc](_thunderstorm/.rules/consuming/ui-construction.mdc) |
 | DB entity migrations and backward compat (prewrite defaults, not optional fields) | [_thunderstorm/.rules/consuming/prewrite-and-migrations.mdc](_thunderstorm/.rules/consuming/prewrite-and-migrations.mdc) |
 | Use secrets (SecretKey, secret-backed entities) | [_thunderstorm/google-services/.rules/how-to-use.mdc](_thunderstorm/google-services/.rules/how-to-use.mdc) |
+| Use ts-email (pluggable email sending, adapters) | [_thunderstorm/ts-email/.rules/how-to-use.mdc](_thunderstorm/ts-email/.rules/how-to-use.mdc) |
+| Use password-auth (login, registration, password recovery) | [_thunderstorm/auth/password/.rules/how-to-use.mdc](_thunderstorm/auth/password/.rules/how-to-use.mdc) |

@@ -1,0 +1,113 @@
+---
+description: How to use ts-email — pluggable email sending with adapter pattern (SendGrid default)
+alwaysApply: false
+---
+
+# How to use ts-email
+
+The `@nu-art/ts-email-*` packages provide a pluggable email-sending abstraction with a clean adapter pattern.
+
+---
+
+## Architecture
+
+- **`@nu-art/ts-email-shared`** — Types: `Email`, `EmailAddress`, `EmailResult`, `EmailAdapter` interface.
+- **`@nu-art/ts-email-backend`** — `ModuleBE_Email` (sender module) + `SendGridAdapter` (concrete adapter).
+
+The adapter pattern decouples email sending from any specific provider. `ModuleBE_Email` accepts any `EmailAdapter` via `registerAdapter()`. The `SendGridAdapter` registers itself automatically on `init()`.
+
+---
+
+## Setup
+
+### 1. Add to module pack
+
+```typescript
+import {ModulePackBE_Email} from '@nu-art/ts-email-backend';
+
+export const modules: Module[] = [
+	...ModulePackBE_Email,
+];
+```
+
+`ModulePackBE_Email` includes both `ModuleBE_Email` and `SendGridAdapter`. If using a different adapter, include `ModuleBE_Email` directly and your custom adapter module.
+
+### 2. Store API key in secrets
+
+The `SendGridAdapter` reads its API key from GCP Secret Manager under the name `sendgrid-api-key`. Store it via:
+
+```bash
+echo -n "SG.your-api-key" | gcloud secrets create sendgrid-api-key --data-file=-
+```
+
+If the secret is missing, `SendGridAdapter.init()` throws `ImplementationMissingException`.
+
+---
+
+## Sending emails
+
+```typescript
+import {ModuleBE_Email} from '@nu-art/ts-email-backend';
+
+const result = await ModuleBE_Email.send({
+	from: {email: 'noreply@example.com', name: 'My App'},
+	to: [{email: 'user@example.com'}],
+	subject: 'Hello',
+	html: '<p>Welcome!</p>',
+	text: 'Welcome!',   // optional plain-text fallback
+});
+
+if (!result.success)
+	this.logError('Email failed:', result.error);
+```
+
+### Email type
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `from` | `EmailAddress` | Yes | Sender address |
+| `to` | `EmailAddress[]` | Yes | Recipient addresses |
+| `subject` | `string` | Yes | Email subject line |
+| `html` | `string` | Yes | HTML body |
+| `text` | `string` | No | Plain-text fallback body |
+
+### EmailAddress type
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `email` | `string` | Yes | Email address |
+| `name` | `string` | No | Display name |
+
+---
+
+## Custom adapters
+
+To add a new email provider:
+
+1. Create a `Module` class that implements `EmailAdapter`.
+2. In `init()`, call `ModuleBE_Email.registerAdapter(this)`.
+3. Include your adapter module in the app's module pack instead of (or alongside) `SendGridAdapter`.
+
+```typescript
+import {Module} from '@nu-art/ts-common';
+import {EmailAdapter, Email, EmailResult} from '@nu-art/ts-email-shared';
+import {ModuleBE_Email} from '@nu-art/ts-email-backend';
+
+export class MyAdapter_Class
+	extends Module
+	implements EmailAdapter {
+
+	async init() {
+		await super.init();
+		ModuleBE_Email.registerAdapter(this);
+	}
+
+	async send(email: Email): Promise<EmailResult> {
+		// your provider logic
+	}
+}
+
+export const MyAdapter = new MyAdapter_Class();
+```
+
+Only one adapter can be active at a time — the last one to call `registerAdapter()` wins.
