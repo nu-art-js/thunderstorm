@@ -7,20 +7,21 @@
  */
 
 
-import {md5} from '@nu-art/ts-common';
+import {getDotNotatedValue, md5} from '@nu-art/ts-common';
 import {DB_Object, DB_UniqueId} from './db-object.js';
 
 /**
  * Compose a unique ID from an object's unique key fields.
  *
  * Creates a deterministic ID by joining the values of specified keys.
+ * Supports dot-notation paths for nested properties (e.g. 'anchor.dbKey').
  *
  * @param obj - Object containing unique key values
- * @param keys - Array of keys to use for ID composition
+ * @param keys - Array of keys (top-level or dot-notation) to use for ID composition
  * @returns Composed unique ID string
  */
-export function composeDbObjectUniqueId<T extends DB_Object>(obj: T, keys: (keyof T)[]): string {
-	return keys.map(key => String(obj[key])).join('-');
+export function composeDbObjectUniqueId<T extends DB_Object>(obj: T, keys: string[]): string {
+	return keys.map(key => String(getDotNotatedValue(key as any, obj))).join('-');
 }
 
 /**

@@ -1,0 +1,57 @@
+.ts-messaging__bubble {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 8px 12px;
+	border-radius: 8px;
+	background: var(--ts-messaging-bubble-bg, #f0f0f0);
+
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		font-size: 0.75rem;
+	}
+
+	&__sender {
+		font-weight: 600;
+		color: var(--ts-messaging-sender-color, #333);
+	}
+
+	&__time {
+		color: var(--ts-messaging-time-color, #999);
+	}
+
+	&__text {
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+
+	&__attachments {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+	}
+
+	&__attachment {
+		padding: 2px 6px;
+		border-radius: 4px;
+		background: var(--ts-messaging-attachment-bg, #e0e0e0);
+		font-size: 0.75rem;
+	}
+
+	&__reply-btn {
+		align-self: flex-start;
+		padding: 2px 8px;
+		border: none;
+		border-radius: 4px;
+		background: transparent;
+		color: var(--ts-messaging-reply-color, #666);
+		cursor: pointer;
+		font-size: 0.75rem;
+
+		&:hover {
+			background: var(--ts-messaging-reply-hover-bg, #e8e8e8);
+		}
+	}
+}

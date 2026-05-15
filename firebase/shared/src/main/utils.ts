@@ -1,11 +1,12 @@
-import {__stringify, DB_Object, exists, md5, MUSTNeverHappenException, PreDB} from '@nu-art/ts-common';
+import {__stringify, DB_Object, exists, getDotNotatedValue, md5, MUSTNeverHappenException, PreDB} from '@nu-art/ts-common';
 
-export const composeDbObjectUniqueId = <T extends PreDB<DB_Object>, K extends (keyof T)[]>(item: T, keys: K) => {
+export const composeDbObjectUniqueId = <T extends PreDB<DB_Object>>(item: T, keys: string[]) => {
 	const _unique = keys.reduce<string>((aggregatedValues, _key) => {
-		if (!exists(item[_key]))
-			throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item, true)}`);
+		const value = getDotNotatedValue(_key as any, item);
+		if (!exists(value))
+			throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key}\nitem:${__stringify(item, true)}`);
 
-		return aggregatedValues + String(item[_key]);
+		return aggregatedValues + String(value);
 	}, '');
 	return md5(_unique);
 };

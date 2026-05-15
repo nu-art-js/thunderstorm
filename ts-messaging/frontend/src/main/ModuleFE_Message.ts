@@ -1,39 +1,48 @@
-/**
- * Frontend module for handling messaging functionality.
- */
+import {CrudApiDef} from '@nu-art/db-api-shared';
+import type {ApiCallerEventType} from '@nu-art/db-api-shared';
+import {buildConfigFromDBDef, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
+import {ApiCaller} from '@nu-art/http-client';
+import {
+	API_Messaging,
+	ApiDef_Messaging,
+	AssetRef,
+	DatabaseDef_Message,
+	DBDef_Message,
+	PaginatedMessagesResponse,
+} from '@nu-art/ts-messaging-shared';
+import type {UniqueId} from '@nu-art/ts-common';
 
-import {CrudApiDef, type ApiCallerEventType} from '@nu-art/ts-messaging-shared';
-import {buildConfigFromDBDef, EventDispatcher, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {DBDef_message, DatabaseDef_Message, MessageType_Text} from '@nu-art/ts-messaging-shared';
+export interface OnMessagesUpdated {
+	__onMessagesUpdated: (...params: ApiCallerEventType<DatabaseDef_Message['dbType']>) => void;
+}
 
-export type DispatcherType_Message = `__onMessagesUpdated`;
-
-const listeners: Array<EventDispatcher<DatabaseDef_Message['dbType']>> = [];
-export const dispatch_onMessagesUpdated = Object.assign(
-	((...params: ApiCallerEventType<DatabaseDef_Message['dbType']>) => {
-		listeners.forEach(fn => fn(...params));
-	}) as EventDispatcher<DatabaseDef_Message['dbType']>,
-	{
-		addListener(fn: EventDispatcher<DatabaseDef_Message['dbType']>) {
-			listeners.push(fn);
-		}
-	}
-);
+export const dispatch_onMessagesUpdated = new ThunderDispatcher<OnMessagesUpdated, '__onMessagesUpdated'>('__onMessagesUpdated');
 
 export class ModuleFE_Message_Class
 	extends ModuleFE_BaseApi<DatabaseDef_Message> {
 
 	constructor() {
 		super({
-			config: buildConfigFromDBDef<DatabaseDef_Message>(DBDef_message),
-			crudApiDef: CrudApiDef<DatabaseDef_Message>(DBDef_message.dbKey),
-			dispatcher: dispatch_onMessagesUpdated,
+			config: buildConfigFromDBDef<DatabaseDef_Message>(DBDef_Message),
+			crudApiDef: CrudApiDef<DatabaseDef_Message>(DBDef_Message.dbKey),
+			dispatcher: (...args) => dispatch_onMessagesUpdated.dispatchAll(...args),
 		});
 	}
 
-	async createMessage(topicId: string, msg: string) {
-		const newMessage = {type: MessageType_Text, topicId, text: msg};
-		await this.upsert(newMessage as DatabaseDef_Message['uiType']);
+	async createMessage(topicId: UniqueId, text?: string, attachments?: AssetRef[]) {
+		const newMessage: DatabaseDef_Message['uiType'] = {topicId, text, attachments} as DatabaseDef_Message['uiType'];
+		return this.upsert(newMessage);
+	}
+
+	@ApiCaller(ApiDef_Messaging.getMessages)
+	async getMessagesForTopic(body: API_Messaging['getMessages']['Body']): Promise<PaginatedMessagesResponse> {
+		void body;
+		return undefined as unknown as PaginatedMessagesResponse;
+	}
+
+	async getThreadReplies(topicId: UniqueId, parentMessageId: UniqueId, cursor?: string): Promise<PaginatedMessagesResponse> {
+		return this.getMessagesForTopic({topicId, parentMessageId, cursor});
 	}
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "@nu-art/ts-messaging-backend",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "Backend module for Thunderstorm messaging system that handles topics, discussions and messages management with Firebase integration",
+  "description": "Backend module for Thunderstorm messaging system — topics, messages, threading, pagination, permissions",
   "keywords": [
     "TacB0sS",
     "infra",
@@ -34,18 +34,14 @@
     "@nu-art/ts-common": "?",
     "@nu-art/db-api-backend": "?",
     "@nu-art/db-api-shared": "?",
+    "@nu-art/http-server": "?",
     "@nu-art/user-account-backend": "?",
     "@nu-art/user-account-shared": "?",
     "@nu-art/permissions-backend": "?",
     "@nu-art/permissions-shared": "?",
-    "@nu-art/ts-messaging-shared": "?",
-    "firebase": "?",
-    "firebase-admin": "?",
-    "firebase-functions": "?",
-    "react": "?"
+    "@nu-art/ts-messaging-shared": "?"
   },
   "devDependencies": {
-    "@types/react": "?",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1"
   },
