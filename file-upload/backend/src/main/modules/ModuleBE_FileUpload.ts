@@ -113,8 +113,8 @@ export class ModuleBE_FileUpload_Class
 				path,
 				bucketName: this.config.bucketName ?? 'default',
 				status: AssetStatus.Pending,
-				public: file.public,
-				metadata: file.metadata,
+				public: file.public ?? false,
+				...file.metadata ? {metadata: file.metadata} : {},
 			} as DB_Asset);
 
 			const signedUrl = await this.storageAdapter.getWriteSignedUrl(path, file.mimeType, Hour);
