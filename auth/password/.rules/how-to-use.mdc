@@ -1,0 +1,155 @@
+---
+description: How to use password auth lib — email/password registration, login, password change, assertion rules, failed login tracking
+alwaysApply: false
+---
+
+# How to use password auth
+
+Password auth provides email/password registration, login, password change, and password-set flows. It includes password strength assertion, failed login attempt tracking, and salted password storage.
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/password-auth-shared` | `API_PasswordAuth` definition, `DB_PasswordCredentials` / `DB_LoginAttempt` / `DB_FailedLoginAttempt` entities, password assertion config and validator |
+| `@nu-art/password-auth-backend` | `ModuleBE_PasswordAuth` (register, login, changePassword, setPassword, `CollectSessionData`), `ModuleBE_PasswordCredentialDB`, `ModuleBE_LoginAttemptDB`, `ModuleBE_FailedLoginAttemptDB` |
+| `@nu-art/password-auth-frontend` | `ModuleFE_PasswordAuth` (API callers), `Component_Login`, `Component_Register`, `Component_ChangePassword`, `Component_LoginBlocked` |
+
+---
+
+## What you must know
+
+- **Depends on user-account.** Password auth resolves accounts via `ModuleBE_AccountDB` and creates sessions via `ModuleBE_SessionDB._session.create.andReturn`.
+- **Registration can be disabled.** Config flag `canRegister` (default: `false`) controls whether the `registerAccount` endpoint accepts requests.
+- **Passwords are salted + hashed.** Each credential has a unique random salt. Storage is `{ accountId, salt, saltedPassword }` — the raw password is never persisted.
+- **Password assertion is configurable.** Set `passwordAssertion` in config to enforce minimum length, uppercase, lowercase, digit, and special character rules. The `getPasswordAssertionConfig` endpoint exposes the rules so the frontend can validate client-side.
+- **Failed login tracking.** `ModuleBE_FailedLoginAttemptDB` records failed password attempts. On mismatch, it updates the failed attempt counter before throwing 401.
+- **`CollectSessionData` adds `hasPassword`.** The module implements `CollectSessionData` to inject `{ passwordAuth: { hasPassword: boolean } }` into every JWT — useful for UI that conditionally shows "set password" for SSO-only users.
+- **Login endpoints are open APIs.** `ApiDef_PasswordAuth.login` and `ApiDef_PasswordAuth.registerAccount` must be in the `openApis` list (no session required). `changePassword`, `setPassword`, and `getPasswordAssertionConfig` require an authenticated session.
+- **Session label is `'password-login'`** for login, `'password-change'`/`'password-set'` for password operations.
+
+---
+
+## When wiring password auth into an app
+
+### Step 1 — Add module packs
+
+**Backend:**
+
+```typescript
+import {ModulePackBE_PasswordAuth} from '@nu-art/password-auth-backend';
+import {ApiDef_PasswordAuth} from '@nu-art/password-auth-shared';
+
+// In Storm builder chain:
+.addModulePack(ModulePackBE_PasswordAuth)
+
+// In openApis array:
+openApis: [ApiDef_PasswordAuth.login, ApiDef_PasswordAuth.registerAccount]
+```
+
+**Frontend:**
+
+```typescript
+import {ModulePackFE_PasswordAuth} from '@nu-art/password-auth-frontend';
+
+// In Thunder builder chain:
+.addModules(...ModulePackFE_PasswordAuth)
+```
+
+### Step 2 — Configure the backend
+
+```typescript
+ModuleBE_PasswordAuth: {
+  canRegister: true,               // enable user self-registration
+  passwordAssertion: {             // optional — password strength rules
+    minLength: 8,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireDigit: true,
+    requireSpecial: false,
+  },
+  ignorePasswordAssertion: false,  // set true to skip assertion (dev only)
+}
+```
+
+When `canRegister` is `false`, the registration endpoint returns 418 (I'm a teapot).
+
+### Step 3 — Add login/register UI
+
+```typescript
+import {Component_Login, Component_Register} from '@nu-art/password-auth-frontend';
+
+// Login form (email + password):
+<Component_Login />
+
+// Registration form (email + password + password check):
+<Component_Register />
+```
+
+For password change (requires authenticated session):
+
+```typescript
+import {Component_ChangePassword} from '@nu-art/password-auth-frontend';
+
+<Component_ChangePassword />
+```
+
+---
+
+## When calling password auth programmatically from the frontend
+
+```typescript
+import {ModuleFE_PasswordAuth} from '@nu-art/password-auth-frontend';
+import {StorageKey_DeviceId} from '@nu-art/user-account-frontend';
+
+// Login:
+await ModuleFE_PasswordAuth.login({
+  email: 'user@example.com',
+  password: 'secret',
+  deviceId: StorageKey_DeviceId.get()!,
+});
+
+// Register:
+await ModuleFE_PasswordAuth.registerAccount({
+  email: 'user@example.com',
+  password: 'secret',
+  passwordCheck: 'secret',
+  deviceId: StorageKey_DeviceId.get()!,
+});
+
+// Change password (requires session):
+await ModuleFE_PasswordAuth.changePassword({
+  oldPassword: 'oldSecret',
+  password: 'newSecret',
+  passwordCheck: 'newSecret',
+});
+```
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| Backend auth module | `ModuleBE_PasswordAuth` |
+| Backend credential DB module | `ModuleBE_PasswordCredentialDB` |
+| Backend login attempt module | `ModuleBE_LoginAttemptDB` |
+| Backend failed login module | `ModuleBE_FailedLoginAttemptDB` |
+| Frontend auth module | `ModuleFE_PasswordAuth` |
+| Backend module pack | `ModulePackBE_PasswordAuth` |
+| Frontend module pack | `ModulePackFE_PasswordAuth` |
+| API type | `API_PasswordAuth` |
+| API def constant | `ApiDef_PasswordAuth` |
+| Credential entity | `DB_PasswordCredentials` |
+| Login component | `Component_Login` |
+| Register component | `Component_Register` |
+| Change password component | `Component_ChangePassword` |
+| Login blocked component | `Component_LoginBlocked` |
+
+---
+
+## Forbidden patterns
+
+- **Do not store raw passwords.** The module salts and hashes via `hashPasswordWithSalt`. Never persist or log the plain-text password.
+- **Do not call `registerAccount` when `canRegister` is `false`** — it will return 418. If registration should be admin-only, use the `createAccount` API on user-account and then `setPassword` after the account exists.
+- **Do not bypass the password assertion** — use `ignorePasswordAssertion: true` in config for dev/testing only. Never ship it disabled in production.
+- **Do not forget `deviceId` in login/register requests** — it comes from `StorageKey_DeviceId.get()` on the frontend. Missing it will cause session creation to fail.
+- **Do not import password credential internals in consuming packages** — use `ModuleBE_PasswordAuth` and `ModuleFE_PasswordAuth` as the public API surface.

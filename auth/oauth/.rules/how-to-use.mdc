@@ -1,0 +1,120 @@
+---
+description: How to use OAuth lib — OAuth 2.1 authorization server with PKCE, authorization code flow, JWKs, token lifecycle
+alwaysApply: false
+---
+
+# How to use OAuth
+
+The OAuth lib implements an **OAuth 2.1 authorization server** — it issues access tokens, refresh tokens, and authorization codes to registered clients. It is not an OAuth client for logging in via external providers; it makes your application an OAuth provider that external clients can authenticate against.
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/oauth-shared` | `DB_OAuthClient` / `DB_OAuthGrant` / `DB_OAuthToken` entities, `API_OAuth` definition, `OAuthTokenClaims`, `OAuthServerMetadata` |
+| `@nu-art/oauth-backend` | `ModuleBE_OAuthServer` (authorization endpoint, token endpoint, revocation, JWKs, client registration, key pair management) |
+| `@nu-art/oauth-frontend` | Stub — no frontend implementation yet (future: consent screen, active sessions UI) |
+
+---
+
+## What you must know
+
+- **This is an authorization server, not a login method.** OAuth issues tokens to external clients (CLI tools, third-party apps, MCP servers). User authentication (who the user is) happens via other auth methods (password, SAML, passkey). OAuth consumes an existing session to issue tokens.
+- **OAuth 2.1 with PKCE only.** Grant type is `authorization_code` with mandatory `S256` PKCE. No implicit flow, no client credentials, no password grant.
+- **Clients must be registered.** Call `ModuleBE_OAuthServer.registerClient()` during app setup to register `DB_OAuthClient` records with `clientId`, `name`, `redirectUris`, and `allowedScopes`.
+- **Routes are mounted on Express directly** — not through `@ApiHandler`. The OAuth module calls `HttpServer.getDefault().getExpress()` and mounts at `/oauth/authorize`, `/oauth/token`, `/oauth/revoke`, `/oauth/jwks`, and `/.well-known/oauth-authorization-server`.
+- **JWK key pair is generated at init.** A new RSA or EC key pair is created each time the server starts. The public key is exposed via the `/oauth/jwks` endpoint. The `kid` is a random UUID.
+- **Access tokens are signed JWTs.** Claims include `sub` (accountId), `client_id`, `scope`, and standard `iss`/`aud`/`exp`/`iat`/`jti`.
+- **Refresh tokens are opaque strings** stored in the token map. They can be exchanged for new access tokens via the token endpoint.
+- **Token storage is in-memory.** Grants and tokens are stored in `Map` objects. A server restart invalidates all active tokens. This is suitable for development; production should use persistent storage.
+
+---
+
+## When wiring OAuth into an app
+
+### Step 1 — Add the module pack
+
+**Backend only** (no frontend pack yet):
+
+```typescript
+import {ModulePackBE_OAuth} from '@nu-art/oauth-backend';
+
+// In Storm builder chain:
+.addModulePack(ModulePackBE_OAuth)
+```
+
+### Step 2 — Configure the server
+
+```typescript
+ModuleBE_OAuthServer: {
+  issuer: 'https://my-app.example.com',
+  baseUrl: 'https://my-app.example.com',
+  accessTokenTtlMs: 3600000,         // 1 hour (default)
+  refreshTokenTtlMs: 2592000000,     // 30 days (default)
+  authorizationCodeTtlMs: 600000,    // 10 minutes (default)
+  signingAlgorithm: 'RS256',         // or 'ES256' (default: 'RS256')
+}
+```
+
+- `issuer` — the `iss` claim in issued JWTs.
+- `baseUrl` — prefix for all OAuth endpoint URLs in server metadata.
+- If `issuer` or `baseUrl` are empty, a warning is logged at init.
+
+### Step 3 — Register clients
+
+Register OAuth clients during app initialization (e.g., in a setup module's `init()`):
+
+```typescript
+import {ModuleBE_OAuthServer} from '@nu-art/oauth-backend';
+
+ModuleBE_OAuthServer.registerClient({
+  clientId: 'my-cli-tool',
+  name: 'My CLI Tool',
+  redirectUris: ['http://localhost:8080/callback'],
+  allowedScopes: ['read', 'write'],
+  clientType: 'public',
+});
+```
+
+- `clientType: 'public'` — no client secret (PKCE replaces it).
+- `redirectUris` — the client must use one of these in the authorization request.
+- `allowedScopes` — the maximum scopes this client can request.
+
+---
+
+## OAuth endpoints
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/.well-known/oauth-authorization-server` | GET | Server metadata (discovery document) |
+| `/oauth/authorize` | GET | Authorization endpoint — initiates PKCE flow, returns authorization code |
+| `/oauth/token` | POST | Token endpoint — exchanges code for access/refresh tokens, or refreshes |
+| `/oauth/jwks` | GET | JSON Web Key Set — public keys for verifying access tokens |
+| `/oauth/revoke` | POST | Token revocation |
+
+These are mounted directly on Express, not through the Thunderstorm API handler system.
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| Backend server module | `ModuleBE_OAuthServer` |
+| Backend module pack | `ModulePackBE_OAuth` |
+| API type | `API_OAuth` |
+| API def constant | `ApiDef_OAuth` |
+| Client entity | `DB_OAuthClient` |
+| Grant entity | `DB_OAuthGrant` |
+| Token entity | `DB_OAuthToken` |
+| Token claims type | `OAuthTokenClaims` |
+| Server metadata type | `OAuthServerMetadata` |
+
+---
+
+## Forbidden patterns
+
+- **Do not use OAuth for user login** — OAuth issues tokens to external clients. For user authentication, use password, SAML, or passkey.
+- **Do not skip PKCE** — the server rejects authorization requests without `code_challenge` and `code_challenge_method: 'S256'`.
+- **Do not register clients at runtime from user input** — client registration should happen during app setup. Dynamic client registration is not implemented.
+- **Do not rely on in-memory token storage for production** — grants and tokens are stored in `Map` objects that do not survive server restarts. When moving to production, implement persistent storage.
+- **Do not import `jose` in consuming packages** — the OAuth library wraps `jose` for key management and JWT signing. Consumers interact only with `ModuleBE_OAuthServer`.
+- **Do not mount additional routes on the same OAuth paths** — the module mounts directly on Express at `/oauth/*` and `/.well-known/oauth-authorization-server`.

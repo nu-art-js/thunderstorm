@@ -1,0 +1,186 @@
+---
+description: How to use user-account lib — core account management, JWT sessions, middleware, and session data collection
+alwaysApply: false
+---
+
+# How to use user-account
+
+The user-account lib is the **foundation** of the auth stack. It owns `DB_Account` (user/service accounts), `DB_Session` (JWT-backed sessions), and the middleware that validates requests. All other auth methods (password, SAML, OAuth, passkey) depend on user-account — they resolve to an account and create sessions through it.
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/user-account-shared` | `DB_Account` and `DB_Session` entities, `API_UserAccount` definition, header constants (`HeaderKey_DeviceId`, `HeaderKey_TabId`) |
+| `@nu-art/user-account-backend` | `ModuleBE_AccountDB` (CRUD, `findOrCreateByEmail`, account lifecycle dispatchers), `ModuleBE_SessionDB` (JWT creation/validation/rotation, session middleware, `CollectSessionData`), `ModuleBE_JWT` |
+| `@nu-art/user-account-frontend` | `ModuleFE_Account` (device/tab ID management, session claims access), `ModuleFE_Session` (JWT storage, session key accessors), `StorageKey_DeviceId`, `Component_AccountThumbnail`, `PopUp_AccountMenu` |
+
+---
+
+## What you must know
+
+- **User-account does not authenticate.** It stores accounts and sessions. Authentication methods (password, SAML, passkey, OAuth) live in separate libraries that depend on user-account.
+- **Session creation is centralized.** All auth methods create sessions via `ModuleBE_SessionDB._session.create` (returns `DB_Session`) or `_session.create.andReturn` (also sets the JWT on the HTTP response header). Never create sessions any other way.
+- **`BaseSessionClaims`** is the minimum JWT payload: `{ accountId, deviceId, label }`. Additional claims are collected via the `CollectSessionData` interface.
+- **`CollectSessionData` is the extension point.** Any module can implement `CollectSessionData<TypedKeyValue<key, value>>` to inject custom claims into every JWT. The dispatcher runs during `_session.create`. Example: password auth adds `hasPassword`; the account module adds the full `DB_Account` object under the `account` key.
+- **Session middleware** (`ModuleBE_SessionDB.Middleware`) validates the JWT, locates the session, rotates if needed, and sets memory keys (`MemKey_AccountId`, `MemKey_DB_Session`, `MemKey_SessionData`). It runs before every authenticated API handler.
+- **Account middleware** (`ModuleBE_AccountDB.Middleware`) reads the account from session claims and sets `MemKey_AccountEmail`, `MemKey_AccountId`, `MemKey_AccountType`. Runs after session middleware.
+- **`findOrCreateByEmail`** is the primary account resolution for login flows. It looks up by email; if not found, creates a new account. It runs in a transaction and dispatches `__onNewUserRegistered` or `__onUserLogin` accordingly.
+- **`StorageKey_DeviceId`** (frontend) generates and persists a unique device ID in localStorage. Every auth method must include this in login requests. It withstands localStorage deletion.
+- **Session rotation** is automatic. When a JWT passes `rotationFactor` (default: 50%) of its TTL, the middleware refreshes it transparently. The new JWT is set on the response header.
+- **Config** — `ModuleBE_SessionDB` accepts: `sessionTTLms` (default: 1 day), `rotationFactor` (default: 0.5), `maxPrevSession` (default: 10), `jwtSigner.secretKey` (default: `'jwt-signer--account-session'`).
+
+---
+
+## When wiring user-account into an app
+
+### Step 1 — Add module packs
+
+**Backend:**
+
+```typescript
+import {ModulePackBE_Accounts} from '@nu-art/user-account-backend';
+
+// In Storm builder chain:
+.addModulePack(ModulePackBE_Accounts)
+```
+
+**Frontend:**
+
+```typescript
+import {ModulePackFE_Accounts} from '@nu-art/user-account-frontend';
+
+// In Thunder builder chain:
+.addModules(...ModulePackFE_Accounts)
+```
+
+### Step 2 — Configure session JWT signing
+
+The default JWT secret key is `'jwt-signer--account-session'` (resolved via `ModuleBE_SecretManager`). Override in config if needed:
+
+```typescript
+ModuleBE_SessionDB: {
+  sessionTTLms: 86400000,   // 1 day (default)
+  rotationFactor: 0.5,       // refresh at 50% TTL remaining (default)
+  maxPrevSession: 10,         // max linked sessions to keep (default)
+  jwtSigner: {
+    secretKey: 'my-custom-jwt-key',
+    projectId: 'my-project-id', // optional
+  }
+}
+```
+
+---
+
+## When creating sessions from an auth method
+
+Auth method modules (password, SAML, passkey) create sessions after verifying credentials:
+
+```typescript
+import {ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {MemKey_AccountId} from '@nu-art/user-account-backend';
+
+// Set the account context:
+MemKey_AccountId.set(account._id);
+
+// Create session and set JWT on response:
+const initialClaims = {
+  accountId: account._id,
+  deviceId: body.deviceId,
+  label: 'my-auth-method',
+};
+await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
+```
+
+- Use `_session.create.andReturn` when the response should carry the JWT (most login flows).
+- Use `_session.create` when you need the `DB_Session` object (e.g., to embed the JWT in a redirect URL — SAML pattern).
+
+---
+
+## When adding custom session claims
+
+Implement `CollectSessionData` in your module:
+
+```typescript
+import {CollectSessionData, BaseSessionClaims} from '@nu-art/user-account-backend';
+import {TypedKeyValue} from '@nu-art/ts-common';
+
+type MySessionKey = TypedKeyValue<'myKey', { someValue: string }>;
+
+export class MyModule_Class
+  extends Module
+  implements CollectSessionData<MySessionKey> {
+
+  async __collectSessionData(data: BaseSessionClaims): Promise<MySessionKey> {
+    return {
+      key: 'myKey',
+      value: {someValue: await this.computeSomething(data.accountId)},
+    };
+  }
+}
+```
+
+The returned `{ key, value }` is merged into the JWT claims. The key must be unique across all modules that implement `CollectSessionData`.
+
+---
+
+## When resolving accounts in an auth method
+
+Use `findOrCreateByEmail` for login flows where the account may not exist yet (SAML, OAuth):
+
+```typescript
+import {ModuleBE_AccountDB} from '@nu-art/user-account-backend';
+
+const account = await ModuleBE_AccountDB.findOrCreateByEmail(email, 'user');
+```
+
+For flows where the account must already exist (password login, passkey login), query directly and throw if not found.
+
+---
+
+## When reading session data on the frontend
+
+```typescript
+import {SessionKeyFE_Account, StorageKey_DeviceId} from '@nu-art/user-account-frontend';
+
+// Get the current account from session:
+const account = SessionKeyFE_Account.get();
+
+// Get the device ID (always available after module init):
+const deviceId = StorageKey_DeviceId.get();
+```
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| DB account type | `DB_Account` |
+| DB session type | `DB_Session` |
+| Account DB def | `DBDef_Accounts` |
+| Session DB def | `DBDef_Session` |
+| Backend account module | `ModuleBE_AccountDB` |
+| Backend session module | `ModuleBE_SessionDB` |
+| Backend JWT module | `ModuleBE_JWT` |
+| Frontend account module | `ModuleFE_Account` |
+| Frontend session module | `ModuleFE_Session` |
+| Backend module pack | `ModulePackBE_Accounts` |
+| Frontend module pack | `ModulePackFE_Accounts` |
+| API type | `API_UserAccount` |
+| API def constant | `ApiDef_UserAccount` |
+| Device ID storage key | `StorageKey_DeviceId` |
+| Account session key (FE) | `SessionKeyFE_Account` |
+| Account session key (BE) | `SessionKey_Account_BE` |
+| Session claims type | `BaseSessionClaims` |
+| Session data collector | `CollectSessionData<T>` |
+| Account lifecycle dispatchers | `dispatch_onAccountLogin`, `dispatch_onAccountRegistered`, `dispatch_onPreLogout` |
+
+---
+
+## Forbidden patterns
+
+- **Do not create sessions outside `ModuleBE_SessionDB._session.create`** — sessions must go through the centralized path so `CollectSessionData` runs and claims are consistent.
+- **Do not read `MemKey_AccountId` before session middleware has run** — it is populated by the middleware chain. In open (unauthenticated) API handlers, it is not set.
+- **Do not bypass `findOrCreateByEmail` with separate lookup + create** — the method runs in a transaction with proper dispatchers. Rolling your own loses the lifecycle events.
+- **Do not hardcode JWT secrets in code** — use `jwtSigner.secretKey` in config, which resolves through `ModuleBE_SecretManager`.
+- **Do not import `ModuleBE_SessionDB` or `ModuleBE_AccountDB` from consuming packages that don't declare the dependency** — add `@nu-art/user-account-backend` to the package's `__package.json`.
+- **Do not store sensitive data in JWT claims via `CollectSessionData`** — claims are signed but not encrypted. Keep claim values to identifiers and flags, not secrets.

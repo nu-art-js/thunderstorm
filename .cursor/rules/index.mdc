@@ -71,3 +71,8 @@ Paths are relative to the project root (monorepo root).
 | UI construction (naming, SCSS, design tokens, layout primitives, state, edit/view mode) | [_thunderstorm/.rules/consuming/ui-construction.mdc](_thunderstorm/.rules/consuming/ui-construction.mdc) |
 | DB entity migrations and backward compat (prewrite defaults, not optional fields) | [_thunderstorm/.rules/consuming/prewrite-and-migrations.mdc](_thunderstorm/.rules/consuming/prewrite-and-migrations.mdc) |
 | Use secrets (SecretKey, secret-backed entities) | [_thunderstorm/google-services/.rules/how-to-use.mdc](_thunderstorm/google-services/.rules/how-to-use.mdc) |
+| Use user-account (accounts, sessions, JWT, middleware, CollectSessionData) | [_thunderstorm/auth/user-account/.rules/how-to-use.mdc](_thunderstorm/auth/user-account/.rules/how-to-use.mdc) |
+| Use password auth (login, register, password change, assertion rules) | [_thunderstorm/auth/password/.rules/how-to-use.mdc](_thunderstorm/auth/password/.rules/how-to-use.mdc) |
+| Use SAML auth (SSO, multi-tenant IdP, metadata, redirect login) | [_thunderstorm/auth/saml/.rules/how-to-use.mdc](_thunderstorm/auth/saml/.rules/how-to-use.mdc) |
+| Use OAuth (authorization server, PKCE, tokens, JWKs, client registration) | [_thunderstorm/auth/oauth/.rules/how-to-use.mdc](_thunderstorm/auth/oauth/.rules/how-to-use.mdc) |
+| Use passkey auth (WebAuthn, discoverable credentials, passwordless login) | [_thunderstorm/auth/passkey/.rules/how-to-use.mdc](_thunderstorm/auth/passkey/.rules/how-to-use.mdc) |

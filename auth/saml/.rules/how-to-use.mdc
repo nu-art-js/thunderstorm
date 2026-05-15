@@ -1,0 +1,150 @@
+---
+description: How to use SAML auth lib — SAML 2.0 SSO with multi-tenant IdP providers, metadata parsing, and redirect-based login
+alwaysApply: false
+---
+
+# How to use SAML auth
+
+SAML auth provides SAML 2.0 Single Sign-On with multi-tenant Identity Provider (IdP) support. Each email domain maps to a different IdP. Login is redirect-based — the browser is sent to the IdP, and the SAML assertion callback creates a session and redirects back.
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/saml-shared` | `API_SAML` definition, `DB_SamlProvider` entity (domain, metadata, certificates), permission scopes, access groups |
+| `@nu-art/saml-backend` | `ModuleBE_SAML` (SSO initiation, assertion callback, metadata parsing/refresh), `ModuleBE_SamlProviderDB`, `fetchIdpMetadata` |
+| `@nu-art/saml-frontend` | `ModuleFE_SAML` (compose redirect URL, trigger login), `ModuleFE_SamlProviderDB`, `Component_SamlLogin`, `Component_GoogleSAMLLogin`, `Page_SamlProviders` |
+
+---
+
+## What you must know
+
+- **Depends on user-account.** SAML resolves accounts via `ModuleBE_AccountDB.findOrCreateByEmail` and creates sessions via `ModuleBE_SessionDB._session.create`. New users are auto-created on first SSO login.
+- **Multi-tenant by email domain.** `DB_SamlProvider` records are keyed by `domain`. When a user enters their email, the backend extracts the domain and looks up the matching provider. Each provider has its own IdP metadata, SSO URL, and certificates.
+- **Redirect-based flow.** Login: frontend → `loginSaml` (GET) → backend returns `loginUrl` → browser redirects to IdP → IdP posts back to `assertSAML` → backend creates session → redirect to frontend with JWT in URL.
+- **Session is created via `_session.create` (not `andReturn`).** Because the response is a redirect (302), the JWT is embedded in the redirect URL as a query parameter, not in the response header.
+- **The assertion endpoint is an open API.** Both `loginSaml` and `assertSAML` must be in the `openApis` list — the user has no session yet.
+- **Service Provider (SP) config is required.** The backend needs `spConfig` (from `saml2-js` `ServiceProviderOptions`) with at least the SP entity ID and assertion consumer service URL (the callback URL for `assertSAML`).
+- **Provider management requires permissions.** `previewMetadata` and `refreshMetadata` are gated by `PermissionScope_SamlProvider` with `'create'` level.
+- **Metadata auto-parsing.** When creating or refreshing a provider, the backend fetches the IdP's metadata URL and extracts `idpEntityId`, `ssoLoginUrl`, `ssoLogoutUrl`, and `certificates`.
+- **Session label is `'saml-login'`.**
+
+---
+
+## When wiring SAML auth into an app
+
+### Step 1 — Add module packs
+
+**Backend:**
+
+```typescript
+import {ModulePackBE_SAML} from '@nu-art/saml-backend';
+import {ApiDef_SAML} from '@nu-art/saml-shared';
+
+// In Storm builder chain:
+.addModulePack(ModulePackBE_SAML)
+
+// In openApis array:
+openApis: [ApiDef_SAML.loginSaml, ApiDef_SAML.assertSAML]
+```
+
+**Frontend:**
+
+```typescript
+import {ModulePackFE_SAML} from '@nu-art/saml-frontend';
+
+// In Thunder builder chain:
+.addModules(...ModulePackFE_SAML)
+```
+
+### Step 2 — Configure the SP
+
+```typescript
+ModuleBE_SAML: {
+  spConfig: {
+    entity_id: 'https://my-app.example.com/saml/metadata',
+    assert_endpoint: 'https://my-app.example.com/v1/saml/assert',
+    // Optional:
+    certificate: '...SP certificate PEM...',
+    private_key: '...SP private key PEM...',
+  }
+}
+```
+
+- `entity_id` — your SP's unique identifier (typically a URL).
+- `assert_endpoint` — the full URL the IdP posts the SAML assertion to. Must match `ApiDef_SAML.assertSAML` path.
+
+### Step 3 — Register SAML providers
+
+Create `DB_SamlProvider` records in the database (via the admin UI `Page_SamlProviders` or programmatically):
+
+```typescript
+{
+  domain: 'company.com',
+  label: 'Company SSO',
+  enabled: true,
+  metadataUrl: 'https://idp.company.com/saml/metadata',
+  idpEntityId: '...',       // auto-populated from metadata
+  ssoLoginUrl: '...',       // auto-populated from metadata
+  certificates: ['...'],    // auto-populated from metadata
+}
+```
+
+Use `previewMetadata` to test a metadata URL before saving. Use `refreshMetadata` to re-fetch certificates when an IdP rotates them.
+
+### Step 4 — Add SAML login UI
+
+```typescript
+import {Component_SamlLogin} from '@nu-art/saml-frontend';
+
+// Email-based SAML login — user enters email, domain resolves the IdP:
+<Component_SamlLogin />
+```
+
+For Google Workspace specifically:
+
+```typescript
+import {Component_GoogleSAMLLogin} from '@nu-art/saml-frontend';
+
+<Component_GoogleSAMLLogin />
+```
+
+### Step 5 — Admin provider management
+
+```typescript
+import {Page_SamlProviders} from '@nu-art/saml-frontend';
+
+// Add to your admin routes:
+// Route: route_SamlProviders (exported from '@nu-art/saml-frontend')
+```
+
+This page provides CRUD for SAML providers with metadata preview and refresh.
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| Backend SAML module | `ModuleBE_SAML` |
+| Backend provider DB module | `ModuleBE_SamlProviderDB` |
+| Frontend SAML module | `ModuleFE_SAML` |
+| Frontend provider DB module | `ModuleFE_SamlProviderDB` |
+| Backend module pack | `ModulePackBE_SAML` |
+| Frontend module pack | `ModulePackFE_SAML` |
+| API type | `API_SAML` |
+| API def constant | `ApiDef_SAML` |
+| Provider entity | `DB_SamlProvider` |
+| Permission scope | `PermissionScope_SamlProvider` |
+| Login component | `Component_SamlLogin` |
+| Google login component | `Component_GoogleSAMLLogin` |
+| Admin page | `Page_SamlProviders` |
+
+---
+
+## Forbidden patterns
+
+- **Do not hardcode IdP certificates in code** — store them in `DB_SamlProvider` and refresh via `refreshMetadata` when the IdP rotates keys.
+- **Do not use `_session.create.andReturn` for SAML** — the assertion response is a redirect, not a JSON body. Use `_session.create` and embed the JWT in the redirect URL.
+- **Do not skip `openApis` for SAML endpoints** — both `loginSaml` and `assertSAML` must be accessible without an existing session.
+- **Do not create providers without a valid metadata URL** — use `previewMetadata` to validate before persisting.
+- **Do not assume one IdP** — the system supports multiple providers keyed by domain. Always resolve the provider from the user's email domain, never hardcode a single IdP.
+- **Do not import `saml2-js` types in consuming packages** — use the SAML library's exported types. The `saml2-js` dependency is internal to the SAML backend.
