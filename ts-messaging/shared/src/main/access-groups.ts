@@ -39,3 +39,4 @@ export const AccessGroup_MessagingAdmin = defineAccessGroup({
 export const MessagingReadGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/messaging-read');
 export const MessagingWriteGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/messaging-write');
 export const MessagingDeleteGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/messaging-delete');
+export const MessagingAdminGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/messaging-admin');

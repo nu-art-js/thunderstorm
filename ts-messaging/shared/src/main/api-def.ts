@@ -20,5 +20,5 @@ export type API_Messaging = {
 };
 
 export const ApiDef_Messaging: ApiDefResolver<API_Messaging> = {
-	getMessages: {method: HttpMethod.POST, path: 'v1/messaging/messages/query'},
+	getMessages: {method: HttpMethod.POST, path: '/v1/messaging/messages/query'},
 };

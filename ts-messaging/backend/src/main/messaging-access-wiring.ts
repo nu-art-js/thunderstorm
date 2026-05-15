@@ -10,16 +10,7 @@ import {ModuleBE_MessageDB} from './ModuleBE_MessageDB.js';
 
 const MessagingScope = 'messaging';
 
-const topicAccessFields: DocumentAccessFields = {
-	__access: {
-		readers: [MessagingReadGroupId],
-		writers: [MessagingWriteGroupId],
-		deleters: [MessagingDeleteGroupId],
-		owners: [],
-	}
-};
-
-const messageAccessFields: DocumentAccessFields = {
+const messagingAccessFields: DocumentAccessFields = {
 	__access: {
 		readers: [MessagingReadGroupId],
 		writers: [MessagingWriteGroupId],
@@ -31,13 +22,13 @@ const messageAccessFields: DocumentAccessFields = {
 export function wireMessagingDocumentAccess() {
 	ModuleBE_Permissions.setAccessContextResolver(
 		ModuleBE_TopicDB,
-		() => topicAccessFields,
+		() => messagingAccessFields,
 		[MessagingScope]
 	);
 
 	ModuleBE_Permissions.setAccessContextResolver(
 		ModuleBE_MessageDB,
-		() => messageAccessFields,
+		() => messagingAccessFields,
 		[MessagingScope]
 	);
 }

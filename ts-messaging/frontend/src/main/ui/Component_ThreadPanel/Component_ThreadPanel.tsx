@@ -33,21 +33,26 @@ export class Component_ThreadPanel
 
 	private readonly loadReplies = async () => {
 		this.setState({loading: true});
-		const response: PaginatedMessagesResponse = await ModuleFE_Message.getThreadReplies(
-			this.props.parentMessage.topicId,
-			this.props.parentMessage._id,
-			this.state.nextCursor
-		);
-		this.setState(prev => ({
-			replies: [...response.messages.reverse(), ...prev.replies],
-			hasMore: response.hasMore,
-			nextCursor: response.nextCursor,
-			loading: false,
-		}));
+		try {
+			const response: PaginatedMessagesResponse = await ModuleFE_Message.getThreadReplies(
+				this.props.parentMessage.topicId,
+				this.props.parentMessage._id,
+				this.state.nextCursor
+			);
+			this.setState(prev => ({
+				replies: [...response.messages.reverse(), ...prev.replies],
+				hasMore: response.hasMore,
+				nextCursor: response.nextCursor,
+				loading: false,
+			}));
+		} catch (e: any) {
+			this.logError('Failed to load thread replies', e);
+			this.setState({loading: false});
+		}
 	};
 
 	private readonly onSend = async (text: string) => {
-		await ModuleFE_Message.createMessage(this.props.parentMessage.topicId, text);
+		await ModuleFE_Message.createMessage(this.props.parentMessage.topicId, text, undefined, this.props.parentMessage._id);
 		await this.loadReplies();
 	};
 
