@@ -1,0 +1,159 @@
+---
+description: How to use passkey auth lib — WebAuthn discoverable credentials for passwordless login, registration, and credential management
+alwaysApply: false
+---
+
+# How to use passkey auth
+
+Passkey auth provides WebAuthn discoverable-credential authentication — passwordless, phishing-resistant login using platform authenticators (Touch ID, Face ID, Windows Hello) or roaming authenticators (security keys).
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/passkey-shared` | `DB_PasskeyCredential` entity, `API_Passkey` definition, WebAuthn JSON types |
+| `@nu-art/passkey-backend` | `ModuleBE_PasskeyAuth` (challenge management, attestation/assertion verification, session creation), `ModuleBE_PasskeyCredentialDB` |
+| `@nu-art/passkey-frontend` | `ModuleFE_PasskeyAuth` (browser WebAuthn orchestration), `ModuleFE_PasskeyCredentialDB`, login/register/management UI components |
+
+---
+
+## What you must know
+
+- **Depends on user-account.** Passkey auth resolves to a `DB_Account` and creates sessions via `ModuleBE_SessionDB._session.create.andReturn`. It does not own accounts or sessions.
+- **Discoverable credentials only.** Registration sets `residentKey: 'required'` — the credential is stored on the authenticator and the user does not need to provide an identifier at login time.
+- **One account, many credentials.** A user can register multiple passkeys (laptop, phone, security key). Each is a separate `DB_PasskeyCredential` record keyed by `credentialId`.
+- **Challenge lifecycle.** Challenges are in-memory, keyed by `accountId` (registration) or `challengeId` (login). They expire after `challengeTtlMs` (default: 5 minutes). A challenge is consumed on verification — never reused.
+- **Login is unauthenticated.** `loginOptions` and `loginVerify` are open APIs (no session required). Registration and credential deletion require an existing session.
+- **Counter-based replay detection.** The backend tracks the authenticator's signature counter and updates it on every successful login. If a cloned authenticator sends a stale counter, verification fails.
+- **Frontend auto-hides on unsupported browsers.** `Component_PasskeyLogin` returns `null` when `window.PublicKeyCredential` is not available.
+- **Uses `@simplewebauthn/server` (backend) and `@simplewebauthn/browser` (frontend)** — these are external dependencies with real semver versions in `__package.json`, not `"?"`.
+
+---
+
+## When wiring passkey auth into an app
+
+### Step 1 — Add module packs
+
+**Backend** (`app-backend` or equivalent):
+
+```typescript
+import {ModulePackBE_Passkey} from '@nu-art/passkey-backend';
+import {ApiDef_Passkey} from '@nu-art/passkey-shared';
+
+// In Storm builder chain:
+.addModulePack(ModulePackBE_Passkey)
+
+// In openApis array (login endpoints must be accessible without a session):
+openApis: [ApiDef_Passkey.loginOptions, ApiDef_Passkey.loginVerify]
+```
+
+**Frontend** (`app-frontend` or equivalent):
+
+```typescript
+import {ModulePackFE_Passkey} from '@nu-art/passkey-frontend';
+
+// In Thunder builder chain:
+.addModules(...ModulePackFE_Passkey)
+```
+
+### Step 2 — Configure the backend
+
+`ModuleBE_PasskeyAuth` requires a config block with Relying Party (RP) details:
+
+```typescript
+ModuleBE_PasskeyAuth: {
+  rpName: 'My Application',
+  rpId: 'localhost',              // domain only — no protocol, no port
+  origin: 'https://localhost:8013', // full origin including protocol and port
+  challengeTtlMs: 300000,        // optional, defaults to 5 minutes
+}
+```
+
+- `rpId` must match the domain the browser sees. For local dev this is `localhost`. For production it is the bare domain (e.g. `example.com`).
+- `origin` must match `window.location.origin` exactly.
+- If `rpName`, `rpId`, or `origin` are empty, the module logs a warning at init but does not throw — it will fail at runtime when endpoints are called.
+
+### Step 3 — Add passkey login to the login page
+
+```typescript
+import {Component_PasskeyLogin} from '@nu-art/passkey-frontend';
+
+// In the login page render:
+<Component_PasskeyLogin />
+```
+
+The component renders a "Sign in with passkey" button. It auto-hides if the browser does not support WebAuthn. Pass `text` prop to customize the button label. Pass `onError` to handle user-facing error messages.
+
+### Step 4 — Add passkey registration to account settings
+
+```typescript
+import {Component_PasskeyRegister, Component_PasskeyCredentials} from '@nu-art/passkey-frontend';
+
+// Registration (requires authenticated session):
+<Component_PasskeyRegister onSuccess={() => { /* refresh credential list */ }} />
+
+// Credential list with remove buttons:
+<Component_PasskeyCredentials credentials={credentialArray} />
+```
+
+`Component_PasskeyRegister` prompts for a label (defaults to `"Passkey <date>"`) and triggers the WebAuthn registration ceremony. `Component_PasskeyCredentials` renders each credential with its label, last-used date, synced badge, and a remove button.
+
+---
+
+## When implementing custom passkey UI
+
+Use `ModuleFE_PasskeyAuth` directly instead of the built-in components:
+
+```typescript
+import {ModuleFE_PasskeyAuth} from '@nu-art/passkey-frontend';
+
+// Check browser support:
+if (!ModuleFE_PasskeyAuth.browserSupportsPasskeys()) { /* hide passkey UI */ }
+
+// Login (unauthenticated):
+await ModuleFE_PasskeyAuth.login();
+// On success, the backend sets the JWT on the response — standard session flow.
+
+// Register (requires session):
+const result = await ModuleFE_PasskeyAuth.register('My Laptop');
+// Returns { credential: { _id, credentialId, label, transports, backedUp } }
+
+// Delete credential (requires session):
+await ModuleFE_PasskeyAuth.deleteCredential({ credentialId: 'cred-id-here' });
+```
+
+After registration or deletion, refresh the credential list:
+```typescript
+import {ModuleFE_PasskeyCredentialDB} from '@nu-art/passkey-frontend';
+await ModuleFE_PasskeyCredentialDB.query();
+```
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| DB entity type | `DB_PasskeyCredential` |
+| DB def | `DBDef_PasskeyCredential` |
+| Database def type | `DatabaseDef_PasskeyCredential` |
+| Backend auth module | `ModuleBE_PasskeyAuth` |
+| Backend credential DB module | `ModuleBE_PasskeyCredentialDB` |
+| Frontend auth module | `ModuleFE_PasskeyAuth` |
+| Frontend credential DB module | `ModuleFE_PasskeyCredentialDB` |
+| Backend module pack | `ModulePackBE_Passkey` |
+| Frontend module pack | `ModulePackFE_Passkey` |
+| API type | `API_Passkey` |
+| API def constant | `ApiDef_Passkey` |
+| Login component | `Component_PasskeyLogin` |
+| Register component | `Component_PasskeyRegister` |
+| Credential list component | `Component_PasskeyCredentials` |
+
+---
+
+## Forbidden patterns
+
+- **Do not call `registerOptions` or `registerVerify` without an authenticated session** — the backend reads `MemKey_AccountId` to associate the credential with the account. Without a session this will fail.
+- **Do not hardcode `rpId` with a protocol or port** — it must be the bare domain (`localhost`, `example.com`). The protocol and port go in `origin`.
+- **Do not skip `loginOptions`/`loginVerify` in the open APIs list** — these endpoints must be accessible without a session. Omitting them from `openApis` will cause 401 errors for unauthenticated users trying to log in.
+- **Do not reuse challenges** — challenges are single-use. After verification (success or failure), the challenge is deleted from the in-memory store.
+- **Do not import from `@simplewebauthn/*` in consuming packages** — the passkey library wraps these. Consumers interact only with `ModuleFE_PasskeyAuth` / `ModuleBE_PasskeyAuth`.
+- **Do not call `ModuleFE_PasskeyCredentialDB.v1.sync()`** — there is no `.v1` accessor. Use `ModuleFE_PasskeyCredentialDB.query()` to refresh the credential list.
