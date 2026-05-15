@@ -1,10 +1,13 @@
 import {expect} from 'chai';
 import {Application, generateHex, MB, ModuleManager} from '@nu-art/ts-common';
+import {MemStorage} from '@nu-art/ts-common/mem-storage';
 import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {AssetStatus, DB_Asset} from '@nu-art/file-upload-shared';
 import {ModuleBE_FileUpload} from '../main/modules/ModuleBE_FileUpload.js';
 import {StorageAdapter_InMemory} from './StorageAdapter_InMemory.js';
+
+const inMemStorage = <T>(fn: () => Promise<T>): Promise<T> => new MemStorage().init(fn);
 
 
 const storageAdapter = new StorageAdapter_InMemory();
@@ -71,7 +74,7 @@ describe('File Upload — E2E', function () {
 	// ── 1. Happy path: upload → confirm → validated ──
 
 	describe('Happy path', () => {
-		it('requestUpload → simulateUpload → confirmUpload yields validated asset', async () => {
+		it('requestUpload → simulateUpload → confirmUpload yields validated asset', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'photo.png',
 				mimeType: 'image/png',
@@ -89,9 +92,9 @@ describe('File Upload — E2E', function () {
 			expect(response.error).to.be.undefined;
 			expect(response.asset.status).to.equal(AssetStatus.Validated);
 			expect(response.asset.md5Hash).to.be.a('string');
-		});
+		}));
 
-		it('uploads multiple files in a single request', async () => {
+		it('uploads multiple files in a single request', () => inMemStorage(async () => {
 			const pendingUploads = await ModuleBE_FileUpload.requestUpload([
 				{name: 'file1.png', mimeType: 'image/png', key: ValidatorKey_Image},
 				{name: 'file2.png', mimeType: 'image/png', key: ValidatorKey_Image},
@@ -109,13 +112,13 @@ describe('File Upload — E2E', function () {
 			expect(response1.asset.status).to.equal(AssetStatus.Validated);
 			expect(response2.asset.status).to.equal(AssetStatus.Validated);
 			expect(response1.asset._id).to.not.equal(response2.asset._id);
-		});
+		}));
 	});
 
 	// ── 2. MIME rejection ──
 
 	describe('MIME validation', () => {
-		it('rejects upload with disallowed MIME type', async () => {
+		it('rejects upload with disallowed MIME type', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'spreadsheet.csv',
 				mimeType: 'text/csv',
@@ -129,13 +132,13 @@ describe('File Upload — E2E', function () {
 			expect(response.error).to.be.a('string');
 			expect(response.error).to.include('MIME type');
 			expect(response.asset.status).to.equal(AssetStatus.Failed);
-		});
+		}));
 	});
 
 	// ── 3. Size validation ──
 
 	describe('Size validation', () => {
-		it('rejects file smaller than minSize', async () => {
+		it('rejects file smaller than minSize', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'tiny.txt',
 				mimeType: 'text/plain',
@@ -149,9 +152,9 @@ describe('File Upload — E2E', function () {
 			expect(response.error).to.be.a('string');
 			expect(response.error).to.include('size');
 			expect(response.asset.status).to.equal(AssetStatus.Failed);
-		});
+		}));
 
-		it('rejects file larger than maxSize', async () => {
+		it('rejects file larger than maxSize', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'huge.txt',
 				mimeType: 'text/plain',
@@ -165,9 +168,9 @@ describe('File Upload — E2E', function () {
 			expect(response.error).to.be.a('string');
 			expect(response.error).to.include('size');
 			expect(response.asset.status).to.equal(AssetStatus.Failed);
-		});
+		}));
 
-		it('accepts file within size range', async () => {
+		it('accepts file within size range', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'normal.txt',
 				mimeType: 'text/plain',
@@ -180,13 +183,13 @@ describe('File Upload — E2E', function () {
 
 			expect(response.error).to.be.undefined;
 			expect(response.asset.status).to.equal(AssetStatus.Validated);
-		});
+		}));
 	});
 
 	// ── 4. File not found in storage ──
 
 	describe('File not found', () => {
-		it('fails confirmation when file was not uploaded to storage', async () => {
+		it('fails confirmation when file was not uploaded to storage', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'ghost.png',
 				mimeType: 'image/png',
@@ -198,13 +201,13 @@ describe('File Upload — E2E', function () {
 			expect(response.error).to.be.a('string');
 			expect(response.error).to.include('not found');
 			expect(response.asset.status).to.equal(AssetStatus.Failed);
-		});
+		}));
 	});
 
 	// ── 5. Missing validator ──
 
 	describe('Missing validator', () => {
-		it('throws when requesting upload with unregistered key', async () => {
+		it('throws when requesting upload with unregistered key', () => inMemStorage(async () => {
 			try {
 				await ModuleBE_FileUpload.requestUpload([{
 					name: 'mystery.xyz',
@@ -215,13 +218,13 @@ describe('File Upload — E2E', function () {
 			} catch (e: any) {
 				expect(e.message).to.include('Missing validator');
 			}
-		});
+		}));
 	});
 
 	// ── 6. Custom validator ──
 
 	describe('Custom validator', () => {
-		it('passes when custom validator succeeds', async () => {
+		it('passes when custom validator succeeds', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'custom.txt',
 				mimeType: 'text/plain',
@@ -234,9 +237,9 @@ describe('File Upload — E2E', function () {
 
 			expect(response.error).to.be.undefined;
 			expect(response.asset.status).to.equal(AssetStatus.Validated);
-		});
+		}));
 
-		it('fails when custom validator throws', async () => {
+		it('fails when custom validator throws', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'invalid-custom.txt',
 				mimeType: 'text/plain',
@@ -250,13 +253,13 @@ describe('File Upload — E2E', function () {
 			expect(response.error).to.be.a('string');
 			expect(response.error).to.include('Custom validator failed');
 			expect(response.asset.status).to.equal(AssetStatus.Failed);
-		});
+		}));
 	});
 
 	// ── 7. Confirm non-pending asset ──
 
 	describe('Confirm non-pending', () => {
-		it('fails when confirming an already-validated asset', async () => {
+		it('fails when confirming an already-validated asset', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'already-done.png',
 				mimeType: 'image/png',
@@ -271,13 +274,13 @@ describe('File Upload — E2E', function () {
 			const second = await ModuleBE_FileUpload.confirmUpload({_id: pending.asset._id});
 			expect(second.error).to.be.a('string');
 			expect(second.error).to.include('not in pending status');
-		});
+		}));
 	});
 
 	// ── 8. Make public flow ──
 
 	describe('Make public', () => {
-		it('calls makePublic on storage when asset is public', async () => {
+		it('calls makePublic on storage when asset is public', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'public-file.png',
 				mimeType: 'image/png',
@@ -292,9 +295,9 @@ describe('File Upload — E2E', function () {
 			expect(response.error).to.be.undefined;
 			expect(response.asset.status).to.equal(AssetStatus.Validated);
 			expect(storageAdapter.isPublic(pending.asset.path)).to.be.true;
-		});
+		}));
 
-		it('does not call makePublic when asset is not public', async () => {
+		it('does not call makePublic when asset is not public', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'private-file.png',
 				mimeType: 'image/png',
@@ -308,13 +311,13 @@ describe('File Upload — E2E', function () {
 
 			expect(response.error).to.be.undefined;
 			expect(storageAdapter.isPublic(pending.asset.path)).to.be.false;
-		});
+		}));
 	});
 
 	// ── 9. Read signed URL ──
 
 	describe('Read signed URL', () => {
-		it('returns a signed URL for a validated asset', async () => {
+		it('returns a signed URL for a validated asset', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'readable.png',
 				mimeType: 'image/png',
@@ -328,13 +331,13 @@ describe('File Upload — E2E', function () {
 
 			expect(result.signedUrl).to.be.a('string');
 			expect(result.signedUrl).to.include(pending.asset.path);
-		});
+		}));
 	});
 
 	// ── 10. Stale asset cleanup ──
 
 	describe('Stale cleanup', () => {
-		it('removes pending assets older than threshold', async () => {
+		it('removes pending assets older than threshold', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'stale.png',
 				mimeType: 'image/png',
@@ -346,9 +349,9 @@ describe('File Upload — E2E', function () {
 			await ModuleBE_FileUpload.cleanupStaleAssets(0);
 
 			expect(await storageAdapter.fileExists(pending.asset.path)).to.be.false;
-		});
+		}));
 
-		it('does not remove validated assets', async () => {
+		it('does not remove validated assets', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'valid.png',
 				mimeType: 'image/png',
@@ -361,7 +364,7 @@ describe('File Upload — E2E', function () {
 			await ModuleBE_FileUpload.cleanupStaleAssets(0);
 
 			expect(await storageAdapter.fileExists(pending.asset.path)).to.be.true;
-		});
+		}));
 	});
 
 	// ── 11. Validator registration edge cases ──
@@ -378,7 +381,7 @@ describe('File Upload — E2E', function () {
 			expect(() => ModuleBE_FileUpload.registerValidator('conflict-key', {allowedMimeTypes: ['application/pdf']})).to.throw('already registered');
 		});
 
-		it('uses mimeType as key when request has no key', async () => {
+		it('uses mimeType as key when request has no key', () => inMemStorage(async () => {
 			ModuleBE_FileUpload.registerValidator('text/plain', {
 				allowedMimeTypes: ['text/plain'],
 			});
@@ -394,13 +397,13 @@ describe('File Upload — E2E', function () {
 
 			const response = await ModuleBE_FileUpload.confirmUpload({_id: pending.asset._id});
 			expect(response.asset.status).to.equal(AssetStatus.Validated);
-		});
+		}));
 	});
 
 	// ── 12. Asset metadata ──
 
 	describe('Metadata', () => {
-		it('preserves custom metadata through the upload flow', async () => {
+		it('preserves custom metadata through the upload flow', () => inMemStorage(async () => {
 			const [pending] = await ModuleBE_FileUpload.requestUpload([{
 				name: 'meta-file.png',
 				mimeType: 'image/png',
@@ -414,6 +417,6 @@ describe('File Upload — E2E', function () {
 			const response = await ModuleBE_FileUpload.confirmUpload({_id: pending.asset._id});
 
 			expect(response.asset.metadata).to.deep.equal({origin: 'test', category: 'screenshot'});
-		});
+		}));
 	});
 });
