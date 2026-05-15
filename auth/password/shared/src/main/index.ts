@@ -13,3 +13,6 @@ export * from './_entity/failed-login-attempt/consts.js';
 
 export * from './_entity/password-credentials/types.js';
 export * from './_entity/password-credentials/db-def.js';
+
+export * from './_entity/password-reset-token/types.js';
+export * from './_entity/password-reset-token/db-def.js';

@@ -41,6 +41,16 @@ class ModuleFE_PasswordAuth_Class
 		return undefined as unknown as API_PasswordAuth['getPasswordAssertionConfig']['Response'];
 	}
 
+	@ApiCaller(ApiDef_PasswordAuth.requestReset)
+	async requestReset(body: API_PasswordAuth['requestReset']['Body']): Promise<void> {
+		void body;
+	}
+
+	@ApiCaller(ApiDef_PasswordAuth.executeReset)
+	async executeReset(body: API_PasswordAuth['executeReset']['Body']): Promise<void> {
+		void body;
+	}
+
 	public passwordAssertionConfig = () => StorageKey_PasswordAssertionConfig.get();
 
 	private onPasswordAssertionConfig = async (ctx: ApiCallContext<API_PasswordAuth['getPasswordAssertionConfig']>) => {

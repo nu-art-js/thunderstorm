@@ -22,11 +22,17 @@ import {ModuleBE_AccountDB} from '@nu-art/user-account-backend';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountEmail, MemKey_AccountId, MemKey_DB_Session, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {ModuleBE_FailedLoginAttemptDB} from './_entity/failed-login-attempt/ModuleBE_FailedLoginAttemptDB.js';
 import {ModuleBE_PasswordCredentialDB} from './_entity/password-credentials/ModuleBE_PasswordCredentialDB.js';
+import {ModuleBE_PasswordResetTokenDB} from './_entity/password-reset-token/ModuleBE_PasswordResetTokenDB.js';
+import {ModuleBE_Email} from '@nu-art/ts-email-backend';
 
 type Config = {
 	canRegister: boolean
 	passwordAssertion?: PasswordAssertionConfig
 	ignorePasswordAssertion?: boolean
+	resetToken?: {
+		ttlMs?: number;
+		maxRequestsPerHour?: number;
+	}
 }
 
 export class ModuleBE_PasswordAuth_Class
@@ -36,6 +42,12 @@ export class ModuleBE_PasswordAuth_Class
 	constructor() {
 		super();
 		this.setDefaultConfig({canRegister: false});
+	}
+
+	async init() {
+		await super.init();
+		if (this.config.resetToken)
+			ModuleBE_PasswordResetTokenDB.setTokenConfig(this.config.resetToken);
 	}
 
 	async __collectSessionData(data: BaseSessionClaims) {
@@ -91,6 +103,53 @@ export class ModuleBE_PasswordAuth_Class
 				? undefined
 				: this.config.passwordAssertion
 		};
+	}
+
+	@ApiHandler(ApiDef_PasswordAuth.requestReset)
+	async requestReset(body: API_PasswordAuth['requestReset']['Body']): Promise<void> {
+		ModuleBE_AccountDB.impl.fixEmail(body);
+		const account = (await ModuleBE_AccountDB.query.custom({where: {email: body.email}, limit: 1}))[0];
+		if (!account) {
+			this.logDebug(`requestReset: no account for email='${body.email}', silent success`);
+			return;
+		}
+
+		const resetToken = await ModuleBE_PasswordResetTokenDB.createToken(account._id);
+		const resetUrl = `${process.env.FRONTEND_URL ?? ''}/reset-password?token=${resetToken.token}`;
+
+		await ModuleBE_Email.send({
+			from: {email: 'noreply@market-oracle.app', name: 'Market Oracle'},
+			to: [{email: body.email}],
+			subject: 'Password Reset Request',
+			html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 24 hours.</p>`,
+			text: `Reset your password: ${resetUrl}`,
+		});
+	}
+
+	@ApiHandler(ApiDef_PasswordAuth.executeReset)
+	async executeReset(body: API_PasswordAuth['executeReset']['Body']): Promise<void> {
+		const resetToken = await ModuleBE_PasswordResetTokenDB.assertToken(body.token);
+
+		this.password.assertPasswordCheck({email: '', password: body.password, passwordCheck: body.passwordCheck});
+
+		const account = (await ModuleBE_AccountDB.query.custom({where: {_id: resetToken.accountId}, limit: 1}))[0];
+		if (!account)
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid reset token');
+
+		const existingCredentials = await this.credentials.queryByAccountId(account._id);
+		const salt = generateHex(32);
+		if (existingCredentials) {
+			await ModuleBE_PasswordCredentialDB.set.item({
+				...existingCredentials,
+				salt,
+				saltedPassword: hashPasswordWithSalt(salt, body.password),
+			});
+		} else {
+			await this.credentials.create(account, body.password);
+		}
+
+		await ModuleBE_PasswordResetTokenDB.consumeToken(resetToken);
+		await ModuleBE_SessionDB.delete.where({accountId: account._id});
 	}
 
 	private credentials = {
