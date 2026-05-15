@@ -1,7 +1,7 @@
 import {Module, Second, UniqueId} from '@nu-art/ts-common';
 import {OpenAI} from 'openai';
 import {Uploadable} from 'openai/uploads';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@nu-art/api-types';
 
 
 export class OpenAIClient_Assistant_Class
@@ -72,7 +72,7 @@ export class OpenAIClient_Assistant_Class
 			return {threadId: thread.id};
 		} catch (err: any) {
 			this.logError('Failed creating message', err);
-			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR;
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Failed creating message', err.message, err);
 		}
 	};
 
@@ -95,7 +95,7 @@ export class OpenAIClient_Assistant_Class
 			return this.messageUtils.fetchRunResult(threadId);
 		} catch (err: any) {
 			this.logError('Failed running assistant on thread', err);
-			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR;
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Failed running assistant on thread', err.message, err);
 		}
 	};
 
@@ -114,7 +114,7 @@ export class OpenAIClient_Assistant_Class
 			return await this.runAssistantOnThread(threadId);
 		} catch (err: any) {
 			this.logError('Failed to create message and run assistant', err);
-			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR;
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Failed to create message and run assistant', err.message, err);
 		}
 	};
 

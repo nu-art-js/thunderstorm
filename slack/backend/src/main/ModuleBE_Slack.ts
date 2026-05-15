@@ -27,7 +27,7 @@ import {ApiHandler} from '@nu-art/http-server';
 import {ApiDef_Slack, API_Slack, PreSendSlackStructuredMessage} from '@nu-art/slack-shared';
 import {Stream} from 'stream';
 import {postSlackMessageErrorHandler} from './utils.js';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@nu-art/api-types';
 import {SlackBuilderBE} from './SlackBuilderBE.js';
 
 

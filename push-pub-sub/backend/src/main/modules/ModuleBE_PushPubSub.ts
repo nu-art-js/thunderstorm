@@ -47,7 +47,7 @@ import {ModuleBE_PushSessionDB, ModuleBE_PushSessionDB_Class} from './ModuleBE_P
 import {ModuleBE_PushSubscriptionDB} from './ModuleBE_PushSubscriptionDB.js';
 import {DatabaseDef_PushMessagesHistory} from '@nu-art/push-pub-sub-shared/push-messages-history/types';
 import {ModuleBE_PushMessagesHistoryDB, ModuleBE_PushMessagesHistoryDB_Class} from './ModuleBE_PushMessagesHistoryDB.js';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@nu-art/api-types';
 import {Message} from 'firebase-admin/messaging';
 
 

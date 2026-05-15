@@ -1,5 +1,6 @@
 import type {UniqueId} from '@nu-art/ts-common';
-import {ApiException, filterDuplicates, removeItemFromArray} from '@nu-art/ts-common';
+import {filterDuplicates, removeItemFromArray} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import type {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import type {DocumentAccessCapabilities, DocumentAccessInner} from '@nu-art/permissions-shared';
@@ -16,7 +17,7 @@ function assertOwnership(access: Partial<DocumentAccessInner> | undefined) {
 	const accessIds = getAllAccessIds();
 	const isOwner = access?.owners?.some(id => accessIds.includes(id));
 	if (!isOwner)
-		throw new ApiException(403, 'Only document owners can manage access');
+		throw HttpCodes._4XX.FORBIDDEN('Only document owners can manage access');
 }
 
 export async function shareDocument<Database extends DB_Prototype>(
@@ -27,7 +28,7 @@ export async function shareDocument<Database extends DB_Prototype>(
 ): Promise<Database['dbType']> {
 	const doc = await dbModule.query.unique(documentId);
 	if (!doc)
-		throw new ApiException(404, 'Document not found');
+		throw HttpCodes._4XX.NOT_FOUND('Document not found');
 
 	const mutable = doc as any;
 	assertOwnership(mutable.__access);
@@ -57,7 +58,7 @@ export async function unshareDocument<Database extends DB_Prototype>(
 ): Promise<Database['dbType']> {
 	const doc = await dbModule.query.unique(documentId);
 	if (!doc)
-		throw new ApiException(404, 'Document not found');
+		throw HttpCodes._4XX.NOT_FOUND('Document not found');
 
 	const mutable = doc as any;
 	assertOwnership(mutable.__access);

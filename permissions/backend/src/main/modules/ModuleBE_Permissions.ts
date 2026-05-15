@@ -26,7 +26,7 @@ import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
 import {ModuleBE_AccountDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
-import {SafeDB_Account} from '@nu-art/user-account-shared';
+import {DB_Account} from '@nu-art/user-account-shared';
 
 
 // --- Dispatcher for additional group memberships on registration/login ---
@@ -171,7 +171,7 @@ class ModuleBE_Permissions_Class
 
 	// --- Account lifecycle hooks ---
 
-	async __onUserLogin(account: SafeDB_Account) {
+	async __onUserLogin(account: DB_Account) {
 		this.logDebug(`__onUserLogin: processing permissions for _id='${account._id}' email='${account.email}'`);
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			await this.ensurePersonalAccessGroup(account);
@@ -189,7 +189,7 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
-	async __onAccountDeleted(account: SafeDB_Account) {
+	async __onAccountDeleted(account: DB_Account) {
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
 			const personalGroup = await ModuleBE_AccessGroupDB.query.unique(personalGroupId);
@@ -210,7 +210,7 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
-	private async ensurePersonalAccessGroup(account: SafeDB_Account) {
+	private async ensurePersonalAccessGroup(account: DB_Account) {
 		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
 		const existing = await ModuleBE_AccessGroupDB.query.unique(personalGroupId);
 		this.logDebug(`[FIRST_USER] ensurePersonalAccessGroup: personalGroupId=${personalGroupId}, existing=${!!existing}`);
@@ -228,7 +228,7 @@ class ModuleBE_Permissions_Class
 		this.logDebug(`[FIRST_USER] ensurePersonalAccessGroup: created, verified=${!!verify}`);
 	}
 
-	private async addToDefaultGroup(account: SafeDB_Account) {
+	private async addToDefaultGroup(account: DB_Account) {
 		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
 		const defaultGroup = await ModuleBE_AccessGroupDB.query.unique(GroupId_AppDefault);
 		this.logDebug(`[FIRST_USER] addToDefaultGroup: defaultGroup=${!!defaultGroup}, members=${defaultGroup?.members?.length}`);
@@ -243,7 +243,7 @@ class ModuleBE_Permissions_Class
 		this.logDebug(`[FIRST_USER] addToDefaultGroup: user added, members now=${defaultGroup.members.length}`);
 	}
 
-	private async promoteIfNoAdmin(account: SafeDB_Account) {
+	private async promoteIfNoAdmin(account: DB_Account) {
 		const adminGroup = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
 		this.logDebug(`[FIRST_USER] promoteIfNoAdmin: adminGroup=${!!adminGroup}, members=${JSON.stringify(adminGroup?.members)}`);
 		if (!adminGroup) {
@@ -266,7 +266,7 @@ class ModuleBE_Permissions_Class
 		this.logDebug(`[FIRST_USER] promoteIfNoAdmin: promoted ${personalGroupId} to admin`);
 	}
 
-	private async checkAdminGrantFlag(account: SafeDB_Account) {
+	private async checkAdminGrantFlag(account: DB_Account) {
 		const flagValue = await this.adminGrantFlagRef.get(false);
 		if (!flagValue)
 			return;
@@ -287,7 +287,7 @@ class ModuleBE_Permissions_Class
 		this.logInfo(`Granted Permissions Admin to user ${account._id} via RTDB flag (one-shot)`);
 	}
 
-	private async resolveAdditionalGroupMemberships(account: SafeDB_Account, context: 'register' | 'login') {
+	private async resolveAdditionalGroupMemberships(account: DB_Account, context: 'register' | 'login') {
 		const results: UniqueId[][] = await dispatcher_resolveAdditionalGroupMemberships.dispatchModuleAsync(account._id, context);
 		const additionalGroupIds = filterDuplicates(flatArray(results));
 		if (additionalGroupIds.length === 0)

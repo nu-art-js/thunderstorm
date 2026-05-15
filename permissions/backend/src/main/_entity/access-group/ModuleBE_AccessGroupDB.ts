@@ -1,4 +1,5 @@
-import {ApiException, Dispatcher, filterDuplicates, UniqueId} from '@nu-art/ts-common';
+import {Dispatcher, filterDuplicates, UniqueId} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import {ModuleBE_BaseDB, PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 import type {DatabaseDef_AccessGroup, DB_AccessGroup} from '@nu-art/permissions-shared';
 import {DBDef_AccessGroup} from '@nu-art/permissions-shared';
@@ -20,7 +21,7 @@ export class ModuleBE_AccessGroupDB_Class
 
 	protected async preWriteProcessing(instance: DB_AccessGroup, _original: DatabaseDef_AccessGroup['dbType']): Promise<void> {
 		if ((instance.type === 'user' || instance.type === 'service-account') && instance.members.length > 0)
-			throw new ApiException(400, `${instance.type} access groups cannot have members`);
+			throw HttpCodes._4XX.BAD_REQUEST(`${instance.type} access groups cannot have members`);
 	}
 
 	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DatabaseDef_AccessGroup['dbType']>, _actionType: CollectionActionType) {

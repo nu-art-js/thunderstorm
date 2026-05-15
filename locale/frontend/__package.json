@@ -13,6 +13,8 @@
 	"dependencies": {
 		"@nu-art/locale-shared": "?",
 		"@nu-art/db-api-frontend": "?",
+		"@nu-art/permissions-frontend": "?",
+		"@nu-art/permissions-shared": "?",
 		"@nu-art/sync-manager-frontend": "?",
 		"@nu-art/db-api-shared": "?",
 		"@nu-art/editable-item": "?",

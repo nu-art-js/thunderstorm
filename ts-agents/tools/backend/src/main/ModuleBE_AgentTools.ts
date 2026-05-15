@@ -28,6 +28,10 @@ export class ModuleBE_AgentTools_Class
 		});
 	}
 
+	getAllTools(): TS_AgentTool<any, any>[] {
+		return Object.values(this.tools);
+	}
+
 	getTool(toolName: string) {
 		const tool = this.tools[toolName];
 		if (!tool)

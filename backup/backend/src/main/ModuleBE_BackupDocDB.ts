@@ -7,7 +7,6 @@
 import {
 	__stringify,
 	_logger_logException,
-	ApiException,
 	BadImplementationException,
 	cloneObj,
 	currentTimeMillis,
@@ -23,7 +22,7 @@ import {
 	TypedMap,
 	UniqueId
 } from '@nu-art/ts-common';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@nu-art/api-types';
 import type {FirestoreCollection} from '@nu-art/firebase-backend';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
@@ -116,7 +115,7 @@ export class ModuleBE_BackupDocDB_Class
 
 	getBackupStreamFromId = async (backupInfo: FetchBackupDoc): Promise<Readable> => {
 		if (!backupInfo.backupFilePath)
-			throw new ApiException(404, 'Backup file path not found');
+			throw HttpCodes._4XX.NOT_FOUND('Backup file path not found');
 
 		this.logInfo(`----  Fetching Backup Stream from: ${backupInfo.firestoreSignedUrl} ----`);
 		const httpClient = this.resolvedConfig.httpClient;
@@ -183,7 +182,7 @@ export class ModuleBE_BackupDocDB_Class
 		} catch (e: unknown) {
 			this.logWarning('modules cleanup has failed with error', e as Error);
 			const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e instanceof Error ? e : new Error(String(e)))}`;
-			throw new ApiException(500, errorMessage, e instanceof Error ? e : new Error(String(e)));
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(errorMessage, errorMessage, e instanceof Error ? e : new Error(String(e)));
 		}
 
 		const modules = this.getBackupDetails();
@@ -204,7 +203,7 @@ export class ModuleBE_BackupDocDB_Class
 		let metadata: BackupMetaData;
 
 		if (modules.length === 0)
-			throw new ApiException(404, 'No modules to backup');
+			throw HttpCodes._4XX.NOT_FOUND('No modules to backup');
 
 		try {
 			this.logDebug('Creating backup file...');
@@ -241,7 +240,7 @@ export class ModuleBE_BackupDocDB_Class
 			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(mod?.dbDef.dbKey, true)}\nError: ${_logger_logException(e instanceof Error
 				? e
 				: new Error(String(e)))}`;
-			throw new ApiException(500, errorMessage, e instanceof Error ? e : new Error(String(e)));
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(errorMessage, errorMessage, e instanceof Error ? e : new Error(String(e)));
 		}
 
 		const dbBackup = await this.upsert({
@@ -278,7 +277,7 @@ export class ModuleBE_BackupDocDB_Class
 			this.logInfoBold('Successfully deleted old backups');
 		} catch (err: unknown) {
 			this.logWarning('Error while cleaning up older backups', err as Error);
-			throw new ApiException(500, 'Error while cleaning up older backups', err instanceof Error ? err : new Error(String(err)));
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Error while cleaning up older backups', 'Error while cleaning up older backups', err instanceof Error ? err : new Error(String(err)));
 		}
 
 		return {pathToBackup: backupPath, backupId: dbBackup._id};
@@ -302,7 +301,7 @@ export class ModuleBE_BackupDocDB_Class
 		const backupDoc = await this.queryUnique(body.backupId);
 
 		if (!backupDoc)
-			throw new ApiException(500, `no backup doc found with this id ${body.backupId}`);
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(`no backup doc found with this id ${body.backupId}`);
 
 		return await this.fetchDocImpl(backupDoc);
 	};

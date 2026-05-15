@@ -25,3 +25,4 @@ export * from './query-types.js';
 export * from './db-api-dispatcher.js';
 export * from './entity-dependencies.js';
 export * from './collection-actions.js';
+export * from './exceptions.js';

@@ -22,7 +22,7 @@ import {Page_ApiGen} from '../pages/Page_ApiGen.js';
 import {Example_Dialogs} from '../playground/examples/modules/Example_Dialogs.js';
 import {Example_Toaster} from '../playground/examples/modules/Example_Toaster.js';
 import {Example_Dispatch} from '../playground/examples/Example_Dispatch.js';
-import {Component_Login} from '@nu-art/user-account-frontend/index';
+import {Component_Login} from '@nu-art/password-auth-frontend';
 
 export const Route_ApiGen = 'api-generation';
 export const Route_Dialog = 'dialog';

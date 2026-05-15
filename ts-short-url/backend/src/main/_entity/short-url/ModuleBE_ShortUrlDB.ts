@@ -9,7 +9,7 @@ import {
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import {generateShortURL} from '@nu-art/ts-common';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {HttpCodes} from '@nu-art/api-types';
 
 type Config = {
 	BaseShortUrl: string;

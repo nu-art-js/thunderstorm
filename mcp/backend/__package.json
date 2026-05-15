@@ -1,0 +1,62 @@
+{
+  "name": "@nu-art/mcp-backend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "MCP Server backend — multi-instance MCP server manager for Thunderstorm Express apps with OAuth bearer auth, tool aggregation from modules, session management, and Streamable HTTP transport",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "mcp",
+    "model-context-protocol",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/mcp-shared": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-agent-tools-backend": "?",
+    "@nu-art/http-server": "?",
+    "@modelcontextprotocol/server": "^2.0.0-alpha.2",
+    "@modelcontextprotocol/node": "^2.0.0-alpha.2",
+    "express": "?",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "?",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.7",
+    "ts-mocha": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

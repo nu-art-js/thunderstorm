@@ -1,0 +1,52 @@
+{
+  "name": "@nu-art/oauth-shared",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "OAuth 2.1 Authorization Server shared types — client, grant, token DB entities, scope types, token claims, auth server metadata for Thunderstorm",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "oauth",
+    "oauth2",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/api-types": "?"
+  },
+  "devDependencies": {
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

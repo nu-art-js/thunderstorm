@@ -31,6 +31,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@nu-art/api-types": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/http-server": "?",
     "@nu-art/ts-agent-tools-backend": "?",

@@ -1,0 +1,3 @@
+# 2026-05-14 17:39 — File upload UI: default bubble + custom data contract
+- **Context:** Designing the file upload frontend UX. The user wants a Google Drive-style floating bubble as the default, but the real value is exposing upload state for custom UIs (e.g., gallery with per-image progress overlays).
+- **Principle:** Infrastructure UI packages ship two layers: (1) a ready-to-use default widget for quick prototyping — floating, non-intrusive, SCSS-themeable, and (2) a data/state contract exposed through the dispatcher system so consumers can build arbitrary custom visualizations driven by the same upload lifecycle. The default widget is a convenience; the state contract is the integration surface.

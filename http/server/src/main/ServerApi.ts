@@ -21,6 +21,7 @@ import {
 } from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {ApiDef, BodyApi, HttpMethod_Body, HttpMethod_Query, QueryApi, QueryParams, TypedApi} from '@nu-art/api-types';
+import {HttpCodes} from '@nu-art/api-types';
 import {Stream} from 'stream';
 import {parse} from 'url';
 import type {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from './types.js';
@@ -181,10 +182,10 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 				}
 
 				if (isErrorOfType(e, ValidationException))
-					e = new ApiException(400, 'Validator exception', e as Error);
+					e = HttpCodes._4XX.BAD_REQUEST('Validator exception', 'Validator exception', e as Error);
 
 				if (!isErrorOfType(e, ApiException))
-					e = new ApiException(500, 'Unexpected server error', e as Error);
+					e = HttpCodes._5XX.INTERNAL_SERVER_ERROR('Unexpected server error', 'Unexpected server error', e as Error);
 
 				const apiException = isErrorOfType(e, ApiException);
 				if (!apiException)

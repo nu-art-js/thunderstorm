@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {ApiException} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import {ApiDef, HttpException} from '@nu-art/http-client';
 import {ApiProxy, E2EPort, killProcessOnPort, queryRoute, withServer} from './e2e-server.js';
 import {ensureBeLoggedTerminal} from './ensure-belogged.js';
@@ -17,7 +17,7 @@ describe('E2E client-server errors', () => {
 	it('Server returns 400 - client gets HttpException with responseCode 400', async () => {
 		const apiDef: ApiDef<any> = {method: 'get', path: '/err400'};
 		await withServer(
-			server => queryRoute(server, apiDef, async () => { throw new ApiException(400, 'bad request'); }),
+			server => queryRoute(server, apiDef, async () => { throw HttpCodes._4XX.BAD_REQUEST('bad request'); }),
 			async client => {
 				try {
 					await new ApiProxy(apiDef, client).call({});
@@ -50,7 +50,7 @@ describe('E2E client-server errors', () => {
 	it('Server returns 401 - client gets 401 and error body', async () => {
 		const apiDef: ApiDef<any> = {method: 'get', path: '/err401'};
 		await withServer(
-			server => queryRoute(server, apiDef, async () => { throw new ApiException(401, 'unauthorized'); }),
+			server => queryRoute(server, apiDef, async () => { throw HttpCodes._4XX.UNAUTHORIZED('unauthorized'); }),
 			async client => {
 				try {
 					await new ApiProxy(apiDef, client).call({});
@@ -66,7 +66,7 @@ describe('E2E client-server errors', () => {
 	it('Server returns 403 - client gets 403 and error body', async () => {
 		const apiDef: ApiDef<any> = {method: 'get', path: '/err403'};
 		await withServer(
-			server => queryRoute(server, apiDef, async () => { throw new ApiException(403, 'forbidden'); }),
+			server => queryRoute(server, apiDef, async () => { throw HttpCodes._4XX.FORBIDDEN('forbidden'); }),
 			async client => {
 				try {
 					await new ApiProxy(apiDef, client).call({});

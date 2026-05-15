@@ -37,6 +37,7 @@
     "@nu-art/permissions-backend": "?",
     "@nu-art/permissions-shared": "?",
     "@nu-art/db-api-shared": "?",
+    "@nu-art/api-types": "?",
     "@nu-art/ts-common": "?",
     "firebase": "?",
     "firebase-admin": "?",

@@ -37,6 +37,7 @@
     "@nu-art/db-api-shared": "?",
     "@nu-art/http-client": "?",
     "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-widgets": "?",
     "@nu-art/ts-common": "?",
     "react": "?"
   },

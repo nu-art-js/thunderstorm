@@ -5,6 +5,7 @@
  */
 
 import {AsyncVoidFunction, generateHex, Module, ModuleManager, RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {Storm} from '@nu-art/storm-core';
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
@@ -58,11 +59,13 @@ export class StormTest {
 export const stormTester = async <TestCase extends TestModel<any, any>>(stormTestInput: StormTestInput, testCaseRunner: () => Promise<void>) => {
 	const stormTest = new StormTest({modules: stormTestInput.modules, config: stormTestInput.config ?? {}});
 	await stormTest.init();
-	try {
-		await stormTestInput.before?.();
-		await testCaseRunner();
-	} finally {
-		await stormTestInput.after?.();
-		await stormTest.cleanup();
-	}
+	await new MemStorage().init(async () => {
+		try {
+			await stormTestInput.before?.();
+			await testCaseRunner();
+		} finally {
+			await stormTestInput.after?.();
+			await stormTest.cleanup();
+		}
+	});
 };

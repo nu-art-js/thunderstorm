@@ -7,9 +7,14 @@ export type SignedUrl = {
 	signedUrl: string
 };
 
+export type ConfirmUploadResponse = {
+	asset: DB_Asset
+	error?: string
+};
+
 export type API_FileUpload = {
 	requestUpload: BodyApi<PendingUpload[], UploadRequest[]>;
-	confirmUpload: BodyApi<DB_Asset, DB_BaseObject>;
+	confirmUpload: BodyApi<ConfirmUploadResponse, DB_BaseObject>;
 	getReadSignedUrl: BodyApi<SignedUrl, DB_BaseObject>;
 };
 

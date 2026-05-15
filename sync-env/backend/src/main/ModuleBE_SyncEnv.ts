@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {ApiException, arrayToMap, BadImplementationException, Dispatcher, Minute, Module, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
+import {arrayToMap, BadImplementationException, Dispatcher, Minute, Module, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {Transform, Writable} from 'stream';
 import {firestore} from 'firebase-admin';
@@ -141,9 +141,9 @@ export class ModuleBE_SyncEnv_Class
 	async fetchBackupMetadata(queryParams: ApiStruct_SyncEnv['vv1']['fetchBackupMetadata']['Params']): Promise<ApiStruct_SyncEnv['vv1']['fetchBackupMetadata']['Response']> {
 		const backupInfo = await this.getBackupInfo(queryParams);
 		if (!backupInfo)
-			throw new ApiException(404, 'backup file not found');
+			throw HttpCodes._4XX.NOT_FOUND('backup file not found');
 		if (!backupInfo.metadata)
-			throw new ApiException(404, 'No metadata found on this backup');
+			throw HttpCodes._4XX.NOT_FOUND('No metadata found on this backup');
 		const remoteCollectionNames = this.dbRegistry.getModuleEntries().map(e => e.dbKey);
 		return {
 			...backupInfo.metadata,
@@ -159,7 +159,7 @@ export class ModuleBE_SyncEnv_Class
 		const sessionId = this.getRequestAuthHeader();
 		const upsertAll = this.getUpsertAllApi(body.moduleName);
 		if (!upsertAll)
-			throw new ApiException(404, `No upsertAll API for module: ${body.moduleName}`);
+			throw HttpCodes._4XX.NOT_FOUND(`No upsertAll API for module: ${body.moduleName}`);
 		const fullUrl = `${url.replace(/\/$/, '')}/${upsertAll.path.replace(/^\//, '')}`;
 		const req = this.httpClient
 			.createRequest({method: upsertAll.method, path: '', timeout: 5 * Minute})
@@ -267,7 +267,7 @@ export class ModuleBE_SyncEnv_Class
 			await database.set('/', firebaseFile);
 			return undefined as void;
 		} catch (err: unknown) {
-			throw new ApiException(500, err as Error);
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Sync to env failed', String(err), err instanceof Error ? err : new Error(String(err)));
 		}
 	}
 }
