@@ -1,0 +1,102 @@
+---
+description: How to use password-auth — login, registration, password recovery, and password management
+alwaysApply: false
+---
+
+# How to use password-auth
+
+The `@nu-art/password-auth-*` packages provide password-based authentication: registration, login, password management, and password recovery.
+
+---
+
+## Module registration
+
+### Backend
+
+Add `ModulePackBE_PasswordAuth` to your backend module pack. This registers the auth handler, all DB modules (credentials, login attempts, failed attempts, reset tokens), and their CRUD APIs.
+
+```typescript
+import {ModulePackBE_PasswordAuth} from '@nu-art/password-auth-backend';
+
+// In your app's module pack
+export const modules: Module[] = [
+	...ModulePackBE_PasswordAuth,
+];
+```
+
+### Frontend
+
+Add `ModuleFE_PasswordAuth` to your frontend module pack.
+
+```typescript
+import {ModuleFE_PasswordAuth} from '@nu-art/password-auth-frontend';
+```
+
+---
+
+## Password recovery
+
+### Prerequisites
+
+1. **ts-email library** — `ModulePackBE_Email` must be registered and an email adapter (e.g. SendGrid) must be configured. See [ts-email how-to-use](../../ts-email/.rules/how-to-use.mdc).
+2. **Secret** — The email adapter's API key must be stored in GCP Secret Manager (e.g. `sendgrid-api-key` for SendGrid).
+
+### Configuration
+
+`ModuleBE_PasswordAuth` accepts optional `resetToken` config:
+
+```typescript
+ModuleBE_PasswordAuth.setDefaultConfig({
+	canRegister: true,
+	resetToken: {
+		ttlMs: 24 * Hour,         // Token expiry (default: 24 hours)
+		maxRequestsPerHour: 3,    // Rate limit per account (default: 3)
+	}
+});
+```
+
+### Flow
+
+1. **User requests reset** — Frontend calls `ModuleFE_PasswordAuth.requestReset({email})`.
+2. **Backend generates token** — Creates a `DB_PasswordResetToken`, invalidates any existing tokens for the account, sends an email with a reset link. Always returns success (no email existence leak).
+3. **User clicks link** — Opens the reset page with `?token=<token>` in the URL.
+4. **User submits new password** — Frontend calls `ModuleFE_PasswordAuth.executeReset({token, password, passwordCheck})`.
+5. **Backend resets password** — Validates token (not expired, not consumed), asserts password rules, updates credentials, consumes the token, and **invalidates all existing sessions** for the account.
+
+### Rate limiting
+
+Reset requests are rate-limited to `maxRequestsPerHour` per account (default: 3). Exceeding the limit returns `429 Too Many Requests`.
+
+### Security properties
+
+- **Silent response** — `requestReset` always succeeds, even for non-existent emails. No information leakage about which emails have accounts.
+- **Single-use tokens** — Each token can only be used once. Requesting a new token invalidates all previous unconsumed tokens for that account.
+- **Session invalidation** — All active sessions are destroyed after a successful password reset, forcing re-authentication on all devices.
+- **TTL enforcement** — Tokens expire after the configured TTL (default: 24 hours).
+
+### Frontend components
+
+Two standalone components are exported from `@nu-art/password-auth-frontend`:
+
+- **`Component_ForgotPassword`** — Email input form. On submit, calls `requestReset` and shows a confirmation message.
+- **`Component_ResetPassword`** — Takes a `token` prop (from URL query param) and `onSuccess` callback. Renders password + confirm inputs, calls `executeReset`.
+
+Both components are unstyled — apply CSS classes `.forgot-password` and `.reset-password` in your app's stylesheet.
+
+### API endpoints
+
+| Endpoint | Method | Auth required | Description |
+|---|---|---|---|
+| `/v1/auth/password/request-reset` | POST | No | Request a password reset email |
+| `/v1/auth/password/execute-reset` | POST | No | Execute password reset with token |
+
+### DB entity
+
+`DB_PasswordResetToken` — one active token per account (unique on `accountId`).
+
+| Field | Type | Description |
+|---|---|---|
+| `accountId` | `UniqueId` | The account requesting reset |
+| `token` | `string` | Generated hex token (64 chars) |
+| `expiresAt` | `number` | Timestamp when token expires |
+| `consumedAt` | `number?` | Timestamp when token was used (undefined = active) |
