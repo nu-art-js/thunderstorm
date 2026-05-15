@@ -19,5 +19,4 @@ export * from './types/types.js';
 export * from './exceptions/HttpException.js';
 
 // Utils
-export * from './utils/http-codes.js';
 export * from './utils/utils.js';

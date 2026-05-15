@@ -58,6 +58,7 @@ Paths are relative to the project root (monorepo root).
 | Use db-api (CRUD, shared + backend + frontend) | [_thunderstorm/db-api/.rules/how-to-use.mdc](_thunderstorm/db-api/.rules/how-to-use.mdc) |
 | Use permissions (scopes, assertions, service accounts) | [_thunderstorm/permissions/.rules/how-to-use.mdc](_thunderstorm/permissions/.rules/how-to-use.mdc) |
 | Use http (client and/or server) | [_thunderstorm/http/.rules/how-to-use.mdc](_thunderstorm/http/.rules/how-to-use.mdc) |
+| Use file-upload (signed-URL upload/download, validation, progress, transfer bubble) | [_thunderstorm/file-upload/.rules/how-to-use.mdc](_thunderstorm/file-upload/.rules/how-to-use.mdc) |
 | Use sync-manager (smart-sync, RTDB timestamps) | [_thunderstorm/to-review/sync-manager/.rules/how-to-use.mdc](_thunderstorm/to-review/sync-manager/.rules/how-to-use.mdc) |
 | Edit DB entities in UI (EditableItem, EditableDBItemV3) | [_thunderstorm/.rules/consuming/editable-item-pattern.mdc](_thunderstorm/.rules/consuming/editable-item-pattern.mdc) |
 | Add project setup tasks (PerformProjectSetup) | [_thunderstorm/.rules/consuming/setup-action.mdc](_thunderstorm/.rules/consuming/setup-action.mdc) |

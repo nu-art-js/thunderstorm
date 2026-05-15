@@ -1,0 +1,64 @@
+{
+  "name": "@nu-art/saml-backend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "SAML 2.0 backend — SP/IdP integration, SAML assertion handling for Thunderstorm authentication",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "saml",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/saml-shared": "?",
+    "@nu-art/user-account-backend": "?",
+    "@nu-art/user-account-shared": "?",
+    "@nu-art/permissions-backend": "?",
+    "@nu-art/permissions-shared": "?",
+    "@nu-art/db-api-backend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/api-types": "?",
+    "@nu-art/http-server": "?",
+    "@nu-art/ts-common": "?",
+    "saml2-js": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/saml2-js": "^1.6.8",
+    "chai": "^5.1.2",
+    "@types/chai": "^5.0.1",
+    "@types/mocha": "^10.0.10",
+    "ts-mocha": "^10.1.0"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

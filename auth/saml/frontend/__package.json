@@ -1,0 +1,64 @@
+{
+  "name": "@nu-art/saml-frontend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "SAML 2.0 frontend — login component and SAML API callers for Thunderstorm authentication",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "saml",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/saml-shared": "?",
+    "@nu-art/user-account-shared": "?",
+    "@nu-art/user-account-frontend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/db-api-frontend": "?",
+    "@nu-art/permissions-frontend": "?",
+    "@nu-art/permissions-shared": "?",
+    "@nu-art/sync-manager-frontend": "?",
+    "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/http-client": "?",
+    "@nu-art/ts-common": "?",
+    "@nu-art/ts-styles": "?",
+    "@nu-art/thunder-widgets": "?",
+    "react": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

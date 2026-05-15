@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-import {Database, dbObjectToId, DB_Prototype} from '@nu-art/db-api-shared';
+import {Database, dbObjectToId, DB_Prototype, EntityNotFoundException, InvalidEntityVersionException} from '@nu-art/db-api-shared';
 import {
 	__stringify,
 	_keys,
-	ApiException,
 	BadImplementationException,
 	batchActionParallel,
 	compare,
@@ -56,7 +55,6 @@ import {firestore} from 'firebase-admin';
 import {DocWrapper, UpdateObject} from './DocWrapper.js';
 import {composeDbObjectUniqueId} from '@nu-art/firebase-shared';
 import {_EmptyQuery, maxBatch} from '@nu-art/firebase-shared';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {addDeletedToTransaction, getActiveTransaction} from './consts.js';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
@@ -206,7 +204,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		uniqueAssert: async (_id: Proto['uniqueParam']): Promise<Proto['dbType']> => {
 			const resultItem = await this.query.unique(_id);
 			if (!resultItem)
-				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${__stringify(_id)}`);
+				throw new EntityNotFoundException(`Could not find ${this.dbDef.entityName} with _id: ${__stringify(_id)}`);
 
 			return resultItem;
 		},
@@ -214,7 +212,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		uniqueCustom: async (query: FirestoreQuery<Proto['dbType']>) => {
 			const thisShouldBeOnlyOne = await this.query.custom(query);
 			if (thisShouldBeOnlyOne.length === 0)
-				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
+				throw new EntityNotFoundException(`Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
 
 			if (thisShouldBeOnlyOne.length > 1)
 				throw new BadImplementationException(`Too many results (${thisShouldBeOnlyOne.length}) in collection (${this.dbDef.dbKey}) for query: ${__stringify(query)}`);
@@ -527,7 +525,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 
 		const index = versions.indexOf(version);
 		if (index === -1)
-			throw HttpCodes._4XX.BAD_REQUEST('Invalid Object Version', `Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbKey} (${__stringify(this.dbDef.versions)})' `);
+			throw new InvalidEntityVersionException(`Provided item with version(${version}) which doesn't exist for collection '${this.dbDef.dbKey} (${__stringify(this.dbDef.versions)})' `);
 
 		return index !== 0;
 	};
@@ -543,8 +541,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		StaticLogger.logError(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		// console.error(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		// const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
-		const validationException = new ValidationException(`error validating ${this.dbDef.entityName}`, instance, results);
-		throw new ApiException(HttpCodes._4XX.FAILED_VALIDATION.code, `error validating ${this.dbDef.entityName}`).setErrorBody(validationException as any);
+		throw new ValidationException(`error validating ${this.dbDef.entityName}`, instance, results);
 	}
 
 	private assertNoDuplicatedIds(items: Proto['dbType'][], originFunctionName: string) {

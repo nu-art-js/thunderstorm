@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {ModuleBE_Slack, Slack_ServerApiError, SlackMessage} from '../../main/index.js';
 import {TestSuite} from '@nu-art/testalot';
 import {CustomException, ServerErrorSeverity, BadImplementationException, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {ApiException} from '@nu-art/thunderstorm-backend';
+import {HttpCodes} from '@nu-art/api-types';
 
 
 const TestCase_SlackMessage: TestSuite<string, string> ['testcases'] = [
@@ -29,7 +29,7 @@ export const TestSuite_SlackMessage: TestSuite<string, any> = {
 };
 
 const TestCases_SlackServerAPIError: TestSuite<CustomException, string> ['testcases'] = [
-	{description: 'Exception Test #1', result: 'test', input: new ApiException(400, 'API Exception Test')},
+	{description: 'Exception Test #1', result: 'test', input: HttpCodes._4XX.BAD_REQUEST('API Exception Test')},
 	{description: 'Exception Test #2', result: 'test', input: new BadImplementationException('Bad Implementation Test')},
 	{description: 'Exception Test #3', result: 'test', input: new ThisShouldNotHappenException('Should not happen Test')},
 ];

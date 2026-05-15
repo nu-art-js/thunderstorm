@@ -17,7 +17,8 @@
  * limitations under the License.
  */
 
-import {ApiException, Module} from '@nu-art/ts-common';
+import {Module} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import {stringToUniqueId} from '@nu-art/db-api-shared';
 import type {ServerApi_Middleware} from '@nu-art/http-server';
 import {CollectSessionData, SessionKey_Account_BE} from '@nu-art/user-account-backend';
@@ -56,17 +57,17 @@ export class ModuleBE_PermissionsAssert_Class
 		const prefix = scope.key + ':';
 		const entry = userPerms.find(p => p.startsWith(prefix));
 		if (!entry)
-			throw new ApiException(403, `No access for scope: ${scope.key}`);
+			throw HttpCodes._4XX.FORBIDDEN(`No access for scope: ${scope.key}`);
 
 		const userValue = entry.substring(prefix.length);
 		const requiredIdx = scope.values.indexOf(requiredValue);
 		if (requiredIdx === -1)
-			throw new ApiException(503, `Unknown permission value '${requiredValue}' for scope '${scope.key}'`);
+			throw HttpCodes._5XX.SERVICE_UNAVAILABLE(`Unknown permission value '${requiredValue}' for scope '${scope.key}'`);
 
 		const userIdx = scope.values.indexOf(userValue);
 		if (userIdx === -1 || userIdx < requiredIdx) {
 			this.logErrorBold(`scope permission denied: ${scope.key} (has: ${userValue}, needs: ${requiredValue})`);
-			throw new ApiException(403, `Insufficient access for scope: ${scope.key}`);
+			throw HttpCodes._4XX.FORBIDDEN(`Insufficient access for scope: ${scope.key}`);
 		}
 	}
 

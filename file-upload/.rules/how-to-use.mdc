@@ -1,0 +1,233 @@
+---
+description: How to use file-upload lib: pluggable file upload/download with signed URLs, server-side validation, and progress tracking
+alwaysApply: false
+---
+
+# How to use file-upload
+
+The file-upload lib provides a complete file transfer pipeline — signed-URL upload to pluggable storage, server-side validation, asset tracking, parallel downloads with progress, and frontend state management with a default UI widget.
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/file-upload-shared` | Types (`DB_Asset`, `UploadRequest`, `AssetStatus`), API defs, `StorageAdapter` interface, validation types |
+| `@nu-art/file-upload-backend` | `ModuleBE_FileUpload` (API handlers, validation pipeline, storage adapter), `StorageAdapter_GCS` |
+| `@nu-art/file-upload-frontend` | `ModuleFE_FileUpload` (upload/download orchestration, progress dispatch), `ModuleFE_Assets` (CRUD sync), `TransferBubble` (default UI) |
+
+---
+
+## What you must know
+
+- **Upload flow is synchronous**: `requestUpload` → PUT to signed URL → `confirmUpload`. No background triggers or async processing.
+- **Download flow**: `getReadSignedUrl` → stream with progress → browser save. Parallel via `QueueV2`.
+- **Single collection**: One `assets` collection with a `status` field (`pending` → `validated` | `failed`).
+- **Pluggable storage**: Backend uses a `StorageAdapter` interface. GCS is the default; swap by calling `ModuleBE_FileUpload.setStorageAdapter()` before init.
+- **Validators are mandatory**: Every upload key must have a registered `FileValidationConfig`. Without one, `requestUpload` throws `ImplementationMissingException`.
+- **Frontend dispatches state**: `OnFileTransferStateChanged` is the integration point. The default `TransferBubble` widget subscribes to it. Custom UIs implement the same interface.
+- **Parallel transfers**: Frontend uses `QueueV2` with configurable parallelism (default: 3) for both uploads and downloads.
+- **Structured errors**: `confirmUpload` returns `{ asset, error? }` — never throws on validation failure. The `error` field carries the human-readable reason.
+- **Direction-aware UI**: The `TransferBubble` handles both uploads and downloads. Direction tabs appear only when both directions are active simultaneously.
+
+---
+
+## When wiring file-upload into an app
+
+### Step 1 — Add module packs
+
+**Backend** (`app-backend` or equivalent):
+
+```typescript
+import {ModulePackBE_FileUpload} from '@nu-art/file-upload-backend';
+
+// In Storm builder chain:
+.addModulePack(ModulePackBE_FileUpload)
+```
+
+**Frontend** (`app-frontend` or equivalent):
+
+```typescript
+import {ModulePackFE_FileUpload} from '@nu-art/file-upload-frontend';
+
+// In Thunder builder chain:
+.addModules(...ModulePackFE_FileUpload)
+```
+
+### Step 2 — Register validators
+
+Every upload key needs a `FileValidationConfig` registered on the backend. Do this in a module's `init()` or at app setup time:
+
+```typescript
+import {ModuleBE_FileUpload} from '@nu-art/file-upload-backend';
+import {FileValidationConfig} from '@nu-art/file-upload-shared';
+
+const ImageValidation: FileValidationConfig = {
+	allowedMimeTypes: ['image/png', 'image/jpeg', 'image/webp'],
+	maxSize: 5 * MB,
+};
+
+// In your module's init() or app setup:
+ModuleBE_FileUpload.registerValidator('image', ImageValidation);
+```
+
+The `key` parameter in `registerValidator` must match the `key` passed in `UploadRequest` from the frontend. If no key is provided in the request, the MIME type is used as the key.
+
+For custom validation logic (beyond MIME and size), provide a `validator` function:
+
+```typescript
+const CustomValidation: FileValidationConfig = {
+	allowedMimeTypes: ['application/pdf'],
+	validator: async (metadata, asset, fileBuffer) => {
+		// Custom inspection of the file buffer
+		// Return { ext, mime } on success, or throw to fail
+		return {ext: 'pdf', mime: 'application/pdf'};
+	},
+};
+```
+
+### Step 3 — Upload from frontend
+
+```typescript
+import {ModuleFE_FileUpload} from '@nu-art/file-upload-frontend';
+
+const assets = await ModuleFE_FileUpload.upload(files, 'image', true);
+// files: File[]  — browser File objects
+// 'image'       — validator key (must match backend registration)
+// true           — make public after validation
+```
+
+### Step 4 — Download from frontend
+
+```typescript
+import {ModuleFE_FileUpload} from '@nu-art/file-upload-frontend';
+
+await ModuleFE_FileUpload.download(
+	['asset-id-1', 'asset-id-2'],
+	['report.pdf', 'photo.jpg'],  // optional file names for browser save
+);
+```
+
+Downloads are parallel (same `QueueV2` pattern as uploads). Each file goes through: `requesting` → `preparing` → `downloading` → `completed`. The browser save dialog triggers automatically on completion.
+
+### Step 5 — Get read URLs
+
+```typescript
+const url = await ModuleFE_FileUpload.getReadSignedUrl(asset._id);
+```
+
+---
+
+## When adding the default transfer UI
+
+Drop `<TransferBubble />` anywhere in the component tree — it renders as a fixed-position floating overlay:
+
+```typescript
+import {TransferBubble} from '@nu-art/file-upload-frontend';
+
+// In any rendered component tree:
+<TransferBubble />
+```
+
+The bubble auto-shows when transfers begin and auto-hides after completion. It subscribes to `OnFileTransferStateChanged` — no props or wiring needed.
+
+When both uploads and downloads are active simultaneously, the bubble shows direction tabs ("Uploads" / "Downloads") at the top of the tray. When only one direction is active, no tabs are shown.
+
+### Theming the bubble
+
+All styles use CSS custom properties prefixed `--ts-tb-*`. Override at the app's root to theme:
+
+```scss
+.ts-transfer-bubble {
+	--ts-tb-color-primary: #7c3aed;
+	--ts-tb-color-success: #059669;
+	--ts-tb-fab-size: 56px;
+	--ts-tb-tray-width: 380px;
+	--ts-tb-radius: 12px;
+}
+```
+
+All component classes are BEM-namespaced under `.ts-transfer-bubble__*` — override any selector at the app level.
+
+---
+
+## When building a custom transfer UI
+
+Do not use the `TransferBubble`. Instead, implement `OnFileTransferStateChanged` in your component:
+
+```typescript
+import {ComponentSync} from '@nu-art/thunder-widgets';
+import {FileTransferState, OnFileTransferStateChanged} from '@nu-art/file-upload-frontend';
+
+export class MyCustomTransferUI
+	extends ComponentSync<Props, State>
+	implements OnFileTransferStateChanged {
+
+	__onFileTransferStateChanged = (state: FileTransferState) => {
+		// state.direction: 'upload' | 'download'
+		// state.phase: 'requesting' | 'uploading' | 'confirming' | 'preparing' | 'downloading' | 'completed' | 'failed'
+		// state.progress: 0..1 (during 'uploading' or 'downloading')
+		// state.error: string (when 'failed')
+		// state.asset: DB_Asset (when 'completed' or 'failed')
+		// state.assetId: string (after request resolves)
+		// state.name: string (always present)
+	};
+}
+```
+
+Upload phases: `requesting` → `uploading` → `confirming` → `completed` | `failed`
+Download phases: `requesting` → `preparing` → `downloading` → `completed` | `failed`
+
+---
+
+## When swapping the storage backend
+
+The default is GCS via `StorageAdapter_GCS`. To use a different storage provider, implement `StorageAdapter` and set it before module init:
+
+```typescript
+import {ModuleBE_FileUpload} from '@nu-art/file-upload-backend';
+import {StorageAdapter} from '@nu-art/file-upload-shared';
+
+class StorageAdapter_S3 implements StorageAdapter {
+	async getWriteSignedUrl(path: string, contentType: string, expiresMs: number): Promise<string> { /* ... */ }
+	async getReadSignedUrl(path: string, expiresMs: number): Promise<string> { /* ... */ }
+	async getFileMetadata(path: string): Promise<StorageFileMetadata> { /* ... */ }
+	async readFile(path: string): Promise<Buffer> { /* ... */ }
+	async deleteFile(path: string): Promise<void> { /* ... */ }
+	async fileExists(path: string): Promise<boolean> { /* ... */ }
+	makePublic?(path: string): Promise<void> { /* ... */ }
+}
+
+// Before init — e.g. in app setup:
+ModuleBE_FileUpload.setStorageAdapter(new StorageAdapter_S3());
+```
+
+If no adapter is set before init, GCS is used automatically.
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| DB entity type | `DB_Asset` |
+| DB def | `DBDef_Assets` |
+| Database def type | `DatabaseDef_Assets` |
+| Backend module | `ModuleBE_FileUpload` |
+| Frontend upload/download module | `ModuleFE_FileUpload` |
+| Frontend CRUD module | `ModuleFE_Assets` |
+| Backend module pack | `ModulePackBE_FileUpload` |
+| Frontend module pack | `ModulePackFE_FileUpload` |
+| API type | `API_FileUpload` |
+| API def constant | `ApiDef_FileUpload` |
+| Default UI component | `TransferBubble` |
+| Dispatcher interface | `OnFileTransferStateChanged` |
+| Transfer state type | `FileTransferState` |
+| Direction type | `TransferDirection` |
+
+---
+
+## Forbidden patterns
+
+- **Do not call `confirmUpload` without a prior `requestUpload`** — the asset must exist in `pending` status.
+- **Do not upload without registering a validator** — `requestUpload` will throw if no validator matches the key.
+- **Do not rely on exception messages for validation errors** — use `ConfirmUploadResponse.error` (the structured field).
+- **Do not set inline styles on `TransferBubble`** — override via SCSS custom properties and class selectors only.
+- **Do not import `StorageAdapter_GCS` in consuming packages** — it is an internal implementation. Use `ModuleBE_FileUpload.setStorageAdapter()` if swapping.

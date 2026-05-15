@@ -1,0 +1,33 @@
+.ts-passkey-register {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+
+	&__input {
+		padding: 8px 12px;
+		border: 1px solid var(--color-border, #ccc);
+		border-radius: 4px;
+		font-size: 0.9rem;
+	}
+
+	&__button {
+		width: 100%;
+	}
+
+	&__error {
+		color: var(--color-error, #d32f2f);
+		font-size: 0.85rem;
+	}
+
+	&__success {
+		color: var(--color-success, #388e3c);
+		font-size: 0.85rem;
+	}
+
+	&__unsupported {
+		color: var(--color-text-muted, #888);
+		font-size: 0.85rem;
+		font-style: italic;
+	}
+}

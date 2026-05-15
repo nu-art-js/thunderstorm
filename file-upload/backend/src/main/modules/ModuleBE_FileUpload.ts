@@ -1,5 +1,4 @@
 import {
-	ApiException,
 	BadImplementationException,
 	currentTimeMillis,
 	Day,
@@ -17,6 +16,7 @@ import {
 	API_FileUpload,
 	ApiDef_FileUpload,
 	AssetStatus,
+	ConfirmUploadResponse,
 	DB_Asset,
 	DatabaseDef_Assets,
 	DBDef_Assets,
@@ -72,7 +72,7 @@ export class ModuleBE_FileUpload_Class
 	}
 
 	@ApiHandler(ApiDef_FileUpload.confirmUpload)
-	async confirmUpload(body: API_FileUpload['confirmUpload']['Body']): Promise<API_FileUpload['confirmUpload']['Response']> {
+	async confirmUpload(body: API_FileUpload['confirmUpload']['Body']): Promise<ConfirmUploadResponse> {
 		return this._confirmUpload(body._id as DB_Asset['_id']);
 	}
 
@@ -123,14 +123,14 @@ export class ModuleBE_FileUpload_Class
 		}));
 	};
 
-	private _confirmUpload = async (assetId: DB_Asset['_id']): Promise<DB_Asset> => {
+	private _confirmUpload = async (assetId: DB_Asset['_id']): Promise<ConfirmUploadResponse> => {
 		const asset = await this.query.uniqueAssert(assetId);
 
 		if (asset.status !== AssetStatus.Pending)
-			throw new ApiException(400, `Asset ${assetId} is not in pending status (current: ${asset.status})`);
+			return this.failAsset(asset, `Asset is not in pending status (current: ${asset.status})`);
 
 		if (!await this.storageAdapter.fileExists(asset.path))
-			throw new ApiException(400, `File not found in storage at path: ${asset.path}`);
+			return this.failAsset(asset, `File not found in storage`);
 
 		const validationConfig = this.validators[asset.key];
 		if (!validationConfig)
@@ -187,13 +187,14 @@ export class ModuleBE_FileUpload_Class
 			}
 		}
 
-		return this.set.item(asset);
+		const updatedAsset = await this.set.item(asset);
+		return {asset: updatedAsset};
 	};
 
-	private failAsset = async (asset: DB_Asset, reason: string): Promise<never> => {
+	private failAsset = async (asset: DB_Asset, reason: string): Promise<ConfirmUploadResponse> => {
 		asset.status = AssetStatus.Failed;
-		await this.set.item(asset);
-		throw new ApiException(400, `Asset validation failed for ${asset.name}: ${reason}`);
+		const failedAsset = await this.set.item(asset);
+		return {asset: failedAsset, error: reason};
 	};
 
 	async cleanupStaleAssets(maxAgeMs: number = Hour) {
@@ -210,7 +211,7 @@ export class ModuleBE_FileUpload_Class
 		}
 
 		if (staleAssets.length)
-			await this.delete.all(staleAssets.map(a => a._id));
+			await this.delete.all(staleAssets.map((a: DB_Asset) => a._id));
 	}
 
 	getStorageAdapter(): StorageAdapter {

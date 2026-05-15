@@ -177,7 +177,8 @@ Defining scopes alone does **not** make a package's permissions functional. A pa
 | 5 | **Document access wiring** | `<concept>/backend/src/main/<concept>-access-wiring.ts` | Call `ModuleBE_Permissions.setAccessContextResolver` for every DB module the package owns. Without this, new documents get only the creator's personal access group — other users and automated flows cannot read/write them. |
 | 6 | **Call the wiring function** | App backend init (e.g. module `init()` or app-level setup) | The wiring function from step 5 must be **called** during app initialization — creating and exporting it is not enough. Find where analogous wiring functions are invoked (e.g. `wireYoutubeDocumentAccess()`) and add the new call alongside them. |
 | 7 | **Service account** (if automated operations exist) | Scope ID in `permission-scope.ts`, SA group ID in `access-groups.ts` | Packages with scheduled/automated operations (polling, syncing, background processing) need a service account so those operations run with proper permissions. Without an SA, automated flows either fail or depend on whichever user triggered them. |
-| 8 | **Exports** | `<concept>/shared/src/main/index.ts`, `<concept>/backend/src/main/index.ts` | All scopes, access groups, group IDs, and wiring functions must be exported from their package's public surface. |
+| 8 | **Route `enabled` guard** | `<concept>/frontend/src/main/ui/**/route.ts` | Every frontend route definition must wire `enabled: () => ModuleFE_PermissionsAssert.hasScopeAccess(scope, 'view')`. Without this, direct URL navigation bypasses nav filtering. |
+| 9 | **Exports** | `<concept>/shared/src/main/index.ts`, `<concept>/backend/src/main/index.ts` | All scopes, access groups, group IDs, and wiring functions must be exported from their package's public surface. |
 
 ### Group hierarchy pattern
 
@@ -202,12 +203,13 @@ Admin inherits all lower groups via membership. A user added to Write automatica
 
 ### Warning
 
-If a package defines scopes but skips steps 2–6, the result is:
+If a package defines scopes but skips steps 2–8, the result is:
 
 - **No assignable roles** — admins cannot grant users access through the Permissions UI because there are no groups to add them to.
 - **Invisible documents** — without custom access wiring, new documents are stamped with only the creator's personal group. Other users cannot query, write, or delete them.
 - **Ungated APIs** — without `@RequirePermission`, any authenticated user can call any API handler.
 - **Broken automation** — without a service account, automated backend operations have no permission context and will fail or behave unpredictably.
+- **Bypassable routes** — without `enabled` on route definitions, nav filtering only hides links. Users can still reach pages via direct URL.
 
 ---
 
@@ -285,26 +287,56 @@ class MyComponent
 }
 ```
 
-### Client-side permission checks
+### Frontend permission enforcement
+
+There are **two levels** of frontend permission enforcement. Use the right one for the situation:
+
+#### Route-level enforcement (`TS_Route.enabled`)
+
+Use when the **entire page** should be inaccessible to users without the required scope. The route is removed from the React Router tree entirely — direct URL navigation results in a fallback/404. The page component is never loaded.
+
+Wire `enabled` on the route definition in the concept's frontend package:
 
 ```typescript
 import {ModuleFE_PermissionsAssert} from '@nu-art/permissions-frontend';
+import {PermissionScope_MyConcept} from '@app/my-concept-shared';
 
-if (ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_MyConcept, 'write')) {
-	// show edit UI
-}
+export const Route_Page_MyConcept: TS_Route = {
+	path: 'my-concept',
+	key: 'my-concept-page',
+	enabled: () => ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_MyConcept, 'view'),
+	Component: APage_MyConcept,
+};
 ```
 
-### PermissionGuard component
+`enabled` is evaluated on every render — it is not a one-shot check. This is the **default** for all permission-gated pages.
 
-Conditionally renders children based on the current user's scope permissions:
+**Important:** Nav item filtering (hiding sidebar links) is cosmetic — it does not prevent direct URL access. Every route with a scope **must** have `enabled` wired regardless of nav filtering.
+
+#### Component-level enforcement (`PermissionGuard`)
+
+Use when the page is accessible but **specific elements within it** should be hidden based on scope — e.g. edit buttons visible only to users with write access, admin panels, destructive action controls.
 
 ```typescript
 import {PermissionGuard} from '@nu-art/permissions-frontend';
 
 <PermissionGuard scope={PermissionScope_MyConcept} value="write">
-	<MyProtectedComponent />
+	<EditButton />
 </PermissionGuard>
+```
+
+`PermissionGuard` is for **inner component gating within a page**, not for route-level enforcement. Wrapping an entire route with `PermissionGuard` would still load the page component and show it in the router — use `enabled` instead.
+
+#### Programmatic checks
+
+For conditional logic outside JSX:
+
+```typescript
+import {ModuleFE_PermissionsAssert} from '@nu-art/permissions-frontend';
+
+if (ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_MyConcept, 'write')) {
+	// enable edit mode
+}
 ```
 
 ---

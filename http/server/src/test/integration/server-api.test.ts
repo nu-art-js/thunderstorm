@@ -6,7 +6,7 @@
 
 import {Readable} from 'stream';
 import request from 'supertest';
-import {ApiException} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import {ApiHandler, MemKey_HttpRequest, MemKey_HttpRequestHeaders, MemKey_HttpResponse} from '../../main/index.js';
 import {ensureBeLoggedTerminal} from '../ensure-belogged.js';
 import {createTestServer} from './test-server.js';
@@ -328,7 +328,7 @@ describe('ServerApi - Supertest permutations', () => {
 			class Err400Api {
 				@ApiHandler(() => apiDef, {httpServer: () => server})
 				async get(_params: unknown) {
-					throw new ApiException(400, 'bad request');
+					throw HttpCodes._4XX.BAD_REQUEST('bad request');
 				}
 			}
 

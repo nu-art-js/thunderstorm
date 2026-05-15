@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiException} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import type {PermissionScope} from '@nu-art/permissions-shared';
 import {registerFunctionPermission} from './core/function-permission-registry.js';
 import type {FunctionPermissionDef} from './core/function-permission-registry.js';
@@ -68,7 +68,7 @@ export function RequirePermission(scopeOrAsserter: PermissionScope | PermissionA
 				const ctx = ModuleBE_PermissionsAssert.createAssertionContext();
 				const result = await asserter(ctx, ...args);
 				if (!result)
-					throw new ApiException(403, 'Permission assertion failed');
+					throw HttpCodes._4XX.FORBIDDEN('Permission assertion failed');
 
 				return originalMethod.call(this, ...args);
 			};

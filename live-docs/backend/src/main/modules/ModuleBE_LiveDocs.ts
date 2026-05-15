@@ -18,12 +18,12 @@
 
 import {
 	addItemToArrayAtIndex,
-	ApiException,
 	auditBy,
 	BadImplementationException,
 	Module,
 	removeItemFromArray
 } from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 
 import {
 	DB_Document,
@@ -86,14 +86,14 @@ export class ModuleBE_LiveDocs_Class
 			switch (params.change) {
 				case 'redo':
 					if (docsHistory.index === 0)
-						throw new ApiException(402, 'Nothing to redo anymore');
+						throw HttpCodes._4XX.PAYMENT_REQUIRED('Nothing to redo anymore');
 
 					docsHistory.index--;
 					break;
 
 				case 'undo':
 					if (docsHistory.index === docsHistory.docs.length - 1)
-						throw new ApiException(402, 'Nothing to undo anymore');
+						throw HttpCodes._4XX.PAYMENT_REQUIRED('Nothing to undo anymore');
 
 					docsHistory.index++;
 					break;

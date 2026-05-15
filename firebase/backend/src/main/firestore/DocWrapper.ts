@@ -1,8 +1,7 @@
-import {DB_Prototype} from '@nu-art/db-api-shared';
+import {DB_Prototype, EntityOutdatedException} from '@nu-art/db-api-shared';
 import {_keys, currentTimeMillis, DB_Object, exists, MUSTNeverHappenException, TS_Object, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from './types.js';
 import {assertUniqueId, CollectionActionType, FirestoreCollection, PostWriteProcessingData} from './FirestoreCollection.js';
-import {HttpCodes} from '@nu-art/ts-common/core/exceptions/http-codes';
 import {addDeletedToTransaction, getActiveTransaction} from './consts.js';
 import admin from 'firebase-admin';
 import type {firestore as Fa} from 'firebase-admin';
@@ -108,7 +107,7 @@ export class DocWrapper<Proto extends DB_Prototype> {
 
 		const currDBItem = await this.get();
 		if ((currDBItem?.__updated || 0) > ((item as DB_Object).__updated || currentTimeMillis()))
-			throw HttpCodes._4XX.ENTITY_IS_OUTDATED('Item is outdated', `${this.collection.collection.path}/${currDBItem?._id} is outdated`);
+			throw new EntityOutdatedException(`Item is outdated: ${this.collection.collection.path}/${currDBItem?._id}`);
 
 		const newDBItem = await this.prepareForSet(item as Proto['dbType'], currDBItem!, false);
 

@@ -3,7 +3,8 @@ import {hashToUniqueId} from '@nu-art/db-api-shared';
 import type {ModuleBE_BaseDB, PreWriteInterceptor, QueryInterceptor, PreDeleteInterceptor} from '@nu-art/db-api-backend';
 import type {DatabaseDef_AccessGroup, DocumentAccessFields, DocumentAccessInner, ScopedAccessIds} from '@nu-art/permissions-shared';
 import {AccessScope_Self, AllDocumentAccessKeys} from '@nu-art/permissions-shared';
-import {ApiException, filterDuplicates, tsValidateResult, tsValidator_arrayOfUniqueIds, UniqueId} from '@nu-art/ts-common';
+import {filterDuplicates, tsValidateResult, tsValidator_arrayOfUniqueIds, UniqueId} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import {MemKey_UserAccessIds} from './consts.js';
 
 type AccessCarrier = { __access?: DocumentAccessInner };
@@ -51,7 +52,7 @@ function assertCallerAccess(access: Partial<DocumentAccessInner>, callerIds: Uni
 	if (keys.some(key => access[key]?.some(id => callerIds.includes(id))))
 		return;
 
-	throw new ApiException(403, 'Insufficient document access');
+	throw HttpCodes._4XX.FORBIDDEN('Insufficient document access');
 }
 
 function createQueryInterceptor<Database extends DB_Prototype>(
@@ -114,7 +115,7 @@ function createPreDeleteInterceptor<Database extends DB_Prototype>(
 		for (const dbItem of dbItems) {
 			const access = (dbItem as AccessCarrier).__access;
 			if (!access)
-				throw new ApiException(403, 'No delete access to this document');
+				throw HttpCodes._4XX.FORBIDDEN('No delete access to this document');
 
 			assertCallerAccess(access, accessIds, 'deleters', 'owners');
 		}
@@ -165,7 +166,7 @@ function patchCollectionValidator<Database extends DB_Prototype>(dbModule: Modul
 			if (extractedAccess) {
 				const results = tsValidateResult(extractedAccess as DocumentAccessInner, documentAccessInnerValidator);
 				if (results)
-					throw new ApiException(400, `Invalid document access fields: ${JSON.stringify(results)}`);
+					throw HttpCodes._4XX.BAD_REQUEST(`Invalid document access fields: ${JSON.stringify(results)}`);
 			}
 
 			if (extractedAccess)

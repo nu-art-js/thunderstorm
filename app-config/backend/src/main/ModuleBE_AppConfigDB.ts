@@ -4,7 +4,8 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {_keys, ApiException, Logger, TypedMap} from '@nu-art/ts-common';
+import {_keys, Logger, TypedMap} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_AppConfig, DB_AppConfig, DBDef_AppConfig, UI_AppConfig} from '@nu-art/app-config-shared';
 
@@ -45,7 +46,7 @@ export class ModuleBE_AppConfigDB_Class
 	getResolverDataByKey = async (key: string): Promise<unknown> => {
 		const appConfigKey = this.keyMap[key];
 		if (!appConfigKey)
-			throw new ApiException(404, `Could not find an app config with key ${key}`);
+			throw HttpCodes._4XX.NOT_FOUND(`Could not find an app config with key ${key}`);
 		return this.getAppKey(appConfigKey);
 	};
 

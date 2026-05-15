@@ -5,6 +5,7 @@ import {HttpClient} from '@nu-art/http-client';
 import {ThunderDispatcher} from '@nu-art/thunder-core';
 import {
 	ApiDef_FileUpload,
+	AssetStatus,
 	DB_Asset,
 	PendingUpload,
 	UploadProgressEvent,
@@ -12,31 +13,51 @@ import {
 } from '@nu-art/file-upload-shared';
 
 
-export type FileUploadState = {
+export type TransferDirection = 'upload' | 'download';
+
+export type FileTransferPhase =
+	| 'requesting'
+	| 'uploading'
+	| 'confirming'
+	| 'preparing'
+	| 'downloading'
+	| 'completed'
+	| 'failed';
+
+export type FileTransferState = {
 	assetId?: string
 	name: string
 	progress: number
-	phase: 'requesting' | 'uploading' | 'confirming' | 'completed' | 'failed'
+	phase: FileTransferPhase
+	direction: TransferDirection
 	asset?: DB_Asset
 	error?: string
 };
 
-export interface OnFileUploadStateChanged {
-	__onFileUploadStateChanged: (state: FileUploadState) => void;
+export interface OnFileTransferStateChanged {
+	__onFileTransferStateChanged: (state: FileTransferState) => void;
 }
 
 type UploadQueueItem = {
 	pending: PendingUpload
 	file: File
-	state: FileUploadState
+	state: FileTransferState
 };
 
-const DefaultParallelUploads = 3;
+type DownloadQueueItem = {
+	assetId: string
+	name: string
+	state: FileTransferState
+};
+
+const DefaultParallelTransfers = 3;
 
 export class ModuleFE_FileUpload_Class
 	extends Module {
 
-	private readonly dispatch_uploadStateChange = new ThunderDispatcher<OnFileUploadStateChanged, '__onFileUploadStateChanged'>('__onFileUploadStateChanged');
+	private readonly dispatch_transferStateChange = new ThunderDispatcher<OnFileTransferStateChanged, '__onFileTransferStateChanged'>('__onFileTransferStateChanged');
+
+	// ── Upload ──
 
 	async upload(files: File[], key: string, isPublic: boolean = false): Promise<DB_Asset[]> {
 		const requests: UploadRequest[] = files.map(file => ({
@@ -46,12 +67,13 @@ export class ModuleFE_FileUpload_Class
 			public: isPublic,
 		}));
 
-		const states: FileUploadState[] = files.map(f => ({
+		const states: FileTransferState[] = files.map(f => ({
 			name: f.name,
 			progress: 0,
 			phase: 'requesting' as const,
+			direction: 'upload' as const,
 		}));
-		states.forEach(s => this.dispatch_uploadStateChange.dispatchUI(s));
+		states.forEach(s => this.dispatch_transferStateChange.dispatchUI(s));
 
 		const pendingUploads = await HttpClient.default
 			.createRequest(ApiDef_FileUpload.requestUpload)
@@ -60,7 +82,7 @@ export class ModuleFE_FileUpload_Class
 
 		const results: DB_Asset[] = [];
 		const queue = new QueueV2<UploadQueueItem, DB_Asset>('file-upload', (item) => this.processUpload(item))
-			.setParallelCount(DefaultParallelUploads);
+			.setParallelCount(DefaultParallelTransfers);
 
 		for (let i = 0; i < pendingUploads.length; i++) {
 			const state = states[i];
@@ -80,31 +102,41 @@ export class ModuleFE_FileUpload_Class
 		const {pending, file, state} = item;
 
 		state.phase = 'uploading';
-		this.dispatch_uploadStateChange.dispatchUI(state);
+		this.dispatch_transferStateChange.dispatchUI(state);
 
 		try {
 			await this.uploadToStorage(pending, file, (ev) => {
 				state.progress = ev.total ? ev.loaded / ev.total : 0;
-				this.dispatch_uploadStateChange.dispatchUI(state);
+				this.dispatch_transferStateChange.dispatchUI(state);
 			});
 
 			state.phase = 'confirming';
 			state.progress = 1;
-			this.dispatch_uploadStateChange.dispatchUI(state);
+			this.dispatch_transferStateChange.dispatchUI(state);
 
-			const confirmed = await HttpClient.default
+			const response = await HttpClient.default
 				.createRequest(ApiDef_FileUpload.confirmUpload)
 				.setBodyAsJson({_id: pending.asset._id})
 				.execute();
 
+			if (response.error || response.asset.status === AssetStatus.Failed) {
+				state.phase = 'failed';
+				state.error = response.error ?? 'Validation failed';
+				state.asset = response.asset;
+				this.dispatch_transferStateChange.dispatchUI(state);
+				throw new Error(state.error);
+			}
+
 			state.phase = 'completed';
-			state.asset = confirmed;
-			this.dispatch_uploadStateChange.dispatchUI(state);
-			return confirmed;
+			state.asset = response.asset;
+			this.dispatch_transferStateChange.dispatchUI(state);
+			return response.asset;
 		} catch (e: any) {
-			state.phase = 'failed';
-			state.error = e.message ?? 'Upload failed';
-			this.dispatch_uploadStateChange.dispatchUI(state);
+			if (state.phase !== 'failed') {
+				state.phase = 'failed';
+				state.error = e.message ?? 'Upload failed';
+				this.dispatch_transferStateChange.dispatchUI(state);
+			}
 			throw e;
 		}
 	}
@@ -119,6 +151,90 @@ export class ModuleFE_FileUpload_Class
 			.setOnProgressListener(onProgress)
 			.execute();
 	}
+
+	// ── Download ──
+
+	async download(assetIds: string[], fileNames?: string[]): Promise<void> {
+		const states: FileTransferState[] = assetIds.map((id, i) => ({
+			assetId: id,
+			name: fileNames?.[i] ?? id,
+			progress: 0,
+			phase: 'requesting' as const,
+			direction: 'download' as const,
+		}));
+		states.forEach(s => this.dispatch_transferStateChange.dispatchUI(s));
+
+		const queue = new QueueV2<DownloadQueueItem, void>('file-download', (item) => this.processDownload(item))
+			.setParallelCount(DefaultParallelTransfers);
+
+		for (let i = 0; i < assetIds.length; i++) {
+			queue.addItemImpl({assetId: assetIds[i], name: states[i].name, state: states[i]});
+		}
+
+		await queue.executeSync();
+	}
+
+	private async processDownload(item: DownloadQueueItem): Promise<void> {
+		const {assetId, name, state} = item;
+
+		try {
+			state.phase = 'preparing';
+			this.dispatch_transferStateChange.dispatchUI(state);
+
+			const signedUrl = await this.getReadSignedUrl(assetId);
+
+			state.phase = 'downloading';
+			this.dispatch_transferStateChange.dispatchUI(state);
+
+			const response = await fetch(signedUrl);
+			if (!response.ok)
+				throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+
+			const contentLength = response.headers.get('content-length');
+			const total = contentLength ? parseInt(contentLength, 10) : undefined;
+			const reader = response.body?.getReader();
+
+			if (!reader)
+				throw new Error('Response body is not readable');
+
+			const chunks: ArrayBuffer[] = [];
+			let loaded = 0;
+
+			while (true) {
+				const {done, value} = await reader.read();
+				if (done)
+					break;
+
+				chunks.push(value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength));
+				loaded += value.length;
+				state.progress = total ? loaded / total : 0;
+				this.dispatch_transferStateChange.dispatchUI(state);
+			}
+
+			const blob = new Blob(chunks);
+			this.triggerBrowserSave(blob, name);
+
+			state.phase = 'completed';
+			state.progress = 1;
+			this.dispatch_transferStateChange.dispatchUI(state);
+		} catch (e: any) {
+			state.phase = 'failed';
+			state.error = e.message ?? 'Download failed';
+			this.dispatch_transferStateChange.dispatchUI(state);
+			throw e;
+		}
+	}
+
+	private triggerBrowserSave(blob: Blob, fileName: string) {
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement('a');
+		anchor.href = url;
+		anchor.download = fileName;
+		anchor.click();
+		URL.revokeObjectURL(url);
+	}
+
+	// ── Shared ──
 
 	async getReadSignedUrl(assetId: string): Promise<string> {
 		const response = await HttpClient.default

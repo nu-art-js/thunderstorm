@@ -19,9 +19,10 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, Module, ResolvableContent, resolveContent, RuntimeModules, TS_Object} from '@nu-art/ts-common';
+import {__stringify, _values, isErrorOfType, Module, ResolvableContent, resolveContent, RuntimeModules, TS_Object} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import type {CrudApiTypes, DB_BaseObject, DB_Prototype} from '@nu-art/db-api-shared';
-import {CrudApiDef, CrudApiDef_Type, CrudEmptyQuery} from '@nu-art/db-api-shared';
+import {CrudApiDef, CrudApiDef_Type, CrudEmptyQuery, EntityNotFoundException, EntityOutdatedException, InvalidEntityVersionException} from '@nu-art/db-api-shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB.js';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
 import {ApiHandler, ApiHandler_FlushPendingRoutes, HttpServer} from '@nu-art/http-server';
@@ -81,7 +82,7 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype, Config extend
 	async queryUnique(queryObject: DB_BaseObject<Database['dbKey']>): Promise<Database['dbType']> {
 		const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 		if (!toReturnItem)
-			throw new ApiException(404, `Could not find ${this.dbModule.dbDef.entityName} with _id: ${queryObject._id}`);
+			throw HttpCodes._4XX.NOT_FOUND(`Could not find ${this.dbModule.dbDef.entityName} with _id: ${queryObject._id}`);
 		return toReturnItem;
 	}
 
@@ -90,7 +91,11 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype, Config extend
 		{httpServer: m => resolveContent(m.httpServer)}
 	)
 	async upsert(body: Database['uiType']): Promise<Database['dbType']> {
-		return this.dbModule.set.item(body);
+		try {
+			return await this.dbModule.set.item(body);
+		} catch (e: unknown) {
+			throw this.mapDbException(e) ?? e;
+		}
 	}
 
 	@ApiHandler(
@@ -98,7 +103,25 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype, Config extend
 		{httpServer: m => resolveContent(m.httpServer)}
 	)
 	async upsertAll(body: Database['uiType'][]): Promise<Database['dbType'][]> {
-		return this.dbModule.set.all(body);
+		try {
+			return await this.dbModule.set.all(body);
+		} catch (e: unknown) {
+			throw this.mapDbException(e) ?? e;
+		}
+	}
+
+	private mapDbException(e: unknown) {
+		let matched;
+		if ((matched = isErrorOfType(e, EntityNotFoundException)))
+			return HttpCodes._4XX.NOT_FOUND(matched.message, matched.message, matched);
+
+		if ((matched = isErrorOfType(e, EntityOutdatedException)))
+			return HttpCodes._4XX.ENTITY_IS_OUTDATED(matched.message, matched.message, matched);
+
+		if ((matched = isErrorOfType(e, InvalidEntityVersionException)))
+			return HttpCodes._4XX.BAD_REQUEST(matched.message, matched.message, matched);
+
+		return undefined;
 	}
 
 	@ApiHandler(
@@ -115,10 +138,10 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype, Config extend
 	)
 	async deleteQuery(query: CrudApiTypes<Database>['deleteQuery']['Body']): Promise<Database['dbType'][]> {
 		if (!query.where)
-			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
+			throw HttpCodes._4XX.BAD_REQUEST(`Cannot delete without a where clause, using query: ${__stringify(query)}`);
 
 		if (_values(query.where).filter(v => v === undefined || v === null).length > 0)
-			throw new ApiException(400, `Cannot delete with property value undefined or null, using query: ${__stringify(query)}`);
+			throw HttpCodes._4XX.BAD_REQUEST(`Cannot delete with property value undefined or null, using query: ${__stringify(query)}`);
 
 		return this.dbModule.delete.query(query as FirestoreQuery<Database['dbType']>);
 	}

@@ -5,6 +5,7 @@
  */
 
 import {_values, ApiException, BadImplementationException, exists, isErrorOfType, Logger, LogLevel, Module, resolveContent, TypedMap,} from '@nu-art/ts-common';
+import {HttpCodes} from '@nu-art/api-types';
 import {ApiDef_ActionProcessing, type ApiStruct_ActionProcessing} from '@nu-art/action-processor-shared';
 import {ApiHandler} from '@nu-art/http-server';
 import {ActionDeclaration} from './types.js';
@@ -43,10 +44,10 @@ export class ModuleBE_ActionProcessor_Class
 
 		const actionObj = this.actions[action.key];
 		if (!actionObj)
-			throw new ApiException(404, `NO SUCH ACTION: ${action.key}`);
+			throw HttpCodes._4XX.NOT_FOUND(`NO SUCH ACTION: ${action.key}`);
 
 		if (exists(actionObj.declaration.visible) && !resolveContent(actionObj.declaration.visible))
-			throw new ApiException(403, 'Action Forbidden for User');
+			throw HttpCodes._4XX.FORBIDDEN('Action Forbidden for User');
 
 		const refactoringAction = actionObj.action;
 		try {
@@ -59,7 +60,7 @@ export class ModuleBE_ActionProcessor_Class
 				throw e;
 
 			const message = `ACTION FAILED: ${actionObj.declaration.label ?? actionObj.declaration.key}`;
-			throw new ApiException(500, message, e as Error);
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR(message, message, e as Error);
 		}
 	}
 

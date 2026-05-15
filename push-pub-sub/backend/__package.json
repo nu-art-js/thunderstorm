@@ -34,6 +34,7 @@
     "@nu-art/db-api-shared": "?",
     "@nu-art/http-server": "?",
     "@nu-art/push-pub-sub-shared": "?",
+    "@nu-art/api-types": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/user-account-backend": "?",
     "@nu-art/user-account-shared": "?",
