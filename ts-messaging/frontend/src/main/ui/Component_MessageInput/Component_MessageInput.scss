@@ -1,0 +1,41 @@
+.ts-messaging__input {
+	display: flex;
+	gap: 8px;
+	padding: 8px;
+	border-top: 1px solid var(--ts-messaging-border-color, #e0e0e0);
+	background: var(--ts-messaging-input-bg, #fff);
+
+	&__textarea {
+		flex: 1;
+		resize: none;
+		border: 1px solid var(--ts-messaging-border-color, #e0e0e0);
+		border-radius: 8px;
+		padding: 8px 12px;
+		font-family: inherit;
+		font-size: inherit;
+		outline: none;
+
+		&:focus {
+			border-color: var(--ts-messaging-focus-color, #007bff);
+		}
+	}
+
+	&__send-btn {
+		padding: 8px 16px;
+		border: none;
+		border-radius: 8px;
+		background: var(--ts-messaging-send-bg, #007bff);
+		color: var(--ts-messaging-send-color, #fff);
+		cursor: pointer;
+		font-weight: 600;
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+		}
+
+		&:hover:not(:disabled) {
+			background: var(--ts-messaging-send-hover-bg, #0056b3);
+		}
+	}
+}

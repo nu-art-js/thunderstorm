@@ -72,7 +72,7 @@ export type DB_ProtoSeed<
 	DatabaseKey extends string,
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<VersionType[]>,
-	UniqueKeys extends keyof T = Default_UniqueKey,
+	UniqueKeys extends keyof T | DotNotation<T> = Default_UniqueKey,
 	Dependencies extends Exact<{ [K in DotNotation<T>]?: DB_Prototype }, Dependencies> = never> = {
 
 	type: T,
@@ -116,7 +116,7 @@ export type DB_Prototype<ProtoSeed extends DB_ProtoSeed<any, string, any, Versio
 	generatedProps: ProtoSeed['generatedKeys'] extends never ? never : ProtoSeed['generatedKeys'][]
 	versions: ProtoSeed['versions']
 	indices: DBIndex<ProtoSeed['type']>[]
-	uniqueParam: DB_UniqueId<ProtoSeed['dbKey']> | { [K in ProtoSeed['uniqueKeys']]: ProtoSeed['type'][K] }
+	uniqueParam: DB_UniqueId<ProtoSeed['dbKey']> | { [K in ProtoSeed['uniqueKeys']]: K extends keyof ProtoSeed['type'] ? ProtoSeed['type'][K] : DotNotationValueType<ProtoSeed['type'], K & string> }
 	lockKeys?: (keyof ProtoSeed['type'])[]
 	dependencies: DependenciesImpl<ProtoSeed['type'], ProtoSeed['dependencies']>
 }

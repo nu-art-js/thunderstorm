@@ -1,7 +1,7 @@
 {
   "name": "@nu-art/ts-messaging-frontend",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "Frontend messaging module for Thunderstorm framework providing topic-based messaging system with support for text, image, and video messages",
+  "description": "Frontend module for Thunderstorm messaging — topic management, message CRUD, threading, paginated queries, embeddable chat UI",
   "keywords": [
     "TacB0sS",
     "infra",
@@ -33,14 +33,11 @@
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/db-api-frontend": "?",
-    "@nu-art/user-account-frontend": "?",
-    "@nu-art/user-account-shared": "?",
-    "@nu-art/permissions-frontend": "?",
-    "@nu-art/permissions-shared": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/http-client": "?",
+    "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-widgets": "?",
     "@nu-art/ts-messaging-shared": "?",
-    "firebase": "?",
-    "firebase-admin": "?",
-    "firebase-functions": "?",
     "react": "?"
   },
   "devDependencies": {

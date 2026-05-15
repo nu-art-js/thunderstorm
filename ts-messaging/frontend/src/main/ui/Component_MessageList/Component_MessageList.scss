@@ -1,0 +1,28 @@
+.ts-messaging__list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 8px;
+	overflow-y: auto;
+	flex: 1;
+
+	&__load-more {
+		align-self: center;
+		padding: 4px 12px;
+		border: 1px solid var(--ts-messaging-border-color, #e0e0e0);
+		border-radius: 4px;
+		background: transparent;
+		cursor: pointer;
+		font-size: 0.8rem;
+
+		&:hover {
+			background: var(--ts-messaging-load-more-hover-bg, #f5f5f5);
+		}
+	}
+
+	&__empty {
+		text-align: center;
+		color: var(--ts-messaging-empty-color, #999);
+		padding: 24px;
+	}
+}

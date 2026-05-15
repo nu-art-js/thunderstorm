@@ -1,43 +1,64 @@
 @startuml
-rectangle App {
-(App level Trigger) as ALE
-note bottom of ALE: Automated or User Event\non specific db entity
-(Discussion) as Con
-  note bottom of Con
-    topicId: _id(topic)
-    appProp1(type): "user" | "Other types"
-    appProp2(status): "ongoing" | "resolved"
-    appProp3: any
-    appProp4: any
-  end note
+skinparam linetype ortho
+
+rectangle "App Layer" {
+	entity "Anchor Entity" as anchor {
+		_id: UniqueId
+		dbKey: string
+	}
+	note bottom of anchor: Any DB entity that\nneeds a conversation\n(task, chat-room, etc.)
 }
 
-rectangle Thunderstorm {
-(Topic/Reference) as Topic
-note right of Topic: _id: uid\nentityId: _id(dbEntity)\nentityType: string
+rectangle "ts-messaging" {
+	entity "DB_Topic" as topic {
+		_id: UniqueId
+		anchor: DBPointer {dbKey, id}
+		__access: DocumentAccess
+	}
+	note right of topic
+		Unique: [anchor.dbKey, anchor.id]
+		One topic per anchor entity
+	end note
 
-  rectangle Messages {
-    (Message1) as msg1
-    (Message2) as msg2
-    (Message3) as msg3
-    (Message4) as msg4
-  }
-
-  note left of msg1
-    _id: UID
-    topicId: _id(topic)
-    type: "text" | "image" | "video"
-    otherProps: any
-  end note
+	entity "DB_Message" as msg {
+		_id: UniqueId
+		topicId: UniqueId
+		parentMessageId?: UniqueId
+		text?: string
+		attachments?: AssetRef[]
+		_auditorId: string
+		__access: DocumentAccess
+	}
+	note right of msg
+		Must have text or attachments (or both)
+		_auditorId auto-set from session
+		parentMessageId enables threading
+	end note
 }
-ALE ..> Topic: **Create a topic per (dbEntity)**
-ALE <- Con: **OPTIONAL**
-Topic <-- Con
-msg1 -> Topic
-msg2 -> Topic
-msg3 -> Topic
-msg4 -> Topic
-msg1--msg2
-msg2--msg3
-msg3--msg4
+
+rectangle "file-upload" {
+	entity "DB_Asset" as asset {
+		_id: UniqueId
+		name: string
+		mimeType: string
+		key: string
+	}
+}
+
+rectangle "Permissions" {
+	entity "AccessGroup" as ag {
+		Read / Write / Delete / Admin
+	}
+	note bottom of ag
+		Static groups now
+		Dynamic per-topic groups later
+	end note
+}
+
+anchor ||--|| topic : "anchors (1:1)"
+topic ||--o{ msg : "contains"
+msg ||--o{ msg : "thread replies\n(parentMessageId)"
+msg }o--o{ asset : "attachments\n(AssetRef.assetId)"
+ag ..> topic : "gates access"
+ag ..> msg : "inherits from topic"
 @enduml

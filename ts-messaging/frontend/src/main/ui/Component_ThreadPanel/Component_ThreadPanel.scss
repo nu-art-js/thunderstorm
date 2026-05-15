@@ -1,0 +1,39 @@
+.ts-messaging__thread {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	border-left: 1px solid var(--ts-messaging-border-color, #e0e0e0);
+	background: var(--ts-messaging-thread-bg, #fafafa);
+
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 8px 12px;
+		border-bottom: 1px solid var(--ts-messaging-border-color, #e0e0e0);
+		font-weight: 600;
+	}
+
+	&__close {
+		border: none;
+		background: transparent;
+		cursor: pointer;
+		font-size: 1rem;
+		color: var(--ts-messaging-close-color, #666);
+
+		&:hover {
+			color: var(--ts-messaging-close-hover-color, #333);
+		}
+	}
+
+	&__parent {
+		padding: 8px 12px;
+		border-bottom: 1px solid var(--ts-messaging-border-color, #e0e0e0);
+		background: var(--ts-messaging-parent-bg, #f0f0f0);
+	}
+
+	&__parent-text {
+		font-style: italic;
+		color: var(--ts-messaging-parent-color, #555);
+	}
+}

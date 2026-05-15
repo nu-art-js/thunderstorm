@@ -3,21 +3,20 @@ import {tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
 import {DatabaseDef_Topic} from './types.js';
 import {MessagingDBGroup} from '../consts.js';
 
-const Validator_ModifiableProps: DatabaseDef_Topic['modifiablePropsValidator'] = {};
-
-export const Validator_GeneratedProps_Topic = {
-	type: tsValidateString(),
-	refId: tsValidateUniqueId,
+const Validator_ModifiableProps: DatabaseDef_Topic['modifiablePropsValidator'] = {
+	anchor: {
+		dbKey: tsValidateString(),
+		id: tsValidateUniqueId,
+	},
 };
 
 export const DBDef_Topic: Database<DatabaseDef_Topic> = {
 	dbKey: 'topics',
 	entityName: 'Topic',
 	modifiablePropsValidator: Validator_ModifiableProps,
-	generatedPropsValidator: Validator_GeneratedProps_Topic,
-	generatedProps: ['refId', 'type'],
+	generatedPropsValidator: {},
 	versions: ['1.0.0'],
-	uniqueKeys: ['_id'],
+	uniqueKeys: ['anchor.dbKey', 'anchor.id'],
 	frontend: {
 		group: MessagingDBGroup,
 		name: 'topic',
