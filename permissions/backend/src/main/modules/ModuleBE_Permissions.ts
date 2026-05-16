@@ -159,7 +159,7 @@ class ModuleBE_Permissions_Class
 
 	private assertMongoCollection(dbModule: ModuleBE_BaseDB<any>): MongoCollection<any> {
 		if (!(dbModule.collection instanceof MongoCollection))
-			throw HttpCodes._5XX.INTERNAL_ERROR('Share API requires MongoDB backend');
+			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Share API requires MongoDB backend');
 
 		return dbModule.collection;
 	}
