@@ -132,7 +132,7 @@ class ModuleBE_Permissions_Class
 
 	// --- Share API ---
 
-	async share(dbKey: string, entityId: UniqueId, accessContext: ShareAccessContext): Promise<void> {
+	public async share(dbKey: string, entityId: UniqueId, accessContext: ShareAccessContext): Promise<void> {
 		const dbModule = this.resolveDbModule(dbKey);
 		const mongoCol = this.assertMongoCollection(dbModule);
 
@@ -143,10 +143,13 @@ class ModuleBE_Permissions_Class
 		if (!addToSet)
 			return;
 
-		await mongoCol.mongoCollection.updateOne(
+		const result = await mongoCol.mongoCollection.updateOne(
 			{_id: entityId} as any,
 			{$addToSet: addToSet}
 		);
+
+		if (result.matchedCount === 0)
+			throw HttpCodes._4XX.NOT_FOUND(`Entity disappeared during share: ${dbKey}/${entityId}`);
 	}
 
 	private resolveDbModule(dbKey: string): ModuleBE_BaseDB<any> {

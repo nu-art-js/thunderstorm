@@ -20,6 +20,11 @@ function assertOwnership(access: Partial<DocumentAccessInner> | undefined) {
 		throw HttpCodes._4XX.FORBIDDEN('Only document owners can manage access');
 }
 
+/**
+ * @deprecated Use {@link ModuleBE_Permissions.share} instead — it bypasses the pre-write interceptor
+ * via a privileged raw collection path and supports SA context. This function writes through
+ * `dbModule.set.item` which triggers the interceptor that strips `__access`.
+ */
 export async function shareDocument<Database extends DB_Prototype>(
 	dbModule: ModuleBE_BaseDB<Database>,
 	documentId: Database['uniqueParam'],
@@ -50,6 +55,10 @@ export async function shareDocument<Database extends DB_Prototype>(
 	return dbModule.set.item(mutable);
 }
 
+/**
+ * @deprecated The counterpart to the deprecated `shareDocument`. Both write through `dbModule.set.item`
+ * which triggers the pre-write interceptor that strips `__access`, making the update a no-op.
+ */
 export async function unshareDocument<Database extends DB_Prototype>(
 	dbModule: ModuleBE_BaseDB<Database>,
 	documentId: Database['uniqueParam'],
