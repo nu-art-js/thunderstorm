@@ -6,8 +6,6 @@
 
 import {expect} from 'chai';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
-import type {DocumentAccessInner} from '@nu-art/permissions-shared';
-import {AllDocumentAccessKeys} from '@nu-art/permissions-shared';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds} from '../main/consts.js';
 import {ModuleBE_Permissions, type ShareAccessContext} from '../main/modules/ModuleBE_Permissions.js';
 
