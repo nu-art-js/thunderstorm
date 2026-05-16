@@ -17,7 +17,7 @@ export type DBConfig<ItemType extends object> = {
 	group: string;
 	version: string
 	autoIncrement?: boolean,
-	uniqueKeys: (keyof ItemType)[]
+	uniqueKeys: (keyof ItemType | string)[]
 	indices?: DBIndex<ItemType>[]
 	upgradeProcessor?: (store: IDBObjectStore) => void
 };

@@ -1,39 +1,30 @@
-/**
- * Frontend module for topic management in the messaging system.
- */
+import {CrudApiDef} from '@nu-art/db-api-shared';
+import type {ApiCallerEventType} from '@nu-art/db-api-shared';
+import {buildConfigFromDBDef, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
+import {ThunderDispatcher} from '@nu-art/thunder-core';
+import {DatabaseDef_Topic, DBDef_Topic, DB_Topic} from '@nu-art/ts-messaging-shared';
+import type {DBPointer} from '@nu-art/ts-common';
 
-import {CrudApiDef, type ApiCallerEventType} from '@nu-art/ts-messaging-shared';
-import {buildConfigFromDBDef, EventDispatcher, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {DBDef_Topic, DatabaseDef_Topic, UI_Topic} from '@nu-art/ts-messaging-shared';
+export interface OnTopicsUpdated {
+	__onTopicsUpdated: (...params: ApiCallerEventType<DatabaseDef_Topic['dbType']>) => void;
+}
 
-export type DispatcherType_Topic = `__onTopicsUpdated`;
+export const dispatch_onTopicsUpdated = new ThunderDispatcher<OnTopicsUpdated, '__onTopicsUpdated'>('__onTopicsUpdated');
 
-const listeners: Array<EventDispatcher<DatabaseDef_Topic['dbType']>> = [];
-export const dispatch_onTopicsUpdated = Object.assign(
-	((...params: ApiCallerEventType<DatabaseDef_Topic['dbType']>) => {
-		listeners.forEach(fn => fn(...params));
-	}) as EventDispatcher<DatabaseDef_Topic['dbType']>,
-	{
-		addListener(fn: EventDispatcher<DatabaseDef_Topic['dbType']>) {
-			listeners.push(fn);
-		}
-	}
-);
-
-export class ModuleFE_topic_Class
+export class ModuleFE_Topic_Class
 	extends ModuleFE_BaseApi<DatabaseDef_Topic> {
 
 	constructor() {
 		super({
 			config: buildConfigFromDBDef<DatabaseDef_Topic>(DBDef_Topic),
 			crudApiDef: CrudApiDef<DatabaseDef_Topic>(DBDef_Topic.dbKey),
-			dispatcher: dispatch_onTopicsUpdated,
+			dispatcher: (...args) => dispatch_onTopicsUpdated.dispatchAll(...args),
 		});
 	}
 
-	getTopics(collectionName: string, refId: string): UI_Topic[] {
-		return this.cache.filter(topic => topic.type === collectionName && topic.refId === refId);
+	getTopicByAnchor(anchor: DBPointer): DB_Topic | undefined {
+		return this.cache.find(topic => topic.anchor.dbKey === anchor.dbKey && topic.anchor.id === anchor.id);
 	}
 }
 
-export const ModuleFE_Topic = new ModuleFE_topic_Class();
+export const ModuleFE_Topic = new ModuleFE_Topic_Class();
