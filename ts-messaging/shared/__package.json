@@ -1,7 +1,7 @@
 {
   "name": "@nu-art/ts-messaging-shared",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "A messaging module for Thunderstorm framework that provides topic-based messaging system with support for different message types (text, image, video) and discussion management features",
+  "description": "Shared types and definitions for the Thunderstorm messaging library — topics, messages, threading, permissions",
   "keywords": [
     "TacB0sS",
     "infra",
@@ -33,10 +33,11 @@
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/db-api-shared": "?",
-    "react": "?"
+    "@nu-art/api-types": "?",
+    "@nu-art/permissions-shared": "?"
   },
   "devDependencies": {
-    "@types/react": "?",
+    "@nu-art/testalot": "?",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1"
   },

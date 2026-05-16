@@ -1,0 +1,271 @@
+---
+description: How to use ts-messaging lib: entity-anchored conversations with threading, file attachments, permissions, and embeddable chat UI
+alwaysApply: false
+---
+
+# How to use ts-messaging
+
+The ts-messaging lib provides a universal conversation primitive — entity-anchored topics with threaded replies, file attachments, permission-gated access, and drop-in chat UI components.
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/ts-messaging-shared` | Types (`DB_Topic`, `DB_Message`, `AssetRef`), API defs, permission scopes, access groups |
+| `@nu-art/ts-messaging-backend` | `ModuleBE_TopicDB`, `ModuleBE_MessageDB`, `ModuleBE_MessagingApi` (paginated query), access wiring |
+| `@nu-art/ts-messaging-frontend` | `ModuleFE_Topic`, `ModuleFE_Message` (CRUD + pagination), embeddable UI components |
+
+---
+
+## What you must know
+
+- **Topics are always anchored.** Every `DB_Topic` has an `anchor: DBPointer` (`{ dbKey, id }`) that ties it to an entity in the consuming app. Topics are never created in a vacuum.
+- **One topic per anchor entity.** Unique key is `['anchor.dbKey', 'anchor.id']` — creating two topics for the same anchor is a uniqueness violation.
+- **Threading is optional.** Messages can have a `parentMessageId` for Slack-style threads. Without it, they are top-level (WhatsApp-style flat chat).
+- **Flexible content model.** A message can have `text`, `attachments` (array of `AssetRef`), or both. At least one must be present (validated).
+- **`_auditorId` is auto-set.** The backend stamps `_auditorId` from the session — callers never set it.
+- **Pagination is cursor-based.** The custom `getMessages` endpoint returns newest-first with `nextCursor` and `hasMore` for pagination.
+- **Permissions via access groups.** The library defines `PermissionScope_Messaging` with scopes: `read`, `write`, `delete`, `admin`. Static access groups (`AccessGroup_MessagingRead`, `AccessGroup_MessagingWrite`, `AccessGroup_MessagingDelete`, `AccessGroup_MessagingAdmin`) are provided. Document access is wired via `wireMessagingDocumentAccess()`.
+- **Dynamic per-topic access groups are a separate infra task.** The library is designed for it but currently uses static global groups. When the permissions infra supports dynamic per-entity groups, each topic will spawn its own access groups at creation time.
+- **File attachments reference `DB_Asset` from file-upload.** The `AssetRef` type holds `{ assetId }` pointing to the file-upload library's asset collection.
+
+---
+
+## When wiring messaging into an app
+
+### Step 1 — Add module packs
+
+**Backend** (`app-backend` or equivalent):
+
+```typescript
+import {ModulePackBE_Messaging} from '@nu-art/ts-messaging-backend';
+
+// In Storm builder chain:
+.addModulePack(ModulePackBE_Messaging)
+```
+
+**Frontend** (`app-frontend` or equivalent):
+
+```typescript
+import {ModulePackFE_Messaging} from '@nu-art/ts-messaging-frontend';
+
+// In Thunder builder chain:
+.addModules(...ModulePackFE_Messaging)
+```
+
+### Step 2 — Wire document access
+
+Call `wireMessagingDocumentAccess()` during backend initialization (e.g. in the app's module pack setup):
+
+```typescript
+import {wireMessagingDocumentAccess} from '@nu-art/ts-messaging-backend';
+
+wireMessagingDocumentAccess();
+```
+
+This registers the `AccessContextResolver` for both `ModuleBE_TopicDB` and `ModuleBE_MessageDB`, stamping `__access` on every new topic and message with the static messaging access groups.
+
+### Step 3 — Create a topic for an entity
+
+Topics are created by the consuming app when it needs a conversation anchored to an entity. Use the CRUD API to create a topic with the entity's `DBPointer`:
+
+```typescript
+import {ModuleFE_Topic} from '@nu-art/ts-messaging-frontend';
+
+const topic = await ModuleFE_Topic.upsert({
+	anchor: {dbKey: 'my-entity-collection', id: entityId},
+});
+```
+
+### Step 4 — Send messages
+
+```typescript
+import {ModuleFE_Message} from '@nu-art/ts-messaging-frontend';
+
+await ModuleFE_Message.createMessage(topicId, 'Hello world');
+
+// With attachments:
+await ModuleFE_Message.createMessage(topicId, 'See attached', [{assetId: 'asset-123'}]);
+
+// Attachment only (no text):
+await ModuleFE_Message.createMessage(topicId, undefined, [{assetId: 'asset-456'}]);
+```
+
+### Step 5 — Load messages (paginated)
+
+```typescript
+const response = await ModuleFE_Message.getMessagesForTopic({
+	topicId: topicId,
+	limit: 25,
+});
+// response.messages: DB_Message[] (newest first)
+// response.hasMore: boolean
+// response.nextCursor: string | undefined
+
+// Load next page:
+const page2 = await ModuleFE_Message.getMessagesForTopic({
+	topicId: topicId,
+	cursor: response.nextCursor,
+	limit: 25,
+});
+```
+
+### Step 6 — Load thread replies
+
+```typescript
+const replies = await ModuleFE_Message.getThreadReplies(topicId, parentMessageId);
+```
+
+---
+
+## When embedding the chat UI
+
+The library provides five composable UI components. The main entry point is `Component_ChatPanel`:
+
+```tsx
+import {Component_ChatPanel} from '@nu-art/ts-messaging-frontend';
+
+// Drop in anywhere — renders full chat with message list, input, and thread panel:
+<Component_ChatPanel topicId={topicId} />
+```
+
+### Component hierarchy
+
+| Component | Purpose | Props |
+|-----------|---------|-------|
+| `Component_ChatPanel` | Main embeddable chat container | `topicId` |
+| `Component_MessageList` | Scrollable message list with load-more | `messages`, `hasMore`, `onLoadMore`, `onReplyClick` |
+| `Component_MessageInput` | Text input + send button | `onSend` |
+| `Component_MessageBubble` | Single message renderer | `message`, `onReplyClick` |
+| `Component_ThreadPanel` | Thread view for replies | `parentMessage`, `onClose` |
+
+### Building a custom layout
+
+Use the individual components to compose a custom chat layout:
+
+```tsx
+import {Component_MessageList} from '@nu-art/ts-messaging-frontend';
+import {Component_MessageInput} from '@nu-art/ts-messaging-frontend';
+
+// In your custom component:
+<div className="my-chat">
+	<Component_MessageList
+		messages={messages}
+		hasMore={hasMore}
+		onLoadMore={loadMore}
+		onReplyClick={handleReply}
+	/>
+	<Component_MessageInput onSend={handleSend} />
+</div>
+```
+
+### Theming
+
+All CSS classes are BEM-namespaced under `ts-messaging__*`. Override at the app level:
+
+```scss
+.ts-messaging__chat-panel { /* main container */ }
+.ts-messaging__chat-panel__main { /* message list + input area */ }
+.ts-messaging__chat-panel__thread { /* thread sidebar */ }
+.ts-messaging__bubble { /* single message */ }
+.ts-messaging__input { /* input area */ }
+.ts-messaging__message-list { /* scrollable list */ }
+.ts-messaging__thread-panel { /* thread container */ }
+```
+
+---
+
+## When subscribing to messaging events
+
+### Topic updates
+
+```typescript
+import {ComponentSync} from '@nu-art/thunder-widgets';
+import type {OnTopicsUpdated} from '@nu-art/ts-messaging-frontend';
+
+export class MyComponent
+	extends ComponentSync<Props, State>
+	implements OnTopicsUpdated {
+
+	__onTopicsUpdated = () => {
+		// Topics changed — re-render
+		this.forceUpdate();
+	};
+}
+```
+
+### Message updates
+
+```typescript
+import type {OnMessagesUpdated} from '@nu-art/ts-messaging-frontend';
+
+export class MyComponent
+	extends ComponentSync<Props, State>
+	implements OnMessagesUpdated {
+
+	__onMessagesUpdated = () => {
+		// Messages changed — refresh list
+		this.forceUpdate();
+	};
+}
+```
+
+---
+
+## Topic anchoring patterns
+
+### Comments on a task entity
+
+```typescript
+const topic = await ModuleFE_Topic.upsert({
+	anchor: {dbKey: 'tasks', id: taskId},
+});
+```
+
+### Group chat (app-owned anchor)
+
+Create a `DB_ChatRoom` entity in the app, then anchor:
+
+```typescript
+const topic = await ModuleFE_Topic.upsert({
+	anchor: {dbKey: 'chat-rooms', id: chatRoomId},
+});
+```
+
+### Finding existing topic for an entity
+
+```typescript
+const topic = ModuleFE_Topic.getTopicByAnchor({dbKey: 'tasks', id: taskId});
+if (!topic) {
+	// No conversation yet — create one
+}
+```
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| DB entity types | `DB_Topic`, `DB_Message` |
+| DB defs | `DBDef_Topic`, `DBDef_Message` |
+| Database def types | `DatabaseDef_Topic`, `DatabaseDef_Message` |
+| Backend modules | `ModuleBE_TopicDB`, `ModuleBE_MessageDB`, `ModuleBE_MessagingApi` |
+| Frontend modules | `ModuleFE_Topic`, `ModuleFE_Message` |
+| Backend module pack | `ModulePackBE_Messaging` |
+| Frontend module pack | `ModulePackFE_Messaging` |
+| API type | `API_Messaging` |
+| API def constant | `ApiDef_Messaging` |
+| Permission scope | `PermissionScope_Messaging` |
+| Access groups | `AccessGroup_MessagingRead`, `AccessGroup_MessagingWrite`, `AccessGroup_MessagingDelete`, `AccessGroup_MessagingAdmin` |
+| Dispatcher interfaces | `OnTopicsUpdated`, `OnMessagesUpdated` |
+| UI components | `Component_ChatPanel`, `Component_MessageList`, `Component_MessageInput`, `Component_MessageBubble`, `Component_ThreadPanel` |
+
+---
+
+## Forbidden patterns
+
+- **Do not create topics without an anchor** — every topic must have `anchor: { dbKey, id }`.
+- **Do not set `_auditorId` manually** — it is auto-stamped by `preWriteProcessing` from the session.
+- **Do not send messages with neither `text` nor `attachments`** — the validator rejects empty messages.
+- **Do not bypass CRUD for topic creation** — use `ModuleFE_Topic.upsert()` or the standard CRUD API so that `__access` is stamped by the `AccessContextResolver`.
+- **Do not create a second topic for the same anchor entity** — the unique key `['anchor.dbKey', 'anchor.id']` enforces one topic per anchor. Use `getTopicByAnchor()` to find existing topics.
+- **Do not import backend modules in frontend packages** — use the frontend modules and API callers.

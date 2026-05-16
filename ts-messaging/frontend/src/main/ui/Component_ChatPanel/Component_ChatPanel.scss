@@ -1,0 +1,17 @@
+.ts-messaging__chat-panel {
+	display: flex;
+	height: 100%;
+	width: 100%;
+
+	&__main {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__thread {
+		width: 320px;
+		flex-shrink: 0;
+	}
+}
