@@ -22,11 +22,14 @@ import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_P
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {ModuleBE_AccessGroupDB} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
-import {FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {FirebaseRef, ModuleBE_Firebase, MongoCollection} from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
 import {ModuleBE_AccountDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
 import {DB_Account} from '@nu-art/user-account-shared';
+import {HttpCodes} from '@nu-art/api-types';
+
+export type ShareAccessContext = Partial<DocumentAccessInner>;
 
 
 // --- Dispatcher for additional group memberships on registration/login ---
@@ -125,6 +128,79 @@ class ModuleBE_Permissions_Class
 		this.accessResolvers.set(dbModule.dbDef.dbKey, resolver);
 		if (scopeKeys)
 			this.moduleScopeKeys.set(dbModule.dbDef.dbKey, scopeKeys);
+	}
+
+	// --- Share API ---
+
+	async share(dbKey: string, entityId: UniqueId, accessContext: ShareAccessContext): Promise<void> {
+		const dbModule = this.resolveDbModule(dbKey);
+		const mongoCol = this.assertMongoCollection(dbModule);
+
+		const entity = await this.loadEntityUnmanipulated(mongoCol, entityId, dbKey);
+		this.assertShareAccess(entity);
+
+		const addToSet = this.buildAddToSetUpdate(accessContext);
+		if (!addToSet)
+			return;
+
+		await mongoCol.mongoCollection.updateOne(
+			{_id: entityId} as any,
+			{$addToSet: addToSet}
+		);
+	}
+
+	private resolveDbModule(dbKey: string): ModuleBE_BaseDB<any> {
+		const dbModule = RuntimeBE_ModulesDB().find(m => m.dbDef.dbKey === dbKey);
+		if (!dbModule)
+			throw HttpCodes._4XX.BAD_REQUEST(`No DB module registered for dbKey '${dbKey}'`);
+
+		return dbModule;
+	}
+
+	private assertMongoCollection(dbModule: ModuleBE_BaseDB<any>): MongoCollection<any> {
+		if (!(dbModule.collection instanceof MongoCollection))
+			throw HttpCodes._5XX.INTERNAL_ERROR('Share API requires MongoDB backend');
+
+		return dbModule.collection;
+	}
+
+	private async loadEntityUnmanipulated(mongoCol: MongoCollection<any>, entityId: UniqueId, dbKey: string): Promise<Record<string, any>> {
+		const results = await mongoCol.query.unManipulatedQuery({where: {_id: entityId} as any, limit: 1});
+		if (!results.length)
+			throw HttpCodes._4XX.NOT_FOUND(`Entity not found: ${dbKey}/${entityId}`);
+
+		return results[0];
+	}
+
+	private assertShareAccess(entity: Record<string, any>): void {
+		if (MemKey_ServiceAccountId.peak())
+			return;
+
+		const scopedDict = MemKey_UserAccessIds.peak();
+		if (!scopedDict)
+			throw HttpCodes._4XX.FORBIDDEN('No access context — cannot share');
+
+		const callerIds = filterDuplicates(Object.values(scopedDict).flat());
+		const access: Partial<DocumentAccessInner> | undefined = entity.__access;
+		const hasWriteAccess = access?.writers?.some(id => callerIds.includes(id))
+			|| access?.owners?.some(id => callerIds.includes(id));
+
+		if (!hasWriteAccess)
+			throw HttpCodes._4XX.FORBIDDEN('Write access required to share a document');
+	}
+
+	private buildAddToSetUpdate(accessContext: ShareAccessContext): Record<string, { $each: UniqueId[] }> | undefined {
+		const update: Record<string, { $each: UniqueId[] }> = {};
+
+		for (const key of AllDocumentAccessKeys) {
+			const groupIds = accessContext[key];
+			if (!groupIds?.length)
+				continue;
+
+			update[`__access.${key}`] = {$each: groupIds};
+		}
+
+		return _keys(update).length > 0 ? update : undefined;
 	}
 
 	private wireDocumentAccessToAllModules() {
