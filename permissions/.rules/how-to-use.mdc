@@ -246,6 +246,65 @@ The `bootstrap-admin` SA is registered by default. Its scope entries are dynamic
 
 ---
 
+## Sharing document access
+
+`ModuleBE_Permissions.share` adds access group IDs to a document's `__access` field. It operates within the permissions infrastructure — app-level code never touches `__access` directly.
+
+```typescript
+import {ModuleBE_Permissions} from '@nu-art/permissions-backend';
+import type {ShareAccessContext} from '@nu-art/permissions-backend';
+
+const accessContext: ShareAccessContext = {
+	readers: [groupIdA, groupIdB],
+	writers: [groupIdC],
+};
+
+await ModuleBE_Permissions.share('my-entities', entityId, accessContext);
+```
+
+### How it works
+
+1. Loads the entity directly from MongoDB (bypasses query access filtering).
+2. Checks caller access — **SA context** skips the check; **user context** requires `writers` or `owners` access to the document.
+3. Merges the access context into `__access` via MongoDB `$addToSet` — atomic and idempotent.
+
+The pre-write interceptor that strips `__access` from app-level writes is **never weakened**. The share API writes through a privileged path that the permissions infrastructure controls.
+
+### SA context (infra-level sharing)
+
+For automated flows (e.g. post-validation handoff in file-upload), run the share call inside `runAsServiceAccount`:
+
+```typescript
+await ModuleBE_Permissions.runAsServiceAccount(myServiceAccountId, async () => {
+	await ModuleBE_Permissions.share('assets', assetId, {
+		readers: targetEntityAccessGroups,
+	});
+});
+```
+
+The SA does not need to be in the document's `__access` to share it — SA context bypasses the caller access check.
+
+### User context
+
+A user calling `share` must have **write access** to the document (be in `__access.writers` or `__access.owners`). Users without write access receive a 403 error.
+
+### ShareAccessContext
+
+`ShareAccessContext` is `Partial<DocumentAccessInner>` — you specify only the access keys you want to add to:
+
+```typescript
+type ShareAccessContext = Partial<{
+	readers: UniqueId[];
+	writers: UniqueId[];
+	deleters: UniqueId[];
+	owners: UniqueId[];
+}>;
+```
+
+Each key's array is merged into the document's existing `__access[key]` via `$addToSet` (no duplicates, idempotent).
+
+---
+
 ## When integrating permissions into an app
 
 ### Backend
