@@ -31,7 +31,7 @@ const VERSION_KEY_PREFIX = 'idb-version--';
  */
 export type StoreConfig<ItemType extends object> = {
 	name: string;
-	uniqueKeys: (keyof ItemType | string)[];
+	uniqueKeys: (keyof ItemType)[];
 	autoIncrement?: boolean;
 	/**
 	 * Upgrade processor for lazy migration.
