@@ -127,7 +127,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 	readonly wrapper: FirestoreWrapperBE;
 	readonly collection: FirestoreType_Collection;
 	readonly dbDef: Database<Proto>;
-	readonly uniqueKeys: Proto['uniqueKeys'][] | string[];
+	readonly uniqueKeys: Proto['uniqueKeys'];
 	private readonly validator;
 	readonly hooks?: FirestoreCollectionHooks<Proto['dbType']>;
 
@@ -139,7 +139,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 
 		this.collection = wrapper.firestore.collection(_dbDef.backend.name);
 		this.dbDef = _dbDef;
-		this.uniqueKeys = this.dbDef.uniqueKeys || Const_UniqueKeys;
+		this.uniqueKeys = (this.dbDef.uniqueKeys || Const_UniqueKeys) as Proto['uniqueKeys'];
 		this.validator = getDbDefValidator(_dbDef);
 		this.hooks = hooks;
 	}
