@@ -18,7 +18,7 @@ import {
 	PasswordAssertionResponseError,
 } from '@nu-art/password-auth-shared';
 import {DB_Account} from '@nu-art/user-account-shared';
-import {ModuleBE_AccountDB} from '@nu-art/user-account-backend';
+import {ModuleBE_AccountDB, ModuleBE_AuthGate, CollectAuthMethodStatus} from '@nu-art/user-account-backend';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountEmail, MemKey_AccountId, MemKey_DB_Session, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {ModuleBE_FailedLoginAttemptDB} from './_entity/failed-login-attempt/ModuleBE_FailedLoginAttemptDB.js';
 import {ModuleBE_PasswordCredentialDB} from './_entity/password-credentials/ModuleBE_PasswordCredentialDB.js';
@@ -26,6 +26,7 @@ import {ModuleBE_PasswordResetTokenDB} from './_entity/password-reset-token/Modu
 import {ModuleBE_Email} from '@nu-art/ts-email-backend';
 
 type Config = {
+	enabled: boolean
 	canRegister: boolean
 	passwordAssertion?: PasswordAssertionConfig
 	ignorePasswordAssertion?: boolean
@@ -37,11 +38,11 @@ type Config = {
 
 export class ModuleBE_PasswordAuth_Class
 	extends Module<Config>
-	implements CollectSessionData<_SessionKey_PasswordAuth> {
+	implements CollectSessionData<_SessionKey_PasswordAuth>, CollectAuthMethodStatus {
 
 	constructor() {
 		super();
-		this.setDefaultConfig({canRegister: false});
+		this.setDefaultConfig({enabled: true, canRegister: true});
 	}
 
 	async init() {
@@ -61,10 +62,22 @@ export class ModuleBE_PasswordAuth_Class
 		};
 	}
 
+	__collectAuthMethodStatus() {
+		return {
+			key: 'password',
+			status: {enabled: this.config.enabled, canRegister: this.config.canRegister},
+		};
+	}
+
 	@ApiHandler(ApiDef_PasswordAuth.registerAccount)
 	async registerAccount(body: API_PasswordAuth['registerAccount']['Body']): Promise<API_PasswordAuth['registerAccount']['Response']> {
+		if (!this.config.enabled)
+			throw HttpCodes._4XX.FORBIDDEN('Password authentication is disabled');
+
 		if (!this.config.canRegister)
-			throw HttpCodes._4XX.IM_A_TEAPOT('Registration is disabled!!');
+			throw HttpCodes._4XX.FORBIDDEN('Password registration is disabled');
+
+		ModuleBE_AuthGate.assertRegistrationAllowed();
 
 		ModuleBE_AccountDB.impl.fixEmail(body);
 		this.password.assertPasswordCheck({email: body.email, password: body.password, passwordCheck: body.passwordCheck});
@@ -83,6 +96,9 @@ export class ModuleBE_PasswordAuth_Class
 
 	@ApiHandler(ApiDef_PasswordAuth.login)
 	async handleLogin(body: API_PasswordAuth['login']['Body']): Promise<API_PasswordAuth['login']['Response']> {
+		if (!this.config.enabled)
+			throw HttpCodes._4XX.FORBIDDEN('Password authentication is disabled');
+
 		return this.account.login(body);
 	}
 

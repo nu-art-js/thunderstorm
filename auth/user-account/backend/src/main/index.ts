@@ -1,5 +1,6 @@
 export * from './module-pack.js';
 export * from './SlackReporter.js';
+export * from './ModuleBE_AuthGate.js';
 
 export * from './_entity/account/ModuleBE_AccountDB.js';
 export * from './_entity/account/module-pack.js';
