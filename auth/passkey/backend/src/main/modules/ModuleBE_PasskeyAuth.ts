@@ -7,7 +7,7 @@
 import {Module} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/api-types';
 import {ApiHandler} from '@nu-art/http-server';
-import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {CollectAuthMethodStatus, MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_AuthGate, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {
 	API_Passkey,
 	ApiDef_Passkey,
@@ -27,6 +27,7 @@ import type {
 import {ModuleBE_PasskeyCredentialDB} from '../_entity/passkey-credential/ModuleBE_PasskeyCredentialDB.js';
 
 type Config = {
+	enabled: boolean;
 	rpName: string;
 	rpId: string;
 	origin: string;
@@ -34,6 +35,7 @@ type Config = {
 };
 
 const DefaultConfig: Config = {
+	enabled: true,
 	rpName: '',
 	rpId: '',
 	origin: '',
@@ -47,7 +49,8 @@ type PendingChallenge = {
 };
 
 export class ModuleBE_PasskeyAuth_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements CollectAuthMethodStatus {
 
 	private readonly pendingChallenges = new Map<string, PendingChallenge>();
 
@@ -61,6 +64,13 @@ export class ModuleBE_PasskeyAuth_Class
 			this.logWarningBold('Passkey module requires rpName, rpId, and origin to be configured.');
 	}
 
+	__collectAuthMethodStatus() {
+		return {
+			key: 'passkey',
+			status: {enabled: this.config.enabled},
+		};
+	}
+
 	private cleanExpiredChallenges(): void {
 		const now = Date.now();
 		for (const [key, pending] of this.pendingChallenges) {
@@ -71,6 +81,11 @@ export class ModuleBE_PasskeyAuth_Class
 
 	@ApiHandler(ApiDef_Passkey.registerOptions)
 	async registerOptions(_body: API_Passkey['registerOptions']['Body']): Promise<API_Passkey['registerOptions']['Response']> {
+		if (!this.config.enabled)
+			throw HttpCodes._4XX.FORBIDDEN('Passkey authentication is disabled');
+
+		ModuleBE_AuthGate.assertRegistrationAllowed();
+
 		const accountId = MemKey_AccountId.get();
 		const account = await ModuleBE_AccountDB.query.unique(accountId);
 		if (!account)
@@ -163,6 +178,9 @@ export class ModuleBE_PasskeyAuth_Class
 
 	@ApiHandler(ApiDef_Passkey.loginOptions)
 	async loginOptions(_body: API_Passkey['loginOptions']['Body']): Promise<API_Passkey['loginOptions']['Response']> {
+		if (!this.config.enabled)
+			throw HttpCodes._4XX.FORBIDDEN('Passkey authentication is disabled');
+
 		const options = await generateAuthenticationOptions({
 			rpID: this.config.rpId,
 			userVerification: 'preferred',

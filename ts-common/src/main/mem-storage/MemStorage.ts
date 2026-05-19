@@ -240,9 +240,11 @@ export class MemKey<T> {
 	 * @returns Stored value or undefined
 	 */
 	peak = (): (T | undefined) => {
-		// @ts-ignore
-		const memValue = asyncLocalStorage.getStore().get(this);
-		return memValue;
+		const store = asyncLocalStorage.getStore();
+		if (!store)
+			return undefined;
+
+		return store.get(this) as T | undefined;
 	};
 
 	/**
