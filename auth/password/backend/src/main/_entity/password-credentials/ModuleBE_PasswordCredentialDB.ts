@@ -2,6 +2,7 @@ import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_PasswordCredentials, DBDef_PasswordCredentials, UI_PasswordCredentials} from '@nu-art/password-auth-shared';
 import {ModuleBE_AccountDB} from '@nu-art/user-account-backend';
 import {DB_Account} from '@nu-art/user-account-shared';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 type LegacyPasswordFields = {
 	salt?: string;
@@ -18,7 +19,7 @@ export class ModuleBE_PasswordCredentialDB_Class
 
 	async init() {
 		super.init();
-		await this.migrateFromAccounts();
+		await new MemStorage().init(() => this.migrateFromAccounts());
 	}
 
 	private async migrateFromAccounts() {
