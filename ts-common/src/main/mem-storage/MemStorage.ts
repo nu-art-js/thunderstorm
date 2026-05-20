@@ -111,7 +111,8 @@ export class MemStorage {
 	 * @returns The stored value
 	 * @throws BadImplementationException if unique key is being overridden
 	 */
-	private set = <T>(key: MemKey<T>, value: T): T => {
+	/** @internal Used by MemKey — not part of the public API */
+	set = <T>(key: MemKey<T>, value: T): T => {
 		const currentValue = this.cache[key.key];
 		if (exists(currentValue) && key.unique && value !== currentValue) {
 			throw new BadImplementationException(`Unique storage key is being overridden for key: ${key.key}
@@ -132,7 +133,8 @@ export class MemStorage {
 	 * @param defaultValue - Optional default value if key is not set
 	 * @returns Stored value or default
 	 */
-	private get = <T>(key: MemKey<T>, defaultValue?: T): T => {
+	/** @internal Used by MemKey — not part of the public API */
+	get = <T>(key: MemKey<T>, defaultValue?: T): T => {
 		let currentValue = this.cache[key.key];
 		if (!exists(currentValue))
 			currentValue = defaultValue;
