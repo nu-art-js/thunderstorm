@@ -233,18 +233,21 @@ export class MemKey<T> {
 	};
 
 	/**
-	 * Peaks at the stored value without throwing if not set.
+	 * Peaks at the stored value without throwing if the key is not set in the store.
 	 *
-	 * Returns undefined if the value is not set, unlike `get()` which throws.
+	 * Returns undefined if the key has no value, unlike `get()` which throws.
+	 *
+	 * MUST be called within an active MemStorage context (inside a MemStorage.init() callback).
+	 * Calling outside a context will throw — this is intentional. If you hit this error,
+	 * the bug is in the call site: it must run inside a MemStorage context.
 	 *
 	 * @returns Stored value or undefined
+	 * @throws TypeError if called outside an active MemStorage context
 	 */
 	peak = (): (T | undefined) => {
-		const store = asyncLocalStorage.getStore();
-		if (!store)
-			return undefined;
-
-		return store.get(this) as T | undefined;
+		// @ts-ignore — getStore() returns undefined outside context, causing a deliberate crash
+		const memValue = asyncLocalStorage.getStore().get(this);
+		return memValue;
 	};
 
 	/**
