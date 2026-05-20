@@ -9,9 +9,6 @@ import {ValidationException} from '../validator/validator-core.js';
 /** AsyncLocalStorage instance for storing MemStorage per async context */
 const asyncLocalStorage = new AsyncLocalStorage<MemStorage>();
 
-/** File-private symbol granting MemKey access to MemStorage internals */
-const _cacheAccessor = Symbol('MemStorage.cache');
-
 /**
  * In-memory storage scoped to async execution context.
  *
@@ -103,20 +100,9 @@ export class MemStorage {
 	}
 
 	/**
-	 * Symbol-gated accessor for MemKey. Not callable without the file-private symbol.
-	 * This enforces that only MemKey (in this file) can access the cache.
+	 * Private — only accessible to MemKey via @ts-ignore (same file, friend-class pattern).
 	 */
-	_access(token: symbol, method: 'get' | 'set', key: MemKey<any>, value?: any): any {
-		if (token !== _cacheAccessor)
-			throw new BadImplementationException('Direct access to MemStorage internals is forbidden');
-
-		if (method === 'get') {
-			let currentValue = this.cache[key.key];
-			if (!exists(currentValue))
-				currentValue = value;
-			return currentValue;
-		}
-
+	private set = <T>(key: MemKey<T>, value: T): T => {
 		const currentValue = this.cache[key.key];
 		if (exists(currentValue) && key.unique && value !== currentValue) {
 			throw new BadImplementationException(`Unique storage key is being overridden for key: ${key.key}
@@ -125,7 +111,18 @@ export class MemStorage {
 		}
 
 		return this.cache[key.key] = value;
-	}
+	};
+
+	/**
+	 * Private — only accessible to MemKey via @ts-ignore (same file, friend-class pattern).
+	 */
+	private get = <T>(key: MemKey<T>, defaultValue?: T): T => {
+		let currentValue = this.cache[key.key];
+		if (!exists(currentValue))
+			currentValue = defaultValue;
+
+		return currentValue;
+	};
 }
 
 /**
@@ -245,7 +242,8 @@ export class MemKey<T> {
 	 * @throws BadImplementationException if called outside an active MemStorage context
 	 */
 	peak = (): (T | undefined) => {
-		return this.assertStore()._access(_cacheAccessor, 'get', this);
+		// @ts-ignore — friend-class access to private MemStorage.get
+		return this.assertStore().get(this);
 	};
 
 	/**
@@ -259,7 +257,8 @@ export class MemKey<T> {
 	 * @throws BadImplementationException if called outside context or value is not set and no default provided
 	 */
 	get = (value?: T): T => {
-		const memValue = this.assertStore()._access(_cacheAccessor, 'get', this, value);
+		// @ts-ignore — friend-class access to private MemStorage.get
+		const memValue = this.assertStore().get(this, value);
 		if (!exists(memValue))
 			throw new BadImplementationException(`Trying to access MemKey(${this.key}) before it was set!`);
 
@@ -277,7 +276,8 @@ export class MemKey<T> {
 		if (!exists(value))
 			throw new BadImplementationException(`Cannot set MemKey(${this.key}) to undefined or null!`);
 
-		return this.assertStore()._access(_cacheAccessor, 'set', this, value);
+		// @ts-ignore — friend-class access to private MemStorage.set
+		return this.assertStore().set(this, value);
 	};
 
 	/**
@@ -292,6 +292,7 @@ export class MemKey<T> {
 	 */
 	merge = (value: T) => {
 		const currentValue = this.get();
-		return this.assertStore()._access(_cacheAccessor, 'set', this, merge(currentValue, value));
+		// @ts-ignore — friend-class access to private MemStorage.set
+		return this.assertStore().set(this, merge(currentValue, value));
 	};
 }
