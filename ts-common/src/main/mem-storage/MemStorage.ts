@@ -233,21 +233,32 @@ export class MemKey<T> {
 	};
 
 	/**
+	 * Returns the active MemStorage context or throws.
+	 *
+	 * All MemKey operations require an active MemStorage context (created via MemStorage.init()
+	 * or MemStorage.initSync()). If called outside such a context, this is a bug in the call site.
+	 */
+	private assertStore = (): MemStorage => {
+		const store = asyncLocalStorage.getStore();
+		if (!store)
+			throw new BadImplementationException(`MemKey(${this.key}) accessed outside of a MemStorage context. Ensure the call site runs inside MemStorage.init() or MemStorage.initSync().`);
+
+		return store;
+	};
+
+	/**
 	 * Peaks at the stored value without throwing if the key is not set in the store.
 	 *
 	 * Returns undefined if the key has no value, unlike `get()` which throws.
 	 *
 	 * MUST be called within an active MemStorage context (inside a MemStorage.init() callback).
-	 * Calling outside a context will throw — this is intentional. If you hit this error,
-	 * the bug is in the call site: it must run inside a MemStorage context.
+	 * Throws BadImplementationException if called outside a context — the bug is in the call site.
 	 *
 	 * @returns Stored value or undefined
-	 * @throws TypeError if called outside an active MemStorage context
+	 * @throws BadImplementationException if called outside an active MemStorage context
 	 */
 	peak = (): (T | undefined) => {
-		// @ts-ignore — getStore() returns undefined outside context, causing a deliberate crash
-		const memValue = asyncLocalStorage.getStore().get(this);
-		return memValue;
+		return this.assertStore().get(this);
 	};
 
 	/**
@@ -258,11 +269,10 @@ export class MemKey<T> {
 	 *
 	 * @param value - Optional default value if key is not set
 	 * @returns Stored value or default
-	 * @throws BadImplementationException if value is not set and no default provided
+	 * @throws BadImplementationException if called outside context or value is not set and no default provided
 	 */
 	get = (value?: T): T => {
-		// @ts-ignore
-		const memValue = asyncLocalStorage.getStore().get(this, value);
+		const memValue = this.assertStore().get(this, value);
 		if (!exists(memValue))
 			throw new BadImplementationException(`Trying to access MemKey(${this.key}) before it was set!`);
 
@@ -274,15 +284,13 @@ export class MemKey<T> {
 	 *
 	 * @param value - Value to store (cannot be null or undefined)
 	 * @returns The stored value
-	 * @throws BadImplementationException if value is null or undefined
+	 * @throws BadImplementationException if called outside context or value is null/undefined
 	 */
 	set = (value: T) => {
-		// console.log(this.key, value);
 		if (!exists(value))
 			throw new BadImplementationException(`Cannot set MemKey(${this.key}) to undefined or null!`);
 
-		// @ts-ignore
-		return asyncLocalStorage.getStore().set(this, value);
+		return this.assertStore().set(this, value);
 	};
 
 	/**
@@ -293,11 +301,10 @@ export class MemKey<T> {
 	 *
 	 * @param value - Value to merge with existing value
 	 * @returns The merged value
-	 * @throws BadImplementationException if current value is not set
+	 * @throws BadImplementationException if called outside context or current value is not set
 	 */
 	merge = (value: T) => {
 		const currentValue = this.get();
-		// @ts-ignore
-		return asyncLocalStorage.getStore().set(this, merge(currentValue, value));
+		return this.assertStore().set(this, merge(currentValue, value));
 	};
 }
