@@ -14,10 +14,62 @@ import {
 	RegistrationVerifyResponse,
 	AuthenticationOptionsResponse,
 } from '@nu-art/passkey-shared';
-import {StorageKey_DeviceId} from '@nu-art/user-account-frontend';
+import {LoggedStatus, ModuleFE_Account, type OnLoginStatusUpdated, StorageKey_DeviceId} from '@nu-art/user-account-frontend';
+import {ModuleFE_PasskeyCredentialDB} from './_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
+
+type Config = {
+	autoPasskeyFlow: boolean;
+};
 
 class ModuleFE_PasskeyAuth_Class
-	extends Module {
+	extends Module<Config>
+	implements OnLoginStatusUpdated {
+
+	constructor() {
+		super();
+		this.setDefaultConfig({autoPasskeyFlow: false});
+	}
+
+	__onLoginStatusUpdated() {
+		if (!this.config.autoPasskeyFlow)
+			return;
+
+		if (!ModuleFE_Account.isStatus(LoggedStatus.LOGGED_IN))
+			return;
+
+		if (!this.browserSupportsPasskeys())
+			return;
+
+		this.tryAutoRegister();
+	}
+
+	private async tryAutoRegister() {
+		const credentials = ModuleFE_PasskeyCredentialDB.cache.all();
+		if (credentials.length > 0)
+			return;
+
+		try {
+			await this.register(`${navigator.platform} ${new Date().toLocaleDateString()}`);
+		} catch (e: any) {
+			this.logDebug(`Auto-register skipped: ${e.message ?? e.name}`);
+		}
+	}
+
+	async tryAutoLogin(): Promise<boolean> {
+		if (!this.config.autoPasskeyFlow)
+			return false;
+
+		if (!this.browserSupportsPasskeys())
+			return false;
+
+		try {
+			await this.login();
+			return true;
+		} catch (e: any) {
+			this.logDebug(`Auto-login not available: ${e.message ?? e.name}`);
+			return false;
+		}
+	}
 
 	@ApiCaller(ApiDef_Passkey.registerOptions)
 	private async _registerOptions(_body: API_Passkey['registerOptions']['Body']): Promise<RegistrationOptionsResponse> {
