@@ -6,6 +6,7 @@
 
 import {Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ApiCaller} from '@nu-art/http-client';
+import {StorageKey} from '@nu-art/thunder-core';
 import {startRegistration, startAuthentication} from '@simplewebauthn/browser';
 import {
 	API_Passkey,
@@ -16,6 +17,8 @@ import {
 } from '@nu-art/passkey-shared';
 import {LoggedStatus, ModuleFE_Account, type OnLoginStatusUpdated, StorageKey_DeviceId} from '@nu-art/user-account-frontend';
 import {ModuleFE_PasskeyCredentialDB} from './_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
+
+const StorageKey_PasskeyRegistered = new StorageKey<boolean>('passkey--registered-on-device');
 
 type Config = {
 	autoPasskeyFlow: boolean;
@@ -62,6 +65,9 @@ class ModuleFE_PasskeyAuth_Class
 		if (!this.browserSupportsPasskeys())
 			return false;
 
+		if (!StorageKey_PasskeyRegistered.get())
+			return false;
+
 		try {
 			await this.login();
 			return true;
@@ -101,10 +107,13 @@ class ModuleFE_PasskeyAuth_Class
 
 		const attestationResponse = await startRegistration({optionsJSON: options as any});
 
-		return this._registerVerify({
+		const result = await this._registerVerify({
 			attestationResponse: attestationResponse as any,
 			label,
 		});
+
+		StorageKey_PasskeyRegistered.set(true);
+		return result;
 	}
 
 	async login(): Promise<void> {
