@@ -18,7 +18,7 @@ import {
 import {LoggedStatus, ModuleFE_Account, type OnLoginStatusUpdated, StorageKey_DeviceId} from '@nu-art/user-account-frontend';
 import {ModuleFE_PasskeyCredentialDB} from './_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
 
-const StorageKey_PasskeyRegistered = new StorageKey<boolean>('passkey--registered-on-device');
+const StorageKey_PasskeyRegistered = new StorageKey<boolean>('passkey--registered-on-device').withstandDeletion();
 
 type Config = {
 	autoPasskeyFlow: boolean;
@@ -48,8 +48,10 @@ class ModuleFE_PasskeyAuth_Class
 
 	private async tryAutoRegister() {
 		const credentials = ModuleFE_PasskeyCredentialDB.cache.all();
-		if (credentials.length > 0)
+		if (credentials.length > 0) {
+			StorageKey_PasskeyRegistered.set(true);
 			return;
+		}
 
 		try {
 			await this.register(`${navigator.platform} ${new Date().toLocaleDateString()}`);
@@ -130,6 +132,8 @@ class ModuleFE_PasskeyAuth_Class
 			challengeId,
 			deviceId,
 		});
+
+		StorageKey_PasskeyRegistered.set(true);
 	}
 
 	browserSupportsPasskeys(): boolean {
