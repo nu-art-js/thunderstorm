@@ -19,6 +19,8 @@ import {LoggedStatus, ModuleFE_Account, type OnLoginStatusUpdated, StorageKey_De
 
 const StorageKey_PasskeyRegistered = new StorageKey<boolean>('passkey--registered-on-device').withstandDeletion();
 
+const StorageKey_PasskeyRegistered = new StorageKey<boolean>('passkey--registered-on-device');
+
 type Config = {
 	autoPasskeyFlow: boolean;
 };
