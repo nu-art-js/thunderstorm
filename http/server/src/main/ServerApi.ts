@@ -26,6 +26,7 @@ import {Stream} from 'stream';
 import {parse} from 'url';
 import type {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from './types.js';
 import {
+	MemKey_HttpRawResponse,
 	MemKey_HttpRequest,
 	MemKey_HttpRequestBody,
 	MemKey_HttpRequestHeaders,
@@ -139,6 +140,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 
 				MemKey_ServerApi.set(this);
 				MemKey_HttpRequest.set(req);
+				MemKey_HttpRawResponse.set(res);
 				MemKey_HttpResponse.set(response);
 				MemKey_HttpRequestHeaders.set(req.headers);
 				MemKey_HttpRequestQuery.set(reqQuery);
@@ -301,12 +303,16 @@ export class ApiResponse {
 		return this.consumed;
 	}
 
-	private consume(): void {
+	markConsumed(): void {
 		if (this.consumed) {
 			this.api.logError('This API was already satisfied!!', new Error());
 			return;
 		}
 		this.consumed = true;
+	}
+
+	private consume(): void {
+		this.markConsumed();
 	}
 
 	stream(responseCode: number, stream: Stream, _headers?: TypedMap<string>): void {

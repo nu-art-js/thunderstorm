@@ -110,8 +110,8 @@ export class HttpServer
 
 	addRoute(api: ServerApi<any>): void {
 		this.logDebug(`Adding route: ${api.apiDef.method.toUpperCase().padEnd(7)} ${api.apiDef.path}`);
-		if (this.routes.some(r => r.apiDef.path === api.apiDef.path))
-			throw new Error(`Duplicate API path: ${api.apiDef.path}`);
+		if (this.routes.some(r => r.apiDef.path === api.apiDef.path && r.apiDef.method === api.apiDef.method))
+			throw new Error(`Duplicate API route: ${api.apiDef.method.toUpperCase()} ${api.apiDef.path}`);
 
 		for (const config of this.apiMiddlewares)
 			if (config.filter(api.apiDef))

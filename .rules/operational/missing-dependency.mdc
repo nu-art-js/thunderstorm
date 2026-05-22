@@ -7,7 +7,15 @@ alwaysApply: false
 
 To save time for a missing dependency, follow these steps:
 
-## Standard Process (Package-Level Dependency)
+## Internal Dependency (another `@nu-art/` package in the monorepo)
+
+1. Add it to the respective `__package.json` of that package as a dependency with the value `"?"`
+2. Add the package to the **package.json** of that package with value `"workspace:*"`
+3. From the project root run `pnpm i --no-frozen-lockfile`
+
+Internal dependencies are auto-resolved by BAI — no `bai-config.json` entry needed.
+
+## External Dependency (third-party npm package)
 
 1. Add it to the respective `__package.json` of that package as a dependency with the value `"?"`
 2. Add the latest version of that package (unless already exists) to the `bai-config.json` file in `templateParams.packageJson`
@@ -15,6 +23,10 @@ To save time for a missing dependency, follow these steps:
 4. From the project root run `pnpm i --no-frozen-lockfile`
 
 This should setup the installation without needing to re-run bai on the entire mono repo.
+
+## NEVER use `bai -i -up=<subset>`
+
+The `-i` flag causes BAI to regenerate `pnpm-workspace.yaml` based on the packages it processes. When combined with `-up=<subset>`, BAI only sees the subset — it generates a workspace file that excludes everything else, breaking the entire project. **Always use `bai -i -all`** if a full workspace regeneration is needed. For building a subset after deps are installed, use `bai -up=<packages>` without `-i`.
 
 ## Creating a New Package
 
