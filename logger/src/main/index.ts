@@ -16,5 +16,6 @@ export * from './LogClient_MemBuffer.js';
 export * from './LogClient_Function.js';
 export * from './LogClient_ConsoleProxy.js';
 export * from './LogClient_BaseRotate.js';
+export * from './LogClient_DebugRelay.js';
 export * from './get-log-style.js';
 export * from './utils.js';

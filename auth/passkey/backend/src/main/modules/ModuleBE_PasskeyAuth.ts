@@ -199,27 +199,37 @@ export class ModuleBE_PasskeyAuth_Class
 
 	@ApiHandler(ApiDef_Passkey.loginVerify)
 	async loginVerify(body: API_Passkey['loginVerify']['Body']): Promise<API_Passkey['loginVerify']['Response']> {
-		const pending = this.pendingChallenges.get(body.challengeId);
-		if (!pending)
-			throw HttpCodes._4XX.BAD_REQUEST('No pending authentication challenge found. Please restart the login flow.');
+		this.logInfo(`loginVerify: challengeId=${body.challengeId}`);
 
-		if (Date.now() - pending.createdAt > this.config.challengeTtlMs) {
+		const pending = this.pendingChallenges.get(body.challengeId);
+		if (!pending) {
+			this.logWarning(`loginVerify: no pending challenge found for id=${body.challengeId}, active challenges: ${this.pendingChallenges.size}`);
+			throw HttpCodes._4XX.BAD_REQUEST('No pending authentication challenge found. Please restart the login flow.');
+		}
+
+		const age = Date.now() - pending.createdAt;
+		if (age > this.config.challengeTtlMs) {
+			this.logWarning(`loginVerify: challenge expired (age=${age}ms, ttl=${this.config.challengeTtlMs}ms)`);
 			this.pendingChallenges.delete(body.challengeId);
 			throw HttpCodes._4XX.BAD_REQUEST('Authentication challenge expired. Please restart the login flow.');
 		}
 
 		const credentialId = body.assertionResponse.id;
+		this.logInfo(`loginVerify: looking up credentialId="${credentialId}"`);
+
 		const credentials = await ModuleBE_PasskeyCredentialDB.query.custom({
 			where: {credentialId},
 			limit: 1,
 		});
 
 		if (credentials.length === 0) {
+			this.logWarning(`loginVerify: credential NOT found in DB for id="${credentialId}"`);
 			this.pendingChallenges.delete(body.challengeId);
 			throw HttpCodes._4XX.UNAUTHORIZED('Credential not recognized');
 		}
 
 		const credential = credentials[0];
+		this.logInfo(`loginVerify: credential found, accountId=${credential.accountId}, counter=${credential.counter}`);
 
 		let verification: VerifiedAuthenticationResponse;
 		try {
@@ -236,16 +246,19 @@ export class ModuleBE_PasskeyAuth_Class
 				},
 			});
 		} catch (error: any) {
+			this.logWarning(`loginVerify: verification threw — ${error.message}`);
 			this.pendingChallenges.delete(body.challengeId);
 			throw HttpCodes._4XX.UNAUTHORIZED('Authentication verification failed', error.message);
 		}
 
 		if (!verification.verified) {
+			this.logWarning('loginVerify: verification returned verified=false');
 			this.pendingChallenges.delete(body.challengeId);
 			throw HttpCodes._4XX.UNAUTHORIZED('Authentication verification failed');
 		}
 
 		this.pendingChallenges.delete(body.challengeId);
+		this.logInfo(`loginVerify: verified OK, creating session for account=${credential.accountId}`);
 
 		await ModuleBE_PasskeyCredentialDB.set.item({
 			...credential,

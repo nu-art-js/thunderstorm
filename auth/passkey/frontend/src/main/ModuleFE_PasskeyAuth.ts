@@ -16,7 +16,6 @@ import {
 	AuthenticationOptionsResponse,
 } from '@nu-art/passkey-shared';
 import {LoggedStatus, ModuleFE_Account, type OnLoginStatusUpdated, StorageKey_DeviceId} from '@nu-art/user-account-frontend';
-import {ModuleFE_PasskeyCredentialDB} from './_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
 
 const StorageKey_PasskeyRegistered = new StorageKey<boolean>('passkey--registered-on-device').withstandDeletion();
 
@@ -34,6 +33,9 @@ class ModuleFE_PasskeyAuth_Class
 	}
 
 	__onLoginStatusUpdated() {
+		const status = ModuleFE_Account.getLoggedStatus();
+		this.logInfo(`Login status updated: ${LoggedStatus[status]}, autoPasskeyFlow: ${this.config.autoPasskeyFlow}`);
+
 		if (!this.config.autoPasskeyFlow)
 			return;
 
@@ -47,34 +49,38 @@ class ModuleFE_PasskeyAuth_Class
 	}
 
 	private async tryAutoRegister() {
-		const credentials = ModuleFE_PasskeyCredentialDB.cache.all();
-		if (credentials.length > 0) {
-			StorageKey_PasskeyRegistered.set(true);
+		if (StorageKey_PasskeyRegistered.get()) {
+			this.logInfo('tryAutoRegister: flag already set, skipping');
 			return;
 		}
 
 		try {
+			this.logInfo('tryAutoRegister: no flag, initiating registration');
 			await this.register(`${navigator.platform} ${new Date().toLocaleDateString()}`);
+			this.logInfo('tryAutoRegister: registration completed successfully');
 		} catch (e: any) {
-			this.logDebug(`Auto-register skipped: ${e.message ?? e.name}`);
+			this.logWarning(`tryAutoRegister: skipped — ${e.message ?? e.name}`);
 		}
 	}
 
 	async tryAutoLogin(): Promise<boolean> {
+		const passkeyFlag = StorageKey_PasskeyRegistered.get();
+		this.logInfo(`tryAutoLogin: autoPasskeyFlow=${this.config.autoPasskeyFlow}, browserSupport=${this.browserSupportsPasskeys()}, storageFlag=${passkeyFlag}`);
+
 		if (!this.config.autoPasskeyFlow)
 			return false;
 
 		if (!this.browserSupportsPasskeys())
 			return false;
 
-		if (!StorageKey_PasskeyRegistered.get())
+		if (!passkeyFlag)
 			return false;
 
 		try {
 			await this.login();
 			return true;
 		} catch (e: any) {
-			this.logDebug(`Auto-login not available: ${e.message ?? e.name}`);
+			this.logWarning(`tryAutoLogin: failed — ${e.message ?? e.name}`);
 			return false;
 		}
 	}
@@ -105,9 +111,12 @@ class ModuleFE_PasskeyAuth_Class
 	}
 
 	async register(label: string): Promise<RegistrationVerifyResponse> {
+		this.logInfo(`register: starting with label "${label}"`);
 		const {options} = await this._registerOptions({});
+		this.logInfo('register: got options from backend, prompting browser');
 
 		const attestationResponse = await startRegistration({optionsJSON: options as any});
+		this.logInfo(`register: browser returned attestation, verifying with backend`);
 
 		const result = await this._registerVerify({
 			attestationResponse: attestationResponse as any,
@@ -115,18 +124,23 @@ class ModuleFE_PasskeyAuth_Class
 		});
 
 		StorageKey_PasskeyRegistered.set(true);
+		this.logInfo('register: verified and flag set');
 		return result;
 	}
 
 	async login(): Promise<void> {
+		this.logInfo('login: requesting options from backend');
 		const {options, challengeId} = await this._loginOptions({});
+		this.logInfo(`login: got challenge ${challengeId}, prompting browser`);
 
 		const assertionResponse = await startAuthentication({optionsJSON: options as any});
+		this.logInfo(`login: browser returned assertion, credentialId=${assertionResponse.id}`);
 
 		const deviceId = StorageKey_DeviceId.get();
 		if (!deviceId)
 			throw new MUSTNeverHappenException('Missing deviceId');
 
+		this.logInfo(`login: verifying with backend (deviceId=${deviceId.slice(0, 8)}...)`);
 		await this._loginVerify({
 			assertionResponse: assertionResponse as any,
 			challengeId,
@@ -134,6 +148,7 @@ class ModuleFE_PasskeyAuth_Class
 		});
 
 		StorageKey_PasskeyRegistered.set(true);
+		this.logInfo('login: verified successfully, flag set');
 	}
 
 	browserSupportsPasskeys(): boolean {
