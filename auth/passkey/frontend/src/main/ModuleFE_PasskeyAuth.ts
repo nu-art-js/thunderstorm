@@ -16,7 +16,6 @@ import {
 	AuthenticationOptionsResponse,
 } from '@nu-art/passkey-shared';
 import {LoggedStatus, ModuleFE_Account, type OnLoginStatusUpdated, StorageKey_DeviceId} from '@nu-art/user-account-frontend';
-import {ModuleFE_PasskeyCredentialDB} from './_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
 
 const StorageKey_PasskeyRegistered = new StorageKey<boolean>('passkey--registered-on-device').withstandDeletion();
 
