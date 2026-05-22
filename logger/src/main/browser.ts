@@ -7,3 +7,4 @@
 export * from './index.js';
 export * from './LogClient_Browser.js';
 export * from './LogClient_BrowserGroups.js';
+export * from './LogClient_DebugRelay.js';
