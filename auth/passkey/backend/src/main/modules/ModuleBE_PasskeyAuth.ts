@@ -6,7 +6,7 @@
 
 import {Module} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/api-types';
-import {ApiHandler} from '@nu-art/http-server';
+import {ApiHandler, MemKey_HttpRequestHeaders} from '@nu-art/http-server';
 import {CollectAuthMethodStatus, MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_AuthGate, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {
 	API_Passkey,
@@ -26,19 +26,22 @@ import type {
 } from '@simplewebauthn/server';
 import {ModuleBE_PasskeyCredentialDB} from '../_entity/passkey-credential/ModuleBE_PasskeyCredentialDB.js';
 
+type AllowedDomain = {
+	rpId: string;
+	origins: string[];
+};
+
 type Config = {
 	enabled: boolean;
 	rpName: string;
-	rpId: string;
-	origin: string;
+	allowedDomains: AllowedDomain[];
 	challengeTtlMs: number;
 };
 
 const DefaultConfig: Config = {
 	enabled: true,
 	rpName: '',
-	rpId: '',
-	origin: '',
+	allowedDomains: [],
 	challengeTtlMs: 300_000,
 };
 
@@ -60,8 +63,29 @@ export class ModuleBE_PasskeyAuth_Class
 	}
 
 	protected init(): void {
-		if (!this.config.rpName || !this.config.rpId || !this.config.origin)
-			this.logWarningBold('Passkey module requires rpName, rpId, and origin to be configured.');
+		if (!this.config.rpName || this.config.allowedDomains.length === 0)
+			this.logWarningBold('Passkey module requires rpName and at least one allowedDomains entry to be configured.');
+	}
+
+	private resolveDomainForRequest(): AllowedDomain {
+		const headers = MemKey_HttpRequestHeaders.get();
+		const requestOrigin = headers.origin;
+		if (!requestOrigin)
+			throw HttpCodes._4XX.BAD_REQUEST('Missing Origin header — cannot determine passkey domain');
+
+		const domain = this.config.allowedDomains.find(d => d.origins.includes(requestOrigin));
+		if (!domain)
+			throw HttpCodes._4XX.BAD_REQUEST(`Origin "${requestOrigin}" is not in the allowed passkey domains`);
+
+		return domain;
+	}
+
+	private getAllOrigins(): string[] {
+		return this.config.allowedDomains.flatMap(d => d.origins);
+	}
+
+	private getAllRpIds(): string[] {
+		return this.config.allowedDomains.map(d => d.rpId);
 	}
 
 	__collectAuthMethodStatus() {
@@ -95,9 +119,11 @@ export class ModuleBE_PasskeyAuth_Class
 			where: {accountId},
 		});
 
+		const domain = this.resolveDomainForRequest();
+
 		const options = await generateRegistrationOptions({
 			rpName: this.config.rpName,
-			rpID: this.config.rpId,
+			rpID: domain.rpId,
 			userName: account.email,
 			userDisplayName: account.email,
 			attestationType: 'none',
@@ -138,8 +164,8 @@ export class ModuleBE_PasskeyAuth_Class
 			verification = await verifyRegistrationResponse({
 				response: body.attestationResponse as any,
 				expectedChallenge: pending.challenge,
-				expectedOrigin: this.config.origin,
-				expectedRPID: this.config.rpId,
+				expectedOrigin: this.getAllOrigins(),
+				expectedRPID: this.getAllRpIds(),
 			});
 		} catch (error: any) {
 			this.pendingChallenges.delete(accountId);
@@ -181,8 +207,10 @@ export class ModuleBE_PasskeyAuth_Class
 		if (!this.config.enabled)
 			throw HttpCodes._4XX.FORBIDDEN('Passkey authentication is disabled');
 
+		const domain = this.resolveDomainForRequest();
+
 		const options = await generateAuthenticationOptions({
-			rpID: this.config.rpId,
+			rpID: domain.rpId,
 			userVerification: 'preferred',
 		});
 
@@ -236,8 +264,8 @@ export class ModuleBE_PasskeyAuth_Class
 			verification = await verifyAuthenticationResponse({
 				response: body.assertionResponse as any,
 				expectedChallenge: pending.challenge,
-				expectedOrigin: this.config.origin,
-				expectedRPID: this.config.rpId,
+				expectedOrigin: this.getAllOrigins(),
+				expectedRPID: this.getAllRpIds(),
 				credential: {
 					id: credential.credentialId,
 					publicKey: Buffer.from(credential.publicKey, 'base64url'),
