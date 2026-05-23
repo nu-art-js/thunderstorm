@@ -64,6 +64,7 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	pathToEmulatorData: string
 	sources?: string[];
 	functions: string[] | FunctionConfig[];
+	runtime?: 'firebase-emulator' | 'node';
 	mongo?: MongoEmulatorConfig;
 	containerDeployment?: {
 		artifactRegistry: {
@@ -202,6 +203,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		if (this.config.mongo)
 			await this.startMongoEmulator();
+
+		if (this.config.runtime === 'node') {
+			await this.runDirectNode();
+			return;
+		}
 
 		let emulatorPromise: Promise<void> | undefined;
 
@@ -1063,6 +1069,72 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		await this.executeAsyncCommando(commando, `${this.npmCommand('tsx')} .trash/proxy/proxy.ts`);
 		this.logWarning('PROXY TERMINATED');
+	}
+
+	private async runDirectNode() {
+		const projectId = this.config.envConfig.projectId;
+		const port = this.config.basePort;
+
+		await this.startEmulatorsAndWait();
+
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.setUID(this.config.key)
+			.cd(this.config.fullPath)
+			.setLogLevelFilter((log, type) => {
+				if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
+					return LogLevel.Error;
+
+				if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
+					return LogLevel.Warning;
+			})
+			.onLog(/.*Listening on port.*/, () => this.setStatus('Launch Complete'));
+
+		if (this.config.mongo)
+			commando.custom(`export MONGODB_EMULATOR_HOST=localhost:${this.resolveMongoPort()}`);
+
+		commando.custom(`export GCLOUD_PROJECT=${projectId}`);
+		commando.custom(`export GOOGLE_CLOUD_PROJECT=${projectId}`);
+		commando.custom(`export FUNCTIONS_EMULATOR=true`);
+		commando.custom(`export FIREBASE_DATABASE_EMULATOR_HOST=localhost:${port + 2}`);
+		commando.custom(`export FIREBASE_AUTH_EMULATOR_HOST=localhost:${port + 7}`);
+		commando.custom(`export FIRESTORE_EMULATOR_HOST=localhost:${port + 3}`);
+		commando.custom(`export FIREBASE_STORAGE_EMULATOR_HOST=localhost:${port + 6}`);
+		commando.custom(`export PUBSUB_EMULATOR_HOST=localhost:${port + 5}`);
+
+		const firebaseConfig = JSON.stringify({
+			projectId,
+			databaseURL: `http://localhost:${port + 2}?ns=${projectId}`,
+			storageBucket: `${projectId}.appspot.com`,
+		});
+		commando.custom(`export FIREBASE_CONFIG='${firebaseConfig}'`);
+
+		const inspectFlag = this.runtimeContext.runtimeParams.debugBackend
+			? `--inspect=0.0.0.0:${this.config.debugPort}` : '';
+
+		await this.executeAsyncCommando(commando, `trap 'exit 0' SIGINT SIGTERM; while true; do node --watch ${inspectFlag} ${this.config.output}/index.js; code=$?; if [ $code -eq 0 ] || [ $code -eq 130 ] || [ $code -eq 143 ]; then break; fi; echo "Process exited ($code), restarting..."; sleep 1; done`);
+		this.logWarning('NODE SERVER TERMINATED');
+	}
+
+	private async startEmulatorsAndWait() {
+		return new Promise<void>((resolve) => {
+			const commando = this.allocateCommando(Commando_NVM).applyNVM()
+				.setUID(`${this.config.key}-emulators`)
+				.cd(this.config.fullPath)
+				.setLogLevelFilter((log, type) => {
+					if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
+						return LogLevel.Error;
+
+					if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
+						return LogLevel.Warning;
+				})
+				.onLog(/.*All emulators ready.*/, () => {
+					this.logInfo('Firebase emulators ready — starting Node server');
+					resolve();
+				});
+
+			this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --only database,auth,storage,firestore,pubsub --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData}`)
+				.then(() => this.logWarning('EMULATORS TERMINATED'));
+		});
 	}
 
 	private async runEmulator() {
