@@ -46,10 +46,13 @@ export const Default_Files: ProjectConfig_DefaultFileRoutes = {
  * Template file paths for Firebase Functions container builds.
  * These are used when no custom templates are specified in baiConfig.
  */
+
 export const FunctionBuildTemplateFiles = {
 	dockerfile: `${CONST_FirebaseFunctions}/dockerfile`,
+	dockerfileNode: `${CONST_FirebaseFunctions}/dockerfile-node`,
 	cloudbuildYaml: `${CONST_FirebaseFunctions}/cloudbuild.yaml`,
 	serviceYaml: `${CONST_FirebaseFunctions}/service.yaml`,
+	serviceNodeYaml: `${CONST_FirebaseFunctions}/service-node.yaml`,
 };
 
 const Default_OutputPath = './.trash';

@@ -57,6 +57,7 @@ const assets = [
 	'*.csv',
 	'*.yaml',
 	'dockerfile',
+	'dockerfile-*',
 ];
 
 

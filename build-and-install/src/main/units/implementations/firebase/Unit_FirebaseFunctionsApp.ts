@@ -381,7 +381,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		// Build context will be staging directory
 		const dockerfileName = containerDeployment.dockerfile || 'Dockerfile';
 		const dockerfilePath = resolve(stagingDir, dockerfileName);
-		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.dockerfile, dockerfilePath, {});
+		const dockerfileTemplate = this.config.runtime === 'node'
+			? FunctionBuildTemplateFiles.dockerfileNode
+			: FunctionBuildTemplateFiles.dockerfile;
+		await FileSystemUtils.file.template.copy(dockerfileTemplate, dockerfilePath, {});
 		this.logInfo(`Created Dockerfile at ${dockerfilePath}`);
 
 		const metadata = {
@@ -680,6 +683,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		this.logInfo(`Deploying container image: ${imageReference}`);
 
+		if (this.config.runtime === 'node') {
+			await this.deployNodeContainer(imageReference, artifactRegistry.region);
+			return;
+		}
+
 		// Validate that configured functions exist in compiled code
 		await this.validateFunctionsExist();
 
@@ -856,6 +864,101 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		}
 
 		this.logInfo(`Functions deployed: `, this.functions);
+	}
+
+	private async deployNodeContainer(imageReference: string, region: string) {
+		const envConfig = this.getEnvConfig();
+		const runtimeProjectId = envConfig.projectId;
+		const allFunctionConfigs = this.normalizeFunctionConfigs();
+
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.cd(this.config.fullPath)
+			.setLogLevelFilter(deployLogFilter);
+
+		for (const functionConfig of allFunctionConfigs) {
+			const serviceName = functionConfig.name.replace(/_/g, '-');
+			const resources = functionConfig.resources;
+			const buildOutputDir = resolve(this.config.fullPath, CONST_TrashDir);
+
+			this.logInfo(`Deploying Node container as Cloud Run service: ${serviceName}`);
+
+			const locationId = region.replace(/\d+$/, '');
+			const envVars: Record<string, string> = {
+				GCLOUD_PROJECT: runtimeProjectId,
+				GOOGLE_CLOUD_PROJECT: runtimeProjectId,
+				FIREBASE_CONFIG: JSON.stringify({
+					projectId: runtimeProjectId,
+					databaseURL: `https://${runtimeProjectId}-default-rtdb.firebaseio.com`,
+					storageBucket: `${runtimeProjectId}.appspot.com`,
+					locationId: locationId,
+				}),
+			};
+
+			const envVarsYaml = Object.entries(envVars)
+				.map(([name, value]) => {
+					const escapedValue = typeof value === 'string' ? JSON.stringify(value) : value;
+					return `        - name: ${name}\n          value: ${escapedValue}`;
+				})
+				.join('\n');
+
+			const serviceAccountYaml = functionConfig.serviceAccountName
+				? `      serviceAccountName: ${functionConfig.serviceAccountName}`
+				: '';
+
+			const cpuValue = resources?.cpu !== undefined
+				? (typeof resources.cpu === 'number' ? resources.cpu.toString() : resources.cpu)
+				: '1';
+
+			const serviceYamlParams = {
+				SERVICE_NAME: serviceName,
+				REGION: region,
+				RUNTIME_PROJECT_ID: runtimeProjectId,
+				IMAGE_REFERENCE: imageReference,
+				MAX_INSTANCES: (resources?.maxInstances ?? 100).toString(),
+				MIN_INSTANCES: (resources?.minInstances ?? 0).toString(),
+				CONCURRENCY: (resources?.concurrency ?? 100).toString(),
+				TIMEOUT: (resources?.timeout ?? 540).toString(),
+				CPU: cpuValue,
+				MEMORY: resources?.memory || '2Gi',
+				ENV_VARS: envVarsYaml,
+				SERVICE_ACCOUNT: serviceAccountYaml,
+			};
+
+			const serviceYamlFile = resolve(buildOutputDir, `service-${functionConfig.name}.yaml`);
+			await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.serviceNodeYaml, serviceYamlFile, serviceYamlParams);
+			this.logInfo(`Created service YAML at ${serviceYamlFile}`);
+
+			const serviceYamlFileRelative = serviceYamlFile.replace(`${this.config.fullPath}/`, '');
+			const gcloudDeployCommand = `gcloud run services replace ${serviceYamlFileRelative} --region=${region} --project=${runtimeProjectId}`;
+
+			if (this.runtimeContext.runtimeParams.dryRun) {
+				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
+				continue;
+			}
+
+			await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
+				if (exitCode === 0)
+					return;
+
+				throw new CommandoException(`Failed to deploy service ${serviceName} with exit code ${exitCode}`, stdout, stderr, exitCode);
+			});
+
+			const getUrlCommand = `gcloud run services describe ${serviceName} --region=${region} --project=${runtimeProjectId} --format="value(status.url)"`;
+			await this.executeAsyncCommando(commando, getUrlCommand, (stdout, stderr, exitCode) => {
+				if (exitCode === 0) {
+					const url = stdout.trim();
+					if (url) {
+						this.functions[functionConfig.name] = url;
+						this.logInfo(`Service ${serviceName} deployed at: ${url}`);
+					}
+					return;
+				}
+
+				this.logWarning(`Failed to retrieve URL for service ${serviceName}: ${stderr || stdout}`);
+			});
+		}
+
+		this.logInfo(`Node services deployed: `, this.functions);
 	}
 
 

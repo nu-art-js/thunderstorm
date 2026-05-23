@@ -1,0 +1,45 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: {{SERVICE_NAME}}
+  labels:
+    cloud.googleapis.com/location: {{REGION}}
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+    run.googleapis.com/invoker-iam-disabled: 'true'
+    run.googleapis.com/maxScale: '100'
+spec:
+  template:
+    metadata:
+      labels: {}
+      annotations:
+        autoscaling.knative.dev/maxScale: '{{MAX_INSTANCES}}'
+        autoscaling.knative.dev/minScale: '{{MIN_INSTANCES}}'
+        run.googleapis.com/startup-cpu-boost: 'true'
+    spec:
+      containerConcurrency: {{CONCURRENCY}}
+      timeoutSeconds: {{TIMEOUT}}
+{{SERVICE_ACCOUNT}}
+      containers:
+      - name: worker
+        image: {{IMAGE_REFERENCE}}
+        ports:
+        - name: http1
+          containerPort: 8080
+        env:
+{{ENV_VARS}}
+        resources:
+          limits:
+            cpu: '{{CPU}}'
+            memory: {{MEMORY}}
+        startupProbe:
+          timeoutSeconds: 240
+          periodSeconds: 240
+          failureThreshold: 1
+          tcpSocket:
+            port: 8080
+  traffic:
+  - percent: 100
+    latestRevision: true
+

@@ -1,0 +1,15 @@
+FROM node:22
+WORKDIR /workspace/dist
+
+# Copy dist folder (which contains package.json and all compiled code)
+COPY dist/ ./
+
+# Install production dependencies
+RUN npm install --production
+
+# Expose the port that Cloud Run will use
+EXPOSE 8080
+
+# Run the Node server directly — PORT is set by Cloud Run (default 8080)
+CMD ["node", "index.js"]
+
