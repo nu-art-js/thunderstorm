@@ -1,1 +1,0 @@
-export const PackageName_OpenAI = 'ts-openai';
