@@ -8,7 +8,6 @@ import {
 	composeUrl,
 	exists,
 	Module,
-	removeItemFromArray,
 	RouteParams
 } from '@nu-art/ts-common';
 import {mouseEventHandler, stopPropagation, ThunderDispatcher} from '@nu-art/thunder-core';
@@ -35,6 +34,7 @@ class ModuleFE_Routing_Class
 	private routesMapByPath: {
 		[fullPath: string]: TS_Route
 	} = {};
+	private RoutesRenderer: (() => JSX.Element) | null = null;
 
 	constructor() {
 		super();
@@ -74,16 +74,15 @@ class ModuleFE_Routing_Class
 	}
 
 	generateRoutes(rootRoute: TS_Route) {
-		// This needs to be a component in order to be build the routes on rendering after modules are awaited
 		this.buildRouteMap(rootRoute);
-		const RoutesRenderer = () => <Routes>
-			{this.routeBuilder(rootRoute)}
-		</Routes>;
+		if (!this.RoutesRenderer) {
+			this.RoutesRenderer = () => <Routes>
+				{this.routeBuilder(rootRoute)}
+			</Routes>;
+		}
 
-		// Use BrowserRouter - unstable_HistoryRouter has compatibility issues
-		// We'll use window.location changes to trigger React Router updates
 		return <BrowserRouter>
-			<RoutesRenderer/>
+			<this.RoutesRenderer/>
 		</BrowserRouter>;
 	}
 
@@ -110,13 +109,10 @@ class ModuleFE_Routing_Class
 			const Component = this.resolveRouteComponent(indexRoute);
 			if (indexRoute.path) {
 				this.logDebug(`index route redirect to path: ${path}/${indexRoute.path}`);
-				// force redirect to a different route
 				_indexRoute = <Route index element={<Navigate to={`${path}/${indexRoute.path}`}/>}/>;
 			} else {
-				// default index route renderer
 				this.logDebug(`index route render component: ${path}/${indexRoute.path}`);
 				_indexRoute = <Route index Component={Component} element={indexRoute.element}/>;
-				removeItemFromArray(routes, indexRoute);
 			}
 		}
 
@@ -124,13 +120,16 @@ class ModuleFE_Routing_Class
 			this.logDebug(`fallback: ${path}`);
 
 		const children = route.children?.filter(route => {
+			if (route.index && !route.path)
+				return false;
+
 			return route.enabled?.() ?? true;
 		}) ?? [];
 		const Component = this.resolveRouteComponent(route);
 		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
 			{_indexRoute}
 			{children.map(route => this.routeBuilder(route))}
-			{/*{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}*/}
+			{route.fallback && <Route path="*" element={<Navigate to={path || '/'}/>}/>}
 		</Route>;
 	};
 

@@ -60,4 +60,5 @@ export * from './validator/type-validators.js';
 export * from './consts/consts.js';
 
 export * from './mem-cache/MemCache.js';
+export * from './mem-cache/CacheKey.js';
 export * from './modules/csv-serializer.js';

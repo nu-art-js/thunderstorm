@@ -39,6 +39,9 @@ export abstract class ComponentSync<P = any, S = any>
 		return _state;
 	}
 
+	// If render output depends on props, that logic MUST be encoded in state here.
+	// BaseComponent.shouldComponentUpdate only compares state — prop-driven render
+	// decisions that bypass state will silently block re-renders.
 	protected deriveStateFromProps(nextProps: P, state: S): S {
 		return state as S;
 	}

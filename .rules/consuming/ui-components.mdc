@@ -22,17 +22,9 @@ Thunderstorm provides UI components and utilities that **must** be used instead 
 
 ---
 
-## Routing — never use `window.location` or `openUrl`
+## Routing — see dedicated rule
 
-**Always use `ModuleFE_Routing` for all in-app navigation and URL access.**
-
-| Raw approach | Use instead |
-|---|---|
-| `window.location.search` / `URLSearchParams` | `ModuleFE_Routing.getQueryParameter(key)` |
-| `window.location.href = ...` / `openUrl(..., '_self')` | `ModuleFE_Routing.goToRoute(route, params)` |
-| Manual history manipulation | `ModuleFE_Routing.push(path)` / `.replace(path)` |
-
-`openUrl` causes a full page reload, losing React state and breaking browser history. `ModuleFE_Routing` handles URL encoding, history management, and React Router integration correctly. This applies to all in-app navigation — even "just reading a query param."
+For navigation APIs (`ModuleFE_Routing`), route definitions, App component requirements, `enabled`, `fallback`, and route tree structure — see [routing.mdc](routing.mdc).
 
 ---
 

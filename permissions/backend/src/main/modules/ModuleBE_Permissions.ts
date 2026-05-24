@@ -1,4 +1,4 @@
-import {_keys, ApiException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, batchActionParallel, CacheKey, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
@@ -50,6 +50,7 @@ export const ServiceAccountId_Bootstrap = 'bootstrap-admin';
 
 type Config = {
 	serviceAccounts: Record<string, ServiceAccountConfig>;
+	saAccessIdCacheTtlMs?: number;
 };
 
 // --- Well-known group IDs ---
@@ -76,6 +77,7 @@ class ModuleBE_Permissions_Class
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
 	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
 	private readonly moduleScopeKeys = new Map<string, string[]>();
+	private saAccessIdCache!: CacheKey<ScopedAccessIds>;
 
 	constructor() {
 		super();
@@ -113,6 +115,7 @@ class ModuleBE_Permissions_Class
 
 	protected init() {
 		super.init();
+		this.saAccessIdCache = new CacheKey<ScopedAccessIds>('sa-access-ids', this.config.saAccessIdCacheTtlMs ?? 60_000);
 		this.adminGrantFlagRef = ModuleBE_Firebase.createModuleStateFirebaseRef<boolean>(this, 'grantAdminOnLogin');
 		this.setAccessContextResolver(ModuleBE_AccessGroupDB, this.permissionsAccessResolver);
 		this.setAccessContextResolver(ModuleBE_PermissionScopeDB, this.permissionsAccessResolver);
@@ -465,6 +468,7 @@ class ModuleBE_Permissions_Class
 	// --- Access group change handler ---
 
 	async __onAccessGroupChanged(changedGroupIds: UniqueId[]): Promise<void> {
+		this.saAccessIdCache.invalidate();
 		await this.rematerializeForGroups(changedGroupIds);
 	}
 
@@ -535,7 +539,7 @@ class ModuleBE_Permissions_Class
 
 		if (saConfig.systemOnly) {
 			const store = MemStorage.getStore();
-			if (store && MemKey_UserScopePermissions.peak() !== undefined)
+			if (store && MemKey_ServiceAccountId.peak() === undefined && MemKey_UserScopePermissions.peak() !== undefined)
 				throw new ApiException(403, `System-only service account '${saId}' cannot be used within a user context`);
 		}
 
@@ -558,10 +562,14 @@ class ModuleBE_Permissions_Class
 	}
 
 	private async resolveSAAccessIds(personalGroupId: UniqueId): Promise<ScopedAccessIds> {
+		const cached = this.saAccessIdCache.get(personalGroupId);
+		if (cached)
+			return cached;
+
 		return this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 			const {accessIds} = await this.materializeFromGroups(personalGroupId, allGroups);
-			return accessIds;
+			return this.saAccessIdCache.set(personalGroupId, accessIds);
 		});
 	}
 

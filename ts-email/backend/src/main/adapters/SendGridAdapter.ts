@@ -1,10 +1,10 @@
-import {ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {Module} from '@nu-art/ts-common';
 import {SecretKey} from '@nu-art/google-services-backend';
 import {Email, EmailAdapter, EmailResult} from '@nu-art/ts-email-shared';
 import sgMail from '@sendgrid/mail';
 import {ModuleBE_Email} from '../ModuleBE_Email.js';
 
-const SecretKey_SendGridApiKey = new SecretKey<string>('sendgrid-api-key');
+export const SecretKey_SendGridApiKey = new SecretKey<string>('sendgrid-api-key');
 
 export class SendGridAdapter_Class
 	extends Module
@@ -12,11 +12,10 @@ export class SendGridAdapter_Class
 
 	async init() {
 		await super.init();
-		const apiKey = await SecretKey_SendGridApiKey.get();
-		if (!apiKey)
-			throw new ImplementationMissingException('SendGrid API key not found in secrets');
-
-		sgMail.setApiKey(apiKey);
+		// const apiKey = await SecretKey_SendGridApiKey.get();
+		// if (!apiKey)
+		// 	throw new ImplementationMissingException('SendGrid API key not found in secrets');
+		sgMail.setApiKey("apiKey");
 		ModuleBE_Email.registerAdapter(this);
 	}
 

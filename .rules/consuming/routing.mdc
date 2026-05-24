@@ -1,0 +1,122 @@
+---
+description: When defining routes, setting up the app shell, or debugging route matching — route tree structure, fallback, enabled, and App component requirements
+alwaysApply: false
+---
+
+# Routing
+
+Thunderstorm routing wraps React Router v6. Routes are declared as `TS_Route` objects, composed into a tree, and rendered via `ModuleFE_Routing.generateRoutes(rootRoute)`.
+
+---
+
+## Navigation — never use `window.location`
+
+| Raw approach | Use instead |
+|---|---|
+| `window.location.search` / `URLSearchParams` | `ModuleFE_Routing.getQueryParameter(key)` |
+| `window.location.href = ...` / `openUrl(..., '_self')` | `ModuleFE_Routing.goToRoute(route, params)` |
+| Manual history manipulation | `ModuleFE_Routing.push(location)` / `.replace(location)` |
+
+`openUrl` causes a full page reload, losing React state and breaking browser history.
+
+---
+
+## App component — do NOT use `ThunderstormDefaultApp`
+
+`ThunderstormDefaultApp` is a minimal sample that never re-renders. Projects that use `enabled()` on routes **must** provide their own App component that re-renders when route visibility changes (e.g. permissions load, login state changes). Without this, routes excluded by `enabled()` on initial render never appear.
+
+```typescript
+import {ComponentSync, TS_DialogOverlay, TS_ToastOverlay, TS_MemoryMonitor} from '@nu-art/thunder-widgets';
+import {ModuleFE_Routing, TS_Route} from '@nu-art/thunder-routing';
+import {stopPropagation, Thunder} from '@nu-art/thunder-core';
+import type {OnLoginStatusUpdated} from '@nu-art/user-account-frontend';
+import type {OnUserPermissionsUpdated} from '@nu-art/permissions-frontend';
+
+export class App
+  extends ComponentSync<{ rootRoute: TS_Route; additionalOverlays?: React.ElementType[] }>
+  implements OnLoginStatusUpdated, OnUserPermissionsUpdated {
+
+  __onLoginStatusUpdated() { this.forceUpdate(); }
+  __onUserPermissionsUpdated() { this.forceUpdate(); }
+
+  protected deriveStateFromProps() { return {}; }
+
+  render() {
+    return (
+      <div id="app" onDrop={stopPropagation} onDragOver={stopPropagation}>
+        {ModuleFE_Routing.generateRoutes(this.props.rootRoute)}
+        <TS_DialogOverlay/>
+        <TS_ToastOverlay/>
+        <TS_MemoryMonitor/>
+        {this.props.additionalOverlays?.map(Overlay => <Overlay key={...}/>)}
+      </div>
+    );
+  }
+}
+```
+
+Wire with `.setMainApp(App, {rootRoute: Route_Root, additionalOverlays: [...]})`.
+
+---
+
+## Root route — must use `path: '/'`
+
+The root route **must** have `path: '/'`. This makes React Router v6 treat it as the universal parent layout that matches all URLs. Using `path: ''` creates an ambiguous empty-segment match that breaks fallback routing and nested path matching.
+
+```typescript
+export const Route_Root: TS_Route = {
+  path: '/',        // REQUIRED — never use ''
+  key: 'root',
+  Component: Page_Main,
+  fallback: true,
+  children: [...]
+};
+```
+
+---
+
+## `fallback: true` — catch-all for unmatched URLs
+
+When `fallback: true`, the route builder adds a `<Route path="*">` child that redirects unmatched URLs to the route's own path (i.e. `/`). This prevents white screens from:
+- Typos in URLs
+- Stale bookmarks
+- Routes removed by `enabled()` after logout or before permissions load
+
+Only set `fallback: true` on the root route. Do not add it to leaf routes.
+
+---
+
+## `enabled` — dynamic route visibility
+
+The `enabled` callback controls whether a route exists in the React Router tree at render time:
+
+```typescript
+export const Route_Page_Topics: TS_Route = {
+  path: 'topics',
+  key: 'topics-page',
+  enabled: () => ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_TopicsUI, 'view'),
+  Component: APage_Topics,
+};
+```
+
+When `enabled()` returns false, the route is excluded from the tree. If a user navigates to that URL (direct entry, bookmark, or after logout clears permissions), the `fallback` catch-all on the root route redirects them to `/`.
+
+For `enabled()` to re-evaluate dynamically, the App component must re-render when the underlying state changes — this is why `ThunderstormDefaultApp` is insufficient.
+
+---
+
+## `RoutesRenderer` stability
+
+`generateRoutes` creates a `RoutesRenderer` function component internally. This reference is **memoized** (created once, stored as a field). When the App re-renders, React reconciles the same component type — re-running `routeBuilder` with fresh `enabled()` evaluations without unmounting the route tree or losing page state.
+
+---
+
+## `index: true` — default child route
+
+A route with `index: true` renders when the parent matches but no other child matches:
+
+```typescript
+{ path: '', key: 'landing-page', Component: Page_Landing, index: true }
+```
+
+Use empty `path` for inline rendering at the parent URL. Use a non-empty `path` for redirect-to-default behavior.
