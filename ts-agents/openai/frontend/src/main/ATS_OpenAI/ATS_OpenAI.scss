@@ -1,0 +1,22 @@
+.ats-openai {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ats-openai__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ats-openai__row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.ats-openai__textarea {
+  box-sizing: border-box;
+  resize: none;
+}
