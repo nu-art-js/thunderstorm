@@ -26,7 +26,7 @@
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
-    "directory": "_thunderstorm/build-and-install"
+    "directory": "_thunderstorm/build-and-install/impl"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -35,7 +35,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "plop": "npm run plop --prefix ../.."
+    "plop": "npm run plop --prefix ../../.."
   },
   "dependencies": {
     "chokidar": "^3.6.0",
