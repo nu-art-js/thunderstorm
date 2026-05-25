@@ -1,0 +1,57 @@
+{
+  "name": "@nu-art/bai-mcp",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Local MCP server exposing BAI (Build-And-Install) CLI operations as discoverable tools over stdio transport",
+  "type": "module",
+  "keywords": [
+    "mcp",
+    "build-and-install",
+    "bai",
+    "monorepo",
+    "thunderstorm",
+    "nu-art",
+    "stdio"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues?q=is%3Aissue+label%3Abuild-and-install"
+  },
+  "publishConfig": {
+    "directory": "dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/build-and-install/mcp"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "bin": {
+    "bai-mcp": "dist/mcp-server.js"
+  },
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}
