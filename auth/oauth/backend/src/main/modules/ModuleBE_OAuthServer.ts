@@ -73,19 +73,17 @@ export class ModuleBE_OAuthServer_Class
 	private async loadOrGenerateKeyPair(): Promise<void> {
 		const alg = this.config.signingAlgorithm;
 
-		try {
-			const persisted = await this.keySecret.get();
-			if (persisted && persisted.kid && persisted.privateKeyJwk) {
-				this.kid = persisted.kid;
-				this.privateKey = await jose.importJWK(persisted.privateKeyJwk, alg) as jose.KeyLike;
-				this.publicKey = await jose.importJWK(persisted.publicKeyJwk, alg) as jose.KeyLike;
-				this.jwk = {...persisted.publicKeyJwk, kid: this.kid, alg, use: 'sig'};
-				this.logInfo(`Loaded persisted key pair (alg: ${alg}, kid: ${this.kid})`);
-				return;
-			}
-		} catch (_err) {
-			this.logInfo('No persisted key pair found, generating new one');
+		const persisted = await this.keySecret.get();
+		if (persisted && persisted.kid && persisted.privateKeyJwk) {
+			this.kid = persisted.kid;
+			this.privateKey = await jose.importJWK(persisted.privateKeyJwk, alg) as jose.KeyLike;
+			this.publicKey = await jose.importJWK(persisted.publicKeyJwk, alg) as jose.KeyLike;
+			this.jwk = {...persisted.publicKeyJwk, kid: this.kid, alg, use: 'sig'};
+			this.logInfo(`Loaded persisted key pair (alg: ${alg}, kid: ${this.kid})`);
+			return;
 		}
+
+		this.logInfo('No persisted key pair found, generating new one');
 
 		this.kid = randomUUID();
 		const {publicKey, privateKey} = await jose.generateKeyPair(alg, {extractable: true});
@@ -279,7 +277,7 @@ button:disabled{background:#333;cursor:not-allowed}
 </div>
 <script>
 const pendingId='${pendingId}';
-const state=${state ? `'${state}'` : 'null'};
+const state=${state ? JSON.stringify(state) : 'null'};
 async function startLogin(){
 const btn=document.getElementById('btn'),spinner=document.getElementById('spinner'),err=document.getElementById('error');
 btn.disabled=true;spinner.style.display='block';err.textContent='';

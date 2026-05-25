@@ -40,6 +40,8 @@
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/http-server": "?",
+    "@nu-art/permissions-backend": "?",
+    "@nu-art/permissions-shared": "?",
     "@nu-art/slack-backend": "?",
     "@nu-art/slack-shared": "?",
     "@nu-art/ts-common": "?",

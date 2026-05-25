@@ -1,12 +1,14 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import {HttpCodes} from '@nu-art/api-types';
-import {API_BootstrapToken, ApiDef_BootstrapToken, DatabaseDef_BootstrapToken, DBDef_BootstrapToken} from '@nu-art/user-account-shared';
+import {API_BootstrapToken, ApiDef_BootstrapToken, DatabaseDef_BootstrapToken, DBDef_BootstrapToken, PermissionScope_BootstrapToken} from '@nu-art/user-account-shared';
 import {ModuleBE_JWT, JWT_Handler} from '../session/ModuleBE_JWT.js';
 import {RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
+import {RequirePermission} from '@nu-art/permissions-backend';
 import {MemKey_AccountId} from '../session/consts.js';
 
 type BootstrapClaims = {
+	tokenId: string;
 	accountId: string;
 	purpose: 'mcp-bootstrap';
 };
@@ -54,6 +56,7 @@ export class ModuleBE_BootstrapTokenDB_Class
 		});
 
 		const jwt = await this.jwtHandler.create({
+			tokenId: entity._id,
 			accountId,
 			purpose: 'mcp-bootstrap',
 		}, Year);
@@ -70,12 +73,12 @@ export class ModuleBE_BootstrapTokenDB_Class
 		if (claims.purpose !== 'mcp-bootstrap')
 			throw HttpCodes._4XX.UNAUTHORIZED('Token is not a bootstrap token');
 
-		const tokens = await this.query.custom({
-			where: {accountId: claims.accountId, revoked: false},
-		});
-
-		if (tokens.length === 0)
+		const tokenEntity = await this.query.uniqueAssert(claims.tokenId);
+		if (tokenEntity.revoked)
 			throw HttpCodes._4XX.UNAUTHORIZED('Bootstrap token has been revoked');
+
+		if (tokenEntity.accountId !== claims.accountId)
+			throw HttpCodes._4XX.UNAUTHORIZED('Token account mismatch');
 
 		return {accountId: claims.accountId};
 	}
@@ -87,6 +90,7 @@ export class ModuleBE_BootstrapTokenDB_Class
 		}
 	}
 
+	@RequirePermission(PermissionScope_BootstrapToken, 'create')
 	@ApiHandler(ApiDef_BootstrapToken.create)
 	async apiCreateToken(body: API_BootstrapToken['create']['Body']): Promise<API_BootstrapToken['create']['Response']> {
 		const accountId = MemKey_AccountId.get();
@@ -94,6 +98,7 @@ export class ModuleBE_BootstrapTokenDB_Class
 		return {token};
 	}
 
+	@RequirePermission(PermissionScope_BootstrapToken, 'create')
 	@ApiHandler(ApiDef_BootstrapToken.revoke)
 	async apiRevokeTokens(_body: API_BootstrapToken['revoke']['Body']): Promise<void> {
 		const accountId = MemKey_AccountId.get();
