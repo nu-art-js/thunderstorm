@@ -50,7 +50,7 @@ export class ModuleBE_OAuthServer_Class
 	private publicKey!: jose.KeyLike;
 	private jwk!: jose.JWK;
 	private kid!: string;
-	private keySecret!: SecretKey<PersistedKeyPair>;
+	private keySecret!: SecretKey<string>;
 
 	private readonly clients = new Map<string, DB_OAuthClient>();
 	private readonly grants = new Map<string, DB_OAuthGrant>();
@@ -65,7 +65,7 @@ export class ModuleBE_OAuthServer_Class
 		if (!this.config.issuer || !this.config.baseUrl)
 			this.logWarningBold('OAuth server issuer and baseUrl must be configured. Using empty defaults.');
 
-		this.keySecret = new SecretKey<PersistedKeyPair>(this.config.keySecretName, this.config.projectId);
+		this.keySecret = new SecretKey<string>(this.config.keySecretName, this.config.projectId);
 		await this.loadOrGenerateKeyPair();
 		this.mountRoutes();
 	}
@@ -73,17 +73,20 @@ export class ModuleBE_OAuthServer_Class
 	private async loadOrGenerateKeyPair(): Promise<void> {
 		const alg = this.config.signingAlgorithm;
 
-		const persisted = await this.keySecret.get();
+		try {
+		const raw = await this.keySecret.get();
+		const persisted: PersistedKeyPair | undefined = raw ? JSON.parse(raw) : undefined;
 		if (persisted && persisted.kid && persisted.privateKeyJwk) {
-			this.kid = persisted.kid;
+				this.kid = persisted.kid;
 			this.privateKey = await jose.importJWK(persisted.privateKeyJwk, alg) as jose.KeyLike;
 			this.publicKey = await jose.importJWK(persisted.publicKeyJwk, alg) as jose.KeyLike;
 			this.jwk = {...persisted.publicKeyJwk, kid: this.kid, alg, use: 'sig'};
-			this.logInfo(`Loaded persisted key pair (alg: ${alg}, kid: ${this.kid})`);
-			return;
+				this.logInfo(`Loaded persisted key pair (alg: ${alg}, kid: ${this.kid})`);
+				return;
+			}
+		} catch (_err) {
+			this.logInfo('No persisted key pair found, generating new one');
 		}
-
-		this.logInfo('No persisted key pair found, generating new one');
 
 		this.kid = randomUUID();
 		const {publicKey, privateKey} = await jose.generateKeyPair(alg, {extractable: true});
@@ -95,7 +98,8 @@ export class ModuleBE_OAuthServer_Class
 
 		this.jwk = {...publicKeyJwk, kid: this.kid, alg, use: 'sig'};
 
-		await this.keySecret.set({kid: this.kid, alg, privateKeyJwk, publicKeyJwk});
+		const keyPair: PersistedKeyPair = {kid: this.kid, alg, privateKeyJwk, publicKeyJwk};
+		await this.keySecret.set(JSON.stringify(keyPair));
 		this.logInfo(`Generated and persisted new key pair (alg: ${alg}, kid: ${this.kid})`);
 	}
 
@@ -277,7 +281,7 @@ button:disabled{background:#333;cursor:not-allowed}
 </div>
 <script>
 const pendingId='${pendingId}';
-const state=${state ? JSON.stringify(state) : 'null'};
+const state=${state ? `'${state}'` : 'null'};
 async function startLogin(){
 const btn=document.getElementById('btn'),spinner=document.getElementById('spinner'),err=document.getElementById('error');
 btn.disabled=true;spinner.style.display='block';err.textContent='';
