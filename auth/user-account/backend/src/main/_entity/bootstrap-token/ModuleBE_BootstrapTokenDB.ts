@@ -1,15 +1,19 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import {HttpCodes} from '@nu-art/api-types';
-import {API_BootstrapToken, ApiDef_BootstrapToken, DatabaseDef_BootstrapToken, DBDef_BootstrapToken} from '@nu-art/user-account-shared';
+import {API_BootstrapToken, ApiDef_BootstrapToken, DatabaseDef_Account, DatabaseDef_BootstrapToken, DBDef_BootstrapToken} from '@nu-art/user-account-shared';
 import {ModuleBE_JWT, JWT_Handler} from '../session/ModuleBE_JWT.js';
 import {RecursiveObjectOfPrimitives} from '@nu-art/ts-common';
 import {MemKey_AccountId} from '../session/consts.js';
 
 type BootstrapClaims = {
+	tokenId: string;
 	accountId: string;
 	purpose: 'mcp-bootstrap';
 };
+
+type AccountId = DatabaseDef_Account['id'];
+type BootstrapTokenId = DatabaseDef_BootstrapToken['id'];
 
 type Config = {
 	jwtSigner: {
@@ -45,7 +49,7 @@ export class ModuleBE_BootstrapTokenDB_Class
 		});
 	}
 
-	async createToken(accountId: string, label: string, metadata?: Record<string, string>): Promise<{ token: string; entity: DatabaseDef_BootstrapToken['dbType'] }> {
+	async createToken(accountId: AccountId, label: string, metadata?: Record<string, string>): Promise<{ token: string; entity: DatabaseDef_BootstrapToken['dbType'] }> {
 		const entity = await this.create.item({
 			accountId,
 			label,
@@ -54,6 +58,7 @@ export class ModuleBE_BootstrapTokenDB_Class
 		});
 
 		const jwt = await this.jwtHandler.create({
+			tokenId: entity._id,
 			accountId,
 			purpose: 'mcp-bootstrap',
 		}, Year);
@@ -61,7 +66,7 @@ export class ModuleBE_BootstrapTokenDB_Class
 		return {token: jwt, entity};
 	}
 
-	async validateToken(jwt: string): Promise<{ accountId: string }> {
+	async validateToken(jwt: string): Promise<{ accountId: AccountId }> {
 		const result = await this.jwtHandler.verifySignature(jwt);
 		if (!result.validated)
 			throw HttpCodes._4XX.UNAUTHORIZED('Invalid bootstrap token');
@@ -70,17 +75,20 @@ export class ModuleBE_BootstrapTokenDB_Class
 		if (claims.purpose !== 'mcp-bootstrap')
 			throw HttpCodes._4XX.UNAUTHORIZED('Token is not a bootstrap token');
 
-		const tokens = await this.query.custom({
-			where: {accountId: claims.accountId, revoked: false},
-		});
+		const tokenId = claims.tokenId as BootstrapTokenId;
+		const accountId = claims.accountId as AccountId;
 
-		if (tokens.length === 0)
+		const tokenEntity = await this.query.uniqueAssert(tokenId);
+		if (tokenEntity.revoked)
 			throw HttpCodes._4XX.UNAUTHORIZED('Bootstrap token has been revoked');
 
-		return {accountId: claims.accountId};
+		if (tokenEntity.accountId !== accountId)
+			throw HttpCodes._4XX.UNAUTHORIZED('Token account mismatch');
+
+		return {accountId};
 	}
 
-	async revokeAllForAccount(accountId: string): Promise<void> {
+	async revokeAllForAccount(accountId: AccountId): Promise<void> {
 		const tokens = await this.query.custom({where: {accountId}});
 		for (const token of tokens) {
 			await this.set.item({...token, revoked: true});

@@ -50,7 +50,7 @@ export class ModuleBE_OAuthServer_Class
 	private publicKey!: jose.KeyLike;
 	private jwk!: jose.JWK;
 	private kid!: string;
-	private keySecret!: SecretKey<PersistedKeyPair>;
+	private keySecret!: SecretKey<string>;
 
 	private readonly clients = new Map<string, DB_OAuthClient>();
 	private readonly grants = new Map<string, DB_OAuthGrant>();
@@ -65,7 +65,7 @@ export class ModuleBE_OAuthServer_Class
 		if (!this.config.issuer || !this.config.baseUrl)
 			this.logWarningBold('OAuth server issuer and baseUrl must be configured. Using empty defaults.');
 
-		this.keySecret = new SecretKey<PersistedKeyPair>(this.config.keySecretName, this.config.projectId);
+		this.keySecret = new SecretKey<string>(this.config.keySecretName, this.config.projectId);
 		await this.loadOrGenerateKeyPair();
 		this.mountRoutes();
 	}
@@ -74,12 +74,13 @@ export class ModuleBE_OAuthServer_Class
 		const alg = this.config.signingAlgorithm;
 
 		try {
-			const persisted = await this.keySecret.get();
-			if (persisted && persisted.kid && persisted.privateKeyJwk) {
+		const raw = await this.keySecret.get();
+		const persisted: PersistedKeyPair | undefined = raw ? JSON.parse(raw) : undefined;
+		if (persisted && persisted.kid && persisted.privateKeyJwk) {
 				this.kid = persisted.kid;
-				this.privateKey = await jose.importJWK(persisted.privateKeyJwk, alg) as jose.KeyLike;
-				this.publicKey = await jose.importJWK(persisted.publicKeyJwk, alg) as jose.KeyLike;
-				this.jwk = {...persisted.publicKeyJwk, kid: this.kid, alg, use: 'sig'};
+			this.privateKey = await jose.importJWK(persisted.privateKeyJwk, alg) as jose.KeyLike;
+			this.publicKey = await jose.importJWK(persisted.publicKeyJwk, alg) as jose.KeyLike;
+			this.jwk = {...persisted.publicKeyJwk, kid: this.kid, alg, use: 'sig'};
 				this.logInfo(`Loaded persisted key pair (alg: ${alg}, kid: ${this.kid})`);
 				return;
 			}
@@ -97,7 +98,8 @@ export class ModuleBE_OAuthServer_Class
 
 		this.jwk = {...publicKeyJwk, kid: this.kid, alg, use: 'sig'};
 
-		await this.keySecret.set({kid: this.kid, alg, privateKeyJwk, publicKeyJwk});
+		const keyPair: PersistedKeyPair = {kid: this.kid, alg, privateKeyJwk, publicKeyJwk};
+		await this.keySecret.set(JSON.stringify(keyPair));
 		this.logInfo(`Generated and persisted new key pair (alg: ${alg}, kid: ${this.kid})`);
 	}
 

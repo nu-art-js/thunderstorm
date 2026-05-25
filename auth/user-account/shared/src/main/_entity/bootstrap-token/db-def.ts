@@ -1,4 +1,4 @@
-import {tsValidateBoolean, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
+import {tsValidateBoolean, tsValidateDynamicObject, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
 import {accountGroupName} from '../session/consts.js';
 import {DatabaseDef_BootstrapToken} from './types.js';
@@ -6,7 +6,7 @@ import {DatabaseDef_BootstrapToken} from './types.js';
 export const Validator_BootstrapToken_Modifiable: DatabaseDef_BootstrapToken['modifiablePropsValidator'] = {
 	accountId: tsValidateUniqueId,
 	label: tsValidateString(200),
-	metadata: undefined,
+	metadata: tsValidateDynamicObject(tsValidateString(), tsValidateString(), false),
 	revoked: tsValidateBoolean(),
 };
 
