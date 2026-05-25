@@ -1,0 +1,3 @@
+# 2026-05-25 18:34 — Verify copied values make sense in the new context
+- **Context:** When restructuring a package (git mv), the agent copied `repository.directory` from the original `__package.json` and appended the new subfolder — without noticing the original value was a path from a different perspective (consumer project) rather than the repo's own root.
+- **Principle:** Never blindly copy field values from a source file during restructuring or templating. Before carrying a value forward, verify it is correct **in the target context** — not just syntactically valid. The original may have been wrong, or correct only from a different vantage point.
