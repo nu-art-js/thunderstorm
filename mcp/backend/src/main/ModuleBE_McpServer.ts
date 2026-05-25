@@ -22,6 +22,10 @@ export type McpTokenVerifier = {
 	}>;
 };
 
+export type McpBootstrapValidator = {
+	validateBootstrapToken: (jwt: string) => Promise<{ accountId: string }>;
+};
+
 export type Config = {
 	servers: McpServerInstanceConfig[];
 	authServerUrl?: string;
@@ -45,6 +49,7 @@ export class ModuleBE_McpServer_Class
 
 	private readonly instances = new Map<string, McpServerInstance>();
 	private tokenVerifier?: McpTokenVerifier;
+	private bootstrapValidator?: McpBootstrapValidator;
 
 	constructor() {
 		super();
@@ -53,6 +58,11 @@ export class ModuleBE_McpServer_Class
 
 	setTokenVerifier(verifier: McpTokenVerifier): this {
 		this.tokenVerifier = verifier;
+		return this;
+	}
+
+	setBootstrapValidator(validator: McpBootstrapValidator): this {
+		this.bootstrapValidator = validator;
 		return this;
 	}
 
@@ -107,13 +117,31 @@ export class ModuleBE_McpServer_Class
 			const prefix = instance.config.pathPrefix;
 			this.logInfo(`Mounting MCP routes at ${prefix}`);
 
-			if (this.tokenVerifier) {
+			if (this.tokenVerifier && this.config.authServerUrl) {
 				const verifier = this.tokenVerifier;
 				const requiredScopes = instance.config.requiredScopes;
+				const authServerUrl = this.config.authServerUrl;
+				const bootstrapValidator = this.bootstrapValidator;
+
+				const bootstrapMiddleware = async (req: any, _res: any, next: any) => {
+					const bootstrapJwt = req.query['bootstrap'] as string | undefined;
+					if (bootstrapJwt && bootstrapValidator) {
+						try {
+							const result = await bootstrapValidator.validateBootstrapToken(bootstrapJwt);
+							req.bootstrapAccountId = result.accountId;
+							this.logInfo(`Bootstrap token validated for account: ${result.accountId}`);
+						} catch (err: any) {
+							this.logWarning(`Bootstrap token validation failed: ${err.message}`);
+						}
+					}
+					next();
+				};
 
 				const authMiddleware = async (req: any, res: any, next: any) => {
 					const authHeader = req.headers['authorization'] as string | undefined;
 					if (!authHeader?.startsWith('Bearer ')) {
+						const wwwAuth = `Bearer resource_metadata="${authServerUrl}/.well-known/oauth-protected-resource"`;
+						res.setHeader('WWW-Authenticate', wwwAuth);
 						res.status(401).json({
 							error: 'invalid_token',
 							error_description: 'Missing or invalid Authorization header',
@@ -126,6 +154,7 @@ export class ModuleBE_McpServer_Class
 						const authInfo = await verifier.verifyAccessToken(token);
 
 						if (authInfo.expiresAt && authInfo.expiresAt < Math.floor(Date.now() / 1000)) {
+							res.setHeader('WWW-Authenticate', `Bearer error="invalid_token", error_description="Token has expired"`);
 							res.status(401).json({
 								error: 'invalid_token',
 								error_description: 'Token has expired',
@@ -148,6 +177,7 @@ export class ModuleBE_McpServer_Class
 						next();
 					} catch (err: any) {
 						this.logError(`Token verification failed:`, err);
+						res.setHeader('WWW-Authenticate', `Bearer error="invalid_token"`);
 						res.status(401).json({
 							error: 'invalid_token',
 							error_description: err.message || 'Token verification failed',
@@ -155,9 +185,9 @@ export class ModuleBE_McpServer_Class
 					}
 				};
 
-				express.post(prefix, authMiddleware, (req, res) => instance.handlePost(req, res));
-				express.get(prefix, authMiddleware, (req, res) => instance.handleGet(req, res));
-				express.delete(prefix, authMiddleware, (req, res) => instance.handleDelete(req, res));
+				express.post(prefix, bootstrapMiddleware, authMiddleware, (req, res) => instance.handlePost(req, res));
+				express.get(prefix, bootstrapMiddleware, authMiddleware, (req, res) => instance.handleGet(req, res));
+				express.delete(prefix, bootstrapMiddleware, authMiddleware, (req, res) => instance.handleDelete(req, res));
 			} else {
 				express.post(prefix, (req, res) => instance.handlePost(req, res));
 				express.get(prefix, (req, res) => instance.handleGet(req, res));
