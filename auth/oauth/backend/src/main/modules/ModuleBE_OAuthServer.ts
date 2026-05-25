@@ -7,6 +7,7 @@
 import {Module} from '@nu-art/ts-common';
 import {HttpServer} from '@nu-art/http-server';
 import type {ExpressRequest, ExpressResponse} from '@nu-art/http-server';
+import {SecretKey} from '@nu-art/google-services-backend/modules/ModuleBE_SecretManager';
 import * as jose from 'jose';
 import {randomUUID, createHash} from 'node:crypto';
 import type {OAuthServerMetadata, OAuthTokenClaims} from '@nu-art/oauth-shared';
@@ -21,6 +22,8 @@ type Config = {
 	refreshTokenTtlMs: number;
 	authorizationCodeTtlMs: number;
 	signingAlgorithm: 'RS256' | 'ES256';
+	keySecretName: string;
+	projectId?: string;
 };
 
 const DefaultConfig: Config = {
@@ -30,6 +33,14 @@ const DefaultConfig: Config = {
 	refreshTokenTtlMs: 86_400_000 * 30,
 	authorizationCodeTtlMs: 600_000,
 	signingAlgorithm: 'RS256',
+	keySecretName: 'oauth-signing-keys',
+};
+
+type PersistedKeyPair = {
+	kid: string;
+	alg: string;
+	privateKeyJwk: jose.JWK;
+	publicKeyJwk: jose.JWK;
 };
 
 export class ModuleBE_OAuthServer_Class
@@ -39,6 +50,7 @@ export class ModuleBE_OAuthServer_Class
 	private publicKey!: jose.KeyLike;
 	private jwk!: jose.JWK;
 	private kid!: string;
+	private keySecret!: SecretKey<PersistedKeyPair>;
 
 	private readonly clients = new Map<string, DB_OAuthClient>();
 	private readonly grants = new Map<string, DB_OAuthGrant>();
@@ -53,35 +65,52 @@ export class ModuleBE_OAuthServer_Class
 		if (!this.config.issuer || !this.config.baseUrl)
 			this.logWarningBold('OAuth server issuer and baseUrl must be configured. Using empty defaults.');
 
-		await this.generateKeyPair();
+		this.keySecret = new SecretKey<PersistedKeyPair>(this.config.keySecretName, this.config.projectId);
+		await this.loadOrGenerateKeyPair();
 		this.mountRoutes();
 	}
 
-	private async generateKeyPair(): Promise<void> {
-		this.kid = randomUUID();
-
+	private async loadOrGenerateKeyPair(): Promise<void> {
 		const alg = this.config.signingAlgorithm;
-		if (alg === 'RS256') {
-			const {publicKey, privateKey} = await jose.generateKeyPair('RS256', {extractable: true});
-			this.privateKey = privateKey;
-			this.publicKey = publicKey;
-		} else {
-			const {publicKey, privateKey} = await jose.generateKeyPair('ES256', {extractable: true});
-			this.privateKey = privateKey;
-			this.publicKey = publicKey;
+
+		try {
+			const persisted = await this.keySecret.get();
+			if (persisted && persisted.kid && persisted.privateKeyJwk) {
+				this.kid = persisted.kid;
+				this.privateKey = await jose.importJWK(persisted.privateKeyJwk, alg) as jose.KeyLike;
+				this.publicKey = await jose.importJWK(persisted.publicKeyJwk, alg) as jose.KeyLike;
+				this.jwk = {...persisted.publicKeyJwk, kid: this.kid, alg, use: 'sig'};
+				this.logInfo(`Loaded persisted key pair (alg: ${alg}, kid: ${this.kid})`);
+				return;
+			}
+		} catch (_err) {
+			this.logInfo('No persisted key pair found, generating new one');
 		}
 
-		this.jwk = await jose.exportJWK(this.publicKey);
-		this.jwk.kid = this.kid;
-		this.jwk.alg = alg;
-		this.jwk.use = 'sig';
+		this.kid = randomUUID();
+		const {publicKey, privateKey} = await jose.generateKeyPair(alg, {extractable: true});
+		this.privateKey = privateKey;
+		this.publicKey = publicKey;
 
-		this.logInfo(`Key pair generated (alg: ${alg}, kid: ${this.kid})`);
+		const privateKeyJwk = await jose.exportJWK(privateKey);
+		const publicKeyJwk = await jose.exportJWK(publicKey);
+
+		this.jwk = {...publicKeyJwk, kid: this.kid, alg, use: 'sig'};
+
+		await this.keySecret.set({kid: this.kid, alg, privateKeyJwk, publicKeyJwk});
+		this.logInfo(`Generated and persisted new key pair (alg: ${alg}, kid: ${this.kid})`);
 	}
+
+	private userResolver?: OAuthUserResolver;
 
 	registerClient(client: DB_OAuthClient): void {
 		this.clients.set(client.clientId, client);
 		this.logInfo(`Registered OAuth client: ${client.name} (${client.clientId})`);
+	}
+
+	setUserResolver(resolver: OAuthUserResolver): this {
+		this.userResolver = resolver;
+		return this;
 	}
 
 	private mountRoutes(): void {
@@ -105,6 +134,10 @@ export class ModuleBE_OAuthServer_Class
 
 		express.post('/oauth/revoke', (req, res) => {
 			this.handleRevoke(req, res);
+		});
+
+		express.post('/oauth/approve-grant', (req, res) => {
+			this.handleApproveGrant(req, res);
 		});
 
 		this.logInfo('OAuth 2.1 endpoints mounted');
@@ -162,9 +195,7 @@ export class ModuleBE_OAuthServer_Class
 			return;
 		}
 
-		// TODO: In a real implementation, this redirects to a consent page.
-		// For now, auto-approve and issue the authorization code directly.
-		const authorizationCode = randomUUID();
+		const pendingId = randomUUID();
 		const requestedScopes = scope?.split(' ') ?? [];
 
 		const grant: DB_OAuthGrant = {
@@ -175,7 +206,7 @@ export class ModuleBE_OAuthServer_Class
 			clientId,
 			userId: 'pending-auth',
 			scopes: requestedScopes,
-			authorizationCode,
+			authorizationCode: pendingId,
 			codeChallenge,
 			codeChallengeMethod: 'S256',
 			redirectUri,
@@ -183,14 +214,93 @@ export class ModuleBE_OAuthServer_Class
 			used: false,
 		} as DB_OAuthGrant;
 
+		this.grants.set(pendingId, grant);
+		res.type('html').send(this.renderPasskeyLoginPage(pendingId, client.name, state));
+	}
+
+	private async handleApproveGrant(req: ExpressRequest, res: ExpressResponse): Promise<void> {
+		const {pendingId} = req.body;
+		if (!pendingId) {
+			res.status(400).json({error: 'invalid_request', error_description: 'pendingId is required'});
+			return;
+		}
+
+		const authHeader = req.headers['authorization'] as string | undefined;
+		if (!authHeader || !this.userResolver) {
+			res.status(401).json({error: 'unauthorized', error_description: 'Session required'});
+			return;
+		}
+
+		let accountId: string;
+		try {
+			accountId = await this.userResolver.resolveAccountId(authHeader);
+		} catch (err: any) {
+			res.status(401).json({error: 'unauthorized', error_description: err.message || 'Invalid session'});
+			return;
+		}
+
+		const grant = this.grants.get(pendingId);
+		if (!grant || grant.used || grant.expiresAt < Date.now()) {
+			res.status(400).json({error: 'invalid_grant', error_description: 'Invalid or expired pending grant'});
+			return;
+		}
+
+		const authorizationCode = randomUUID();
+		grant.authorizationCode = authorizationCode;
+		grant.userId = accountId;
+		this.grants.delete(pendingId);
 		this.grants.set(authorizationCode, grant);
 
-		const redirectUrl = new URL(redirectUri);
-		redirectUrl.searchParams.set('code', authorizationCode);
-		if (state)
-			redirectUrl.searchParams.set('state', state);
+		res.json({redirectUri: grant.redirectUri, code: authorizationCode});
+	}
 
-		res.redirect(redirectUrl.toString());
+	private renderPasskeyLoginPage(pendingId: string, clientName: string, state?: string): string {
+		return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Authorize ${clientName}</title>
+<style>
+body{font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#0a0a0a;color:#e0e0e0}
+.card{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:2.5rem;max-width:400px;text-align:center}
+h2{margin:0 0 .5rem;font-size:1.4rem}
+p{color:#888;margin:0 0 1.5rem;font-size:.9rem}
+button{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:.75rem 2rem;font-size:1rem;cursor:pointer;width:100%}
+button:hover{background:#1d4ed8}
+button:disabled{background:#333;cursor:not-allowed}
+.error{color:#ef4444;margin-top:1rem;font-size:.85rem}
+.spinner{display:none;margin:1rem auto;width:24px;height:24px;border:3px solid #333;border-top:3px solid #2563eb;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style></head><body>
+<div class="card">
+<h2>Authorize ${clientName}</h2>
+<p>Sign in with your passkey to continue</p>
+<button id="btn" onclick="startLogin()">Sign in with Passkey</button>
+<div class="spinner" id="spinner"></div>
+<div class="error" id="error"></div>
+</div>
+<script>
+const pendingId='${pendingId}';
+const state=${state ? `'${state}'` : 'null'};
+async function startLogin(){
+const btn=document.getElementById('btn'),spinner=document.getElementById('spinner'),err=document.getElementById('error');
+btn.disabled=true;spinner.style.display='block';err.textContent='';
+try{
+const optRes=await fetch('/v1/auth/passkey/login/options',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+if(!optRes.ok)throw new Error('Failed to get login options');
+const{options,challengeId}=await optRes.json();
+const cred=await navigator.credentials.get({publicKey:{...options,challenge:Uint8Array.from(atob(options.challenge.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)),allowCredentials:(options.allowCredentials||[]).map(c=>({...c,id:Uint8Array.from(atob(c.id.replace(/-/g,'+').replace(/_/g,'/')),x=>x.charCodeAt(0))}))
+}});
+const assertionResponse={id:cred.id,rawId:btoa(String.fromCharCode(...new Uint8Array(cred.rawId))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''),type:cred.type,response:{authenticatorData:btoa(String.fromCharCode(...new Uint8Array(cred.response.authenticatorData))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''),clientDataJSON:btoa(String.fromCharCode(...new Uint8Array(cred.response.clientDataJSON))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''),signature:btoa(String.fromCharCode(...new Uint8Array(cred.response.signature))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''),userHandle:cred.response.userHandle?btoa(String.fromCharCode(...new Uint8Array(cred.response.userHandle))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''):null}};
+const verRes=await fetch('/v1/auth/passkey/login/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({assertionResponse,challengeId,deviceId:'mcp-oauth-login'})});
+if(!verRes.ok)throw new Error('Passkey verification failed');
+const sessionJwt=verRes.headers.get('x-jwt-token')||verRes.headers.get('x-session');
+const approveRes=await fetch('/oauth/approve-grant',{method:'POST',headers:{'Content-Type':'application/json',...(sessionJwt?{'authorization':sessionJwt}:{})},body:JSON.stringify({pendingId})});
+if(!approveRes.ok)throw new Error('Grant approval failed');
+const{redirectUri,code}=await approveRes.json();
+const url=new URL(redirectUri);url.searchParams.set('code',code);
+if(state)url.searchParams.set('state',state);
+window.location.href=url.toString();
+}catch(e){err.textContent=e.message||'Authentication failed';btn.disabled=false;spinner.style.display='none'}}
+</script></body></html>`;
 	}
 
 	private async handleToken(req: ExpressRequest, res: ExpressResponse): Promise<void> {
@@ -411,6 +521,10 @@ export type OAuthTokenVerifier = {
 		token: string;
 		extra?: Record<string, unknown>;
 	}>;
+};
+
+export type OAuthUserResolver = {
+	resolveAccountId: (sessionJwt: string) => Promise<string>;
 };
 
 const OAuthGrant_DbKey = 'oauth--grants';

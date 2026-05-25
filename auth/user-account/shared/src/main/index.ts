@@ -7,6 +7,10 @@ export * from './_entity/session/types.js';
 export * from './_entity/session/consts.js';
 export * from './_entity/session/db-def.js';
 
+export * from './_entity/bootstrap-token/types.js';
+export * from './_entity/bootstrap-token/db-def.js';
+export * from './_entity/bootstrap-token/api-def.js';
+
 export * from './auth-policy.js';
 export * from './headers.js';
 export * from './utils.js';
