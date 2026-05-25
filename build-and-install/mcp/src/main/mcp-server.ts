@@ -14,9 +14,8 @@ import {baiTools} from './bai-tools.js';
 
 
 function executeBai(projectPath: string, flags: string[]): Promise<{ exitCode: number; stdout: string; stderr: string }> {
-	return new Promise((resolve, reject) => {
-		const scriptPath = 'build-and-install.sh';
-		const child = spawn('bash', [scriptPath, ...flags], {
+	return new Promise((_resolve, reject) => {
+		const child = spawn('bash', ['build-and-install.sh', ...flags], {
 			cwd: projectPath,
 			env: {...process.env, FORCE_COLOR: '0'},
 			stdio: ['ignore', 'pipe', 'pipe'],
@@ -33,12 +32,12 @@ function executeBai(projectPath: string, flags: string[]): Promise<{ exitCode: n
 			stderr += data.toString();
 		});
 
-		child.on('error', (err) => {
+		child.on('error', (err: Error) => {
 			reject(new Error(`Failed to spawn BAI: ${err.message}`));
 		});
 
-		child.on('close', (code) => {
-			resolve({exitCode: code ?? 1, stdout, stderr});
+		child.on('close', (code: number | null) => {
+			_resolve({exitCode: code ?? 1, stdout, stderr});
 		});
 	});
 }
@@ -53,7 +52,7 @@ async function main() {
 		server.tool(
 			tool.name,
 			tool.description,
-			tool.inputSchema,
+			tool.schema,
 			async (input: Record<string, unknown>) => {
 				const projectPath = input.projectPath as string;
 				const resolved = resolve(projectPath);

@@ -131,9 +131,8 @@ describe('BAI tool flag construction', () => {
 
 		it('should require projectPath on every tool', () => {
 			for (const tool of baiTools) {
-				const schema = tool.inputSchema as { required?: string[] };
-				if (!schema.required?.includes('projectPath'))
-					throw new Error(`Tool ${tool.name} does not require projectPath`);
+				if (!('projectPath' in tool.schema))
+					throw new Error(`Tool ${tool.name} schema does not include projectPath`);
 			}
 		});
 	});
