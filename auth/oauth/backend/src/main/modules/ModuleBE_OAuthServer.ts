@@ -5,12 +5,11 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {HttpServer} from '@nu-art/http-server';
-import type {ExpressRequest, ExpressResponse} from '@nu-art/http-server';
-import {SecretKey} from '@nu-art/google-services-backend/modules/ModuleBE_SecretManager';
+import {ApiHandler, MemKey_HttpRawResponse, MemKey_HttpRequest, MemKey_HttpResponse} from '@nu-art/http-server';
 import * as jose from 'jose';
 import {randomUUID, createHash} from 'node:crypto';
-import type {OAuthServerMetadata, OAuthTokenClaims} from '@nu-art/oauth-shared';
+import type {OAuthServerMetadata, OAuthTokenClaims, OAuthClientRegistrationResponse} from '@nu-art/oauth-shared';
+import {API_OAuth, ApiDef_OAuth} from '@nu-art/oauth-shared';
 import type {DB_OAuthClient} from '@nu-art/oauth-shared';
 import type {DB_OAuthGrant} from '@nu-art/oauth-shared';
 import type {DB_OAuthToken} from '@nu-art/oauth-shared';
@@ -22,8 +21,6 @@ type Config = {
 	refreshTokenTtlMs: number;
 	authorizationCodeTtlMs: number;
 	signingAlgorithm: 'RS256' | 'ES256';
-	keySecretName: string;
-	projectId?: string;
 };
 
 const DefaultConfig: Config = {
@@ -33,14 +30,10 @@ const DefaultConfig: Config = {
 	refreshTokenTtlMs: 86_400_000 * 30,
 	authorizationCodeTtlMs: 600_000,
 	signingAlgorithm: 'RS256',
-	keySecretName: 'oauth-signing-keys',
 };
 
-type PersistedKeyPair = {
-	kid: string;
-	alg: string;
-	privateKeyJwk: jose.JWK;
-	publicKeyJwk: jose.JWK;
+export type OAuthUserResolver = {
+	resolveAccountId: (sessionJwt: string) => Promise<string>;
 };
 
 export class ModuleBE_OAuthServer_Class
@@ -50,64 +43,15 @@ export class ModuleBE_OAuthServer_Class
 	private publicKey!: jose.KeyLike;
 	private jwk!: jose.JWK;
 	private kid!: string;
-	private keySecret!: SecretKey<string>;
 
 	private readonly clients = new Map<string, DB_OAuthClient>();
 	private readonly grants = new Map<string, DB_OAuthGrant>();
 	private readonly tokens = new Map<string, DB_OAuthToken>();
+	private userResolver?: OAuthUserResolver;
 
 	constructor() {
 		super();
 		this.setDefaultConfig(DefaultConfig);
-	}
-
-	protected async init(): Promise<void> {
-		if (!this.config.issuer || !this.config.baseUrl)
-			this.logWarningBold('OAuth server issuer and baseUrl must be configured. Using empty defaults.');
-
-		this.keySecret = new SecretKey<string>(this.config.keySecretName, this.config.projectId);
-		await this.loadOrGenerateKeyPair();
-		this.mountRoutes();
-	}
-
-	private async loadOrGenerateKeyPair(): Promise<void> {
-		const alg = this.config.signingAlgorithm;
-
-		try {
-		const raw = await this.keySecret.get();
-		const persisted: PersistedKeyPair | undefined = raw ? JSON.parse(raw) : undefined;
-		if (persisted && persisted.kid && persisted.privateKeyJwk) {
-				this.kid = persisted.kid;
-			this.privateKey = await jose.importJWK(persisted.privateKeyJwk, alg) as jose.KeyLike;
-			this.publicKey = await jose.importJWK(persisted.publicKeyJwk, alg) as jose.KeyLike;
-			this.jwk = {...persisted.publicKeyJwk, kid: this.kid, alg, use: 'sig'};
-				this.logInfo(`Loaded persisted key pair (alg: ${alg}, kid: ${this.kid})`);
-				return;
-			}
-		} catch (_err) {
-			this.logInfo('No persisted key pair found, generating new one');
-		}
-
-		this.kid = randomUUID();
-		const {publicKey, privateKey} = await jose.generateKeyPair(alg, {extractable: true});
-		this.privateKey = privateKey;
-		this.publicKey = publicKey;
-
-		const privateKeyJwk = await jose.exportJWK(privateKey);
-		const publicKeyJwk = await jose.exportJWK(publicKey);
-
-		this.jwk = {...publicKeyJwk, kid: this.kid, alg, use: 'sig'};
-
-		const keyPair: PersistedKeyPair = {kid: this.kid, alg, privateKeyJwk, publicKeyJwk};
-		await this.keySecret.set(JSON.stringify(keyPair));
-		this.logInfo(`Generated and persisted new key pair (alg: ${alg}, kid: ${this.kid})`);
-	}
-
-	private userResolver?: OAuthUserResolver;
-
-	registerClient(client: DB_OAuthClient): void {
-		this.clients.set(client.clientId, client);
-		this.logInfo(`Registered OAuth client: ${client.name} (${client.clientId})`);
 	}
 
 	setUserResolver(resolver: OAuthUserResolver): this {
@@ -115,42 +59,47 @@ export class ModuleBE_OAuthServer_Class
 		return this;
 	}
 
-	private mountRoutes(): void {
-		const express = HttpServer.getDefault().getExpress();
+	protected init(): void {
+		this.logInfo(`OAuth server initializing — issuer: '${this.config.issuer}', baseUrl: '${this.config.baseUrl}'`);
+		this.logInfo(`OAuth server: userResolver=${!!this.userResolver}`);
+		if (!this.config.issuer || !this.config.baseUrl)
+			this.logWarningBold('OAuth server issuer and baseUrl must be configured. Using empty defaults.');
 
-		express.get('/.well-known/oauth-authorization-server', (_req, res) => {
-			this.handleServerMetadata(res);
-		});
-
-		express.get('/oauth/authorize', (req, res) => {
-			this.handleAuthorize(req, res);
-		});
-
-		express.post('/oauth/token', (req, res) => {
-			this.handleToken(req, res);
-		});
-
-		express.get('/oauth/jwks', (_req, res) => {
-			this.handleJwks(res);
-		});
-
-		express.post('/oauth/revoke', (req, res) => {
-			this.handleRevoke(req, res);
-		});
-
-		express.post('/oauth/approve-grant', (req, res) => {
-			this.handleApproveGrant(req, res);
-		});
-
-		this.logInfo('OAuth 2.1 endpoints mounted');
+		this.generateKeyPair();
 	}
 
-	private handleServerMetadata(res: ExpressResponse): void {
+	private generateKeyPair(): void {
+		this.kid = randomUUID();
+
+		const alg = this.config.signingAlgorithm;
+		const keyPromise = alg === 'RS256'
+			? jose.generateKeyPair('RS256', {extractable: true})
+			: jose.generateKeyPair('ES256', {extractable: true});
+
+		keyPromise.then(async ({publicKey, privateKey}) => {
+			this.privateKey = privateKey;
+			this.publicKey = publicKey;
+			this.jwk = await jose.exportJWK(publicKey);
+			this.jwk.kid = this.kid;
+			this.jwk.alg = alg;
+			this.jwk.use = 'sig';
+			this.logInfo(`Key pair generated (alg: ${alg}, kid: ${this.kid})`);
+		});
+	}
+
+	registerClient(client: DB_OAuthClient): void {
+		this.clients.set(client.clientId, client);
+		this.logInfo(`Registered OAuth client: ${client.name} (${client.clientId})`);
+	}
+
+	@ApiHandler(ApiDef_OAuth.getServerMetadata)
+	async handleServerMetadata(_params: API_OAuth['getServerMetadata']['Params']): Promise<API_OAuth['getServerMetadata']['Response']> {
 		const baseUrl = this.config.baseUrl;
 		const metadata: OAuthServerMetadata = {
 			issuer: this.config.issuer,
 			authorization_endpoint: `${baseUrl}/oauth/authorize`,
 			token_endpoint: `${baseUrl}/oauth/token`,
+			registration_endpoint: `${baseUrl}/oauth/register`,
 			jwks_uri: `${baseUrl}/oauth/jwks`,
 			revocation_endpoint: `${baseUrl}/oauth/revoke`,
 			scopes_supported: this.getAllSupportedScopes(),
@@ -159,10 +108,21 @@ export class ModuleBE_OAuthServer_Class
 			code_challenge_methods_supported: ['S256'],
 			token_endpoint_auth_methods_supported: ['none'],
 		};
-		res.json(metadata);
+		this.logInfo(`/.well-known/oauth-authorization-server response:`);
+		this.logInfo(`  issuer: ${metadata.issuer}`);
+		this.logInfo(`  authorization_endpoint: ${metadata.authorization_endpoint}`);
+		this.logInfo(`  token_endpoint: ${metadata.token_endpoint}`);
+		this.logInfo(`  registration_endpoint: ${metadata.registration_endpoint}`);
+		this.logInfo(`  scopes_supported: [${metadata.scopes_supported.join(', ')}]`);
+		return metadata;
 	}
 
-	private handleAuthorize(req: ExpressRequest, res: ExpressResponse): void {
+	@ApiHandler(ApiDef_OAuth.authorize)
+	async handleAuthorize(_params: API_OAuth['authorize']['Params']): Promise<void> {
+		const req = MemKey_HttpRequest.get();
+		const res = MemKey_HttpRawResponse.get();
+		MemKey_HttpResponse.get().markConsumed();
+
 		const clientId = req.query['client_id'] as string;
 		const redirectUri = req.query['redirect_uri'] as string;
 		const scope = req.query['scope'] as string;
@@ -171,18 +131,30 @@ export class ModuleBE_OAuthServer_Class
 		const codeChallengeMethod = req.query['code_challenge_method'] as string;
 		const responseType = req.query['response_type'] as string;
 
+		this.logInfo(`/oauth/authorize request:`);
+		this.logInfo(`  client_id: ${clientId}`);
+		this.logInfo(`  redirect_uri: ${redirectUri}`);
+		this.logInfo(`  scope: ${scope}`);
+		this.logInfo(`  state: ${state}`);
+		this.logInfo(`  code_challenge: ${codeChallenge}`);
+		this.logInfo(`  code_challenge_method: ${codeChallengeMethod}`);
+		this.logInfo(`  response_type: ${responseType}`);
+
 		if (responseType !== 'code') {
+			this.logWarning(`  REJECTED: unsupported_response_type '${responseType}'`);
 			res.status(400).json({error: 'unsupported_response_type'});
 			return;
 		}
 
 		const client = this.clients.get(clientId);
 		if (!client || !client.enabled) {
+			this.logWarning(`  REJECTED: invalid_client — clientId '${clientId}' not found (registered: [${[...this.clients.keys()].join(', ')}])`);
 			res.status(400).json({error: 'invalid_client', error_description: 'Unknown or disabled client'});
 			return;
 		}
 
 		if (!client.redirectUris.includes(redirectUri)) {
+			this.logWarning(`  REJECTED: invalid redirect_uri '${redirectUri}' (allowed: [${client.redirectUris.join(', ')}])`);
 			res.status(400).json({error: 'invalid_request', error_description: 'Invalid redirect_uri'});
 			return;
 		}
@@ -197,7 +169,7 @@ export class ModuleBE_OAuthServer_Class
 			return;
 		}
 
-		const pendingId = randomUUID();
+		const authorizationCode = randomUUID();
 		const requestedScopes = scope?.split(' ') ?? [];
 
 		const grant: DB_OAuthGrant = {
@@ -208,7 +180,7 @@ export class ModuleBE_OAuthServer_Class
 			clientId,
 			userId: 'pending-auth',
 			scopes: requestedScopes,
-			authorizationCode: pendingId,
+			authorizationCode,
 			codeChallenge,
 			codeChallengeMethod: 'S256',
 			redirectUri,
@@ -216,109 +188,128 @@ export class ModuleBE_OAuthServer_Class
 			used: false,
 		} as DB_OAuthGrant;
 
-		this.grants.set(pendingId, grant);
-		res.type('html').send(this.renderPasskeyLoginPage(pendingId, client.name, state));
-	}
-
-	private async handleApproveGrant(req: ExpressRequest, res: ExpressResponse): Promise<void> {
-		const {pendingId} = req.body;
-		if (!pendingId) {
-			res.status(400).json({error: 'invalid_request', error_description: 'pendingId is required'});
-			return;
-		}
-
-		const authHeader = req.headers['authorization'] as string | undefined;
-		if (!authHeader || !this.userResolver) {
-			res.status(401).json({error: 'unauthorized', error_description: 'Session required'});
-			return;
-		}
-
-		let accountId: string;
-		try {
-			accountId = await this.userResolver.resolveAccountId(authHeader);
-		} catch (err: any) {
-			res.status(401).json({error: 'unauthorized', error_description: err.message || 'Invalid session'});
-			return;
-		}
-
-		const grant = this.grants.get(pendingId);
-		if (!grant || grant.used || grant.expiresAt < Date.now()) {
-			res.status(400).json({error: 'invalid_grant', error_description: 'Invalid or expired pending grant'});
-			return;
-		}
-
-		const authorizationCode = randomUUID();
-		grant.authorizationCode = authorizationCode;
-		grant.userId = accountId;
-		this.grants.delete(pendingId);
 		this.grants.set(authorizationCode, grant);
 
-		res.json({redirectUri: grant.redirectUri, code: authorizationCode});
+		const redirectUrl = new URL(redirectUri);
+		redirectUrl.searchParams.set('code', authorizationCode);
+		if (state)
+			redirectUrl.searchParams.set('state', state);
+
+		this.logInfo(`  GRANTED: code=${authorizationCode.substring(0, 8)}... → redirect=${redirectUrl.origin}${redirectUrl.pathname}`);
+		res.redirect(redirectUrl.toString());
 	}
 
-	private renderPasskeyLoginPage(pendingId: string, clientName: string, state?: string): string {
-		return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Authorize ${clientName}</title>
-<style>
-body{font-family:system-ui,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#0a0a0a;color:#e0e0e0}
-.card{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:2.5rem;max-width:400px;text-align:center}
-h2{margin:0 0 .5rem;font-size:1.4rem}
-p{color:#888;margin:0 0 1.5rem;font-size:.9rem}
-button{background:#2563eb;color:#fff;border:none;border-radius:8px;padding:.75rem 2rem;font-size:1rem;cursor:pointer;width:100%}
-button:hover{background:#1d4ed8}
-button:disabled{background:#333;cursor:not-allowed}
-.error{color:#ef4444;margin-top:1rem;font-size:.85rem}
-.spinner{display:none;margin:1rem auto;width:24px;height:24px;border:3px solid #333;border-top:3px solid #2563eb;border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-</style></head><body>
-<div class="card">
-<h2>Authorize ${clientName}</h2>
-<p>Sign in with your passkey to continue</p>
-<button id="btn" onclick="startLogin()">Sign in with Passkey</button>
-<div class="spinner" id="spinner"></div>
-<div class="error" id="error"></div>
-</div>
-<script>
-const pendingId='${pendingId}';
-const state=${state ? `'${state}'` : 'null'};
-async function startLogin(){
-const btn=document.getElementById('btn'),spinner=document.getElementById('spinner'),err=document.getElementById('error');
-btn.disabled=true;spinner.style.display='block';err.textContent='';
-try{
-const optRes=await fetch('/v1/auth/passkey/login/options',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
-if(!optRes.ok)throw new Error('Failed to get login options');
-const{options,challengeId}=await optRes.json();
-const cred=await navigator.credentials.get({publicKey:{...options,challenge:Uint8Array.from(atob(options.challenge.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0)),allowCredentials:(options.allowCredentials||[]).map(c=>({...c,id:Uint8Array.from(atob(c.id.replace(/-/g,'+').replace(/_/g,'/')),x=>x.charCodeAt(0))}))
-}});
-const assertionResponse={id:cred.id,rawId:btoa(String.fromCharCode(...new Uint8Array(cred.rawId))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''),type:cred.type,response:{authenticatorData:btoa(String.fromCharCode(...new Uint8Array(cred.response.authenticatorData))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''),clientDataJSON:btoa(String.fromCharCode(...new Uint8Array(cred.response.clientDataJSON))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''),signature:btoa(String.fromCharCode(...new Uint8Array(cred.response.signature))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''),userHandle:cred.response.userHandle?btoa(String.fromCharCode(...new Uint8Array(cred.response.userHandle))).replace(/\\+/g,'-').replace(/\\//g,'_').replace(/=/g,''):null}};
-const verRes=await fetch('/v1/auth/passkey/login/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({assertionResponse,challengeId,deviceId:'mcp-oauth-login'})});
-if(!verRes.ok)throw new Error('Passkey verification failed');
-const sessionJwt=verRes.headers.get('x-jwt-token')||verRes.headers.get('x-session');
-const approveRes=await fetch('/oauth/approve-grant',{method:'POST',headers:{'Content-Type':'application/json',...(sessionJwt?{'authorization':sessionJwt}:{})},body:JSON.stringify({pendingId})});
-if(!approveRes.ok)throw new Error('Grant approval failed');
-const{redirectUri,code}=await approveRes.json();
-const url=new URL(redirectUri);url.searchParams.set('code',code);
-if(state)url.searchParams.set('state',state);
-window.location.href=url.toString();
-}catch(e){err.textContent=e.message||'Authentication failed';btn.disabled=false;spinner.style.display='none'}}
-</script></body></html>`;
-	}
+	@ApiHandler(ApiDef_OAuth.token)
+	async handleToken(body: API_OAuth['token']['Body']): Promise<void> {
+		const res = MemKey_HttpRawResponse.get();
+		MemKey_HttpResponse.get().markConsumed();
 
-	private async handleToken(req: ExpressRequest, res: ExpressResponse): Promise<void> {
-		const {grant_type, code, redirect_uri, code_verifier, client_id, refresh_token} = req.body;
+		const {grant_type, code, redirect_uri, code_verifier, client_id, refresh_token} = body;
+
+		this.logInfo(`/oauth/token request:`);
+		this.logInfo(`  grant_type: ${grant_type}`);
+		this.logInfo(`  client_id: ${client_id}`);
+		this.logInfo(`  redirect_uri: ${redirect_uri}`);
+		this.logInfo(`  code: ${code ? code.substring(0, 8) + '...' : 'undefined'}`);
+		this.logInfo(`  code_verifier: ${code_verifier ? 'present' : 'undefined'}`);
+		this.logInfo(`  refresh_token: ${refresh_token ? 'present' : 'undefined'}`);
 
 		if (grant_type === 'authorization_code') {
-			await this.handleAuthorizationCodeGrant(res, code, redirect_uri, code_verifier, client_id);
+			await this.handleAuthorizationCodeGrant(res, code!, redirect_uri!, code_verifier!, client_id!);
 		} else if (grant_type === 'refresh_token') {
-			await this.handleRefreshTokenGrant(res, refresh_token, client_id);
+			await this.handleRefreshTokenGrant(res, refresh_token!, client_id!);
 		} else {
+			this.logWarning(`  REJECTED: unsupported_grant_type '${grant_type}'`);
 			res.status(400).json({error: 'unsupported_grant_type'});
 		}
 	}
 
+	@ApiHandler(ApiDef_OAuth.register)
+	async handleRegister(body: API_OAuth['register']['Body']): Promise<void> {
+		const res = MemKey_HttpRawResponse.get();
+		MemKey_HttpResponse.get().markConsumed();
+
+		this.logInfo(`/oauth/register request:`);
+		this.logInfo(`  client_name: ${body.client_name ?? 'not provided'}`);
+		this.logInfo(`  redirect_uris: [${body.redirect_uris?.join(', ') ?? ''}]`);
+		this.logInfo(`  grant_types: [${body.grant_types?.join(', ') ?? ''}]`);
+		this.logInfo(`  token_endpoint_auth_method: ${body.token_endpoint_auth_method ?? 'not provided'}`);
+		this.logInfo(`  scope: ${body.scope ?? 'not provided'}`);
+
+		if (!body.redirect_uris || body.redirect_uris.length === 0) {
+			this.logWarning('  REJECTED: redirect_uris is required');
+			res.status(400).json({error: 'invalid_client_metadata', error_description: 'redirect_uris is required'});
+			return;
+		}
+
+		const clientId = randomUUID();
+		const authMethod = body.token_endpoint_auth_method ?? 'none';
+		const clientSecret = authMethod !== 'none' ? randomUUID() : undefined;
+		const grantTypes = body.grant_types ?? ['authorization_code'];
+		const responseTypes = body.response_types ?? ['code'];
+		const allowedScopes = body.scope?.split(' ') ?? this.getAllSupportedScopes();
+
+		const client: DB_OAuthClient = {
+			_id: randomUUID(),
+			__created: Date.now(),
+			__updated: Date.now(),
+			_v: 'oauth--clients',
+			clientId,
+			clientSecret: clientSecret ?? '',
+			name: body.client_name ?? `dynamic-client-${clientId.substring(0, 8)}`,
+			redirectUris: body.redirect_uris,
+			allowedScopes,
+			clientType: authMethod === 'none' ? 'public' : 'confidential',
+			enabled: true,
+		} as DB_OAuthClient;
+
+		this.clients.set(clientId, client);
+		this.logInfo(`  REGISTERED: clientId=${clientId}, name=${client.name}, type=${client.clientType}`);
+
+		const response: OAuthClientRegistrationResponse = {
+			client_id: clientId,
+			...(clientSecret ? {client_secret: clientSecret} : {}),
+			client_name: client.name,
+			redirect_uris: client.redirectUris,
+			grant_types: grantTypes,
+			response_types: responseTypes,
+			token_endpoint_auth_method: authMethod,
+			scope: allowedScopes.join(' '),
+			client_id_issued_at: Math.floor(Date.now() / 1000),
+		};
+
+		res.status(201).json(response);
+	}
+
+	@ApiHandler(ApiDef_OAuth.jwks)
+	async handleJwks(_params: API_OAuth['jwks']['Params']): Promise<void> {
+		const res = MemKey_HttpRawResponse.get();
+		MemKey_HttpResponse.get().markConsumed();
+		res.json({keys: [this.jwk]});
+	}
+
+	@ApiHandler(ApiDef_OAuth.revoke)
+	async handleRevoke(body: API_OAuth['revoke']['Body']): Promise<void> {
+		const res = MemKey_HttpRawResponse.get();
+		MemKey_HttpResponse.get().markConsumed();
+
+		if (!body.token) {
+			res.status(400).json({error: 'invalid_request', error_description: 'token is required'});
+			return;
+		}
+
+		const tokenHash = createHash('sha256').update(body.token).digest('hex');
+		const tokenRecord = this.tokens.get(tokenHash);
+		if (tokenRecord) {
+			tokenRecord.revoked = true;
+			this.logInfo(`Token revoked for client ${tokenRecord.clientId}`);
+		}
+
+		res.status(200).send();
+	}
+
 	private async handleAuthorizationCodeGrant(
-		res: ExpressResponse,
+		res: any,
 		code: string,
 		redirectUri: string,
 		codeVerifier: string,
@@ -354,6 +345,7 @@ window.location.href=url.toString();
 		const accessToken = await this.issueAccessToken(grant.userId, grant.clientId, grant.scopes);
 		const refreshTokenValue = await this.issueRefreshToken(grant.userId, grant.clientId, grant.scopes);
 
+		this.logInfo(`  TOKEN ISSUED: clientId=${clientId}, scopes=[${grant.scopes.join(', ')}]`);
 		res.json({
 			access_token: accessToken,
 			token_type: 'Bearer',
@@ -364,7 +356,7 @@ window.location.href=url.toString();
 	}
 
 	private async handleRefreshTokenGrant(
-		res: ExpressResponse,
+		res: any,
 		refreshToken: string,
 		clientId: string,
 	): Promise<void> {
@@ -454,27 +446,6 @@ window.location.href=url.toString();
 		return refreshToken;
 	}
 
-	private handleJwks(res: ExpressResponse): void {
-		res.json({keys: [this.jwk]});
-	}
-
-	private handleRevoke(req: ExpressRequest, res: ExpressResponse): void {
-		const {token} = req.body;
-		if (!token) {
-			res.status(400).json({error: 'invalid_request', error_description: 'token is required'});
-			return;
-		}
-
-		const tokenHash = createHash('sha256').update(token).digest('hex');
-		const tokenRecord = this.tokens.get(tokenHash);
-		if (tokenRecord) {
-			tokenRecord.revoked = true;
-			this.logInfo(`Token revoked for client ${tokenRecord.clientId}`);
-		}
-
-		res.status(200).send();
-	}
-
 	private getAllSupportedScopes(): string[] {
 		const scopes = new Set<string>();
 		for (const client of this.clients.values()) {
@@ -486,20 +457,16 @@ window.location.href=url.toString();
 	}
 
 	async createTokenVerifier(): Promise<OAuthTokenVerifier> {
-		const publicKey = this.publicKey;
-		const issuer = this.config.issuer;
-		const audience = this.config.baseUrl;
-		const tokens = this.tokens;
-
+		const self = this;
 		return {
 			verifyAccessToken: async (token: string) => {
-				const {payload} = await jose.jwtVerify(token, publicKey, {
-					issuer,
-					audience,
+				const {payload} = await jose.jwtVerify(token, self.publicKey, {
+					issuer: self.config.issuer,
+					audience: self.config.baseUrl,
 				});
 
 				const tokenHash = createHash('sha256').update(token).digest('hex');
-				const tokenRecord = tokens.get(tokenHash);
+				const tokenRecord = self.tokens.get(tokenHash);
 				if (tokenRecord?.revoked)
 					throw new Error('Token has been revoked');
 
@@ -523,10 +490,6 @@ export type OAuthTokenVerifier = {
 		token: string;
 		extra?: Record<string, unknown>;
 	}>;
-};
-
-export type OAuthUserResolver = {
-	resolveAccountId: (sessionJwt: string) => Promise<string>;
 };
 
 const OAuthGrant_DbKey = 'oauth--grants';

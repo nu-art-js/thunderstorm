@@ -1214,7 +1214,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const inspectFlag = this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect=0.0.0.0:${this.config.debugPort}` : '';
 
-		await this.executeAsyncCommando(commando, `trap 'exit 0' SIGINT SIGTERM; while true; do node --watch ${inspectFlag} ${this.config.output}/index.js; code=$?; if [ $code -eq 0 ] || [ $code -eq 130 ] || [ $code -eq 143 ]; then break; fi; echo "Process exited ($code), restarting..."; sleep 1; done`);
+		await this.executeAsyncCommando(commando, `trap 'exit 0' SIGINT SIGTERM; while true; do while [ ! -f ${this.config.output}/index.js ]; do echo "Waiting for ${this.config.output}/index.js..."; sleep 2; done; node --watch ${inspectFlag} ${this.config.output}/index.js; code=$?; if [ $code -eq 0 ] || [ $code -eq 130 ] || [ $code -eq 143 ]; then break; fi; echo "Process exited ($code), restarting..."; sleep 1; done`);
 		this.logWarning('NODE SERVER TERMINATED');
 	}
 

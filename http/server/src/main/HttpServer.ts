@@ -217,6 +217,7 @@ export class HttpServer
 			const limit = parserLimit as number;
 			const jsonParser = express.json({limit, type: 'application/json'});
 			const textParser = express.text({limit, type: 'text/plain'});
+			const urlencodedParser = express.urlencoded({extended: false, limit});
 			this.getExpress().use((req, res, next) => {
 				const alreadyHasBody = (req as { body?: unknown }).body !== undefined;
 				const notReadable = !req.readable;
@@ -228,6 +229,8 @@ export class HttpServer
 					return jsonParser(req, res, next);
 				if (ct === 'text/plain')
 					return textParser(req, res, next);
+				if (ct === 'application/x-www-form-urlencoded')
+					return urlencodedParser(req, res, next);
 				return next();
 			});
 		}
