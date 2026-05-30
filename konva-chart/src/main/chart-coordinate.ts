@@ -42,22 +42,52 @@ export function getHoverZone(hoverX: number | undefined, hoverY: number | undefi
 }
 
 export function collectAxes(layers: ChartLayer[], markers?: ChartMarker[]): { hAxes: AxisConfig[]; vAxes: AxisConfig[] } {
-	const hSet = new Set<AxisConfig>();
-	const vSet = new Set<AxisConfig>();
+	const hAxes: AxisConfig[] = [];
+	const vAxes: AxisConfig[] = [];
+	const hKeys = new Map<string, AxisConfig>();
+	const vKeys = new Map<string, AxisConfig>();
+	const hRefs = new Set<AxisConfig>();
+	const vRefs = new Set<AxisConfig>();
+
+	// Dedup keyed axes by their `key`, not by object identity. Multiple layers
+	// often reference a fresh AxisConfig instance that is rebuilt every render
+	// pass (e.g. the time axis). Deduping by reference treats each instance as a
+	// distinct axis, so indicators attached to it render once per instance —
+	// leaving stale/duplicated indicator lines after zoom re-renders (#506).
+	// Keyless axes keep the original reference-based dedup.
+	const addAxis = (axis: AxisConfig, axes: AxisConfig[], keyed: Map<string, AxisConfig>, refs: Set<AxisConfig>): void => {
+		if (axis.key !== undefined) {
+			if (keyed.has(axis.key))
+				return;
+
+			keyed.set(axis.key, axis);
+			axes.push(axis);
+			return;
+		}
+
+		if (refs.has(axis))
+			return;
+
+		refs.add(axis);
+		axes.push(axis);
+	};
+
+	const isKnown = (axis: AxisConfig, keyed: Map<string, AxisConfig>, refs: Set<AxisConfig>): boolean =>
+		axis.key !== undefined ? keyed.has(axis.key) : refs.has(axis);
 
 	for (const layer of layers) {
-		hSet.add(layer.hAxis);
-		vSet.add(layer.vAxis);
+		addAxis(layer.hAxis, hAxes, hKeys, hRefs);
+		addAxis(layer.vAxis, vAxes, vKeys, vRefs);
 	}
 
 	if (markers) {
 		for (const marker of markers) {
-			if (hSet.has(marker.axis) || vSet.has(marker.axis))
+			if (isKnown(marker.axis, hKeys, hRefs) || isKnown(marker.axis, vKeys, vRefs))
 				continue;
 
-			hSet.add(marker.axis);
+			addAxis(marker.axis, hAxes, hKeys, hRefs);
 		}
 	}
 
-	return {hAxes: [...hSet], vAxes: [...vSet]};
+	return {hAxes, vAxes};
 }
