@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {Circle, Group, Line, Rect, Text} from 'react-konva';
 import {toCanvasX, toCanvasY} from './chart-coordinate.js';
+import {indicatorLabelY} from './indicator-label.js';
 import type {ChartRenderContext} from './chart-render-context.js';
 import type {ChartMarker} from './types.js';
 
@@ -108,7 +109,7 @@ export function renderIndicators(ctx: ChartRenderContext): React.ReactNode[] {
 
 			const text = ind.label || formatIndicatorLabel(fmt, ind.from, ind.to);
 			const estTextWidth = text.length * fontSize * 0.6;
-			const labelY = ctx.pad.top + 2;
+			const labelY = indicatorLabelY(ind.labelPosition, ctx.pad.top, plotBottom, fontSize);
 
 			if (isRange) {
 				const left = Math.max(ctx.pad.left, Math.min(xFrom, xTo));

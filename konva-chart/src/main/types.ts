@@ -51,6 +51,12 @@ export type ChartIndicator = {
 	label?: string;
 	dash?: number[];
 	width?: number;
+	/**
+	 * Vertical placement of the indicator's label on a horizontal (time) axis.
+	 * `'top'` (default) renders the label at the top of the plot; `'bottom'` renders it
+	 * at the bottom of the data area so it does not obscure chart content.
+	 */
+	labelPosition?: 'top' | 'bottom';
 };
 
 export type ChartPadding = {
