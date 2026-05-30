@@ -16,6 +16,10 @@ Thunderstorm is a TypeScript ESM monorepo framework. Build, test, and deploy are
 - **Unit** — BAI’s executable entity: maps to a package. Unit types include `node-project`, `typescript-lib`, `firebase-hosting`, `firebase-function`.
 - **Module** — Runtime singleton that provides a capability. Backend modules: `ModuleBE_*`; frontend modules: `ModuleFE_*`. Classes that are singletons and participate in module manager pack use the `_Class` suffix; the exported instance has no suffix (e.g. `ModuleFE_BaseApi` is the instance, `ModuleFE_BaseApi_Class` is the type).
 
+### Shared definition scope (non-negotiable)
+
+The shared `Database` definition (and shared types in general) describes the **entity contract** — schema, keys, validators, dependencies. It never encodes frontend or backend runtime behavior. Frontend runtime concerns (sync participation, cache policy, skip flags) belong in the frontend layer — on the FE module or FE sync infrastructure. Backend runtime concerns belong in the backend layer. Shared types are the contract; domain-specific runtime lives in its own domain package.
+
 ## Package map (one-liner per lib)
 
 | Lib | Purpose |
