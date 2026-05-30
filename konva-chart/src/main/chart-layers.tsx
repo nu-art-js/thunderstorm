@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Circle, Group, Line, Rect, Text} from 'react-konva';
-import {toCanvasX, toCanvasY} from './chart-coordinate.js';
+import {sameAxis, toCanvasX, toCanvasY} from './chart-coordinate.js';
 import type {ChartRenderContext} from './chart-render-context.js';
 import type {ChartMarker} from './types.js';
 
@@ -195,11 +195,15 @@ export function renderMarkers(
 		return [];
 
 	return ctx.markers.map(marker => {
-		const isHorizontal = ctx.hAxes.includes(marker.axis);
-		if (!isHorizontal)
+		// Resolve the canonical horizontal axis by key — the marker may carry a
+		// non-canonical same-key instance, which `includes` (identity) would miss
+		// and silently drop the marker. Range is read off the canonical axis so it
+		// matches the layers' range (#527).
+		const axis = ctx.hAxes.find(a => sameAxis(a, marker.axis));
+		if (!axis)
 			return null;
 
-		const hRange = ctx.getHRange(marker.axis);
+		const hRange = ctx.getHRange(axis);
 		const x = toCanvasX(marker.value, hRange, ctx.pad, ctx.plotWidth);
 		if (x < ctx.pad.left || x > ctx.pad.left + ctx.plotWidth)
 			return null;

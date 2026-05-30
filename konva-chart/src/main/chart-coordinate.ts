@@ -91,3 +91,24 @@ export function collectAxes(layers: ChartLayer[], markers?: ChartMarker[]): { hA
 
 	return {hAxes, vAxes};
 }
+
+// Axis identity used across the render path. Mirrors collectAxes' dedup rule:
+// keyed axes are equal when their `key` matches (the same logical axis is often
+// rebuilt as a fresh AxisConfig instance every render pass), while keyless axes
+// fall back to reference identity. Resolving by reference alone would treat a
+// non-canonical same-key instance as a different axis — markers attached to it
+// would not render and range aggregation would miss its sibling layers (#527).
+export function sameAxis(a: AxisConfig, b: AxisConfig): boolean {
+	if (a.key !== undefined || b.key !== undefined)
+		return a.key === b.key;
+
+	return a === b;
+}
+
+// Select the layers bound to `axis` on the given orientation, matching by key
+// when present so layers spread across duplicate same-key instances aggregate
+// into one range (mirrors collectAxes). Single source of truth for the layer ↔
+// axis association used by every range computation in the chart.
+export function layersForAxis(layers: ChartLayer[], axis: AxisConfig, orientation: 'h' | 'v'): ChartLayer[] {
+	return layers.filter(layer => sameAxis(orientation === 'h' ? layer.hAxis : layer.vAxis, axis));
+}

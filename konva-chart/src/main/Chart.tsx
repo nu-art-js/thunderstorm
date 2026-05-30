@@ -4,7 +4,7 @@ import type {AxisConfig, ChartLayer, ChartMarker, ChartPadding, ChartTheme} from
 import {DefaultChartPadding, DefaultChartTheme} from './types.js';
 import type {ChartViewportMap, ResolvedRange, ZoomFraction} from './chart-range.js';
 import {applyZoomFraction, computeRange, viewportToZoom, zoomToViewport} from './chart-range.js';
-import {collectAxes, getHoverZone} from './chart-coordinate.js';
+import {collectAxes, getHoverZone, layersForAxis} from './chart-coordinate.js';
 import type {ChartRenderContext} from './chart-render-context.js';
 import {AxisColumnWidth, renderBaselines, renderGrid, renderHAxes, renderVAxes} from './chart-axes.js';
 import {renderIndicators, renderLayers, renderMarkers} from './chart-layers.js';
@@ -168,7 +168,7 @@ export class Chart extends React.Component<Props, State> {
 		if (cached)
 			return cached;
 
-		const layers = this.props.layers.filter(l => l.hAxis === axis);
+		const layers = layersForAxis(this.props.layers, axis, 'h');
 		const values: number[] = [];
 		for (const layer of layers)
 			for (const pt of layer.data)
@@ -191,7 +191,7 @@ export class Chart extends React.Component<Props, State> {
 		if (cached)
 			return cached;
 
-		const layers = this.props.layers.filter(l => l.vAxis === axis);
+		const layers = layersForAxis(this.props.layers, axis, 'v');
 		const values: number[] = [];
 		for (const layer of layers)
 			for (const pt of layer.data)
@@ -214,7 +214,7 @@ export class Chart extends React.Component<Props, State> {
 		if (cached)
 			return cached;
 
-		const layers = this.props.layers.filter(l => l.vAxis === axis);
+		const layers = layersForAxis(this.props.layers, axis, 'v');
 		const values: number[] = [];
 		const hZoomed = this.isHAxisZoomed();
 
