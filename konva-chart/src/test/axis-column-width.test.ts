@@ -59,9 +59,25 @@ describe('vertical-axis column width (#482)', () => {
 	});
 
 	it('ignores axes that are not rendered as a label column (none/top/bottom)', () => {
-		const hidden: AxisConfig = {position: 'none', formatters: [intFormatter]};
-		const width = computeVAxisColumnWidth([hidden], rangeResolver([[hidden, {min: -1000000, max: 1000000}]]));
+		const none: AxisConfig = {position: 'none', formatters: [intFormatter]};
+		const top: AxisConfig = {position: 'top', formatters: [intFormatter]};
+		const bottom: AxisConfig = {position: 'bottom', formatters: [intFormatter]};
+
+		const width = computeVAxisColumnWidth(
+			[none, top, bottom],
+			rangeResolver([
+				[none, {min: -1000000, max: 1000000}],
+				[top, {min: -1000000, max: 1000000}],
+				[bottom, {min: -1000000, max: 1000000}],
+			]),
+		);
 		expect(width).to.equal(DefaultAxisColumnWidth);
+	});
+
+	it('uses the default toLocaleString formatter when an axis declares none', () => {
+		const axis: AxisConfig = {position: 'left'};
+		const width = computeVAxisColumnWidth([axis], rangeResolver([[axis, {min: 0, max: 9}]]));
+		expect(width).to.be.at.least(DefaultAxisColumnWidth);
 	});
 
 	it('sizes to the widest of multiple axes', () => {

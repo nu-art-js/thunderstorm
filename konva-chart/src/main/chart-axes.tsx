@@ -7,7 +7,7 @@ import {defaultAxisFormatter, VAxisLabelSteps, vAxisTickValues} from './chart-ax
 export function renderGrid(ctx: ChartRenderContext): React.ReactNode[] {
 	const {pad, plotWidth, plotHeight, theme} = ctx;
 	const lines: React.ReactNode[] = [];
-	const steps = 4;
+	const steps = VAxisLabelSteps;
 
 	for (let i = 0; i <= steps; i++) {
 		const y = pad.top + (i / steps) * plotHeight;

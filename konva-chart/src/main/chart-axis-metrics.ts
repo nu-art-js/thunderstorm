@@ -7,10 +7,9 @@ import type {ResolvedRange} from './chart-range.js';
 export const DefaultAxisColumnWidth = 55;
 
 // Approximate rendered width (px) of a single character at the axis font size.
-// Mirrors the char-count heuristic already used for tooltip sizing in
-// chart-crosshair (`text.length * 6.5`), so the codebase keeps one convention
-// for estimating Konva text width without a canvas measuring context.
-const CharWidthPx = 6.5;
+// The single convention for estimating Konva text width without a canvas
+// measuring context — also reused for tooltip sizing in chart-crosshair.
+export const CharWidthPx = 6.5;
 
 // Horizontal breathing room (px) reserved around the widest label inside a
 // column — the gap between the label and the plot / neighbouring column.

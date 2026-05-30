@@ -5,10 +5,7 @@ import type {HoverZone} from './chart-coordinate.js';
 import {findClosestPoint} from './chart-range.js';
 import {interpolateAt} from './data-utils.js';
 import type {ChartRenderContext} from './chart-render-context.js';
-
-function defaultFormatter(value: number): string {
-	return value.toLocaleString();
-}
+import {CharWidthPx, defaultAxisFormatter} from './chart-axis-metrics.js';
 
 const SnapThresholdPx = 10;
 
@@ -73,7 +70,7 @@ function renderHTimestampLabels(
 	const {theme} = ctx;
 	const primaryHAxis = ctx.hAxes[0];
 	const hTooltipFmt = primaryHAxis.tooltipFormatter;
-	const hFmts = primaryHAxis.formatters ?? [defaultFormatter];
+	const hFmts = primaryHAxis.formatters ?? [defaultAxisFormatter];
 	const labelW = 72;
 	const labelH = 14;
 	const labelPadH = 2;
@@ -146,7 +143,7 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 		const rawCy = toCanvasY(displayValue, vRange, pad, plotHeight);
 		const cy = Math.max(pad.top, Math.min(plotBottom, rawCy));
 
-		const tooltipFmt = layer.vAxis.tooltipFormatter ?? defaultFormatter;
+		const tooltipFmt = layer.vAxis.tooltipFormatter ?? defaultAxisFormatter;
 		nodes.push(<Circle key={`dot-${layer.id}`} x={cx} y={cy} radius={4} fill={layer.color} listening={false}/>);
 		tipEntries.push({text: `${layer.label}: ${tooltipFmt(displayValue)}`, color: layer.color, timestamp: closest.h});
 
@@ -162,7 +159,7 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 
 	nodes.unshift(<Line key={'crosshair'} points={[hoverX, pad.top, hoverX, plotBottom]} stroke={theme.crosshair} strokeWidth={1} dash={[4, 4]} opacity={0.6} listening={false}/>);
 
-	const hTooltipFmt = primaryHAxis.tooltipFormatter ?? primaryHAxis.formatters?.[0] ?? defaultFormatter;
+	const hTooltipFmt = primaryHAxis.tooltipFormatter ?? primaryHAxis.formatters?.[0] ?? defaultAxisFormatter;
 	const roundToSecond = (ms: number) => Math.round(ms / 1000) * 1000;
 
 	const groups = new Map<number, TipEntry[]>();
@@ -195,7 +192,7 @@ export function renderCrosshair(ctx: ChartRenderContext, rawHoverX: number, hove
 			allTexts.push(e.text);
 	}
 
-	const tipBlockW = Math.max(120, ...allTexts.map(t => t.length * 6.5 + tipPadW * 2));
+	const tipBlockW = Math.max(120, ...allTexts.map(t => t.length * CharWidthPx + tipPadW * 2));
 	const tipBlockH = totalLines * lineH + tipPadH * 2;
 	const mouseInTopHalf = (hoverY ?? 0) < plotMidY;
 	const tipY = mouseInTopHalf ? plotBottom - tipBlockH - 4 : pad.top + 4;
@@ -267,7 +264,7 @@ export function renderAxisCrosshair(ctx: ChartRenderContext, hoverX: number | un
 		for (const axis of matchingAxes) {
 			const range = ctx.getVRange(axis);
 			const value = range.max - ((snappedY - pad.top) / plotHeight) * (range.max - range.min);
-			const fmt = axis.tooltipFormatter ?? axis.formatters?.[0] ?? defaultFormatter;
+			const fmt = axis.tooltipFormatter ?? axis.formatters?.[0] ?? defaultAxisFormatter;
 			tipEntries.push({text: fmt(value), color: ctx.getAxisColor(axis)});
 		}
 
