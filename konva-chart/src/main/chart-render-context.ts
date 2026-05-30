@@ -12,6 +12,7 @@ export type ChartRenderContext = {
 	markers: ChartMarker[];
 	hAxes: AxisConfig[];
 	vAxes: AxisConfig[];
+	axisColumnWidth: number;
 	getHRange: (axis: AxisConfig) => ResolvedRange;
 	getVRange: (axis: AxisConfig) => ResolvedRange;
 	getAxisColor: (axis: AxisConfig) => string;

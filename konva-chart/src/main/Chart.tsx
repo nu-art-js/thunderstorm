@@ -6,7 +6,8 @@ import type {ChartViewportMap, ResolvedRange, ZoomFraction} from './chart-range.
 import {applyZoomFraction, computeRange, viewportToZoom, zoomToViewport} from './chart-range.js';
 import {collectAxes, getHoverZone, layersForAxis} from './chart-coordinate.js';
 import type {ChartRenderContext} from './chart-render-context.js';
-import {AxisColumnWidth, renderBaselines, renderGrid, renderHAxes, renderVAxes} from './chart-axes.js';
+import {renderBaselines, renderGrid, renderHAxes, renderVAxes} from './chart-axes.js';
+import {computeVAxisColumnWidth} from './chart-axis-metrics.js';
 import {renderIndicators, renderLayers, renderMarkers} from './chart-layers.js';
 import {renderAxisCrosshair, renderCrosshair} from './chart-crosshair.js';
 import {Icon_ResetZoom} from './Icon_ResetZoom.js';
@@ -286,11 +287,12 @@ export class Chart extends React.Component<Props, State> {
 		const hasTop = axes.hAxes.some(a => a.position === 'top');
 		const hasLabels = axes.vAxes.some(a => a.label);
 		const maxHFormatters = Math.max(1, ...axes.hAxes.map(a => a.formatters?.length ?? 1));
+		const axisColumnWidth = computeVAxisColumnWidth(axes.vAxes, this.getVRange);
 
 		return {
 			...base,
-			left: Math.max(base.left, leftCount * AxisColumnWidth),
-			right: rightCount > 0 ? Math.max(base.right, rightCount * AxisColumnWidth) : base.right,
+			left: Math.max(base.left, leftCount * axisColumnWidth),
+			right: rightCount > 0 ? Math.max(base.right, rightCount * axisColumnWidth) : base.right,
 			top: hasLabels ? Math.max(base.top, 44) : (hasTop ? Math.max(base.top, 40) : base.top),
 			bottom: Math.max(base.bottom, 20 + maxHFormatters * 14),
 		};
@@ -309,6 +311,7 @@ export class Chart extends React.Component<Props, State> {
 			markers: this.props.markers ?? [],
 			hAxes,
 			vAxes,
+			axisColumnWidth: computeVAxisColumnWidth(vAxes, this.getVRange),
 			getHRange: this.getHRange,
 			getVRange: this.getVRange,
 			getAxisColor: this.getAxisColor,

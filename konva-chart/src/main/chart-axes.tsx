@@ -2,10 +2,7 @@ import * as React from 'react';
 import {Line, Text} from 'react-konva';
 import {toCanvasX, toCanvasY} from './chart-coordinate.js';
 import type {ChartRenderContext} from './chart-render-context.js';
-
-function defaultFormatter(value: number): string {
-	return value.toLocaleString();
-}
+import {defaultAxisFormatter, VAxisLabelSteps, vAxisTickValues} from './chart-axis-metrics.js';
 
 export function renderGrid(ctx: ChartRenderContext): React.ReactNode[] {
 	const {pad, plotWidth, plotHeight, theme} = ctx;
@@ -51,12 +48,9 @@ export function renderBaselines(ctx: ChartRenderContext): React.ReactNode[] {
 	return nodes;
 }
 
-export const AxisColumnWidth = 55;
-
 export function renderVAxes(ctx: ChartRenderContext): React.ReactNode[] {
-	const {pad, plotWidth, plotHeight, theme, vAxes, getVRange, getAxisColor} = ctx;
+	const {pad, plotWidth, plotHeight, theme, vAxes, getVRange, getAxisColor, axisColumnWidth} = ctx;
 	const nodes: React.ReactNode[] = [];
-	const steps = 4;
 
 	let leftIdx = 0;
 	let rightIdx = 0;
@@ -68,34 +62,33 @@ export function renderVAxes(ctx: ChartRenderContext): React.ReactNode[] {
 
 		const sideIdx = position === 'left' ? leftIdx++ : rightIdx++;
 		const range = getVRange(axis);
-		const fmts = axis.formatters ?? [defaultFormatter];
+		const fmts = axis.formatters ?? [defaultAxisFormatter];
 		const color = getAxisColor(axis);
 
 		if (axis.label) {
 			const labelY = pad.top - theme.fontSize * 2 - 4;
 			if (position === 'left') {
-				const labelX = sideIdx * AxisColumnWidth;
+				const labelX = sideIdx * axisColumnWidth;
 				nodes.push(<Text key={`vl-label-${axisIdx}`} x={labelX} y={labelY} text={axis.label} fontSize={theme.fontSize} fontStyle={'bold'} fill={color} listening={false}/>);
 			} else {
-				const labelX = pad.left + plotWidth + 5 + sideIdx * AxisColumnWidth;
+				const labelX = pad.left + plotWidth + 5 + sideIdx * axisColumnWidth;
 				nodes.push(<Text key={`vr-label-${axisIdx}`} x={labelX} y={labelY} text={axis.label} fontSize={theme.fontSize} fontStyle={'bold'} fill={color} listening={false}/>);
 			}
 		}
 
-		for (let i = 0; i <= steps; i++) {
-			const v = range.max - (i / steps) * (range.max - range.min);
-			const y = pad.top + (i / steps) * plotHeight;
+		vAxisTickValues(range).forEach((v, i) => {
+			const y = pad.top + (i / VAxisLabelSteps) * plotHeight;
 
 			fmts.forEach((fmt, fmtIdx) => {
 				if (position === 'left') {
-					const colX = sideIdx * AxisColumnWidth;
-					nodes.push(<Text key={`vl-${axisIdx}-${i}-${fmtIdx}`} x={colX} y={y - 6} width={AxisColumnWidth - 5} text={fmt(v)} fontSize={theme.fontSize} fill={color} align={'right'} listening={false}/>);
+					const colX = sideIdx * axisColumnWidth;
+					nodes.push(<Text key={`vl-${axisIdx}-${i}-${fmtIdx}`} x={colX} y={y - 6} width={axisColumnWidth - 5} text={fmt(v)} fontSize={theme.fontSize} fill={color} align={'right'} listening={false}/>);
 				} else {
-					const colX = pad.left + plotWidth + 5 + sideIdx * AxisColumnWidth;
-					nodes.push(<Text key={`vr-${axisIdx}-${i}-${fmtIdx}`} x={colX} y={y - 6} width={AxisColumnWidth - 5} text={fmt(v)} fontSize={theme.fontSize} fill={color} align={'left'} listening={false}/>);
+					const colX = pad.left + plotWidth + 5 + sideIdx * axisColumnWidth;
+					nodes.push(<Text key={`vr-${axisIdx}-${i}-${fmtIdx}`} x={colX} y={y - 6} width={axisColumnWidth - 5} text={fmt(v)} fontSize={theme.fontSize} fill={color} align={'left'} listening={false}/>);
 				}
 			});
-		}
+		});
 	});
 
 	return nodes;
@@ -112,7 +105,7 @@ export function renderHAxes(ctx: ChartRenderContext): React.ReactNode[] {
 			return;
 
 		const range = getHRange(axis);
-		const fmts = axis.formatters ?? [defaultFormatter];
+		const fmts = axis.formatters ?? [defaultAxisFormatter];
 
 		const ticks = axis.tickValues
 			? axis.tickValues.filter(v => v >= range.min && v <= range.max)
