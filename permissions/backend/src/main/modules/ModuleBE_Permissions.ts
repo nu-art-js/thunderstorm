@@ -1,4 +1,4 @@
-import {_keys, ApiException, batchActionParallel, CacheKey, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
@@ -40,10 +40,25 @@ export interface ResolveAdditionalGroupMemberships {
 
 // --- Service account config ---
 
+/**
+ * Per-SA access-ID cache directive. A single source of truth for the caching
+ * behavior of one service account — the two modes are mutually exclusive by
+ * construction, so the knobs can never conflict:
+ *  - `{immutable: true}` — the SA's group membership is immutable by system
+ *    design; the materialized access-IDs never expire by time and are
+ *    invalidated ONLY by `__onAccessGroupChanged`.
+ *  - `{ttlMs}` — a per-SA time-to-live override (for SAs whose membership may
+ *    change). When omitted entirely, the global default TTL applies.
+ */
+export type SAAccessIdCacheDirective =
+	| { immutable: true }
+	| { ttlMs: number };
+
 export type ServiceAccountConfig = {
 	readonly scopes: string[];
 	readonly enabled: boolean;
 	readonly systemOnly: boolean;
+	readonly accessIdCache?: SAAccessIdCacheDirective;
 };
 
 export const ServiceAccountId_Bootstrap = 'bootstrap-admin';
@@ -52,6 +67,11 @@ type Config = {
 	serviceAccounts: Record<string, ServiceAccountConfig>;
 	saAccessIdCacheTtlMs?: number;
 };
+
+type SAAccessIdCacheEntry = { value: ScopedAccessIds; expiresAt: number };
+
+// Global default SA access-id cache TTL (used when a SA declares no directive).
+const DefaultSAAccessIdCacheTtlMs = 60_000;
 
 // --- Well-known group IDs ---
 
@@ -77,7 +97,11 @@ class ModuleBE_Permissions_Class
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
 	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
 	private readonly moduleScopeKeys = new Map<string, string[]>();
-	private saAccessIdCache!: CacheKey<ScopedAccessIds>;
+	// Per-entry expiry cache (keyed by SA personal group id). Each entry carries
+	// its own `expiresAt` so different SAs can have different TTLs — or no time
+	// expiry at all (immutable SAs use Number.POSITIVE_INFINITY). Invalidated
+	// wholesale by __onAccessGroupChanged.
+	private readonly saAccessIdCache = new Map<UniqueId, SAAccessIdCacheEntry>();
 
 	constructor() {
 		super();
@@ -115,7 +139,6 @@ class ModuleBE_Permissions_Class
 
 	protected init() {
 		super.init();
-		this.saAccessIdCache = new CacheKey<ScopedAccessIds>('sa-access-ids', this.config.saAccessIdCacheTtlMs ?? 60_000);
 		this.adminGrantFlagRef = ModuleBE_Firebase.createModuleStateFirebaseRef<boolean>(this, 'grantAdminOnLogin');
 		this.setAccessContextResolver(ModuleBE_AccessGroupDB, this.permissionsAccessResolver);
 		this.setAccessContextResolver(ModuleBE_PermissionScopeDB, this.permissionsAccessResolver);
@@ -468,7 +491,11 @@ class ModuleBE_Permissions_Class
 	// --- Access group change handler ---
 
 	async __onAccessGroupChanged(changedGroupIds: UniqueId[]): Promise<void> {
-		this.saAccessIdCache.invalidate();
+		// Single correctness mechanism for immutable SAs: clearing the cache here
+		// forces every SA (including immutable ones with no time expiry) to
+		// re-materialize its access-ids on the next resolve.
+		this.logDebug(`__onAccessGroupChanged: clearing SA access-id cache (${this.saAccessIdCache.size} entries) for ${changedGroupIds.length} changed groups`);
+		this.saAccessIdCache.clear();
 		await this.rematerializeForGroups(changedGroupIds);
 	}
 
@@ -550,7 +577,7 @@ class ModuleBE_Permissions_Class
 		const personalGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(saId);
 		const accessIds = saId === ServiceAccountId_Bootstrap
 			? this.resolveBootstrapAccessIds()
-			: await this.resolveSAAccessIds(personalGroupId);
+			: await this.resolveSAAccessIds(personalGroupId, saConfig.accessIdCache);
 
 		const memStorage = new MemStorage();
 		return memStorage.init(async () => {
@@ -561,16 +588,60 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
-	private async resolveSAAccessIds(personalGroupId: UniqueId): Promise<ScopedAccessIds> {
-		const cached = this.saAccessIdCache.get(personalGroupId);
-		if (cached)
+	private async resolveSAAccessIds(personalGroupId: UniqueId, directive?: SAAccessIdCacheDirective): Promise<ScopedAccessIds> {
+		const cached = this.getCachedSAAccessIds(personalGroupId);
+		if (cached) {
+			this.logDebug(`resolveSAAccessIds: cache hit for SA group ${personalGroupId}`);
 			return cached;
+		}
 
+		this.logDebug(`resolveSAAccessIds: cache miss for SA group ${personalGroupId} — materializing`);
 		return this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 			const {accessIds} = await this.materializeFromGroups(personalGroupId, allGroups);
-			return this.saAccessIdCache.set(personalGroupId, accessIds);
+			return this.setCachedSAAccessIds(personalGroupId, accessIds, directive);
 		});
+	}
+
+	/**
+	 * Read a cached SA access-id entry, honoring its per-entry expiry. Immutable
+	 * entries (expiresAt === Infinity) never expire by time. Expired entries are
+	 * evicted on access.
+	 */
+	private getCachedSAAccessIds(personalGroupId: UniqueId): ScopedAccessIds | undefined {
+		const entry = this.saAccessIdCache.get(personalGroupId);
+		if (!entry)
+			return undefined;
+
+		if (Date.now() > entry.expiresAt) {
+			this.saAccessIdCache.delete(personalGroupId);
+			return undefined;
+		}
+
+		return entry.value;
+	}
+
+	private setCachedSAAccessIds(personalGroupId: UniqueId, value: ScopedAccessIds, directive?: SAAccessIdCacheDirective): ScopedAccessIds {
+		this.saAccessIdCache.set(personalGroupId, {value, expiresAt: this.computeCacheExpiry(directive)});
+		return value;
+	}
+
+	/**
+	 * Effective expiry timestamp for a cache entry. Precedence (SSOT):
+	 *  1. `{immutable: true}`  -> never expires by time (only on group change).
+	 *  2. `{ttlMs}`            -> per-SA TTL override.
+	 *  3. no directive         -> global default (`saAccessIdCacheTtlMs`, else
+	 *     DefaultSAAccessIdCacheTtlMs).
+	 */
+	private computeCacheExpiry(directive?: SAAccessIdCacheDirective): number {
+		if (directive && 'immutable' in directive)
+			return Number.POSITIVE_INFINITY;
+
+		const ttlMs = directive && 'ttlMs' in directive
+			? directive.ttlMs
+			: (this.config.saAccessIdCacheTtlMs ?? DefaultSAAccessIdCacheTtlMs);
+
+		return Date.now() + ttlMs;
 	}
 
 	private resolveBootstrapAccessIds(): ScopedAccessIds {
