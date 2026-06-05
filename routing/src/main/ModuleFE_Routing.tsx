@@ -1,3 +1,4 @@
+import {useEffect} from 'react';
 import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types.js';
 import {UrlQueryParams} from '@nu-art/api-types';
@@ -48,6 +49,7 @@ class ModuleFE_Routing_Class
 
 	goToRoute<P extends RouteParams>(route: TS_Route<P>, params?: Partial<P>, hash?: string) {
 		const fullPath = this.getFullPath(route.key);
+		this.logDebug(`[routing] goToRoute: key='${route.key}' resolved fullPath='${fullPath}'`);
 		try {
 			const queryString = composeQueryParams(params);
 			const search = queryString.length > 0 ? `?${queryString}` : '';
@@ -119,17 +121,24 @@ class ModuleFE_Routing_Class
 		if (route.fallback)
 			this.logDebug(`fallback: ${path}`);
 
-		const children = route.children?.filter(route => {
-			if (route.index && !route.path)
+		const children = route.children?.filter(child => {
+			if (child.index && !child.path)
 				return false;
 
-			return route.enabled?.() ?? true;
+			const isEnabled = child.enabled?.() ?? true;
+			if (!isEnabled) {
+				const childFullPath = this.routesMapByKey[child.key]?.fullPath;
+				this.logWarning(`[routing] route EXCLUDED (enabled()===false): key='${child.key}' fullPath='${childFullPath}'`);
+			} else {
+				this.logDebug(`[routing] route included: key='${child.key}' fullPath='${this.routesMapByKey[child.key]?.fullPath}'`);
+			}
+			return isEnabled;
 		}) ?? [];
 		const Component = this.resolveRouteComponent(route);
 		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
 			{_indexRoute}
 			{children.map(route => this.routeBuilder(route))}
-			{route.fallback && <Route path="*" element={<Navigate to={path || '/'}/>}/>}
+			{route.fallback && <Route path="*" element={<RoutingFallbackRedirect to={path || '/'}/>}/>}
 		</Route>;
 	};
 
@@ -365,6 +374,20 @@ export const TS_NavLink = (props: {
 			middle: () => window.open(fullPath, '_blank'),
 		})}
 	>{children}</NavLink>;
+};
+
+/**
+ * Catch-all fallback redirect. Behaves identically to the previous inline
+ * `<Navigate to={...}/>` but logs (once, on mount) the attempted path and the
+ * redirect target — this is the single most useful signal for the
+ * "stuck on root / cannot navigate" condition (a fallback firing because the
+ * intended route was excluded from the tree).
+ */
+const RoutingFallbackRedirect = (props: { to: string }) => {
+	useEffect(() => {
+		ModuleFE_Routing.logWarning(`[routing] fallback fired: attempted='${window.location.pathname}', redirectingTo='${props.to}'`);
+	}, []);
+	return <Navigate to={props.to}/>;
 };
 
 export const ModuleFE_Routing = new ModuleFE_Routing_Class();
