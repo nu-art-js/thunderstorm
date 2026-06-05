@@ -127,8 +127,10 @@ class ModuleFE_Routing_Class
 
 			const isEnabled = child.enabled?.() ?? true;
 			if (!isEnabled) {
+				// Routine while permissions/feature flags are unresolved — info, not
+				// warning. The actual "stuck" anomaly is the fallback firing (below).
 				const childFullPath = this.routesMapByKey[child.key]?.fullPath;
-				this.logWarning(`[routing] route EXCLUDED (enabled()===false): key='${child.key}' fullPath='${childFullPath}'`);
+				this.logInfo(`[routing] route EXCLUDED (enabled()===false): key='${child.key}' fullPath='${childFullPath}'`);
 			} else {
 				this.logDebug(`[routing] route included: key='${child.key}' fullPath='${this.routesMapByKey[child.key]?.fullPath}'`);
 			}

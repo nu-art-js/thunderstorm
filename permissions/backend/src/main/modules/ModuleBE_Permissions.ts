@@ -70,6 +70,9 @@ type Config = {
 
 type SAAccessIdCacheEntry = { value: ScopedAccessIds; expiresAt: number };
 
+// Global default SA access-id cache TTL (used when a SA declares no directive).
+const DefaultSAAccessIdCacheTtlMs = 60_000;
+
 // --- Well-known group IDs ---
 
 export const GroupId_AppDefault = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/default');
@@ -627,7 +630,8 @@ class ModuleBE_Permissions_Class
 	 * Effective expiry timestamp for a cache entry. Precedence (SSOT):
 	 *  1. `{immutable: true}`  -> never expires by time (only on group change).
 	 *  2. `{ttlMs}`            -> per-SA TTL override.
-	 *  3. no directive         -> global default (`saAccessIdCacheTtlMs`, 60s).
+	 *  3. no directive         -> global default (`saAccessIdCacheTtlMs`, else
+	 *     DefaultSAAccessIdCacheTtlMs).
 	 */
 	private computeCacheExpiry(directive?: SAAccessIdCacheDirective): number {
 		if (directive && 'immutable' in directive)
@@ -635,7 +639,7 @@ class ModuleBE_Permissions_Class
 
 		const ttlMs = directive && 'ttlMs' in directive
 			? directive.ttlMs
-			: (this.config.saAccessIdCacheTtlMs ?? 60_000);
+			: (this.config.saAccessIdCacheTtlMs ?? DefaultSAAccessIdCacheTtlMs);
 
 		return Date.now() + ttlMs;
 	}
