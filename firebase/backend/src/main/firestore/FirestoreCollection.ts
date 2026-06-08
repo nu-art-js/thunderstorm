@@ -200,7 +200,17 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 	};
 
 	query = Object.freeze({
-		unique: async (_id: Proto['uniqueParam']) => await this.doc.unique(_id).get(),
+		unique: async (_id: Proto['uniqueParam']): Promise<Proto['dbType'] | undefined> => {
+			const idStr = (typeof _id !== 'string' ? assertUniqueId<Proto>(_id, this.uniqueKeys) : _id) as Proto['dbType']['_id'];
+			const results = await this._customQuery({where: {_id: idStr} as Clause_Where<Proto['dbType']>}, true);
+			return results[0]?.data();
+		},
+		/**
+		 * Read-by-id that bypasses the query interceptors (no __access enforcement).
+		 * Sanctioned internal use only: original-loads/self-loads that cannot pass through
+		 * an access filter. Mirrors MongoCollection for type parity.
+		 */
+		uniqueUnmanipulated: async (_id: Proto['uniqueParam']): Promise<Proto['dbType'] | undefined> => await this.doc.unique(_id).get(),
 		uniqueAssert: async (_id: Proto['uniqueParam']): Promise<Proto['dbType']> => {
 			const resultItem = await this.query.unique(_id);
 			if (!resultItem)

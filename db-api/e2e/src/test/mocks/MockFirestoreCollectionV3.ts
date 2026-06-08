@@ -68,6 +68,7 @@ export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
 	const query = {
 		where: async (q: FirestoreQuery<DB_Object>) => queryItems(typeof q === 'object' && q && 'where' in q ? q : {where: q as Record<string, unknown>}),
 		unique: async (id: string) => store.get(id),
+		uniqueUnmanipulated: async (id: string) => store.get(id),
 		unManipulatedQuery: async (q: FirestoreQuery<DB_Object>) => queryItems(q),
 		custom: async (q: FirestoreQuery<DB_Object>) => queryItems(q)
 	};

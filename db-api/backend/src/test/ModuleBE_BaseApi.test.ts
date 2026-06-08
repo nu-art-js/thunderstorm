@@ -9,6 +9,7 @@ import {ApiException} from '@nu-art/ts-common';
 import {asBrandedId, CrudApiDef} from '@nu-art/db-api-shared';
 import {HttpServer} from '@nu-art/http-server';
 import {createMockDbModuleForApi} from './mocks/MockDbModuleForApi.js';
+import {createMockFirestoreCollectionV3} from './mocks/MockFirestoreCollectionV3.js';
 import {createApisForDBModule, ModuleBE_BaseApi_Class} from '../main/ModuleBE_BaseApi.js';
 
 const id = asBrandedId;
@@ -96,6 +97,63 @@ describe('ModuleBE_BaseApi', () => {
 			} catch (e) {
 				expect(e).to.be.instanceOf(ApiException);
 				expect((e as Error).message).to.include('TestEntity');
+			}
+		});
+	});
+
+	describe('queryUnique access enforcement', () => {
+		// A mock whose manipulated read path (query.unique/where/custom) only surfaces rows
+		// explicitly marked `visible: true` — a stand-in for the permissions __access query
+		// interceptor. uniqueUnmanipulated ignores it.
+		function setupApiWithAccessFilter(): { api: ModuleBE_BaseApi_Class<any>; db: ReturnType<typeof createMockDbModuleForApi> } {
+			const mock = createMockFirestoreCollectionV3({
+				manipulateQuery: (q: any) => ({...q, where: {...(q.where ?? {}), visible: true}})
+			});
+			const db = createMockDbModuleForApi(mock);
+			const crudApiDef = CrudApiDef(db.dbDef.dbKey);
+			const httpServer = new HttpServer(testServerConfig);
+			const api = new ModuleBE_BaseApi_Class({dbModule: db as any, crudApiDef, httpServer: () => httpServer});
+			return {api, db};
+		}
+
+		it('query.unique routes through the manipulated path, uniqueUnmanipulated does not', async () => {
+			const {db} = setupApiWithAccessFilter();
+			await db.set.item({_id: id('hidden'), _v: 'v1'});
+
+			expect(await db.query.unique(id('hidden'))).to.be.undefined;
+			const raw = await db.query.uniqueUnmanipulated(id('hidden'));
+			expect(raw).to.not.be.undefined;
+			expect(raw!._id).to.equal('hidden');
+		});
+
+		it('queryUnique throws 403 FORBIDDEN when the item exists but is not readable', async () => {
+			const {api, db} = setupApiWithAccessFilter();
+			await db.set.item({_id: id('secret'), _v: 'v1'});
+			try {
+				await api.queryUnique({_id: id('secret')});
+				expect.fail('expected ApiException');
+			} catch (e) {
+				expect(e).to.be.instanceOf(ApiException);
+				expect((e as ApiException).responseCode).to.equal(403);
+				expect((e as Error).message).to.include('No read access');
+			}
+		});
+
+		it('queryUnique returns the item when it is readable', async () => {
+			const {api, db} = setupApiWithAccessFilter();
+			await db.set.item({_id: id('open'), visible: true, _v: 'v1'} as any);
+			const item = await api.queryUnique({_id: id('open')});
+			expect(item._id).to.equal('open');
+		});
+
+		it('queryUnique throws 404 NOT_FOUND when the item truly does not exist', async () => {
+			const {api} = setupApiWithAccessFilter();
+			try {
+				await api.queryUnique({_id: id('ghost')});
+				expect.fail('expected ApiException');
+			} catch (e) {
+				expect(e).to.be.instanceOf(ApiException);
+				expect((e as ApiException).responseCode).to.equal(404);
 			}
 		});
 	});

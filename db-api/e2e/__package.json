@@ -10,7 +10,9 @@
 		"url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
 		"directory": "_thunderstorm/db-api"
 	},
-	"scripts": {"build": "tsc"},
+	"scripts": {
+		"build": "tsc"
+	},
 	"dependencies": {
 		"@nu-art/api-types": "?",
 		"@nu-art/db-api-backend": "?",
@@ -23,11 +25,14 @@
 		"firebase-admin": "?"
 	},
 	"devDependencies": {
-		"@nu-art/testalot": "?",
-		"@types/chai": "^4.3.4",
-		"chai": "?"
+		"@nu-art/testalot": "?"
 	},
-	"unitConfig": {"type": "typescript-lib"},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
 	"type": "module",
-	"publishConfig": {"directory": "dist", "linkDirectory": true}
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	}
 }

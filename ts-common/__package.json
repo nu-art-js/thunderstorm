@@ -48,7 +48,6 @@
     "jose": "?"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.6",
     "@types/minimatch": "^5.1.2",
     "@types/node-forge": "^1.0.0"
   },

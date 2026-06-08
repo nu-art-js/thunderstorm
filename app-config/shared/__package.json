@@ -20,9 +20,7 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "@nu-art/db-api-shared": "?",
     "@nu-art/api-types": "?",
@@ -30,8 +28,7 @@
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {
-    "@nu-art/testalot": "?",
-    "chai": "?"
+    "@nu-art/testalot": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

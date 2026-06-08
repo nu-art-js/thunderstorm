@@ -41,10 +41,7 @@
     "@nu-art/permissions-shared": "?",
     "@nu-art/ts-messaging-shared": "?"
   },
-  "devDependencies": {
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1"
-  },
+  "devDependencies": {},
   "unitConfig": {
     "type": "typescript-lib"
   },

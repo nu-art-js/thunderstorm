@@ -80,10 +80,18 @@ export class ModuleBE_BaseApi_Class<Database extends DB_Prototype, Config extend
 		}
 	)
 	async queryUnique(queryObject: DB_BaseObject<Database['dbKey']>): Promise<Database['dbType']> {
+		// access-enforced read (query.unique routes through the query interceptors).
 		const toReturnItem = await this.dbModule.query.unique(queryObject._id);
-		if (!toReturnItem)
-			throw HttpCodes._4XX.NOT_FOUND(`Could not find ${this.dbModule.dbDef.entityName} with _id: ${queryObject._id}`);
-		return toReturnItem;
+		if (toReturnItem)
+			return toReturnItem;
+
+		// nothing came back through the access filter — distinguish "does not exist" from
+		// "exists but caller has no read access" via an unmanipulated read-by-id.
+		const unrestrictedItem = await this.dbModule.query.uniqueUnmanipulated(queryObject._id);
+		if (unrestrictedItem)
+			throw HttpCodes._4XX.FORBIDDEN(`No read access to ${this.dbModule.dbDef.entityName} with _id: ${queryObject._id}`);
+
+		throw HttpCodes._4XX.NOT_FOUND(`Could not find ${this.dbModule.dbDef.entityName} with _id: ${queryObject._id}`);
 	}
 
 	@ApiHandler(

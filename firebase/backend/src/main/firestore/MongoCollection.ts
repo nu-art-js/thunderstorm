@@ -163,8 +163,18 @@ export class MongoCollection<Proto extends DB_Prototype>
 	query = Object.freeze({
 		unique: async (_id: Proto['uniqueParam']): Promise<Proto['dbType'] | undefined> => {
 			const idStr = typeof _id !== 'string' ? this.assertUniqueId(_id) : _id;
+			const results = await this._customQuery({where: {_id: idStr} as Clause_Where<Proto['dbType']>}, true);
+			this.logDebug(`query.unique [${this.dbDef.dbKey}] _id=${idStr} found=${!!results.length}`);
+			return results[0];
+		},
+		/**
+		 * Read-by-id that bypasses the query interceptors (no __access enforcement).
+		 * Sanctioned internal use only: original-loads for write/delete and self-loads
+		 * that cannot pass through an access filter. Mirrors FirestoreCollection for type parity.
+		 */
+		uniqueUnmanipulated: async (_id: Proto['uniqueParam']): Promise<Proto['dbType'] | undefined> => {
+			const idStr = typeof _id !== 'string' ? this.assertUniqueId(_id) : _id;
 			const result = await this.mongoCollection.findOne({_id: idStr} as any, this.sessionOpts());
-			this.logDebug(`query.unique [${this.dbDef.dbKey}] _id=${idStr} found=${!!result}`);
 			return result as Proto['dbType'] | undefined;
 		},
 		uniqueAssert: async (_id: Proto['uniqueParam']): Promise<Proto['dbType']> => {
@@ -277,7 +287,10 @@ export class MongoCollection<Proto extends DB_Prototype>
 				return this.runTransaction(() => this.set.item(preDBItem), 'set.item');
 
 			preDBItem._id = this.assertUniqueId(preDBItem);
-			const currDBItem = await this.query.unique(preDBItem._id as Proto['uniqueParam']);
+			// original-load must see the true record regardless of caller read-access:
+			// write authorization is governed by the pre-write interceptor (writers/owners),
+			// and a readers-filtered load would hide an existing doc and allow a create-branch overwrite.
+			const currDBItem = await this.query.uniqueUnmanipulated(preDBItem._id as Proto['uniqueParam']);
 
 			if ((currDBItem?.__updated || 0) > ((preDBItem as DB_Object).__updated || currentTimeMillis()))
 				throw new EntityOutdatedException(`Item is outdated: ${this.dbDef.backend.name}/${currDBItem?._id}`);
@@ -354,7 +367,9 @@ export class MongoCollection<Proto extends DB_Prototype>
 			if (!session)
 				return this.runTransaction(() => this.delete.unique(id), 'delete.unique');
 
-			const dbItem = await this.query.unique(id);
+			// delete authorization is governed by the pre-delete interceptor (deleters/owners),
+			// so the original-load is read-access-independent.
+			const dbItem = await this.query.uniqueUnmanipulated(id);
 			if (!dbItem)
 				return;
 

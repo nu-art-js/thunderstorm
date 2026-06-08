@@ -42,8 +42,11 @@ function applyLimit<T>(items: T[], limit: { page?: number; itemsCount?: number }
  * Creates an in-memory mock that implements the FirestoreCollectionV3 shape used by ModuleBE_BaseDB and ModuleBE_BaseApi.
  * Backed by a Map keyed by _id. When the real V3 interface changes, update this mock to match.
  */
-export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
+export function createMockFirestoreCollectionV3(
+	options?: { manipulateQuery?: (query: FirestoreQuery<DB_Object>) => FirestoreQuery<DB_Object> }
+): FirestoreCollection<any> {
 	const store = new Map<string, DB_Object>();
+	const manipulateQuery = options?.manipulateQuery ?? ((q: FirestoreQuery<DB_Object>) => q);
 
 	const runTransaction = async <T>(fn: () => Promise<T>): Promise<T> => fn();
 
@@ -67,11 +70,18 @@ export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
 		return applyLimit(filtered, query.limit as { page?: number; itemsCount?: number } | undefined);
 	};
 
+	// Mirrors the real collection: the "manipulated" read paths (where/custom/unique) run
+	// the registered manipulateQuery hook (stand-in for the permissions query interceptor),
+	// while unManipulatedQuery/uniqueUnmanipulated bypass it.
+	const manipulatedQueryItems = (query: FirestoreQuery<DB_Object>): DB_Object[] =>
+		queryItems(manipulateQuery({...query, where: {...(query.where ?? {})}} as FirestoreQuery<DB_Object>));
+
 	const query = {
-		where: async (q: FirestoreQuery<DB_Object>) => queryItems(typeof q === 'object' && q && 'where' in q ? q : {where: q as Record<string, unknown>}),
-		unique: async (id: string) => store.get(id),
+		where: async (q: FirestoreQuery<DB_Object>) => manipulatedQueryItems(typeof q === 'object' && q && 'where' in q ? q : {where: q as Record<string, unknown>}),
+		unique: async (id: string) => manipulatedQueryItems({where: {_id: id} as Record<string, unknown>})[0],
+		uniqueUnmanipulated: async (id: string) => store.get(id),
 		unManipulatedQuery: async (q: FirestoreQuery<DB_Object>) => queryItems(q),
-		custom: async (q: FirestoreQuery<DB_Object>) => queryItems(q)
+		custom: async (q: FirestoreQuery<DB_Object>) => manipulatedQueryItems(q)
 	};
 
 	const set = {
