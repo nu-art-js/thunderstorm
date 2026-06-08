@@ -301,8 +301,10 @@ export class HttpServer
 					return process.exit(1);
 				}
 
-				this.logDebug(`Listening on ${typeof address === 'string' ? address : `port ${address.port}`}`);
-				resolve();
+			const protocol = this.config.ssl ? 'https' : 'http';
+			const servingOn = typeof address === 'string' ? address : `${protocol}://localhost:${address.port}`;
+			this.logInfo(`Serving on ${servingOn}`);
+			resolve();
 			});
 		});
 	}
