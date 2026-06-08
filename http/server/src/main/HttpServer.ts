@@ -144,8 +144,13 @@ export class HttpServer
 	// 	return this;
 	// }
 
-	/** Deep-merge partial config into this instance (port, baseUrl, cors, ssl, bodyParserLimit). */
-	mergeRuntimeConfig(partial: Partial<HttpServerConfig>): this {
+	/** Deep-merge partial config into this instance (port, baseUrl, cors, ssl, bodyParserLimit).
+	 * A missing/empty partial is a no-op — an app module that has no http config must never
+	 * wipe an already-established config (merge(config, undefined) returns undefined). */
+	mergeRuntimeConfig(partial?: Partial<HttpServerConfig>): this {
+		if (!partial)
+			return this;
+
 		this.config = merge(this.config, partial, true) as HttpServerConfig;
 		return this;
 	}

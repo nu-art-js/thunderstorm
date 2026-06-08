@@ -40,6 +40,19 @@ new Storm(Environment)
 	.build();                 // → HttpServer.startServer() begins listening
 ```
 
+#### Config establishment — assertion checks
+
+The `HttpServer` config (at minimum a `port`, plus `ssl` for local HTTPS) **must be established before `Storm.build()`**. There are two contributors and they must not fight:
+
+1. **Entry point (`index.ts`)** — `HttpServer.getDefault().mergeRuntimeConfig({port, ssl, bodyParserLimit})`. This is the right home for environment-aware logic (`process.env.PORT`, SSL on locally / off in a container).
+2. **`ModuleBE_AppModule.init()`** — merges its **optional** RTDB config (`_config/default/ModuleBE_AppModule_Class.httpServer`) on top, then calls `HttpServer.init()`.
+
+Assertions to satisfy:
+
+- **At least one contributor must set a `port`.** If neither the entry point nor RTDB provides config, `HttpServer.config` has no port and the process binds a random OS port (or, historically, crashed).
+- **An empty/absent RTDB config must be a no-op, never a wipe.** `merge(config, undefined)` returns `undefined`; passing `this.config.httpServer` when RTDB has nothing would erase a config the entry point already set. `HttpServer.mergeRuntimeConfig` guards this — a missing/empty partial returns `this` unchanged. Do **not** reintroduce a path that merges `undefined` into the live config.
+- **Symptom if this is violated:** `TypeError: Cannot read properties of undefined (reading 'baseUrl')` at `HttpServer.init`, or `... (reading 'ssl')` at `HttpServer.createServer`. Both mean `HttpServer.config` was wiped to `undefined` — check that no app module merged an absent config.
+
 ### Firebase Functions mode (serverless)
 
 Express is wrapped in an exported Firebase function and the platform invokes it per request. Use the `ModuleBE_ExpressFunction_Class` + `export const api` flow documented in the sections below. `ModuleBE_AppModule` still supplies the `HttpServer` config, but the platform — not `HttpServer.startServer()` — drives the request lifecycle. **Not compatible with MCP** (no persistent process, no long-lived streams or websockets).
