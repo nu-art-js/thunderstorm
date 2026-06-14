@@ -22,6 +22,11 @@ import {KeyboardEvent} from 'react';
 import {_className} from '@nu-art/thunder-core';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput.js';
 import './TS_Input.scss';
+import {
+	blurOnFocusWhenDisabled,
+	guardKeyDownWhenDisabled,
+	resolveCopyFriendlyDisabledAttrs
+} from './copy-friendly-disabled.js';
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
 export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, HTMLInputElement> & {
@@ -72,13 +77,14 @@ export class TS_Input<Key extends string = string>
 	};
 
 	render() {
-		const {onAccept, innerRef, trim, forceAcceptKeys, focus, ...props} = this.props;
-		return <input {...props} autoFocus={focus} ref={innerRef} onBlur={(event) => {
+		const {onAccept, innerRef, trim, forceAcceptKeys, focus, disabled, onKeyDown, ...props} = this.props;
+		return <input {...props} {...resolveCopyFriendlyDisabledAttrs(disabled)} autoFocus={focus} ref={innerRef} onBlur={(event) => {
 			const value = event.target.value;
 			this.setState({value});
 			props.onBlur?.(value, event);
 		}} name={props.name || props.id} placeholder={this.state.placeholder}
-									className={_className('ts-input', props.disabled ? 'disabled' : undefined, props.className)} value={this.state.value}
-									onChange={this.changeValue} onKeyDown={this.onKeyDown} autoComplete={props.autoComplete ? 'on' : 'off'} disabled={props.disabled}/>;
+									className={_className('ts-input', disabled && 'disabled', props.className)} value={this.state.value}
+									onChange={this.changeValue} onKeyDown={guardKeyDownWhenDisabled(disabled, this.onKeyDown)} autoComplete={props.autoComplete ? 'on' : 'off'}
+									onFocus={blurOnFocusWhenDisabled(disabled)}/>;
 	}
 }

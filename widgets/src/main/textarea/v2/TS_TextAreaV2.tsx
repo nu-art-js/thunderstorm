@@ -24,6 +24,11 @@ import {_className} from '@nu-art/thunder-core';
 import './TS_TextAreaV2.scss';
 import {ComponentProps_Error, convertToHTMLDataAttributes} from '../../components/types.js';
 import {getComputedStyleProperty} from '../../components/utils.js';
+import {
+	blurOnFocusWhenDisabled,
+	guardKeyDownWhenDisabled,
+	resolveCopyFriendlyDisabledAttrs
+} from '../../input/copy-friendly-disabled.js';
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
 type InputState = {
@@ -186,8 +191,8 @@ export class TS_TextAreaV2
 	}
 
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, ...props} = this.props;
-		return <textarea {...props} {...convertToHTMLDataAttributes(this.props.error, 'error')} ref={input => {
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, disabled, onKeyDown, ...props} = this.props;
+		return <textarea {...props} {...resolveCopyFriendlyDisabledAttrs(disabled)} {...convertToHTMLDataAttributes(this.props.error, 'error')} ref={input => {
 			if (this.ref || !input)
 				return;
 			this.ref = input;
@@ -202,7 +207,7 @@ export class TS_TextAreaV2
 			const value = event.target.value;
 			this.setState({value});
 			props.onBlur?.(value, event);
-		}} name={props.name || props.id} className={_className('ts-textarea', props.className, this.props.resizeWithText && 'no-resize')} value={this.state.value}
-										 onChange={this.changeValue} onKeyDown={this.onKeyDown} autoComplete={props.autoComplete ? 'on' : 'off'}/>;
+		}} onFocus={blurOnFocusWhenDisabled(disabled)} name={props.name || props.id} className={_className('ts-textarea', disabled && 'disabled', error?.level === 'error' && 'error', props.className, this.props.resizeWithText && 'no-resize')} value={this.state.value}
+										 onChange={this.changeValue} onKeyDown={guardKeyDownWhenDisabled(disabled, this.onKeyDown)} autoComplete={props.autoComplete ? 'on' : 'off'}/>;
 	}
 }

@@ -52,7 +52,9 @@ export class Label
 		const el = this.labelRef.current;
 		if (!el)
 			return;
-		const overflowing = el.scrollWidth > el.clientWidth;
+		const content = el.querySelector('.ts-label__content');
+		const measureEl = content instanceof HTMLElement ? content : el;
+		const overflowing = measureEl.scrollWidth > measureEl.clientWidth;
 		if (!overflowing) {
 			if (el.classList.contains(this.activeTruncationClass))
 				el.classList.remove(this.activeTruncationClass);

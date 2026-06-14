@@ -38,7 +38,9 @@
   }
 
   &.disabled {
-    cursor: not-allowed;
+    cursor: default;
+    user-select: text;
+    caret-color: transparent;
   }
 }
 

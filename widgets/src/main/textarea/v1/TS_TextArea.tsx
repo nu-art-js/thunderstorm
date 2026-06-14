@@ -24,6 +24,11 @@ import {TS_BaseInput, TS_BaseInputProps} from '../../input/v1/TS_BaseInput.js';
 import './TS_TextArea.scss';
 import {_className} from '@nu-art/thunder-core';
 import {getComputedStyleProperty} from '../../components/utils.js';
+import {
+	blurOnFocusWhenDisabled,
+	guardKeyDownWhenDisabled,
+	resolveCopyFriendlyDisabledAttrs
+} from '../../input/copy-friendly-disabled.js';
 
 export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement> & {
 	resizeWithText?: boolean;
@@ -84,8 +89,9 @@ export class TS_TextArea<Key extends string>
 	};
 
 	render() {
-		const {onAccept, focus, enable, resizeWithText, ...props} = this.props;
-		return <textarea {...props} ref={input => {
+		const {onAccept, focus, enable, resizeWithText, disabled, onKeyDown, ...props} = this.props;
+		const keyDownHandler = onKeyDown || this.onKeyDown;
+		return <textarea {...props} {...resolveCopyFriendlyDisabledAttrs(disabled)} ref={input => {
 			if (this.ref || !input)
 				return;
 			this.ref = input;
@@ -95,9 +101,10 @@ export class TS_TextArea<Key extends string>
 			const value = event.target.value;
 			this.setState({value});
 			this.props.onBlur?.(value, event);
-		}} disabled={this.props.disabled} name={this.props.name || this.props.id} key={this.props.id} id={this.props.id}
-										 className={_className('ts-textarea', this.props.className)} style={this.props.style} value={this.state.value}
-										 placeholder={this.props.placeholder} onChange={this._changeValue} onKeyDown={this.props.onKeyDown || this.onKeyDown}
-										 autoComplete={this.props.autoComplete ? 'on' : 'off'} spellCheck={this.props.spellCheck}/>;
+		}} name={this.props.name || this.props.id} key={this.props.id} id={this.props.id}
+										 className={_className('ts-textarea', disabled && 'disabled', this.props.className)} style={this.props.style} value={this.state.value}
+										 placeholder={this.props.placeholder} onChange={this._changeValue} onKeyDown={guardKeyDownWhenDisabled(disabled, keyDownHandler)}
+										 autoComplete={this.props.autoComplete ? 'on' : 'off'} spellCheck={this.props.spellCheck}
+										 onFocus={blurOnFocusWhenDisabled(disabled)}/>;
 	}
 }

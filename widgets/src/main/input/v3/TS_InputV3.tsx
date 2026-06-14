@@ -23,6 +23,11 @@ import {ChangeEvent, KeyboardEvent, useCallback, useEffect, useRef, useState} fr
 import {_className} from '@nu-art/thunder-core';
 import '../TS_Input.scss';
 import {convertToHTMLDataAttributes, getErrorTooltip} from '../../components/types.js';
+import {
+	blurOnFocusWhenDisabled,
+	guardKeyDownWhenDisabled,
+	resolveCopyFriendlyDisabledAttrs
+} from '../copy-friendly-disabled.js';
 import type {NativeProps_TS_InputV2, Props_TS_InputV2, TemplatingProps_TS_InputV2} from '../v2/TS_InputV2.js';
 
 export type {
@@ -37,7 +42,7 @@ export type {
  * Function component implementation of TS_InputV2 — same API surface.
  */
 export function TS_InputV3(props: Props_TS_InputV2) {
-	const {
+		const {
 					onAccept,
 					allowAccept,
 					showErrorTooltip,
@@ -49,6 +54,8 @@ export function TS_InputV3(props: Props_TS_InputV2) {
 					value: controlledValue,
 					onChange,
 					onBlur,
+					disabled,
+					onKeyDown: propsOnKeyDown,
 					...rest
 				} = props;
 
@@ -100,9 +107,9 @@ export function TS_InputV3(props: Props_TS_InputV2) {
 						await onAccept(v, ev);
 					ev.stopPropagation();
 				}
-			props.onKeyDown?.(ev);
+			propsOnKeyDown?.(ev);
 		},
-		[trim, onAccept, allowAccept, controlledValue, forceAcceptKeys, props.onCancel, props.onKeyDown]
+		[trim, onAccept, allowAccept, controlledValue, forceAcceptKeys, props.onCancel, propsOnKeyDown]
 	);
 
 	const handleBlur = useCallback(
@@ -115,11 +122,15 @@ export function TS_InputV3(props: Props_TS_InputV2) {
 		[onBlur]
 	);
 
-	const handleFocus = useCallback(() => setFocused(true), []);
+	const handleFocus = useCallback(
+		blurOnFocusWhenDisabled(disabled, () => setFocused(true)),
+		[disabled]
+	);
 
 	return (
 		<input
 			{...rest}
+			{...resolveCopyFriendlyDisabledAttrs(disabled)}
 			{...convertToHTMLDataAttributes(error, 'error')}
 			{...getErrorTooltip(error, showErrorTooltip)}
 			autoFocus={focus}
@@ -127,10 +138,10 @@ export function TS_InputV3(props: Props_TS_InputV2) {
 			onBlur={handleBlur}
 			onFocus={handleFocus}
 			name={rest.name ?? rest.id}
-			className={_className('ts-input', rest.className)}
+			className={_className('ts-input', disabled && 'disabled', error?.level === 'error' && 'error', rest.className)}
 			value={value}
 			onChange={changeValue}
-			onKeyDown={onKeyDown}
+			onKeyDown={guardKeyDownWhenDisabled(disabled, onKeyDown)}
 			autoComplete={rest.autoComplete ? 'on' : 'off'}
 		/>
 	);

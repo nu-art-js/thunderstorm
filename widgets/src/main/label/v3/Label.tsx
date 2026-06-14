@@ -18,7 +18,9 @@ const invertTooltipClass = 'invert-tooltip';
 function checkOverflow(el: HTMLDivElement | null, tooltip: React.ReactNode) {
 	if (!el)
 		return;
-	const overflowing = el.scrollWidth > el.clientWidth;
+	const content = el.querySelector('.ts-label__content');
+	const measureEl = content instanceof HTMLElement ? content : el;
+	const overflowing = measureEl.scrollWidth > measureEl.clientWidth;
 	if (!overflowing) {
 		el.classList.remove(activeTruncationClass);
 		el.classList.remove(activeTooltipClass);

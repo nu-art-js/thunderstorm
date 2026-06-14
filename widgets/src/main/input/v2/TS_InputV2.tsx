@@ -23,6 +23,11 @@ import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
 import {_className} from '@nu-art/thunder-core';
 import '../TS_Input.scss';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip} from '../../components/types.js';
+import {
+	blurOnFocusWhenDisabled,
+	guardKeyDownWhenDisabled,
+	resolveCopyFriendlyDisabledAttrs
+} from '../copy-friendly-disabled.js';
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
 type InputState = {
@@ -161,15 +166,13 @@ export class TS_InputV2
 	}
 
 	render() {
-		const {onAccept, allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, ...props} = this.props;
-		return <input {...props} {...convertToHTMLDataAttributes(this.props.error, 'error')} {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
+		const {onAccept, allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, disabled, onKeyDown, ...props} = this.props;
+		return <input {...props} {...resolveCopyFriendlyDisabledAttrs(disabled)} {...convertToHTMLDataAttributes(this.props.error, 'error')} {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
 									autoFocus={focus} ref={this.inputRef} onBlur={(event) => {
 			const value = event.target.value;
 			this.setState({value, focused: false});
 			props.onBlur?.(value, event);
-		}} onFocus={(event) => {
-			this.setState({focused: true});
-		}} name={props.name || props.id} className={_className('ts-input', props.className)} value={this.state.value} onChange={this.changeValue}
-									onKeyDown={this.onKeyDown} autoComplete={props.autoComplete ? 'on' : 'off'}/>;
+		}} onFocus={blurOnFocusWhenDisabled(disabled, () => this.setState({focused: true}))} name={props.name || props.id} className={_className('ts-input', disabled && 'disabled', error?.level === 'error' && 'error', props.className)} value={this.state.value} onChange={this.changeValue}
+									onKeyDown={guardKeyDownWhenDisabled(disabled, this.onKeyDown)} autoComplete={props.autoComplete ? 'on' : 'off'}/>;
 	}
 }
