@@ -1,8 +1,6 @@
 import * as React from 'react';
 import {useEffect, useState} from 'react';
 import {_className} from '@nu-art/thunder-core';
-import './TS_ColorSwatch.scss';
-
 const hexPattern = /^#[0-9a-fA-F]{6}$/;
 
 export type Props_ColorSwatch = {

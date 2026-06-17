@@ -1,1 +1,10 @@
-// Visual design: @app/styles-components/components/_link.scss
+// .ts-link — tokenized component styling; every design value is a var(--ts-link--*)
+// (defaults in theme.scss).
+.ts-link {
+  font-size: var(--ts-link--font-size);
+  cursor: pointer;
+  color: var(--ts-link--color);
+
+  &:hover,
+  &.pseudo-hover { color: var(--ts-link--color-hover); }
+}

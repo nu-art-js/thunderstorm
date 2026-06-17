@@ -1,7 +1,6 @@
 import {BadImplementationException} from '@nu-art/ts-common';
 import * as React from 'react';
 import {ComponentSync} from '../_core/ComponentSync.js';
-import './TS_ProgressBar.scss';
 import {_className} from '@nu-art/thunder-core';
 
 export type TS_ProgressBar_Type = 'linear-bar' | 'radial';

@@ -1,0 +1,462 @@
+// Single design-token row — owns its own internals (swatch, value, alpha, identity, actions).
+// Width is driven by the enclosing TokenEditor group-body grid cell.
+.dl-token-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+
+  &.dl-token-row--highlighted {
+    background: var(--color-action-primary-soft);
+    border-color: var(--color-action-primary-bg);
+  }
+
+  .dl-token-row__identity {
+    min-width: 0;
+    width: 100%;
+
+    &.ts-prop-renderer.horizontal {
+      gap: 8px;
+    }
+
+    .ts-prop-renderer__label {
+      flex: 0 0 auto;
+      min-width: 4.5rem;
+      font-size: var(--font-size-base);
+      color: var(--color-text-muted);
+    }
+  }
+
+  .dl-token-row__value-row,
+  .dl-token-row__controls {
+    min-width: 0;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .dl-token-row__controls {
+    .dl-token-row__alpha {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .dl-token-row__value-slider {
+      flex: 1 1 auto;
+      width: auto;
+      min-width: 72px;
+      max-width: none;
+    }
+
+    .dl-token-row__value-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex: 0 0 auto;
+    }
+  }
+
+  .dl-token-row__actions {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex: 0 0 auto;
+    width: fit-content;
+  }
+
+  .dl-token-row__toggle {
+    flex: 0 0 auto;
+    width: fit-content;
+    cursor: pointer;
+    accent-color: var(--color-action-primary-bg);
+  }
+
+  .dl-token-row__action-btn {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    background: var(--color-surface-input);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    padding: 0;
+
+    .icon--wrapper {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+
+      svg {
+        width: 16px;
+        height: 16px;
+        display: block;
+      }
+    }
+  }
+
+  // Fused swatch + value + inline opacity — one unit.
+  .dl-token-row__color-value {
+    display: flex;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 0;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-surface-input);
+  }
+
+  .dl-token-row__swatch {
+    flex: 0 0 26px;
+    width: 26px;
+    min-height: 26px;
+    border: none;
+    border-right: 1px solid var(--color-border-strong);
+    border-radius: 0;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    background-image:
+      linear-gradient(var(--sw, transparent), var(--sw, transparent)),
+      linear-gradient(45deg, #8a8a8a 25%, transparent 25%, transparent 75%, #8a8a8a 75%),
+      linear-gradient(45deg, #8a8a8a 25%, #cfcfcf 25%, #cfcfcf 75%, #8a8a8a 75%);
+    background-size: 100% 100%, 6px 6px, 6px 6px;
+    background-position: 0 0, 0 0, 3px 3px;
+
+    input[type='color'] {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+    }
+  }
+
+  .dl-token-row__value {
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 0;
+    color: var(--color-text-primary);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 2px 6px;
+    box-sizing: border-box;
+    // Never render the edited value at its own font-size (typography tokens).
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  .dl-token-row__value-select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    text-overflow: ellipsis;
+
+    option {
+      background: var(--color-surface-input);
+      color: var(--color-text-primary);
+    }
+  }
+
+  .dl-token-row__alpha {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    width: fit-content;
+    gap: 4px;
+  }
+
+  .dl-token-row__alpha-input {
+    width: 32px;
+    min-width: 0;
+    font-size: 10px;
+    color: var(--color-text-primary);
+    background: transparent;
+    border: none;
+    padding: 2px 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+  }
+
+  .dl-token-row__alpha-suffix {
+    font-size: 10px;
+    color: var(--color-text-muted);
+    flex: 0 0 auto;
+  }
+
+  // Name and → ref — row 1 via TS_PropRenderer.
+  .dl-token-row__identity .dl-token-row__ref {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .dl-token-row__slider-bound {
+    flex: 0 0 auto;
+    font-size: 10px;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .dl-token-row__value-slider {
+    flex: 0 0 72px;
+    width: 72px;
+    min-width: 72px;
+    max-width: 72px;
+    height: 4px;
+    cursor: pointer;
+    accent-color: var(--color-action-primary-bg);
+  }
+
+  .dl-token-row__ref {
+    flex: 0 1 auto;
+    min-width: 0;
+    color: var(--color-text-muted);
+    font-size: 11px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      color: var(--color-action-primary-bg);
+      text-decoration: underline;
+    }
+  }
+
+  .dl-token-row__locate:hover:not(:disabled) {
+    color: var(--color-action-primary-bg);
+    border-color: var(--color-action-primary-bg);
+  }
+
+  .dl-token-row__locate:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .dl-token-row__reset:hover:not(:disabled) {
+    color: var(--color-state-danger);
+    border-color: var(--color-state-danger);
+  }
+
+  .dl-token-row__reset:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+.dl-token-row--readonly {
+  .dl-token-row__color-value--static {
+    gap: 0;
+    align-items: center;
+    min-height: 26px;
+    min-width: 0;
+    flex: 1 1 auto;
+    width: 0;
+  }
+
+  .dl-token-row__swatch--static {
+    cursor: default;
+    flex: 0 0 26px;
+    align-self: stretch;
+  }
+
+  .dl-token-row__value-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 2px 6px;
+    color: var(--color-text-primary);
+    font-size: 11px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.dl-token-row--component-slot {
+  gap: 4px;
+
+  .dl-token-row__slot-name {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dl-token-row__slot-ref-row,
+  .dl-token-row__slot-value-row {
+    min-width: 0;
+    width: 100%;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .dl-token-row__slot-link-icon,
+  .dl-token-row__slot-locate-icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    line-height: 1;
+    color: var(--color-text-muted);
+    cursor: pointer;
+
+    .icon--wrapper {
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: inherit;
+
+      svg {
+        width: 16px;
+        height: 16px;
+        display: block;
+      }
+    }
+
+    &:hover:not(:disabled) {
+      color: var(--color-action-primary-bg);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+
+  .dl-token-row__slot-ref {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--color-text-primary);
+    font-size: 13px;
+    line-height: 1.3;
+    background: transparent;
+    border: none;
+    padding: 0;
+    text-align: left;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:hover {
+      color: var(--color-action-primary-bg);
+      text-decoration: underline;
+    }
+  }
+
+  .dl-token-row__slot-ref--empty {
+    color: var(--color-state-danger);
+    font-style: italic;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: var(--color-state-danger);
+      text-decoration: underline;
+    }
+
+    &:disabled {
+      cursor: default;
+      text-decoration: none;
+    }
+  }
+
+  // Unlinked component token is a defect — every component token must point to a global.
+  &.dl-token-row--unlinked .dl-token-row__slot-link-icon {
+    color: var(--color-state-danger);
+
+    &:hover:not(:disabled) {
+      color: var(--color-state-danger);
+    }
+  }
+
+  .dl-token-row__color-value--static {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 0;
+    gap: 0;
+    align-items: center;
+    min-height: 26px;
+  }
+
+  .dl-token-row__swatch--static {
+    cursor: default;
+    flex: 0 0 26px;
+    align-self: stretch;
+  }
+
+  .dl-token-row__value-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    padding: 2px 6px;
+    color: var(--color-text-primary);
+    font-size: 11px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.dl-token-row--link-source {
+  outline: 2px solid var(--color-action-primary-bg);
+  outline-offset: 1px;
+}
+
+.dl-token-row--link-target {
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-action-primary-bg);
+    background: var(--color-action-primary-soft);
+  }
+}
+
+.dl-token-row--link-dimmed {
+  opacity: 0.35;
+  pointer-events: none;
+}

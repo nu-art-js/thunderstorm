@@ -1,0 +1,30 @@
+// @nu-art/thunder-widgets — public SCSS entry point (the `sass` export condition).
+//
+// Order matters: the :root token contract / default theme first (so every token has a
+// value with zero themes loaded — the no-orphan guarantee), then the tokenized component
+// classes. Every design value in those classes is a var(--token) defined in theme.scss.
+// Consumers load this one entry (directly, or via an app-level forwarder) and layer their
+// own [data-theme] packages on top.
+@use 'theme';
+@use 'button/Button';
+@use 'input/TS_Input';
+@use 'textarea/v2/TS_TextAreaV2';
+@use 'checkbox/v2/TS_CheckboxV2';
+@use 'radio/TS_Radio';
+@use 'toggle/TS_Toggle';
+@use 'adapter/dropdown/TS_DropDown';
+@use 'label/Label';
+@use 'slider/TS_Slider';
+@use 'button-group/TS_ButtonGroup';
+@use 'checkbox-group/TS_CheckboxGroup';
+@use 'link/TS_Link';
+@use 'icon-button/TS_IconButton';
+@use 'loaders/TS_CircularLoader';
+@use 'loaders/TS_ProgressBar';
+@use 'toaster/TS_Toast';
+@use 'read-more/TS_ReadMore';
+@use 'color-swatch/TS_ColorSwatch';
+// tree before json-viewer: the JSON viewer scopes .ts-tree__node overrides at equal
+// specificity, so the generic tree theme must load first for those overrides to win.
+@use 'adapter/tree/TS_Tree';
+@use 'json-viewer/v1/TS_JSONViewer';

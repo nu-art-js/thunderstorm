@@ -162,7 +162,7 @@ See `Example_TreeObject.tsx`.
 | `createCatalogTreeData` | Copy-paste starting data |
 | `buildCatalogTreeAdapter` | Copy-paste adapter factory |
 
-Design-language gallery: `Preview_Tree.tsx` in `@app/ui-foundation-frontend` renders both examples via the guide router.
+Design-language gallery: `Preview_Tree.tsx` in `@nu-art/thunder-theme-editor` renders both examples via the guide router.
 
 ---
 

@@ -1,0 +1,237 @@
+// Design-language page shell. Appearance from semantic tokens; layout-only here.
+.dl-gallery {
+  gap: 12px;
+  padding: 16px;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+  user-select: none;
+  cursor: default;
+
+  // Editable fields only — no text caret on labels, breadcrumbs, token names, etc.
+  input,
+  textarea,
+  select,
+  .ts-input,
+  .ts-textarea,
+  .ts-color-swatch__hex {
+    user-select: text;
+  }
+
+  .ts-color-swatch__hex:not(:disabled) {
+    cursor: text;
+  }
+
+  .ts-input:not(.disabled) {
+    cursor: text;
+  }
+
+  .ts-input.disabled {
+    user-select: text;
+    cursor: default;
+  }
+
+  button,
+  a,
+  .dl-gallery__breadcrumb-link {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .ts-prop-renderer__label,
+  .dl-token-row__label,
+  .dl-token-editor__title,
+  .dl-token-editor__group-title,
+  .dl-gallery__heading,
+  .dl-gallery__subtitle {
+    user-select: none;
+    cursor: default;
+  }
+
+  .dl-gallery__header {
+    gap: 2px;
+    width: 100%;
+  }
+
+  .dl-gallery__heading {
+    font-size: 18px;
+    font-weight: var(--font-weight-medium);
+  }
+
+  .dl-gallery__subtitle {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+  }
+
+  .dl-gallery__nav-bar {
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dl-gallery__breadcrumb {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
+    font-size: var(--font-size-control);
+  }
+
+  .dl-gallery__breadcrumb-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-action-primary-bg);
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .dl-gallery__breadcrumb-sep {
+    color: var(--color-text-muted);
+    user-select: none;
+  }
+
+  .dl-gallery__breadcrumb-current {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .dl-gallery__switcher {
+    flex: 0 0 auto;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+
+  // Shrink wide widget min-widths to the card — avoids inner horizontal scrollbars.
+  .dl-section {
+    .ts-toast {
+      min-width: 0;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .ts-progress-bar__linear-bar {
+      width: var(--ts-progress-bar--linear-width);
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+  }
+}
+
+// Shared mode layout — editor/controls above, visuals below.
+.dl-mode {
+  gap: 12px;
+  width: 100%;
+
+  // Component editor: read-only component tokens beside the editable globals, 50/50.
+  // The globals panel stacks its groups into one column at this width (its own
+  // container query), so both panels stay balanced. Collapses to stacked when narrow.
+  .dl-mode__editor-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    align-items: start;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// Matrix: leading label track + one track per variant — columns hug cell content.
+.dl-grid {
+  display: grid;
+  gap: 8px 12px;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+
+  .dl-grid__corner {
+    // empty top-left cell above the row labels
+  }
+
+  .dl-grid__col-label,
+  .dl-grid__label {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    white-space: nowrap;
+  }
+
+  .dl-grid__col-label {
+    text-align: center;
+  }
+
+  .dl-grid__label {
+    text-align: right;
+  }
+
+  .dl-grid__cell {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// State axis: wrapping row of labelled widget instances.
+.dl-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  align-items: flex-start;
+
+  .dl-row__item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .dl-row__label {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+  }
+
+  .dl-row__node {
+    width: fit-content;
+    max-width: 100%;
+  }
+}
+
+// Field widgets (textarea, dropdown) use width:100% — give the demo node a fixed track
+// so the panel hugs content instead of stretching across the viewport.
+.dl-row--fields .dl-row__node {
+  width: 13rem;
+}
+
+// Inspect wrapper is layout-transparent by default — it must not insert a non-flex box
+// between the section and the preview column (which would break the layout chain).
+.dl-preview-inspect-wrap {
+  display: contents;
+}
+
+// Inspect mode — click preview elements to reveal composing tokens in the editor.
+// Elements keep pointer-events so the click resolves to the real target; the editor
+// neutralizes activation in capture-phase handlers. user-select stops drag-selection.
+// Here the wrapper becomes a real box so the crosshair covers the whole preview area.
+.dl-preview-inspect {
+  display: block;
+  cursor: crosshair;
+  width: 100%;
+  user-select: none;
+}

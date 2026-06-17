@@ -1,0 +1,452 @@
+// Reusable token editor panel — used in Theme Editor and Component Editor modes.
+.dl-token-editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  box-sizing: border-box;
+  overflow: visible;
+  font-size: var(--font-size-control);
+  // Internal layouts respond to the panel's own width (so it works full-width or
+  // squeezed into a side-by-side column), not the viewport.
+  container-type: inline-size;
+
+  &.dl-token-editor--compact {
+    .dl-token-editor__groups {
+      grid-template-columns: 1fr;
+    }
+
+    .dl-token-editor__group {
+      width: 100%;
+    }
+
+    .dl-token-editor__group-body {
+      width: 100%;
+    }
+  }
+
+  .dl-token-editor__head {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .dl-token-editor__title {
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-control);
+    color: var(--color-text-primary);
+  }
+
+  .dl-token-editor__subtitle {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+  }
+
+  .dl-token-editor__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    // Fixed chrome size — must not follow --font-size-control while the slider edits it.
+    font-size: 12px;
+  }
+
+  .dl-token-editor__master {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: inherit;
+    color: var(--color-text-primary);
+    cursor: pointer;
+  }
+
+  .dl-token-editor__scale {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: inherit;
+    color: var(--color-text-primary);
+    flex: 0 0 auto;
+    width: 210px;
+
+    input[type='range'] {
+      flex: 0 0 100px;
+      width: 100px;
+      min-width: 100px;
+      max-width: 100px;
+      accent-color: var(--color-action-primary-bg);
+      cursor: pointer;
+    }
+
+    .dl-token-editor__scale-label {
+      flex: 0 0 58px;
+      width: 58px;
+    }
+
+    .dl-token-editor__scale-val {
+      flex: 0 0 32px;
+      width: 32px;
+      text-align: right;
+      color: var(--color-text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .dl-token-editor__clear {
+    font-size: inherit;
+    color: var(--color-text-muted);
+    background: transparent;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    padding: 2px 8px;
+    cursor: pointer;
+  }
+
+  .dl-token-editor__export {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    // Pin the export actions to the far right of the controls row.
+    margin-left: auto;
+
+    .dl-token-editor__export-grid {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      gap: 6px;
+    }
+
+    .dl-token-editor__export-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      justify-content: flex-start;
+      font-size: inherit;
+      color: var(--color-text-primary);
+      background: transparent;
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-control);
+      padding: 2px 8px;
+      cursor: pointer;
+
+      .icon--wrapper {
+        width: 13px;
+        height: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: inherit;
+
+        svg {
+          width: 13px;
+          height: 13px;
+          display: block;
+        }
+      }
+
+      &:hover {
+        border-color: var(--color-action-primary-bg);
+        color: var(--color-action-primary-bg);
+      }
+    }
+
+    .dl-token-editor__export-note {
+      color: var(--color-text-muted);
+      font-size: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .dl-token-editor__body {
+    padding: 10px 12px;
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .dl-token-editor__hint {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    padding-bottom: 8px;
+  }
+
+  // Default — equal columns for ad-hoc group sets (component editor, etc.).
+  .dl-token-editor__groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    align-items: start;
+    width: 100%;
+  }
+
+  // Global theme editor — 3×2: palette spans left; radii|spacing row 1; typography|motion row 2.
+  &.dl-token-editor--global-layout .dl-token-editor__groups {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+
+    @container (max-width: 880px) {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+    }
+  }
+
+  &.dl-token-editor--global-layout .dl-token-editor__group--palette {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    align-self: stretch;
+
+    @container (max-width: 880px) {
+      grid-column: auto;
+      grid-row: auto;
+    }
+
+    .dl-token-editor__group-body {
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+  }
+
+  &.dl-token-editor--global-layout .dl-token-editor__group--radii {
+    grid-column: 2;
+    grid-row: 1;
+
+    @container (max-width: 880px) {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+
+  &.dl-token-editor--global-layout .dl-token-editor__group--spacing {
+    grid-column: 3;
+    grid-row: 1;
+
+    @container (max-width: 880px) {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+
+  &.dl-token-editor--global-layout .dl-token-editor__group--typography {
+    grid-column: 2;
+    grid-row: 2;
+
+    @container (max-width: 880px) {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+
+  &.dl-token-editor--global-layout .dl-token-editor__group--motion {
+    grid-column: 3;
+    grid-row: 2;
+
+    @container (max-width: 880px) {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+
+  &.dl-token-editor--global-layout .dl-token-editor__group--radii,
+  &.dl-token-editor--global-layout .dl-token-editor__group--spacing,
+  &.dl-token-editor--global-layout .dl-token-editor__group--typography,
+  &.dl-token-editor--global-layout .dl-token-editor__group--motion {
+    .dl-token-editor__group-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // Global 2-column — palette left; remaining groups stack from the top of the right column.
+  // DOM is two flex columns (see TokenEditor.tsx); no fixed grid rows per group type.
+  &.dl-token-editor--global-2col .dl-token-editor__groups {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: flex-start;
+
+    @container (max-width: 560px) {
+      flex-direction: column;
+    }
+  }
+
+  &.dl-token-editor--global-2col .dl-token-editor__groups-col {
+    min-width: 0;
+  }
+
+  // Palette ~70% · radii/spacing/typography/motion stack ~30% (60% of the old 50/50 right share).
+  &.dl-token-editor--global-2col .dl-token-editor__groups-col:not(.dl-token-editor__groups-col--stack) {
+    flex: 7 1 0;
+  }
+
+  &.dl-token-editor--global-2col .dl-token-editor__groups-col--stack {
+    flex: 3 1 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &.dl-token-editor--global-2col .dl-token-editor__groups-col--stack .dl-token-editor__group-body {
+    grid-template-columns: 1fr;
+  }
+
+  // Semantic palette tiles two-wide in the left column (not minmax(300px) — too wide for half-panel).
+  &.dl-token-editor--global-2col .dl-token-editor__group--palette .dl-token-editor__group-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dl-token-editor__group {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-base);
+    overflow: visible;
+  }
+
+  .dl-token-editor__group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    flex: 0 0 auto;
+  }
+
+  .dl-token-editor__group-title {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .dl-token-editor__group-add {
+    flex: 0 0 auto;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--color-text-primary);
+    background: var(--color-surface-input);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      color: var(--color-action-primary-bg);
+      border-color: var(--color-action-primary-bg);
+    }
+  }
+
+  .dl-token-editor__create-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface-input);
+    font-size: 11px;
+  }
+
+  .dl-token-editor__create-prefix {
+    color: var(--color-text-muted);
+    font-family: ui-monospace, monospace;
+  }
+
+  .dl-token-editor__create-suffix,
+  .dl-token-editor__create-variant {
+    flex: 1 1 80px;
+    min-width: 60px;
+    font-size: 11px;
+    color: var(--color-text-primary);
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    padding: 2px 6px;
+  }
+
+  .dl-token-editor__create-submit,
+  .dl-token-editor__create-cancel {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border-strong);
+    cursor: pointer;
+  }
+
+  .dl-token-editor__create-submit {
+    color: var(--color-action-primary-text);
+    background: var(--color-action-primary-bg);
+    border-color: var(--color-action-primary-bg);
+  }
+
+  .dl-token-editor__create-cancel {
+    color: var(--color-text-muted);
+    background: transparent;
+  }
+
+  .dl-token-editor__create-error {
+    flex: 1 1 100%;
+    color: var(--color-state-danger);
+    font-size: 10px;
+  }
+
+  .dl-token-editor__link-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+
+    code {
+      font-size: inherit;
+      color: var(--color-action-primary-bg);
+    }
+  }
+
+  .dl-token-editor__link-create {
+    font-size: inherit;
+    color: var(--color-action-primary-bg);
+    background: transparent;
+    border: 1px solid var(--color-action-primary-border);
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    cursor: pointer;
+  }
+
+  &.dl-token-editor--link-mode .dl-token-editor__group-body {
+    position: relative;
+  }
+
+  .dl-token-editor__group-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+    padding: 10px;
+    overflow: visible;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+// Component token panel — full-width group grid.
+.dl-token-editor--component-slot {
+  .dl-token-editor__groups {
+    grid-template-columns: 1fr;
+  }
+
+  .dl-token-editor__group-body {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}

@@ -1,0 +1,67 @@
+// .ts-icon-button — class-only interactive icon chrome (TS_Icons.*.component inside).
+// No widget component — consumers put this class on any wrapper (div, span, button).
+// Glyph colour follows shell `color` via currentColor. Every design value is a
+// var(--ts-icon-button--*) / var(--color-icon-*) (defaults in theme.scss).
+// States: default · :hover / .pseudo-hover · :active · .disabled
+.ts-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: var(--ts-icon-button--size);
+  height: var(--ts-icon-button--size);
+  border-radius: var(--ts-icon-button--radius);
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: var(--color-icon-default);
+  cursor: pointer;
+  transition:
+    color var(--ts-icon-button--transition),
+    background var(--ts-icon-button--transition);
+
+  .icon--wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--ts-icon-button--glyph-size);
+    height: var(--ts-icon-button--glyph-size);
+    pointer-events: none;
+    color: inherit;
+
+    svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    *:not([data-no-fill='true']):not(g):not(svg) {
+      fill: currentColor;
+      stroke: currentColor;
+    }
+  }
+
+  &:hover:not(.disabled),
+  &.pseudo-hover:not(.disabled) {
+    color: var(--color-icon-hover);
+    background: var(--color-icon-button-bg-hover);
+  }
+
+  &:active:not(.disabled) {
+    color: var(--color-icon-active);
+    background: var(--color-icon-button-bg-active);
+  }
+
+  &.disabled {
+    color: var(--color-icon-disabled);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 1px;
+  }
+}

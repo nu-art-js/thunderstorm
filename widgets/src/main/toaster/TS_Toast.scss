@@ -1,1 +1,25 @@
-// Visual design: @app/styles-components/components/_toast.scss
+// .ts-toast — tokenized component styling; every design value is a var(--ts-toast--*)
+// (defaults in theme.scss).
+.ts-toast {
+  min-height: var(--ts-toast--min-height);
+  padding-inline: var(--ts-toast--padding-inline);
+  padding-block: var(--ts-toast--padding-block);
+  min-width: var(--ts-toast--min-width);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  background: var(--ts-toast--bg);
+  font-size: var(--ts-toast--font-size);
+  font-weight: var(--ts-toast--font-weight);
+  word-wrap: break-word;
+  letter-spacing: unset;
+  box-shadow: var(--ts-toast--shadow);
+  border: var(--ts-toast--border-width) solid var(--ts-toast--border-color);
+  border-radius: var(--ts-toast--radius);
+  color: var(--color-text-primary);
+
+  &.info { border-color: var(--ts-toast--info-border); }
+  &.success { border-color: var(--ts-toast--success-border); }
+  &.warning { border-color: var(--ts-toast--warning-border); }
+  &.error { border-color: var(--ts-toast--error-border); }
+}

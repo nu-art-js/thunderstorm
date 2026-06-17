@@ -1,0 +1,386 @@
+// @nu-art/thunder-widgets — :root token contract & default theme (the "Semantic tokens").
+//
+// Single source of truth for every token NAME + its default value. With no
+// [data-theme] applied, the component classes render entirely from these defaults.
+// Theme packages override only the semantic --color-* layer; dimension and component
+// tokens inherit from here. Component tokens follow Thunderstorm's existing
+// --ts-<component>--<prop> convention and default to the semantic layer, so theming
+// flows through automatically.
+//
+// This is the default ("no theme applied") look — dark-first, 4px spacing base,
+// semantic colour only. Theme packages flip the --color-* layer to the real hues.
+// Relocated from @app/styles-components/_base.scss so every Thunderstorm project
+// gets the same default theme without an app-level styles package.
+:root {
+  // ── semantic colour tokens (themes remap THESE) ────────────────────────────
+  // Surfaces — four depths (page → panel → input → overlay), not gradients.
+  --color-surface-base: #2b2d31;
+  --color-surface-raised: #34373c;
+  --color-surface-input: #3b3f45;
+  --color-surface-overlay: #3f434a;
+
+  // Text — primary, muted (labels/hints/placeholders), muted-hi (input labels).
+  --color-text-primary: #dcdde0;
+  --color-text-muted: #9a9ca3;
+  --color-text-muted-hi: #b8bac0;
+  // Drag-selection highlight — accent tint; themes remap via the semantic colour layer.
+  --color-text-selection-bg: var(--color-action-primary-tint);
+  --color-text-selection-text: var(--color-text-primary);
+
+  // Borders — default (hairline), strong (interactive), hi (hover/emphasis).
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.16);
+  --color-border-hi: rgba(255, 255, 255, 0.24);
+
+  // Primary action (blue in themes) + its soft tints for ghost/selected states.
+  --color-action-primary-bg: #5b6472;
+  --color-action-primary-bg-hover: #69727f;
+  --color-action-primary-text: #ffffff;
+  --color-action-primary-soft: rgba(255, 255, 255, 0.08);
+  --color-action-primary-tint: rgba(255, 255, 255, 0.16);
+  --color-action-primary-border: rgba(255, 255, 255, 0.18);
+  --color-focus-ring: rgba(91, 100, 114, 0.28);
+
+  // Secondary / info brand hues (purple = AI/knowledge, cyan = info/MCP).
+  --color-action-secondary: #7a72a8;
+  --color-action-info: #6f8f9c;
+
+  // Semantic states.
+  --color-state-success: #7c9a7c;
+  --color-state-warn: #9a8f6e;
+  --color-state-danger: #9a6e6e;
+  // Danger as a tinted (not solid) control — surface, hover, border.
+  --color-danger-soft: rgba(154, 110, 110, 0.18);
+  --color-danger-soft-hover: rgba(154, 110, 110, 0.28);
+  --color-danger-border: rgba(154, 110, 110, 0.4);
+
+  // ── disabled semantics (one contract; every disabled control uses THESE) ───
+  // Token-based, not opacity — so the disabled look is a constant colour across
+  // all components regardless of their enabled variant/hue.
+  --color-surface-disabled: #303338;
+  --color-text-disabled: #5c5f66;
+  --color-border-disabled: rgba(255, 255, 255, 0.06);
+
+  // Standalone icon chrome (toolbar, close, overflow) — themes remap THESE.
+  // Embedded widget glyphs (checkbox, tree chevron) stay on --ts-<component>--*.
+  --color-icon-default: var(--color-text-muted-hi);
+  --color-icon-hover: var(--color-text-primary);
+  --color-icon-active: var(--color-action-primary-bg);
+  --color-icon-disabled: var(--color-text-disabled);
+  --color-icon-button-bg-hover: var(--color-surface-overlay);
+  --color-icon-button-bg-active: var(--color-action-primary-soft);
+
+  // ── dimension tokens (mode-agnostic; NOT overridden by themes) ─────────────
+  // Radius scale (4px base): xs tags · sm inputs · md buttons · lg panels ·
+  // xl cards · 2xl dialogs · pill.
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-pill: 999px;
+  // Back-compat aliases (control = button radius, card = card radius).
+  --radius-control: var(--radius-md);
+  --radius-card: var(--radius-xl);
+
+  // Spacing scale (4px base).
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 24px;
+  // Back-compat aliases used by control tokens.
+  --space-control-x: var(--space-base);
+  --space-control-y: var(--space-sm);
+  --space-card: var(--space-base);
+
+  // Typography — single base size (DL body = 14px). Hierarchy is color/weight, not
+  // smaller muted text. --font-size-control is the widget-layer alias components use.
+  --font-size-base: 14px;
+  --font-size-control: var(--font-size-base);
+  --font-weight-medium: 500;
+
+  // Motion (ease-out fast/default, ease-in-out slow).
+  --motion-fast: 100ms ease-out;
+  --motion-default: 150ms ease-out;
+  --motion-slow: 250ms ease-in-out;
+
+  // ── component tokens — --ts-<component>--<prop> (structural from real SCSS) ─
+  // Button (button/Button.scss)
+  --ts-button--min-height: 34px;
+  --ts-button--min-width: 90px;
+  --ts-button--padding: var(--space-sm) var(--space-base);
+  --ts-button--radius: var(--radius-md);
+  --ts-button--border-width: 1px;
+  --ts-button--transition: var(--motion-fast);
+  --ts-button--content-font-size: var(--font-size-control);
+  --ts-button--content-font-weight: var(--font-weight-medium);
+  --ts-button--content-gap: 6px;
+  // NOTE: --ts-button--content-color is an internal indirection slot, reassigned by
+  // every [data-variant] and by :disabled — it has no meaningful root default.
+  --ts-button--primary-bg: var(--color-action-primary-bg);
+  --ts-button--primary-bg-hover: var(--color-action-primary-bg-hover);
+  --ts-button--secondary-bg: var(--color-surface-input);
+  --ts-button--secondary-bg-hover: var(--color-surface-overlay);
+  --ts-button--secondary-border: var(--color-border-strong);
+  --ts-button--secondary-border-hover: var(--color-border-hi);
+  --ts-button--ghost-text: var(--color-action-primary-bg);
+  --ts-button--ghost-border: var(--color-action-primary-border);
+  --ts-button--ghost-bg-hover: var(--color-action-primary-soft);
+  --ts-button--dangerous-bg: var(--color-danger-soft);
+  --ts-button--dangerous-bg-hover: var(--color-danger-soft-hover);
+  --ts-button--dangerous-border: var(--color-danger-border);
+  --ts-button--dangerous-text: var(--color-state-danger);
+  // Per-variant disabled — each variant keeps its identity when disabled, just muted.
+  // They may point to the same value today but can diverge per variant.
+  --ts-button--primary-disabled-bg: var(--color-surface-disabled);
+  --ts-button--primary-disabled-text: var(--color-text-disabled);
+  --ts-button--primary-disabled-border: var(--color-border-disabled);
+  --ts-button--secondary-disabled-bg: var(--color-surface-disabled);
+  --ts-button--secondary-disabled-text: var(--color-text-disabled);
+  --ts-button--secondary-disabled-border: var(--color-border-disabled);
+  --ts-button--ghost-disabled-bg: transparent;
+  --ts-button--ghost-disabled-text: var(--color-text-disabled);
+  --ts-button--ghost-disabled-border: var(--color-border-disabled);
+  --ts-button--dangerous-disabled-bg: var(--color-surface-disabled);
+  --ts-button--dangerous-disabled-text: var(--color-text-disabled);
+  --ts-button--dangerous-disabled-border: var(--color-border-disabled);
+
+  // Input (input/TS_Input.scss)
+  --ts-input--padding: var(--space-sm) var(--space-md);
+  --ts-input--bg: var(--color-surface-input);
+  --ts-input--content: var(--color-text-primary);
+  --ts-input--border: var(--color-border-strong);
+  --ts-input--border-focus: var(--color-action-primary-bg);
+  --ts-input--focus-ring: var(--color-focus-ring);
+  --ts-input--radius: var(--radius-md);
+  --ts-input--font-size: var(--font-size-control);
+  --ts-input--placeholder: var(--color-text-muted);
+  --ts-input--error-border: var(--color-state-danger);
+
+  // Textarea (textarea/v2/TS_TextAreaV2.scss)
+  --ts-textarea--min-height: 80px;
+  --ts-textarea--padding: var(--space-sm) var(--space-md);
+  --ts-textarea--bg: var(--color-surface-input);
+  --ts-textarea--content: var(--color-text-primary);
+  --ts-textarea--border: var(--color-border-strong);
+  --ts-textarea--border-focus: var(--color-action-primary-bg);
+  --ts-textarea--focus-ring: var(--color-focus-ring);
+  --ts-textarea--radius: var(--radius-md);
+  --ts-textarea--font-size: var(--font-size-control);
+  --ts-textarea--placeholder: var(--color-text-muted);
+  --ts-textarea--error-border: var(--color-state-danger);
+
+  // Checkbox (checkbox/v2/TS_CheckboxV2.scss — class .ts-checkbox-v2)
+  // Unchecked = subtle filled box; checked = accent fill. Matches the DL spec
+  // (4px radius, accent fill on checked) rather than always-accent.
+  --ts-checkbox--gap: 8px;
+  --ts-checkbox--icon-size: 16px;
+  --ts-checkbox--icon-radius: var(--radius-xs);
+  --ts-checkbox--unchecked-bg: var(--color-surface-input);
+  --ts-checkbox--unchecked-border: var(--color-border-strong);
+  --ts-checkbox--unchecked-border-hover: var(--color-border-hi);
+  --ts-checkbox--unchecked-glyph: var(--color-text-muted);
+  --ts-checkbox--checked-bg: var(--color-action-primary-bg);
+  --ts-checkbox--checked-glyph: var(--color-action-primary-text);
+  --ts-checkbox--disabled-icon-bg: var(--color-surface-disabled);
+  --ts-checkbox--disabled-icon-color: var(--color-text-disabled);
+  --ts-checkbox--label-color: var(--color-text-primary);
+  --ts-checkbox--disabled-label-color: var(--color-text-disabled);
+  --ts-checkbox--label-font-size: var(--font-size-control);
+  --ts-checkbox--label-font-weight: var(--font-weight-medium);
+  --ts-checkbox--transition: background var(--motion-fast), border-color var(--motion-fast), transform var(--motion-fast);
+
+  // Radio (radio/TS_Radio.scss)
+  --ts-radio--gap: 10px;
+  --ts-radio--button-size: 18px;
+  --ts-radio--button-bg: var(--color-surface-input);
+  --ts-radio--button-bg-hover: var(--color-surface-overlay);
+  --ts-radio--button-border: var(--color-border-strong);
+  --ts-radio--checked-center: var(--color-surface-input);
+  --ts-radio--checked-ring: var(--color-action-primary-bg);
+  --ts-radio--label-color: var(--color-text-primary);
+  --ts-radio--disabled-button-bg: var(--color-surface-disabled);
+  --ts-radio--disabled-label-color: var(--color-text-disabled);
+
+  // Toggle (toggle/TS_Toggle.scss)
+  // Off = muted knob on input surface; on = accent knob on accent-tint track.
+  --ts-toggle--width: 36px;
+  --ts-toggle--height: 20px;
+  --ts-toggle--knob-size: 14px;
+  --ts-toggle--knob-inset: calc((var(--ts-toggle--height) - var(--ts-toggle--knob-size)) / 2);
+  --ts-toggle--knob-travel: 16px;
+  --ts-toggle--track-bg: var(--color-surface-input);
+  --ts-toggle--track-border: var(--color-border-strong);
+  --ts-toggle--track-bg-checked: var(--color-action-primary-tint);
+  --ts-toggle--track-border-checked: var(--color-action-primary-bg);
+  --ts-toggle--knob-bg: var(--color-text-muted);
+  --ts-toggle--knob-bg-checked: var(--color-action-primary-bg);
+  --ts-toggle--transition: var(--motion-default);
+
+  // DropDown (adapter/dropdown/TS_DropDown.scss)
+  --ts-dropdown--header-height: 32px;
+  --ts-dropdown--bg: var(--color-surface-input);
+  --ts-dropdown--radius: var(--radius-lg);
+  --ts-dropdown--border: var(--color-border-strong);
+  --ts-dropdown--text: var(--color-text-primary);
+  --ts-dropdown--font-size: var(--font-size-control);
+  --ts-dropdown--items-bg: var(--color-surface-raised);
+  --ts-dropdown--item-hover-bg: var(--color-action-primary-soft);
+  --ts-dropdown--item-separator: var(--color-border);
+  --ts-dropdown--empty-bg: var(--color-surface-raised);
+
+  // Label (label/Label.scss)
+  --ts-label--tooltip-bg: var(--color-surface-overlay);
+  --ts-label--tooltip-text: var(--color-text-primary);
+  --ts-label--tooltip-padding: var(--space-sm) var(--space-md);
+  --ts-label--tooltip-radius: var(--radius-sm);
+  --ts-label--tooltip-font-size: var(--font-size-control);
+  --ts-label--tooltip-arrow-size: 6px;
+
+  // Slider (slider/TS_Slider.scss)
+  --ts-slider--gap: var(--space-sm);
+  --ts-slider--track-height: 8px;
+  --ts-slider--track-radius: var(--radius-xs);
+  --ts-slider--track-bg: var(--color-border-strong);
+  --ts-slider--track-fill-start: var(--color-action-primary-bg);
+  --ts-slider--track-fill-end: var(--color-action-primary-bg-hover);
+  --ts-slider--thumb-size: 14px;
+  --ts-slider--thumb-bg: var(--color-action-primary-bg);
+  --ts-slider--min-width: 100px;
+
+  // Button group (button-group/TS_ButtonGroup.scss)
+  --ts-button-group--height: 32px;
+  --ts-button-group--separator-size: 2px;
+  --ts-button-group--separator-length: 60%;
+  --ts-button-group--separator-bg: var(--color-border-strong);
+  --ts-button-group--selected-bg: var(--color-surface-overlay);
+  --ts-button-group--selected-radius: var(--radius-xs);
+  --ts-button-group--btn-text: var(--color-text-primary);
+  --ts-button-group--btn-disabled-bg: var(--color-surface-disabled);
+  --ts-button-group--btn-disabled-text: var(--color-text-disabled);
+  --ts-button-group--transition: var(--motion-default);
+
+  // Checkbox group (checkbox-group/TS_CheckboxGroup.scss)
+  --ts-checkbox-group--gap: 6px;
+  --ts-checkbox-group--parent-padding-left: var(--space-md);
+  --ts-checkbox-group--children-padding-left: var(--space-lg);
+  --ts-checkbox-group--children-gap: var(--space-xs);
+  --ts-checkbox-group--partial-border: var(--color-action-primary-bg);
+  --ts-checkbox-group--partial-bar: var(--color-action-primary-bg);
+
+  // Link (link/TS_Link.scss)
+  --ts-link--font-size: var(--font-size-control);
+  --ts-link--color: var(--color-action-primary-bg-hover);
+  --ts-link--color-hover: var(--color-action-primary-bg);
+
+  // Icon button — class-only chrome (.ts-icon-button + TS_Icons.*.component).
+  // Tracks beamz baseline .icon-btn (34px hit target, muted-hi → text on hover).
+  --ts-icon-button--size: 34px;
+  --ts-icon-button--radius: var(--radius-md);
+  --ts-icon-button--glyph-size: 17px;
+  --ts-icon-button--transition: var(--motion-default);
+
+  // Circular loader (loaders/TS_CircularLoader.scss — class .ts-loader)
+  --ts-loader--size: 50px;
+  --ts-loader--border-width: 6px;
+  --ts-loader--track-bg: var(--color-border);
+  --ts-loader--spin-color: var(--color-action-primary-bg);
+  --ts-loader--rotation-duration: 1s;
+
+  // Progress bar (loaders/TS_ProgressBar.scss)
+  --ts-progress-bar--linear-width: 16rem;
+  --ts-progress-bar--linear-height: 24px;
+  --ts-progress-bar--border-width: 2px;
+  --ts-progress-bar--radius: var(--radius-pill);
+  --ts-progress-bar--border-color: var(--color-action-primary-bg);
+  --ts-progress-bar--fill: var(--color-action-primary-bg);
+  --ts-progress-bar--track-bg: var(--color-surface-input);
+  --ts-progress-bar--text-color: var(--color-action-primary-bg);
+  --ts-progress-bar--text-on-fill: var(--color-action-primary-text);
+  --ts-progress-bar--font-size: var(--font-size-control);
+  --ts-progress-bar--font-weight: var(--font-weight-medium);
+  --ts-progress-bar--radial-size: 200px;
+  --ts-progress-bar--radial-font-size: 24px;
+  --ts-progress-bar--stroke-width: 6px;
+  --ts-progress-bar--transition: var(--motion-fast);
+
+  // Toast (toaster/TS_Toast.scss)
+  --ts-toast--min-height: 40px;
+  --ts-toast--min-width: 25rem;
+  --ts-toast--padding-inline: var(--space-sm);
+  --ts-toast--padding-block: var(--space-xs);
+  --ts-toast--bg: var(--color-surface-raised);
+  --ts-toast--font-size: var(--font-size-control);
+  --ts-toast--font-weight: var(--font-weight-medium);
+  --ts-toast--radius: var(--radius-sm);
+  --ts-toast--border-width: 2px;
+  --ts-toast--border-color: var(--color-border-strong);
+  --ts-toast--shadow: 2px 2px 19px 1px rgba(0, 0, 0, 0.35);
+  --ts-toast--info-border: #49addb;
+  --ts-toast--success-border: var(--color-state-success);
+  --ts-toast--warning-border: var(--color-state-warn);
+  --ts-toast--error-border: var(--color-state-danger);
+
+  // Read more (read-more/TS_ReadMore.scss)
+  --ts-read-more--font-size: var(--font-size-control);
+  --ts-read-more--line-height: 20px;
+  --ts-read-more--button-color: var(--color-action-primary-bg-hover);
+  --ts-read-more--button-color-hover: var(--color-action-primary-bg);
+
+  // Color swatch (color-swatch/TS_ColorSwatch.scss)
+  --ts-color-swatch--gap: 6px;
+  --ts-color-swatch--circle-size: 20px;
+  --ts-color-swatch--circle-border-width: 2px;
+  --ts-color-swatch--circle-border-color: var(--color-border-strong);
+  --ts-color-swatch--disabled-opacity: 0.4;
+  --ts-color-swatch--hex-width: 64px;
+  --ts-color-swatch--hex-font-size: 11px;
+  --ts-color-swatch--hex-border-color: var(--color-border-strong);
+  --ts-color-swatch--hex-radius: var(--radius-xs);
+  --ts-color-swatch--hex-color: var(--color-text-primary);
+  --ts-color-swatch--hex-disabled-color: var(--color-text-muted);
+  --ts-color-swatch--hex-disabled-border-color: var(--color-border-subtle);
+  --ts-color-swatch--hex-disabled-bg: var(--color-surface-input);
+
+  // JSON viewer (json-viewer/v1/TS_JSONViewer.scss)
+  --ts-json-viewer--bg: var(--color-surface-input);
+  --ts-json-viewer--border-width: 1px;
+  --ts-json-viewer--border-color: var(--color-border-strong);
+  --ts-json-viewer--radius: var(--radius-lg);
+  --ts-json-viewer--font-size: var(--font-size-control);
+  --ts-json-viewer--key-color: var(--color-text-primary);
+  --ts-json-viewer--key-font-weight: var(--font-weight-medium);
+  --ts-json-viewer--icon-size: 14px;
+  // Dedicated syntax palette — dark-tuned; not remapped by themes.
+  --ts-json-viewer--string-color: #c4895e;
+  --ts-json-viewer--number-color: #7fb38a;
+  --ts-json-viewer--boolean-color: #9b86c4;
+  --ts-json-viewer--object-color: #c9b25e;
+
+  // Tree (adapter/tree/TS_Tree.scss)
+  --ts-tree--indent: 16px;
+  --ts-tree--node-padding-y: 4px;
+  --ts-tree--node-padding-x: 6px;
+  --ts-tree--node-radius: var(--radius-xs);
+  --ts-tree--font-size: var(--font-size-control);
+  --ts-tree--text-color: var(--color-text-primary);
+  --ts-tree--hover-bg: var(--color-surface-overlay);
+  --ts-tree--selected-bg: var(--color-action-primary-soft);
+  --ts-tree--selected-text: var(--color-text-primary);
+  --ts-tree--parent-font-weight: var(--font-weight-medium);
+  --ts-tree--icon-color: var(--color-text-muted);
+  --ts-tree--icon-size: 12px;
+}
+
+// Text selection — global; uses semantic tokens so themes remap automatically.
+::selection {
+  background: var(--color-text-selection-bg);
+  color: var(--color-text-selection-text);
+}
+
+::-moz-selection {
+  background: var(--color-text-selection-bg);
+  color: var(--color-text-selection-text);
+}

@@ -1,1 +1,75 @@
-// Visual design: @app/styles-components/components/_tree.scss
+// .ts-tree — tokenized component styling; every design value is a var(--ts-tree--*)
+// (defaults in theme.scss).
+.ts-tree {
+  font-size: var(--ts-tree--font-size);
+  color: var(--ts-tree--text-color);
+
+  // Nesting indentation lives on the children container so each level steps in once.
+  .ts-tree__children-container {
+    padding-left: var(--ts-tree--indent);
+  }
+
+  .ts-tree__node {
+    padding: var(--ts-tree--node-padding-y) var(--ts-tree--node-padding-x);
+    border-radius: var(--ts-tree--node-radius);
+    cursor: pointer;
+
+    .clickable {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .node-icon {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--ts-tree--icon-size);
+      min-width: var(--ts-tree--icon-size);
+      color: var(--ts-tree--icon-color);
+    }
+
+    .ts-tree__node-inner {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .ts-tree__caret {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--ts-tree--icon-size);
+      min-width: var(--ts-tree--icon-size);
+      height: var(--ts-tree--icon-size);
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--ts-tree--icon-color);
+
+      &--branch {
+        cursor: pointer;
+      }
+
+      &--leaf {
+        pointer-events: none;
+      }
+    }
+
+    &:hover {
+      background: var(--ts-tree--hover-bg);
+    }
+  }
+
+  .ts-tree__parent-node {
+    font-weight: var(--ts-tree--parent-font-weight);
+  }
+
+  .ts-tree__selected-node {
+    background: var(--ts-tree--selected-bg);
+    color: var(--ts-tree--selected-text);
+  }
+}

@@ -1,1 +1,78 @@
-// Visual design: @app/styles-components/components/_json-viewer.scss
+// .ts-json-viewer — tokenized component styling; value-type colours use a dedicated
+// dark-tuned syntax palette (--ts-json-viewer--*-color) (defaults in theme.scss).
+// Loaded after the generic tree theme (see styles.scss order) so its equal-specificity
+// .ts-tree__node overrides win.
+.ts-json-viewer {
+  width: 100%;
+  height: 100%;
+  background: var(--ts-json-viewer--bg);
+  border: var(--ts-json-viewer--border-width) solid var(--ts-json-viewer--border-color);
+  border-radius: var(--ts-json-viewer--radius);
+  overflow: hidden;
+  padding: 10px 0;
+
+  .ts-tree__node {
+    background: transparent !important;
+    cursor: default;
+    padding: 0;
+
+    .clickable {
+      padding: 5px 0 5px 5px;
+      cursor: default;
+      display: flex;
+      gap: 4px;
+    }
+  }
+
+  .ts-json-viewer__item {
+    width: 0;
+    flex-grow: 1;
+    gap: 8px;
+
+    .ts-json-viewer__item__key {
+      flex-shrink: 0;
+      font-size: var(--ts-json-viewer--font-size);
+      font-weight: var(--ts-json-viewer--key-font-weight);
+      color: var(--ts-json-viewer--key-color);
+    }
+
+    .ts-json-viewer__item__value {
+      width: 0;
+      flex-grow: 1;
+      font-size: var(--ts-json-viewer--font-size);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    &.string .ts-json-viewer__item__value { color: var(--ts-json-viewer--string-color); }
+    &.number .ts-json-viewer__item__value { color: var(--ts-json-viewer--number-color); }
+    &.boolean .ts-json-viewer__item__value { color: var(--ts-json-viewer--boolean-color); }
+    &.object {
+      cursor: pointer;
+      .ts-json-viewer__item__value { color: var(--ts-json-viewer--object-color); }
+    }
+  }
+
+  .ts-json-viewer__icon {
+    width: var(--ts-json-viewer--icon-size);
+    height: var(--ts-json-viewer--icon-size);
+
+    &.expanded { rotate: 90deg; }
+  }
+
+  .ts-json-viewer__icon-placeholder {
+    width: var(--ts-json-viewer--icon-size);
+    height: var(--ts-json-viewer--icon-size);
+  }
+
+  &.ts-json-viewer--compact {
+    .ts-tree__children-container { padding-left: 12px; }
+
+    .ts-tree__node {
+      margin: 0;
+
+      .clickable { padding: 0 0 0 3px; }
+    }
+  }
+}

@@ -2,8 +2,6 @@ import * as React from 'react';
 import {ComponentSync} from '../../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
 import {addWindowResizeListener, OnWindowResized, removeWindowResizeListener} from '@nu-art/thunder-core';
-import '../Label.scss';
-
 type Props = React.PropsWithChildren<{
 	tooltip?: React.ReactNode; //The content that will appear in the tooltip
 	className?: string;

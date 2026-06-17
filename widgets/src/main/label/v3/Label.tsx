@@ -2,8 +2,6 @@ import * as React from 'react';
 import {useEffect, useRef} from 'react';
 import {_className} from '@nu-art/thunder-core';
 import {addWindowResizeListener, removeWindowResizeListener} from '@nu-art/thunder-core';
-import '../Label.scss';
-
 type Props = React.PropsWithChildren<{
 	tooltip?: React.ReactNode;
 	className?: string;

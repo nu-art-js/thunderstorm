@@ -1,1 +1,56 @@
-// Visual design: @app/styles-components/components/_button-group.scss
+// .ts-button-group — tokenized component styling; every design value is a
+// var(--ts-button-group--*) (defaults in theme.scss).
+@mixin ts-button-group-element($direction) {
+  .ts-button {
+    --ts-button--content-color: var(--ts-button-group--btn-text);
+    background: transparent;
+    border-radius: 0;
+    height: 100%;
+    min-height: unset;
+
+    &.selected {
+      border-radius: var(--ts-button-group--selected-radius);
+      background: var(--ts-button-group--selected-bg);
+
+      &:not(.disabled) + .separator { opacity: 0; }
+    }
+
+    &:disabled {
+      --ts-button--content-color: var(--ts-button-group--btn-disabled-text);
+      background: var(--ts-button-group--btn-disabled-bg);
+      cursor: not-allowed;
+    }
+  }
+
+  .separator {
+    flex-shrink: 0;
+    align-self: center;
+    border-radius: var(--ts-button-group--separator-size);
+    background: var(--ts-button-group--separator-bg);
+    transition: opacity var(--ts-button-group--transition);
+
+    @if $direction == 'horizontal' {
+      height: var(--ts-button-group--separator-length);
+      width: var(--ts-button-group--separator-size);
+    } @else {
+      width: var(--ts-button-group--separator-length);
+      height: var(--ts-button-group--separator-size);
+    }
+
+    &.invisible { opacity: 0; }
+  }
+}
+
+.ts-button-group {
+  display: flex;
+
+  &.horizontal {
+    height: var(--ts-button-group--height);
+    @include ts-button-group-element('horizontal');
+  }
+
+  &.vertical {
+    flex-direction: column;
+    @include ts-button-group-element('vertical');
+  }
+}

@@ -69,7 +69,14 @@
   "exports": {
     ".": {
       "types": "./index.d.ts",
-      "import": "./index.js"
+      "import": "./index.js",
+      "sass": "./styles.scss"
+    },
+    "./theme": {
+      "sass": "./theme.scss"
+    },
+    "./styles": {
+      "sass": "./styles.scss"
     },
     "./v1": {
       "types": "./v1.d.ts",

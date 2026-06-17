@@ -1,47 +1,42 @@
-/*!
- * Thunderstorm is a full web app framework!
- *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+// .ts-textarea — tokenized component styling; every design value is a var(--ts-textarea--*)
+// (defaults in theme.scss).
 .ts-textarea {
-  //Dimensions
   width: 100%;
   min-width: 50px;
-  min-height: 50px;
+  min-height: var(--ts-textarea--min-height);
+  padding: var(--ts-textarea--padding);
+  font-size: var(--ts-textarea--font-size);
+  background: var(--ts-textarea--bg);
+  color: var(--ts-textarea--content);
+  border: 1px solid var(--ts-textarea--border);
+  border-radius: var(--ts-textarea--radius);
+  box-sizing: border-box;
+  outline: none;
+  resize: vertical;
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
 
-  padding-block: 4px;
-  padding-inline: 10px;
-
-  //Font
-  font-size: 1rem;
-
-  //Border
-  border: 1px solid black;
-  border-radius: 4px;
-
-  &.no-resize {
-    resize: none;
+  &.error, &[data-error-level="error"] { border-color: var(--ts-textarea--error-border); }
+  &:focus-visible { outline: none; }
+  &:focus {
+    border-color: var(--ts-textarea--border-focus);
+    box-shadow: 0 0 0 3px var(--ts-textarea--focus-ring);
   }
+  &::placeholder { color: var(--ts-textarea--placeholder); }
+  &.no-resize { resize: none; }
 
-  &.disabled {
+  // Unified disabled (shared --color-*-disabled contract).
+  &:disabled, &.disabled {
     cursor: default;
     user-select: text;
     caret-color: transparent;
+    background: var(--color-surface-disabled);
+    color: var(--color-text-disabled);
+    border-color: var(--color-border-disabled);
+    &::placeholder { color: var(--color-text-disabled); }
+
+    &:focus {
+      border-color: var(--color-border-disabled);
+      box-shadow: none;
+    }
   }
 }

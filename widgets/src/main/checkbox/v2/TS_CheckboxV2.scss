@@ -1,24 +1,25 @@
-@use '@nu-art/ts-styles' as S;
-
+// .ts-checkbox-v2 — tokenized component styling; every design value is a var(--ts-checkbox--*)
+// (defaults in theme.scss). The ts-styles colour functions / color-svg mixin are replaced by
+// token-driven fill/stroke so the glyph recolours through the theme.
 .ts-checkbox-v2 {
   flex-shrink: 0;
   display: flex;
-  gap: 8px;
+  gap: var(--ts-checkbox--gap);
   align-items: center;
   position: relative;
 
-  //Initial design for the custom icon
   .ts-checkbox-v2__icon {
-    width: 16px;
-    height: 16px;
+    width: var(--ts-checkbox--icon-size);
+    height: var(--ts-checkbox--icon-size);
     padding: 2px;
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    border-radius: 4px;
+    border-radius: var(--ts-checkbox--icon-radius);
+    border: 1px solid var(--ts-checkbox--unchecked-border);
     cursor: pointer;
     user-select: none;
-    transition: background 150ms, transform 100ms;
+    transition: var(--ts-checkbox--transition);
     outline-offset: -1px;
 
     .icon--wrapper {
@@ -36,18 +37,21 @@
         flex-shrink: 0;
       }
     }
-  }
 
-  //Design for the text label
-  .ts-checkbox-v2__label {
-    color: #333;
-    font: {
-      size: 14px;
-      weight: 500;
+    // color-svg replica — colour every vector child (not g/svg containers).
+    // Default glyph tone is the unchecked (muted) colour; checked flips it below.
+    *:not(g):not(svg) {
+      fill: var(--ts-checkbox--unchecked-glyph);
+      stroke: var(--ts-checkbox--unchecked-glyph);
     }
   }
 
-  //Keep the input focusable and accessible, but hidden on screen
+  .ts-checkbox-v2__label {
+    color: var(--ts-checkbox--label-color);
+    font-size: var(--ts-checkbox--label-font-size);
+    font-weight: var(--ts-checkbox--label-font-weight);
+  }
+
   input {
     position: absolute;
     width: 1px;
@@ -59,49 +63,46 @@
     border: 0;
     white-space: nowrap;
 
-    //Enabled specific design
     &:enabled {
-      //Allow hover and active transformations on icon
       & + .ts-checkbox-v2__icon {
-        background: S.dark-blue(3);
-        @include S.color-svg(#fff);
+        background: var(--ts-checkbox--unchecked-bg);
+        border-color: var(--ts-checkbox--unchecked-border);
 
-        &:hover {
-          background: S.dark-blue(2);
-        }
+        &:hover { border-color: var(--ts-checkbox--unchecked-border-hover); }
 
-        &:active {
-          transform: scale(0.9);
-          outline: 2px solid #fff;
-        }
+        &:active { transform: scale(0.9); }
       }
 
-      //Design when also checked
-      &:checked {
-        //Give the icon a blue BG
-        & + .ts-checkbox-v2__icon {
+      // Checked = accent fill + light glyph (DL spec).
+      &:checked + .ts-checkbox-v2__icon {
+        background: var(--ts-checkbox--checked-bg);
+        border-color: var(--ts-checkbox--checked-bg);
 
+        *:not(g):not(svg) {
+          fill: var(--ts-checkbox--checked-glyph);
+          stroke: var(--ts-checkbox--checked-glyph);
         }
       }
     }
 
-    //Disabled specific design
     &:disabled {
       & + .ts-checkbox-v2__icon {
         cursor: not-allowed;
-        background: S.gray(4);
-        @include S.color-svg(#fff);
+        background: var(--ts-checkbox--disabled-icon-bg);
+        border-color: var(--color-border-disabled);
+
+        // Override the base glyph colour so disabled reads as the constant muted tone.
+        *:not(g):not(svg) {
+          fill: var(--ts-checkbox--disabled-icon-color);
+          stroke: var(--ts-checkbox--disabled-icon-color);
+        }
       }
 
-      & + .ts-checkbox-v2__label {
-        color: S.light-gray(6);
-      }
+      & + .ts-checkbox-v2__label { color: var(--ts-checkbox--disabled-label-color); }
     }
 
     &:focus {
-      & + .ts-checkbox-v2__icon {
-        outline: 2px solid #fff;
-      }
+      & + .ts-checkbox-v2__icon { outline: 2px solid var(--color-focus-ring); }
     }
   }
 }

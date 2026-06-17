@@ -1,7 +1,5 @@
 import * as React from 'react';
 import {_className} from '@nu-art/thunder-core';
-import '../TS_Toggle.scss';
-
 export type Props_TS_Toggle = {
 	id?: string;
 	checked: boolean;

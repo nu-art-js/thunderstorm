@@ -1,1 +1,58 @@
-// Visual design: @app/styles-components/components/_color-swatch.scss
+// .ts-color-swatch — tokenized component styling; every design value is a
+// var(--ts-color-swatch--*) (defaults in theme.scss).
+.ts-color-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ts-color-swatch--gap);
+  flex-shrink: 0;
+}
+
+.ts-color-swatch__circle {
+  display: inline-block;
+  width: var(--ts-color-swatch--circle-size);
+  height: var(--ts-color-swatch--circle-size);
+  border-radius: 50%;
+  border: var(--ts-color-swatch--circle-border-width) solid var(--ts-color-swatch--circle-border-color);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &.disabled {
+    opacity: var(--ts-color-swatch--disabled-opacity);
+    filter: grayscale(0.6);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.ts-color-swatch__hex:disabled {
+  color: var(--ts-color-swatch--hex-disabled-color);
+  border-color: var(--ts-color-swatch--hex-disabled-border-color);
+  background: var(--ts-color-swatch--hex-disabled-bg);
+  opacity: var(--ts-color-swatch--disabled-opacity);
+  cursor: not-allowed;
+}
+
+.ts-color-swatch__picker {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.ts-color-swatch__hex {
+  width: var(--ts-color-swatch--hex-width);
+  font-size: var(--ts-color-swatch--hex-font-size);
+  font-family: monospace;
+  padding: 2px 4px;
+  border: 1px solid var(--ts-color-swatch--hex-border-color);
+  border-radius: var(--ts-color-swatch--hex-radius);
+  background: transparent;
+  color: var(--ts-color-swatch--hex-color);
+  box-sizing: border-box;
+}
