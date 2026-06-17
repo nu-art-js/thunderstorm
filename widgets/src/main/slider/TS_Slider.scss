@@ -1,1 +1,79 @@
-// Visual design: @app/styles-components/components/_slider.scss
+// .ts-slider — tokenized component styling; every design value is a var(--ts-slider--*)
+// (defaults in theme.scss).
+.ts-slider {
+  gap: var(--ts-slider--gap);
+  width: 100%;
+  min-width: 0;
+
+  input[type='range'] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1 1 auto;
+    min-width: var(--ts-slider--min-width);
+    width: auto;
+    height: var(--ts-slider--thumb-size);
+    border-radius: var(--ts-slider--track-radius);
+    background-image: linear-gradient(
+      to right,
+      var(--ts-slider--track-fill-start),
+      var(--ts-slider--track-fill-end)
+    );
+    background-repeat: no-repeat;
+    background-color: var(--ts-slider--track-bg);
+    cursor: pointer;
+
+    &::-webkit-slider-runnable-track {
+      height: var(--ts-slider--track-height);
+      border-radius: var(--ts-slider--track-radius);
+    }
+
+    &::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: var(--ts-slider--thumb-size);
+      height: var(--ts-slider--thumb-size);
+      margin-top: calc((var(--ts-slider--track-height) - var(--ts-slider--thumb-size)) / 2);
+      border-radius: 50%;
+      background: var(--ts-slider--thumb-bg);
+      cursor: pointer;
+    }
+
+    &::-moz-range-track {
+      height: var(--ts-slider--track-height);
+      border-radius: var(--ts-slider--track-radius);
+      background: var(--ts-slider--track-bg);
+    }
+
+    &::-moz-range-progress {
+      height: var(--ts-slider--track-height);
+      border-radius: var(--ts-slider--track-radius);
+      background: var(--ts-slider--track-fill-start);
+    }
+
+    &::-moz-range-thumb {
+      width: var(--ts-slider--thumb-size);
+      height: var(--ts-slider--thumb-size);
+      border: none;
+      border-radius: 50%;
+      background: var(--ts-slider--thumb-bg);
+      cursor: pointer;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+
+      &::-webkit-slider-thumb,
+      &::-moz-range-thumb { cursor: not-allowed; }
+    }
+  }
+
+  .ts-slider__current-value {
+    flex: 0 0 auto;
+    font-size: var(--font-size-control);
+    color: var(--color-text-primary);
+    background: var(--color-surface-input);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    padding: var(--space-xs) var(--space-sm);
+    width: 4rem;
+  }
+}

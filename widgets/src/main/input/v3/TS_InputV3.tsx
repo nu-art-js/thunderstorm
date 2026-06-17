@@ -21,7 +21,6 @@
 import * as React from 'react';
 import {ChangeEvent, KeyboardEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {_className} from '@nu-art/thunder-core';
-import '../TS_Input.scss';
 import {convertToHTMLDataAttributes, getErrorTooltip} from '../../components/types.js';
 import {
 	blurOnFocusWhenDisabled,

@@ -1,6 +1,67 @@
-// Visual design lives in @app/styles-components (components/_toggle.scss).
-// Keep this file so the component import path stays stable; no duplicate rules here.
+// .ts-toggle — tokenized component styling; every design value is a var(--ts-toggle--*)
+// (defaults in theme.scss). The track recolours on :checked so the on/off state reads
+// through the palette, not only the knob position.
 .ts-toggle {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  height: var(--ts-toggle--height);
+  width: var(--ts-toggle--width);
+
+  &.disabled {
+    cursor: not-allowed;
+  }
+
+  .ts-toggle__slider {
+    position: relative;
+    display: block;
+    height: var(--ts-toggle--height);
+    width: var(--ts-toggle--width);
+
+    &:before,
+    &:after {
+      content: '';
+      cursor: pointer;
+    }
+
+    &:before {
+      position: absolute;
+      inset: 0;
+      box-shadow: none;
+      transition: background-color var(--ts-toggle--transition), border-color var(--ts-toggle--transition);
+      background-color: var(--ts-toggle--track-bg);
+      border: 1px solid var(--ts-toggle--track-border);
+      box-sizing: border-box;
+      border-radius: 50px;
+    }
+
+    // Knob anchor is fixed inset; travel is transform-only (matches design baseline).
+    // Vertical centering lives in transform so checked/unchecked composit identically.
+    &:after {
+      position: absolute;
+      top: 50%;
+      left: var(--ts-toggle--knob-inset);
+      transform: translateY(-50%) translateX(0);
+      background-color: var(--ts-toggle--knob-bg);
+      border-radius: 50%;
+      height: var(--ts-toggle--knob-size);
+      width: var(--ts-toggle--knob-size);
+      transition: transform var(--ts-toggle--transition), background-color var(--ts-toggle--transition);
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+
+      // Unified disabled — constant muted look regardless of on/off. Placed with
+      // enough specificity to beat the :checked track colour below.
+      &:before {
+        background-color: var(--color-surface-disabled);
+        border-color: var(--color-border-disabled);
+      }
+      &:after { background-color: var(--color-text-disabled); }
+    }
+  }
+
   .ts-toggle__checkbox {
     opacity: 0;
     position: absolute;
@@ -8,5 +69,22 @@
     height: 0;
     margin: 0;
     padding: 0;
+
+    &:checked ~ .ts-toggle__slider:before {
+      background-color: var(--ts-toggle--track-bg-checked);
+      border-color: var(--ts-toggle--track-border-checked);
+    }
+    &:checked ~ .ts-toggle__slider:after {
+      transform: translateY(-50%) translateX(var(--ts-toggle--knob-travel));
+      background-color: var(--ts-toggle--knob-bg-checked);
+    }
+    &:checked ~ .ts-toggle__slider.disabled:before {
+      background-color: var(--color-surface-disabled);
+      border-color: var(--color-border-disabled);
+    }
+    &:checked ~ .ts-toggle__slider.disabled:after {
+      transform: translateY(-50%) translateX(var(--ts-toggle--knob-travel));
+      background-color: var(--color-text-disabled);
+    }
   }
 }

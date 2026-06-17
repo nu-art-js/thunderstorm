@@ -21,7 +21,6 @@
 import {KeyboardEvent} from 'react';
 import {_className} from '@nu-art/thunder-core';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput.js';
-import '../TS_Input.scss';
 import {
 	blurOnFocusWhenDisabled,
 	guardKeyDownWhenDisabled,

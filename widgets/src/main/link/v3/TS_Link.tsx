@@ -1,8 +1,6 @@
 import * as React from 'react';
 import {_className, stopPropagation} from '@nu-art/thunder-core';
 import {composeUrl, RouteParams} from '@nu-art/ts-common';
-import '../TS_Link.scss';
-
 export type UrlTarget = '_blank' | '_self' | '_parent' | '_top';
 
 type Props = React.PropsWithChildren<{

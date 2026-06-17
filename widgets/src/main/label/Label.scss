@@ -1,1 +1,87 @@
-// Visual design: @app/styles-components/components/_label.scss
+// .ts-label — tokenized component styling; every design value is a var(--ts-label--*)
+// (defaults in theme.scss).
+.ts-label {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+
+  .ts-label__content {
+    width: 100%;
+    min-width: 0;
+  }
+
+  &.truncate-active {
+    .ts-label__content {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &.tooltip-active {
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translateX(-50%) translateY(10px);
+      border-width: var(--ts-label--tooltip-arrow-size);
+      border-style: solid;
+      border-color: var(--ts-label--tooltip-bg) transparent transparent transparent;
+      opacity: 0;
+      transition: opacity var(--motion-fast), transform var(--motion-fast);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    &::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      bottom: 100%;
+      transform: translateX(-50%);
+      background: var(--ts-label--tooltip-bg);
+      color: var(--ts-label--tooltip-text);
+      padding: var(--ts-label--tooltip-padding);
+      font-size: var(--ts-label--tooltip-font-size);
+      border-radius: var(--ts-label--tooltip-radius);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity var(--motion-fast), transform var(--motion-fast);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    &:hover {
+      &::before {
+        opacity: 1;
+        transform: translateX(-50%) translateY(5px);
+      }
+
+      &::after {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-5px);
+      }
+    }
+  }
+
+  &.invert-tooltip {
+    &::before {
+      bottom: unset;
+      top: 100%;
+      transform: translateX(-50%) translateY(-10px);
+      border-color: transparent transparent var(--ts-label--tooltip-bg) transparent;
+    }
+
+    &::after {
+      bottom: unset;
+      top: 100%;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    &:hover {
+      &::before { transform: translateX(-50%) translateY(-5px); }
+      &::after { transform: translateX(-50%) translateY(5px); }
+    }
+  }
+}

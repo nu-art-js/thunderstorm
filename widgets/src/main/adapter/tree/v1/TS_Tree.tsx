@@ -22,7 +22,6 @@ import * as React from 'react';
 import {CSSProperties, Fragment} from 'react';
 import {Adapter, TreeNode} from '../../Adapter.js';
 import {_BaseNodeRenderer} from '../../BaseRenderer.js';
-import '../TS_Tree.scss';
 import {TreeNodeExpandState} from './types.js';
 import {_keys, exists} from '@nu-art/ts-common';
 import {ComponentSync} from '../../../_core/ComponentSync.js';

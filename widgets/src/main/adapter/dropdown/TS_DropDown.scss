@@ -1,58 +1,37 @@
-/*!
- * Thunderstorm is a full web app framework!
- *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-@use "../../styles/declaration/basic" as *;
-
+// .ts-dropdown — tokenized component styling; every design value is a var(--ts-dropdown--*)
+// (defaults in theme.scss). The %match_parent / %match_height placeholders are inlined
+// (width/height: 100%) so the file is self-contained — no @use of declaration stubs.
 .ts-dropdown {
   position: relative;
   isolation: isolate;
   z-index: 0;
   flex-shrink: 0;
 
-  //Children - header
   .ts-dropdown__header {
-    @extend %match_parent;
-    height: 30px;
-    background: white;
-    border-radius: 5px;
-    border: 1px solid #4fa7ff;
+    width: 100%;
+    height: var(--ts-dropdown--header-height);
+    background: var(--ts-dropdown--bg);
+    border-radius: var(--ts-dropdown--radius);
+    border: 1px solid var(--ts-dropdown--border);
     display: flex;
     z-index: 20 !important;
 
     .ts-input {
-      @extend %match_height;
+      height: 100%;
       background-color: transparent;
+      color: var(--ts-dropdown--text);
       border: none;
       padding-block: 0;
 
-      &:focus-visible {
-        outline: none;
-      }
+      &:focus-visible { outline: none; }
     }
-
 
     .ts-dropdown__placeholder,
     .ts-dropdown__selected {
-      @extend %match_height;
+      height: 100%;
       flex-grow: 1;
-      font-size: 16px;
+      font-size: var(--ts-dropdown--font-size);
+      color: var(--ts-dropdown--text);
       display: flex;
       justify-content: flex-start;
       align-items: center;
@@ -61,18 +40,16 @@
   }
 
   .ts-dropdown__empty {
-    background: white;
-    border-radius: 0 0 4px 4px;
-    border: 1px solid #4fa7ff;
+    background: var(--ts-dropdown--empty-bg);
+    color: var(--ts-dropdown--text);
+    border-radius: 0 0 var(--ts-dropdown--radius) var(--ts-dropdown--radius);
+    border: 1px solid var(--ts-dropdown--border);
     padding: 5px;
     position: absolute;
     text-align: center;
   }
 
-  //Children - items
-  .ts-overlay {
-    z-index: 10 !important;
-  }
+  .ts-overlay { z-index: 10 !important; }
 
   .ts-overlay__child {
     z-index: 15 !important;
@@ -80,38 +57,33 @@
   }
 
   .ts-dropdown__items-container {
-    //Colors
-    background: white;
-
-    //Border
-    border: 1px solid #4fa7ff;
-    border-radius: 0 0 5px 5px;
-
+    background: var(--ts-dropdown--items-bg);
+    color: var(--ts-dropdown--text);
+    border: 1px solid var(--ts-dropdown--border);
+    border-radius: 0 0 var(--ts-dropdown--radius) var(--ts-dropdown--radius);
     overflow-y: auto;
     overflow-x: hidden;
 
     .ts-dropdown__unselect-item {
       width: 100%;
       padding: 5px;
-      font-size: 18px;
-      border-bottom: 2px dotted black;
+      font-size: var(--ts-dropdown--font-size);
+      border-bottom: 2px dotted var(--ts-dropdown--item-separator);
 
-      &:hover {
-        background: cornsilk;
-      }
+      &:hover { background: var(--ts-dropdown--item-hover-bg); }
     }
 
     .ts-tree {
-      //Dimensions
       width: 100%;
       min-height: 10px;
-
 
       .ts-tree__children-container {
         margin: 0;
 
         .ts-tree__node {
           padding: 5px;
+
+          &:hover { background: var(--ts-dropdown--item-hover-bg); }
         }
       }
     }
@@ -119,16 +91,20 @@
     &.inverted {
       padding-top: 0;
       padding-bottom: 3px;
-      border-radius: 5px 5px 0 0;
+      border-radius: var(--ts-dropdown--radius) var(--ts-dropdown--radius) 0 0;
     }
   }
 
+  &.open { z-index: 1; }
 
-  &.open {
-    z-index: 1;
-  }
-
+  // Unified disabled (shared --color-*-disabled contract).
   &.disabled {
     cursor: not-allowed;
+    .ts-dropdown__header {
+      background: var(--color-surface-disabled);
+      border-color: var(--color-border-disabled);
+    }
+    .ts-dropdown__placeholder,
+    .ts-dropdown__selected { color: var(--color-text-disabled); }
   }
 }

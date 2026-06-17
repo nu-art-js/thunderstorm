@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {HTMLProps} from 'react';
-import './TS_CircularLoader.scss';
 import {_className} from '@nu-art/thunder-core';
 
 /**

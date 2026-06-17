@@ -1,6 +1,105 @@
-// Visual design lives in @app/styles-components (components/_button.scss).
-// Keep loader + in-progress mechanics here; no duplicate variant colours.
+// .ts-button — tokenized component styling; every design value is a var(--ts-button--*)
+// (defaults in theme.scss). Structure-only properties (display/align/position/box-sizing)
+// stay literal. The loader + in-progress mechanics below are behavioural, not visual.
 .ts-button {
+  all: unset;
+
+  min-height: var(--ts-button--min-height);
+  min-width: var(--ts-button--min-width);
+  padding: var(--ts-button--padding);
+  position: relative;
+
+  transition: color var(--ts-button--transition),
+              background var(--ts-button--transition),
+              border var(--ts-button--transition);
+  cursor: pointer;
+  border-radius: var(--ts-button--radius);
+  border: var(--ts-button--border-width) solid transparent;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  .ts-button__content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ts-button--content-gap);
+    color: var(--ts-button--content-color);
+    font-size: var(--ts-button--content-font-size);
+    font-weight: var(--ts-button--content-font-weight);
+    font-family: inherit;
+    pointer-events: none;
+  }
+
+  // Variant skins apply on :enabled only. Disabled is the shared, variant-agnostic
+  // treatment below — a constant disabled colour, not a dimmed variant hue.
+  // .pseudo-hover matches alongside :hover so the gallery can render the hover state
+  // statically without requiring an actual mouse event.
+  &[data-variant='primary'] {
+    --ts-button--content-color: var(--color-action-primary-text);
+    &:enabled {
+      background: var(--ts-button--primary-bg);
+      border-color: var(--ts-button--primary-bg);
+    }
+    &:enabled:hover, &:enabled.pseudo-hover {
+      background: var(--ts-button--primary-bg-hover);
+      border-color: var(--ts-button--primary-bg-hover);
+    }
+    &:disabled {
+      --ts-button--content-color: var(--ts-button--primary-disabled-text);
+      background: var(--ts-button--primary-disabled-bg);
+      border-color: var(--ts-button--primary-disabled-border);
+    }
+  }
+
+  &[data-variant='secondary'] {
+    --ts-button--content-color: var(--color-text-primary);
+    &:enabled {
+      background: var(--ts-button--secondary-bg);
+      border-color: var(--ts-button--secondary-border);
+    }
+    &:enabled:hover, &:enabled.pseudo-hover {
+      background: var(--ts-button--secondary-bg-hover);
+      border-color: var(--ts-button--secondary-border-hover);
+    }
+    &:disabled {
+      --ts-button--content-color: var(--ts-button--secondary-disabled-text);
+      background: var(--ts-button--secondary-disabled-bg);
+      border-color: var(--ts-button--secondary-disabled-border);
+    }
+  }
+
+  // tertiary = ghost (accent text, subtle accent border); text = same, no border.
+  &[data-variant='tertiary'],
+  &[data-variant='text'] {
+    --ts-button--content-color: var(--ts-button--ghost-text);
+    &:enabled { background: transparent; }
+    &:enabled:hover, &:enabled.pseudo-hover { background: var(--ts-button--ghost-bg-hover); }
+    &:disabled {
+      --ts-button--content-color: var(--ts-button--ghost-disabled-text);
+      background: var(--ts-button--ghost-disabled-bg);
+      border-color: var(--ts-button--ghost-disabled-border);
+    }
+  }
+
+  &[data-variant='tertiary']:enabled { border-color: var(--ts-button--ghost-border); }
+
+  &[data-variant='dangerous'] {
+    --ts-button--content-color: var(--ts-button--dangerous-text);
+    &:enabled {
+      background: var(--ts-button--dangerous-bg);
+      border-color: var(--ts-button--dangerous-border);
+    }
+    &:enabled:hover, &:enabled.pseudo-hover { background: var(--ts-button--dangerous-bg-hover); }
+    &:disabled {
+      --ts-button--content-color: var(--ts-button--dangerous-disabled-text);
+      background: var(--ts-button--dangerous-disabled-bg);
+      border-color: var(--ts-button--dangerous-disabled-border);
+    }
+  }
+
+  &:disabled { cursor: default; }
+
+  // ── behavioural mechanics (loader + in-progress) — not part of the visual skin ──
   .ts-button__loader {
     $mask: conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box;
 

@@ -1,0 +1,13 @@
+// Component preview grid — single flex wrap; same-row panels stretch to the row's max height.
+.dl-component-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+  align-content: flex-start;
+  width: 100%;
+
+  .dl-section--fit {
+    height: auto;
+  }
+}

@@ -1,1 +1,36 @@
-// Visual design: @app/styles-components/components/_loader.scss
+// .ts-loader — tokenized component styling; every design value is a var(--ts-loader--*)
+// (defaults in theme.scss).
+.ts-loader {
+  width: var(--ts-loader--size);
+  height: var(--ts-loader--size);
+
+  .ts-loader__content {
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    position: relative;
+    animation: ts-spinner__rotation var(--ts-loader--rotation-duration) infinite linear;
+    border: var(--ts-loader--border-width) solid var(--ts-loader--track-bg);
+    border-radius: 100%;
+
+    &:before {
+      content: '';
+      display: block;
+      position: absolute;
+      left: calc(-1 * var(--ts-loader--border-width));
+      top: calc(-1 * var(--ts-loader--border-width));
+      height: 100%;
+      width: 100%;
+      border-top: var(--ts-loader--border-width) solid var(--ts-loader--spin-color);
+      border-left: var(--ts-loader--border-width) solid transparent;
+      border-bottom: var(--ts-loader--border-width) solid transparent;
+      border-right: var(--ts-loader--border-width) solid transparent;
+      border-radius: 100%;
+    }
+  }
+}
+
+@keyframes ts-spinner__rotation {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(359deg); }
+}

@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
-import './TS_ButtonGroup.scss';
 import {ComponentSync} from '../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
 import {InferProps, InferState} from '../_core/component-types.js';

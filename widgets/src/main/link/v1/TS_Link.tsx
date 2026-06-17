@@ -1,5 +1,4 @@
 import * as React from 'react';
-import '../TS_Link.scss';
 import {_className, stopPropagation} from '@nu-art/thunder-core';
 import {composeUrl, RouteParams} from '@nu-art/ts-common';
 

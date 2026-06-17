@@ -1,0 +1,79 @@
+.dl-preview-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+
+  // Main axis is vertical — never use flex-basis for field width (13rem becomes height).
+  .dl-preview-sample--field {
+    flex: 0 0 auto;
+    width: 13rem;
+  }
+}
+
+.dl-preview-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+
+  // Main axis is horizontal — flex-basis sets the field column width.
+  .dl-preview-sample--field {
+    flex: 0 0 13rem;
+    width: 13rem;
+  }
+}
+
+.dl-preview-sample {
+  flex: 0 0 auto;
+  min-width: 0;
+
+  &.ts-prop-renderer.vertical {
+    row-gap: 6px;
+  }
+
+  .ts-prop-renderer__label {
+    user-select: none;
+    cursor: default;
+    color: var(--color-text-muted);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  &.dl-preview-sample--field {
+    .ts-input,
+    .ts-textarea,
+    .ts-dropdown,
+    .ts-label,
+    .ts-slider {
+      width: 100%;
+    }
+  }
+
+  .ts-radio {
+    flex-direction: column;
+    align-items: flex-start;
+    height: auto;
+    gap: 8px;
+  }
+}
+
+// Column whose children are horizontal bands (input rows, radio enabled/disabled).
+.dl-preview-column--rows {
+  gap: 14px;
+  width: 100%;
+}
+
+// Tree catalog sample is master–detail — give it full row width.
+.dl-preview-column--tree {
+  width: 100%;
+}
+
+.dl-preview-sample--tree-catalog {
+  width: 100%;
+}

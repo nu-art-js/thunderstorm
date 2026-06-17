@@ -1,1 +1,33 @@
-// Visual design: @app/styles-components/components/_checkbox-group.scss
+// .ts-checkbox-group — tokenized component styling; every design value is a
+// var(--ts-checkbox-group--*) (defaults in theme.scss).
+.ts-checkbox-group {
+  gap: var(--ts-checkbox-group--gap);
+
+  .ts-checkbox-group__parent {
+    align-items: center;
+    padding-left: var(--ts-checkbox-group--parent-padding-left);
+
+    &.ts-checkbox-group__partial {
+      .ts-checkbox__button {
+        border: 1px solid var(--ts-checkbox-group--partial-border);
+        position: relative;
+      }
+
+      .ts-checkbox__button::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 70%;
+        height: 2px;
+        background-color: var(--ts-checkbox-group--partial-bar);
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+
+  .ts-checkbox-group__children {
+    padding-left: var(--ts-checkbox-group--children-padding-left);
+    gap: var(--ts-checkbox-group--children-gap);
+  }
+}
