@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {useEffect, useState} from 'react';
 import {_className} from '@nu-art/thunder-core';
 import './TS_ColorSwatch.scss';
 
@@ -14,6 +15,9 @@ export type Props_ColorSwatch = {
 
 export function TS_ColorSwatch(props: Props_ColorSwatch) {
 	const {value, onChange, className, disabled, showHex} = props;
+	// Local draft so partial keystrokes (e.g. "#5b64") stay visible — commit upstream only on a full hex.
+	const [draft, setDraft] = useState(value);
+	useEffect(() => setDraft(value), [value]);
 
 	const circle = <label className={_className('ts-color-swatch__circle', disabled && 'disabled')} style={{backgroundColor: value}}>
 		<input
@@ -32,6 +36,7 @@ export function TS_ColorSwatch(props: Props_ColorSwatch) {
 	const onHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const raw = e.target.value;
 		const hex = raw.startsWith('#') ? raw : `#${raw}`;
+		setDraft(hex);
 		if (hexPattern.test(hex))
 			onChange(hex);
 	};
@@ -41,6 +46,7 @@ export function TS_ColorSwatch(props: Props_ColorSwatch) {
 		const hex = pasted.startsWith('#') ? pasted : `#${pasted}`;
 		if (hexPattern.test(hex)) {
 			e.preventDefault();
+			setDraft(hex);
 			onChange(hex);
 		}
 	};
@@ -50,7 +56,7 @@ export function TS_ColorSwatch(props: Props_ColorSwatch) {
 		<input
 			className={'ts-color-swatch__hex'}
 			type={'text'}
-			value={value}
+			value={draft}
 			disabled={disabled}
 			maxLength={7}
 			onClick={e => e.stopPropagation()}

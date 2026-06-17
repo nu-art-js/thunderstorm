@@ -1,0 +1,75 @@
+// Layout + detail panel for component-guides/tree examples (not tokenized — demo chrome only).
+.ts-tree-example {
+  &--catalog {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+    align-items: stretch;
+  }
+
+  &__tree-panel {
+    flex: 0 0 14rem;
+    min-width: 0;
+    padding: 8px;
+    border-radius: var(--radius-sm, 4px);
+    border: 1px solid var(--color-border-subtle, #ccc);
+    background: var(--color-surface-input, #f5f5f5);
+  }
+
+  &__detail-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm, 4px);
+    border: 1px solid var(--color-border-subtle, #ccc);
+    background: var(--color-surface-raised, #fff);
+  }
+
+  &__detail-hint {
+    color: var(--color-text-muted, #888);
+    font-size: var(--font-size-control, 12px);
+  }
+
+  &__detail-title {
+    font-weight: var(--font-weight-medium, 600);
+    margin-bottom: 6px;
+  }
+
+  &__detail-meta {
+    color: var(--color-text-muted, #666);
+    font-size: var(--font-size-control, 12px);
+    line-height: 1.4;
+  }
+
+  &__row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  &__row-icon {
+    flex: 0 0 auto;
+    width: 1em;
+    text-align: center;
+  }
+
+  &__status {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 1px 5px;
+    border-radius: var(--radius-xs, 2px);
+
+    &--active {
+      color: var(--color-action-primary-bg, #3d52b4);
+      background: var(--color-action-primary-soft, rgba(61, 82, 180, 0.12));
+    }
+
+    &--draft {
+      color: var(--color-text-muted, #888);
+      background: var(--color-surface-overlay, rgba(0, 0, 0, 0.06));
+    }
+  }
+}
