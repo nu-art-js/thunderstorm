@@ -1,0 +1,72 @@
+/*!
+ * User secured registration and login management system..
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use '@nu-art/ts-styles' as styles;
+
+.ts-account__authenticate {
+  margin-top: 6px;
+  width: 300px;
+
+  > input {
+    margin-block: 4px;
+  }
+
+  .ts-account__error-container {
+    justify-content: center;
+    align-items: center;
+    min-height: 22px;
+
+    .ts-account__error-messages {
+      margin-block: 0;
+    }
+  }
+
+  .ts-account__message {
+    text-align: center;
+    margin-block: 8px 0;
+    color: var(--text-color-secondary, inherit);
+  }
+
+  .ts-account__authenticate__password-rules {
+    border: 1px solid black;
+    border-radius: 10px;
+    width: 100%;
+    padding: 10px;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+
+    .ts-account__authenticate__password-rule {
+      gap: 10px;
+      align-items: center;
+      color: styles.red(3);
+
+      .icon--wrapper {
+        @include styles.mouse-interactive-icon(styles.red(3));
+      }
+
+      &.valid {
+        color: styles.green(2);
+
+        .icon--wrapper {
+          @include styles.mouse-interactive-icon(styles.green(2));
+        }
+      }
+    }
+  }
+}
