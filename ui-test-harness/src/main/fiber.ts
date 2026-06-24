@@ -84,6 +84,13 @@ export const domNodeOf = (fiber: Fiber): Element | null => {
 		if (found)
 			return;
 
+		if (candidate.tag === FiberTag.HostPortal) {
+			const container = asRecord(candidate.stateNode)?.containerInfo;
+			if (isElement(container))
+				found = container;
+			return;
+		}
+
 		if (candidate.tag === FiberTag.HostComponent && isElement(candidate.stateNode))
 			found = candidate.stateNode;
 	});

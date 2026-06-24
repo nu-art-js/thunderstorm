@@ -15,16 +15,28 @@ const testPagePath = '/src/test/index.html';
 
 type AuditFailure = {name: string | undefined; kind: 'tier1' | 'contract'; detail: string};
 
+type ExtractedTarget = {
+	name: string | undefined;
+	node: Element | null;
+	props: Record<string, unknown> | undefined;
+	state: Record<string, unknown> | undefined;
+};
+
 declare global {
 	interface Window {
 		__uiTestHarness: {
-			registerContract: (name: string, contract: (target: unknown) => string | undefined) => void;
+			registerContract: (name: string, contract: (target: ExtractedTarget) => string | undefined) => void;
 			drain: () => AuditFailure[];
 			peek: () => AuditFailure[];
 		};
 		__harnessTest: {mount: () => void};
+		__preCommitCalled?: boolean;
 	}
 }
+
+/** Wait until Tier-1 has flagged the collapsed probe — proves the rAF audit finished. */
+const waitForAudit = (page: import('@playwright/test').Page) =>
+	page.waitForFunction(() => window.__uiTestHarness.peek().some(f => f.name === 'CollapsedProbe'));
 
 test.describe('ui-test-harness — fiber audit self-test', () => {
 	// Inject the real shippable bundle BEFORE any page script, so the DevTools hook is in place
@@ -46,7 +58,7 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 		});
 
 		// Deterministic: wait until the rAF-debounced audit has actually produced output.
-		await page.waitForFunction(() => window.__uiTestHarness.peek().length > 0);
+		await waitForAudit(page);
 		const failures = await page.evaluate(() => window.__uiTestHarness.drain());
 
 		const contractFailures = failures.filter(f => f.kind === 'contract');
@@ -57,12 +69,14 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 			{name: 'StatefulProbe', kind: 'contract', detail: 'intentional-contract-violation'}
 		]);
 
-		// Tier-1 flags the deliberately collapsed component, and only it.
-		expect(tier1Failures.map(f => f.name)).toEqual(['CollapsedProbe']);
-		expect(tier1Failures[0].detail).toContain('collapsed');
-
-		// Nothing else leaked in.
-		expect(failures).toHaveLength(2);
+		// Tier-1 flags layout/visibility probes; collapsed is the anchor assertion.
+		expect(tier1Failures.map(f => f.name)).toContain('CollapsedProbe');
+		expect(tier1Failures.map(f => f.name)).toEqual(expect.arrayContaining([
+			'CollapsedProbe',
+			'HiddenDisplayProbe',
+			'HiddenVisibilityProbe',
+		]));
+		expect(tier1Failures.find(f => f.name === 'CollapsedProbe')?.detail).toContain('collapsed');
 	});
 
 	test('skips components whose state.isLoading is true', async ({page}) => {
@@ -84,5 +98,147 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 		expect(drainedNames).not.toContain('LoadingProbe');
 		// ... while the non-loading control IS audited (contract fired) — proving skip, not silence.
 		expect(drainedNames).toContain('StatefulProbe');
+	});
+
+	test('extracts class props from instance and function props from memoizedProps', async ({page}) => {
+		await page.evaluate(() => {
+			const harness = window.__uiTestHarness;
+			harness.registerContract('StatefulProbe', t => {
+				if (t.props?.label !== 'stateful')
+					return `class props.label expected "stateful", got ${JSON.stringify(t.props?.label)}`;
+				return undefined;
+			});
+			harness.registerContract('StatelessProbe', t => {
+				if (t.props?.label !== 'stateless')
+					return `fn props.label expected "stateless", got ${JSON.stringify(t.props?.label)}`;
+				return undefined;
+			});
+			window.__harnessTest.mount();
+		});
+
+		await waitForAudit(page);
+		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
+			.filter(f => f.kind === 'contract');
+
+		expect(contractFailures).toEqual([]);
+	});
+
+	test('extracts state for class components and undefined for function components', async ({page}) => {
+		await page.evaluate(() => {
+			const harness = window.__uiTestHarness;
+			harness.registerContract('StatefulProbe', t => {
+				if (t.state?.isLoading !== false)
+					return `class state.isLoading expected false, got ${JSON.stringify(t.state?.isLoading)}`;
+				return undefined;
+			});
+			harness.registerContract('StatelessProbe', t => {
+				if (t.state !== undefined)
+					return `function state expected undefined, got ${JSON.stringify(t.state)}`;
+				return undefined;
+			});
+			window.__harnessTest.mount();
+		});
+
+		await waitForAudit(page);
+		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
+			.filter(f => f.kind === 'contract');
+
+		expect(contractFailures).toEqual([]);
+	});
+
+	test('resolves domNodeOf to the correct host element per probe shape', async ({page}) => {
+		await page.evaluate(() => {
+			const harness = window.__uiTestHarness;
+			const expectTestId = (expected: string) => (t: ExtractedTarget) => {
+				const testId = t.node?.getAttribute('data-testid');
+				if (testId !== expected)
+					return `node data-testid expected "${expected}", got "${testId ?? 'null'}"`;
+				return undefined;
+			};
+			harness.registerContract('StatefulProbe', expectTestId('stateful'));
+			harness.registerContract('StatelessProbe', expectTestId('stateless'));
+			harness.registerContract('FragmentProbe', expectTestId('fragment-inner'));
+			harness.registerContract('SvgProbe', expectTestId('svg-root'));
+			harness.registerContract('PortalProbe', expectTestId('portal-target'));
+			window.__harnessTest.mount();
+		});
+
+		await waitForAudit(page);
+		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
+			.filter(f => f.kind === 'contract');
+
+		expect(contractFailures).toEqual([]);
+	});
+
+	test('Tier-1 flags display:none and visibility:hidden host nodes', async ({page}) => {
+		await page.evaluate(() => window.__harnessTest.mount());
+
+		await waitForAudit(page);
+		const tier1Failures = (await page.evaluate(() => window.__uiTestHarness.drain()))
+			.filter(f => f.kind === 'tier1');
+
+		const displayFailure = tier1Failures.find(f => f.name === 'HiddenDisplayProbe');
+		const visibilityFailure = tier1Failures.find(f => f.name === 'HiddenVisibilityProbe');
+
+		expect(displayFailure?.detail).toBe('not-visible: display=none');
+		expect(visibilityFailure?.detail).toBe('not-visible: visibility=hidden');
+	});
+});
+
+test.describe('ui-test-harness — DevTools hook install', () => {
+	test('chains with a pre-existing onCommitFiberRoot handler', async ({page}) => {
+		await page.addInitScript(() => {
+			window.__preCommitCalled = false;
+			window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+				renderers: new Map(),
+				supportsFiber: true,
+				inject: () => 42,
+				onCommitFiberRoot: () => {
+					window.__preCommitCalled = true;
+				},
+				onCommitFiberUnmount: () => {},
+			};
+		});
+		await page.addInitScript({path: iifePath});
+		await page.goto(testPagePath);
+		await page.waitForFunction(() => window.__uiTestHarness !== undefined);
+
+		await page.evaluate(() => {
+			window.__uiTestHarness.registerContract('StatefulProbe', () => 'chain-smoke-contract');
+			window.__harnessTest.mount();
+		});
+
+		await page.waitForFunction(() => window.__preCommitCalled === true);
+		await page.waitForFunction(() => window.__uiTestHarness.peek().some(f => f.name === 'StatefulProbe'));
+
+		const failures = await page.evaluate(() => window.__uiTestHarness.drain());
+		expect(failures.some(f => f.name === 'StatefulProbe' && f.kind === 'contract')).toBe(true);
+	});
+
+	test('double IIFE injection leaves hook wrap idempotent and audit functional', async ({page}) => {
+		await page.addInitScript({path: iifePath});
+		await page.addInitScript({path: iifePath});
+		await page.goto(testPagePath);
+		await page.waitForFunction(() => window.__uiTestHarness !== undefined);
+
+		const hookState = await page.evaluate(() => ({
+			wrapped: window.__REACT_DEVTOOLS_GLOBAL_HOOK__?.__uiTestHarnessWrapped === true,
+		}));
+		expect(hookState.wrapped).toBe(true);
+
+		await page.evaluate(() => {
+			window.__uiTestHarness.registerContract('StatelessProbe', t => {
+				if (t.props?.label !== 'stateless')
+					return `props broken after double inject: ${JSON.stringify(t.props)}`;
+				return undefined;
+			});
+			window.__harnessTest.mount();
+		});
+
+		await waitForAudit(page);
+		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
+			.filter(f => f.kind === 'contract' && f.name === 'StatelessProbe');
+
+		expect(contractFailures).toEqual([]);
 	});
 });
