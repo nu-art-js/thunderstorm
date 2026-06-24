@@ -31,7 +31,6 @@
     "linkDirectory": true
   },
   "dependencies": {
-    "@nu-art/ts-common": "?",
     "@nu-art/logger": "?"
   },
   "devDependencies": {

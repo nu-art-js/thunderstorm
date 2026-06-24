@@ -15,7 +15,7 @@ export type Tier1Failure = string;
  * left/right, so the result holds identically for LTR and RTL (computed `direction`). If a future
  * invariant needs position, it must use logical inline-start/end — never hardcoded left/right.
  */
-export const runTier1 = (node: HTMLElement): Tier1Failure[] => {
+export const runTier1 = (node: Element): Tier1Failure[] => {
 	const failures: Tier1Failure[] = [];
 	const style = getComputedStyle(node);
 

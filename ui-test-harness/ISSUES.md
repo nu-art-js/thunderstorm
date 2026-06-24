@@ -14,6 +14,16 @@ intentionally isolated to this single adapter file so a React-version break has 
 
 ## File: `src/main/RenderAudit.ts`
 
+### Symbol: `audit()` — `state.isLoading` skip
+
+**Issue**: The skip predicate (`target.state?.isLoading === true`) bakes a consuming-app convention into
+an otherwise feature-agnostic engine, and is effective for **class components only**.
+
+**Details**: Function components expose no fiber state (`state` is always `undefined`), so a hooks-based
+loading component cannot be skipped and may raise false Tier-1 failures while mid-load. The convention
+also couples the engine to a specific app's `isLoading` flag. Planned for T2: replace the hardcoded
+predicate with an injected skip predicate (registered like contracts), keeping the engine generic.
+
 ### Symbol: `onCommit` (rAF debounce)
 
 **Issue**: Audits run on `requestAnimationFrame`. In a backgrounded tab rAF is throttled/paused, so an

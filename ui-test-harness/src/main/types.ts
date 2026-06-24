@@ -12,8 +12,8 @@
 export type ExtractedComponent = {
 	/** `type.displayName ?? type.name`, or `undefined` when the fiber type carries no name. */
 	name: string | undefined;
-	/** The component's first host DOM node (or its own, for host fibers); `null` when it renders nothing. */
-	node: HTMLElement | null;
+	/** The component's first host node (HTML or SVG); `null` when it renders nothing. */
+	node: Element | null;
 	/** Resolved props: the class instance's `props`, or the function fiber's `memoizedProps`. */
 	props: Record<string, unknown> | undefined;
 	/** Resolved state: the class instance's `state`; always `undefined` for function components. */

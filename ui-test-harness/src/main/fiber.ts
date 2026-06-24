@@ -42,7 +42,9 @@ export const FiberTag = {
 	HostText: 6,
 } as const;
 
-const isHTMLElement = (value: unknown): value is HTMLElement => value instanceof HTMLElement;
+// Element (not HTMLElement): host nodes may be SVG (icons/charts). getComputedStyle and
+// getBoundingClientRect both operate on any Element, so SVG-rooted components must be auditable too.
+const isElement = (value: unknown): value is Element => value instanceof Element;
 
 const asRecord = (value: unknown): Record<string, unknown> | undefined =>
 	(typeof value === 'object' && value !== null) ? value as Record<string, unknown> : undefined;
@@ -68,21 +70,21 @@ export const walkFibers = (fiber: Fiber | null, visit: (fiber: Fiber) => void): 
  * - **fragment / composite**: no own node → return the FIRST host descendant only.
  * - **text / null** (`tag 6` / nothing rendered): no element → `null`.
  */
-export const domNodeOf = (fiber: Fiber): HTMLElement | null => {
-	if (isHTMLElement(fiber.stateNode))
+export const domNodeOf = (fiber: Fiber): Element | null => {
+	if (isElement(fiber.stateNode))
 		return fiber.stateNode;
 
 	if (fiber.tag === FiberTag.HostPortal) {
 		const container = asRecord(fiber.stateNode)?.containerInfo;
-		return isHTMLElement(container) ? container : null;
+		return isElement(container) ? container : null;
 	}
 
-	let found: HTMLElement | null = null;
+	let found: Element | null = null;
 	walkFibers(fiber.child, candidate => {
 		if (found)
 			return;
 
-		if (candidate.tag === FiberTag.HostComponent && isHTMLElement(candidate.stateNode))
+		if (candidate.tag === FiberTag.HostComponent && isElement(candidate.stateNode))
 			found = candidate.stateNode;
 	});
 
