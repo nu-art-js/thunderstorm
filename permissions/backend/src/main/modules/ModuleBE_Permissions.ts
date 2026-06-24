@@ -368,6 +368,12 @@ class ModuleBE_Permissions_Class
 
 		adminGroup.members.push(personalGroupId);
 		await ModuleBE_AccessGroupDB.set.item(adminGroup);
+		this.logInfo(JSON.stringify({
+			event: 'bootstrap/role assigned',
+			accountId: account._id,
+			personalGroupId,
+			adminGroupId: GroupId_PermissionsAdmin,
+		}));
 		this.logDebug(`[FIRST_USER] promoteIfNoAdmin: promoted ${personalGroupId} to admin`);
 	}
 

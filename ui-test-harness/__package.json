@@ -1,0 +1,57 @@
+{
+  "name": "@nu-art/ui-test-harness",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Fiber-driven React render-audit engine — installs the React DevTools global hook, walks the committed fiber tree, and runs generic layout invariants and per-component contracts. Zero React dependency in the shipped artifact.",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "react",
+    "fiber",
+    "devtools",
+    "render-audit",
+    "testing",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/ui-test-harness"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {},
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/logger": "?"
+  },
+  "devDependencies": {
+    "@playwright/test": "?",
+    "@types/react": "?",
+    "@types/react-dom": "?",
+    "@vitejs/plugin-react": "?",
+    "react": "?",
+    "react-dom": "?",
+    "scheduler": "^0.23.2",
+    "vite": "?",
+    "vite-plugin-node-polyfills": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

@@ -90,6 +90,13 @@ export class ModuleBE_PasswordAuth_Class
 			return dbAccount;
 		});
 
+		this.logInfo(JSON.stringify({
+			event: 'user.registered',
+			accountId: dbAccount._id,
+			email: dbAccount.email,
+			type: dbAccount.type,
+		}));
+
 		await this.account.login({email: body.email, deviceId: body.deviceId, password: body.password});
 		return dbAccount;
 	}
@@ -241,6 +248,11 @@ export class ModuleBE_PasswordAuth_Class
 			};
 
 			await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
+			this.logInfo(JSON.stringify({
+				event: 'auth.login.success',
+				accountId: dbAccount._id,
+				email: dbAccount.email,
+			}));
 			this.logDebug(`login: session created for _id='${dbAccount._id}'`);
 			return dbAccount;
 		},
