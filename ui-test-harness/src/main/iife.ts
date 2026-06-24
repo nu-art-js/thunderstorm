@@ -19,6 +19,6 @@ declare global {
 	}
 }
 
-const audit = new RenderAudit();
+const audit = window.__uiTestHarness ?? new RenderAudit();
 installHook(audit.onCommit);
 window.__uiTestHarness = audit;

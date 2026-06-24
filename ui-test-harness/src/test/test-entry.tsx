@@ -7,6 +7,7 @@
  */
 
 import React from 'react';
+import {createPortal} from 'react-dom';
 import {createRoot, Root} from 'react-dom/client';
 
 /** Class component → fiber tag 1 → props AND state extracted from the live instance. */
@@ -45,6 +46,46 @@ function CollapsedProbe() {
 	);
 }
 
+/** Host node with display:none → Tier-1 not-visible invariant. */
+function HiddenDisplayProbe() {
+	return <div data-testid="hidden-display" style={{display: 'none'}}>hidden</div>;
+}
+
+/** Host node with visibility:hidden → Tier-1 not-visible invariant. */
+function HiddenVisibilityProbe() {
+	return <div data-testid="hidden-visibility" style={{visibility: 'hidden'}}>hidden</div>;
+}
+
+/** Fragment wrapper → domNodeOf must descend to the first host child. */
+function FragmentProbe() {
+	return (
+		<>
+			<div data-testid="fragment-inner">fragment content</div>
+		</>
+	);
+}
+
+/** SVG host root → domNodeOf must return an Element (not limited to HTMLElement). */
+function SvgProbe() {
+	return (
+		<svg data-testid="svg-root" width="10" height="10">
+			<circle cx="5" cy="5" r="4"/>
+		</svg>
+	);
+}
+
+/** Portal → domNodeOf must resolve via stateNode.containerInfo. */
+function PortalProbe() {
+	const [portalContainer] = React.useState(() => {
+		const el = document.createElement('div');
+		el.setAttribute('data-testid', 'portal-target');
+		document.body.appendChild(el);
+		return el;
+	});
+
+	return createPortal(<span>portal content</span>, portalContainer);
+}
+
 function App() {
 	return (
 		<>
@@ -52,6 +93,11 @@ function App() {
 			<LoadingProbe label="loading"/>
 			<StatelessProbe label="stateless"/>
 			<CollapsedProbe/>
+			<HiddenDisplayProbe/>
+			<HiddenVisibilityProbe/>
+			<FragmentProbe/>
+			<SvgProbe/>
+			<PortalProbe/>
 		</>
 	);
 }
