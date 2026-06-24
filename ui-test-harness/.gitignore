@@ -1,0 +1,17 @@
+src/**/*.d.ts
+src/**/*.js
+src/**/*.js.map
+dist
+dist-test
+dist-iife
+docs
+build
+package.json
+package-lock.json
+config.ts
+.eslintrc.js
+src/main/tsconfig.json
+node_modules
+test-results
+playwright-report
+.DS_Store
