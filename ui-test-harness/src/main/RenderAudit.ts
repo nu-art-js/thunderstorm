@@ -7,7 +7,7 @@
 import {Logger} from '@nu-art/logger';
 import {extractComponent, Fiber, isComponentFiber, walkFibers} from './fiber.js';
 import {runTier1} from './tier1.js';
-import {AuditFailure, Contract, ContractMap, ExtractedComponent} from './types.js';
+import {AuditFailure, AuditTraceEntry, Contract, ContractMap, ExtractedComponent} from './types.js';
 
 /**
  * The render-audit engine. Wired to the DevTools hook via `onCommit`, it walks every committed
@@ -21,6 +21,7 @@ export class RenderAudit
 	extends Logger {
 
 	private failures: AuditFailure[] = [];
+	private trace: AuditTraceEntry[] = [];
 	private readonly contracts: ContractMap = {};
 	private scheduled = false;
 	private latestRoot: Fiber | null = null;
@@ -66,7 +67,33 @@ export class RenderAudit
 	/** Inspect accumulated failures WITHOUT clearing — for observing audit progress (e.g. tests). */
 	readonly peek = (): AuditFailure[] => [...this.failures];
 
+	/** Inspect accumulated trace WITHOUT clearing — for observing audit progress (e.g. tests). */
+	readonly getTrace = (): readonly AuditTraceEntry[] => [...this.trace];
+
+	/** Drain and clear the accumulated audit trace. */
+	readonly drainTrace = (): AuditTraceEntry[] => {
+		const drained = this.trace;
+		this.trace = [];
+		return drained;
+	};
+
 	private readonly audit = (root: Fiber): void => {
+		let componentFibers = 0;
+		walkFibers(root, fiber => {
+			if (isComponentFiber(fiber))
+				componentFibers++;
+		});
+
+		const contractCount = Object.keys(this.contracts).length;
+		this.logInfo(`audit start — componentFibers=${componentFibers} contracts=${contractCount}`);
+		this.pushTrace({
+			name: undefined,
+			action: 'audit-start',
+			detail: `componentFibers=${componentFibers} contracts=${contractCount}`,
+			outcome: 'info',
+		});
+
+		let skipped = 0;
 		let audited = 0;
 		walkFibers(root, fiber => {
 			if (!isComponentFiber(fiber))
@@ -74,28 +101,66 @@ export class RenderAudit
 
 			const target = extractComponent(fiber);
 			if (target.state?.isLoading === true) {
+				skipped++;
 				this.logVerbose(`skip — component=${target.name} reason=isLoading`);
+				this.pushTrace({
+					name: target.name,
+					action: 'skip',
+					detail: 'isLoading',
+					outcome: 'info',
+				});
 				return;
 			}
 
 			audited++;
+			this.logDebug(`audit — component=${target.name}`);
 			this.evaluate(target);
 		});
 
-		this.logDebug(`audit complete — components=${audited} failures=${this.failures.length}`);
+		this.logInfo(`audit complete — audited=${audited} skipped=${skipped} failures=${this.failures.length}`);
+		this.pushTrace({
+			name: undefined,
+			action: 'audit-complete',
+			detail: `audited=${audited} skipped=${skipped} failures=${this.failures.length}`,
+			outcome: 'info',
+		});
 	};
 
 	private readonly evaluate = (target: ExtractedComponent): void => {
-		if (target.node)
-			runTier1(target.node).forEach(detail => this.pushFailure(target.name, 'tier1', detail));
+		const name = target.name;
 
-		const contract = target.name ? this.contracts[target.name] : undefined;
+		if (target.node) {
+			const tier1Failures = runTier1(target.node);
+			if (tier1Failures.length === 0) {
+				this.logVerbose(`tier1 pass — component=${name}`);
+				this.pushTrace({name, action: 'tier1', outcome: 'pass'});
+			} else {
+				tier1Failures.forEach(detail => {
+					this.logDebug(`tier1 fail — component=${name} detail=${detail}`);
+					this.pushTrace({name, action: 'tier1', detail, outcome: 'fail'});
+					this.pushFailure(name, 'tier1', detail);
+				});
+			}
+		} else
+			this.logVerbose(`tier1 skipped — component=${name} reason=no-node`);
+
+		const contract = name ? this.contracts[name] : undefined;
 		if (!contract)
 			return;
 
 		const detail = contract(target);
-		if (detail)
-			this.pushFailure(target.name, 'contract', detail);
+		if (detail) {
+			this.logDebug(`contract fail — component=${name} detail=${detail}`);
+			this.pushTrace({name, action: 'contract', detail, outcome: 'fail'});
+			this.pushFailure(name, 'contract', detail);
+		} else {
+			this.logDebug(`contract pass — component=${name}`);
+			this.pushTrace({name, action: 'contract', outcome: 'pass'});
+		}
+	};
+
+	private readonly pushTrace = (entry: AuditTraceEntry): void => {
+		this.trace.push(entry);
 	};
 
 	private readonly pushFailure = (name: string | undefined, kind: AuditFailure['kind'], detail: string): void => {

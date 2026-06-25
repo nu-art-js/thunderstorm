@@ -38,3 +38,17 @@ export type Contract = (target: ExtractedComponent) => string | undefined;
 
 /** Component-name → contract registry. */
 export type ContractMap = Record<string, Contract>;
+
+/** What happened during an audit walk — assertable independently of logger routing. */
+export type AuditTraceAction = 'audit-start' | 'skip' | 'tier1' | 'contract' | 'audit-complete';
+
+/** Result of a trace step; `info` marks walk boundaries and skips (not pass/fail checks). */
+export type AuditTraceOutcome = 'pass' | 'fail' | 'info';
+
+/** One observable step in a render-audit walk, accumulated until `drainTrace()`. */
+export type AuditTraceEntry = {
+	name: string | undefined;
+	action: AuditTraceAction;
+	detail?: string;
+	outcome: AuditTraceOutcome;
+};

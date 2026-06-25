@@ -29,10 +29,10 @@ journey, so those defects surface without bespoke assertions per screen.
 | Export | Purpose |
 |---|---|
 | `installHook(onCommit)` | Install/augment the DevTools hook; forwards each committed root fiber. |
-| `RenderAudit` | The engine: `onCommit`, `registerContract(name, contract)`, `drain()`. |
+| `RenderAudit` | The engine: `onCommit`, `registerContract(name, contract)`, `drain()`, `getTrace()`, `drainTrace()`. |
 | `walkFibers`, `extractComponent`, `domNodeOf`, `Fiber`, `FiberRoot`, `FiberTag`, `isComponentFiber` | The fiber adapter surface. |
 | `runTier1(node)` | Generic layout invariants for a DOM node. |
-| `ExtractedComponent`, `AuditFailure`, `AuditFailureKind`, `Contract`, `ContractMap` | Types. |
+| `ExtractedComponent`, `AuditFailure`, `AuditFailureKind`, `AuditTraceEntry`, `AuditTraceAction`, `AuditTraceOutcome`, `Contract`, `ContractMap` | Types. |
 
 ## The IIFE artifact
 
@@ -59,4 +59,25 @@ installHook(audit.onCommit);                 // before createRoot
 audit.registerContract('LoginButton', t => t.node?.textContent ? undefined : 'empty label');
 // ... drive the app, then:
 const failures = audit.drain();
+```
+
+## Trace API (test assertions)
+
+Each audit walk emits structured trace entries (independent of logger routing — logger output may be
+dropped when no `BeLogged` client is configured). Use `getTrace()` to inspect or `drainTrace()` to
+assert and clear.
+
+| Field | Values |
+|---|---|
+| `action` | `audit-start`, `skip`, `tier1`, `contract`, `audit-complete` |
+| `outcome` | `pass`, `fail`, `info` (boundaries and skips) |
+| `name` | Component fiber name, or `undefined` for walk summary entries |
+| `detail` | Optional — skip reason, failure detail, or summary stats |
+
+```ts
+// Playwright — prove the walk ran and contracts passed
+const trace = await page.evaluate(() => window.__uiTestHarness.drainTrace());
+const contractPasses = trace.filter(e => e.action === 'contract' && e.outcome === 'pass');
+expect(contractPasses.map(e => e.name)).toContain('AuthScreen');
+expect(await page.evaluate(() => window.__uiTestHarness.drain())).toEqual([]);
 ```
