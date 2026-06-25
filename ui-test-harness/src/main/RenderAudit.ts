@@ -79,26 +79,14 @@ export class RenderAudit
 
 	private readonly audit = (root: Fiber): void => {
 		let componentFibers = 0;
-		walkFibers(root, fiber => {
-			if (isComponentFiber(fiber))
-				componentFibers++;
-		});
-
-		const contractCount = Object.keys(this.contracts).length;
-		this.logInfo(`audit start — componentFibers=${componentFibers} contracts=${contractCount}`);
-		this.pushTrace({
-			name: undefined,
-			action: 'audit-start',
-			detail: `componentFibers=${componentFibers} contracts=${contractCount}`,
-			outcome: 'info',
-		});
-
 		let skipped = 0;
-		let audited = 0;
+		const toAudit: ExtractedComponent[] = [];
+
 		walkFibers(root, fiber => {
 			if (!isComponentFiber(fiber))
 				return;
 
+			componentFibers++;
 			const target = extractComponent(fiber);
 			if (target.state?.isLoading === true) {
 				skipped++;
@@ -112,10 +100,24 @@ export class RenderAudit
 				return;
 			}
 
+			toAudit.push(target);
+		});
+
+		const contractCount = Object.keys(this.contracts).length;
+		this.logInfo(`audit start — componentFibers=${componentFibers} contracts=${contractCount}`);
+		this.pushTrace({
+			name: undefined,
+			action: 'audit-start',
+			detail: `componentFibers=${componentFibers} contracts=${contractCount}`,
+			outcome: 'info',
+		});
+
+		let audited = 0;
+		for (const target of toAudit) {
 			audited++;
 			this.logDebug(`audit — component=${target.name}`);
 			this.evaluate(target);
-		});
+		}
 
 		this.logInfo(`audit complete — audited=${audited} skipped=${skipped} failures=${this.failures.length}`);
 		this.pushTrace({
