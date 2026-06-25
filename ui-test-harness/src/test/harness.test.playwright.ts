@@ -15,6 +15,13 @@ const testPagePath = '/src/test/index.html';
 
 type AuditFailure = {name: string | undefined; kind: 'tier1' | 'contract'; detail: string};
 
+type AuditTraceEntry = {
+	name: string | undefined;
+	action: 'audit-start' | 'skip' | 'tier1' | 'contract' | 'audit-complete';
+	detail?: string;
+	outcome: 'pass' | 'fail' | 'info';
+};
+
 type ExtractedTarget = {
 	name: string | undefined;
 	node: Element | null;
@@ -28,6 +35,8 @@ declare global {
 			registerContract: (name: string, contract: (target: ExtractedTarget) => string | undefined) => void;
 			drain: () => AuditFailure[];
 			peek: () => AuditFailure[];
+			drainTrace: () => AuditTraceEntry[];
+			getTrace: () => readonly AuditTraceEntry[];
 		};
 		__harnessTest: {mount: () => void};
 		__preCommitCalled?: boolean;
@@ -77,6 +86,13 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 			'HiddenVisibilityProbe',
 		]));
 		expect(tier1Failures.find(f => f.name === 'CollapsedProbe')?.detail).toContain('collapsed');
+
+		const trace = await page.evaluate(() => window.__uiTestHarness.drainTrace());
+		expect(trace.some(e => e.action === 'audit-start')).toBe(true);
+		expect(trace.some(e => e.action === 'audit-complete')).toBe(true);
+		expect(trace.filter(e => e.action === 'contract' && e.name === 'StatefulProbe' && e.outcome === 'fail')).toHaveLength(1);
+		expect(trace.filter(e => e.action === 'contract' && e.name === 'StatelessProbe' && e.outcome === 'pass')).toHaveLength(1);
+		expect(trace.filter(e => e.action === 'tier1' && e.name === 'CollapsedProbe' && e.outcome === 'fail')).toHaveLength(1);
 	});
 
 	test('skips components whose state.isLoading is true', async ({page}) => {
@@ -98,6 +114,10 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 		expect(drainedNames).not.toContain('LoadingProbe');
 		// ... while the non-loading control IS audited (contract fired) — proving skip, not silence.
 		expect(drainedNames).toContain('StatefulProbe');
+
+		const trace = await page.evaluate(() => window.__uiTestHarness.drainTrace());
+		expect(trace.filter(e => e.action === 'skip' && e.name === 'LoadingProbe')).toHaveLength(1);
+		expect(trace.some(e => e.action === 'contract' && e.name === 'LoadingProbe')).toBe(false);
 	});
 
 	test('extracts class props from instance and function props from memoizedProps', async ({page}) => {

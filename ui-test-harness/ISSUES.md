@@ -32,6 +32,14 @@ audit may be deferred until the tab is foregrounded.
 **Details**: Acceptable for Playwright (foregrounded headless). For non-test injection (T2+), consider a
 `setTimeout` fallback when `document.hidden`.
 
+### Symbol: `audit()` — trace buffer
+
+**Issue**: Trace entries accumulate across commits until `drainTrace()` — same lifecycle as failures.
+
+**Details**: Tests should drain trace after asserting; leaving it uncleared causes entries from later
+commits to stack. `getTrace()` is non-destructive for mid-flight observation (e.g. waiting for a
+specific component to appear in trace before draining failures).
+
 ## File: `src/main/*` — logging
 
 ### Symbol: framework logger in an injected artifact
