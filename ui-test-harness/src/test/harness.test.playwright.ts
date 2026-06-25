@@ -6,6 +6,7 @@
  */
 
 import {expect, test} from '@playwright/test';
+import type {AuditFailure, AuditTraceEntry, Contract, ExtractedComponent} from '@nu-art/ui-test-harness';
 import {resolve} from 'path';
 import {fileURLToPath} from 'url';
 
@@ -13,26 +14,10 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const iifePath = resolve(__dirname, '../../dist-iife/harness.iife.js');
 const testPagePath = '/src/test/index.html';
 
-type AuditFailure = {name: string | undefined; kind: 'tier1' | 'contract'; detail: string};
-
-type AuditTraceEntry = {
-	name: string | undefined;
-	action: 'audit-start' | 'skip' | 'tier1' | 'contract' | 'audit-complete';
-	detail?: string;
-	outcome: 'pass' | 'fail' | 'info';
-};
-
-type ExtractedTarget = {
-	name: string | undefined;
-	node: Element | null;
-	props: Record<string, unknown> | undefined;
-	state: Record<string, unknown> | undefined;
-};
-
 declare global {
 	interface Window {
 		__uiTestHarness: {
-			registerContract: (name: string, contract: (target: ExtractedTarget) => string | undefined) => void;
+			registerContract: (name: string, contract: Contract) => void;
 			drain: () => AuditFailure[];
 			peek: () => AuditFailure[];
 			drainTrace: () => AuditTraceEntry[];
@@ -169,7 +154,7 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 	test('resolves domNodeOf to the correct host element per probe shape', async ({page}) => {
 		await page.evaluate(() => {
 			const harness = window.__uiTestHarness;
-			const expectTestId = (expected: string) => (t: ExtractedTarget) => {
+			const expectTestId = (expected: string) => (t: ExtractedComponent) => {
 				const testId = t.node?.getAttribute('data-testid');
 				if (testId !== expected)
 					return `node data-testid expected "${expected}", got "${testId ?? 'null'}"`;
