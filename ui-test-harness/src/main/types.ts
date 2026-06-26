@@ -12,12 +12,16 @@
 export type ExtractedComponent = {
 	/** `type.displayName ?? type.name`, or `undefined` when the fiber type carries no name. */
 	name: string | undefined;
-	/** The component's first host node (HTML or SVG); `null` when it renders nothing. */
+	/** All host roots owned by this component (document order); empty when it renders no host. */
+	nodes: Element[];
+	/** First owned host root — `nodes[0] ?? null`; convenience for single-host contracts. */
 	node: Element | null;
 	/** Resolved props: the class instance's `props`, or the function fiber's `memoizedProps`. */
 	props: Record<string, unknown> | undefined;
-	/** Resolved state: the class instance's `state`; always `undefined` for function components. */
+	/** Class instance `state`; `undefined` for function components. */
 	state: Record<string, unknown> | undefined;
+	/** `useState` / hook values in call order on function and wrapper component fibers; `undefined` for class. */
+	hooks: readonly unknown[] | undefined;
 };
 
 /** Why a target failed the audit: a generic layout invariant (`tier1`) or a named per-component `contract`. */
@@ -40,9 +44,9 @@ export type Contract = (target: ExtractedComponent) => string | undefined;
 export type ContractMap = Record<string, Contract>;
 
 /** What happened during an audit walk — assertable independently of logger routing. */
-export type AuditTraceAction = 'audit-start' | 'skip' | 'tier1' | 'contract' | 'audit-complete';
+export type AuditTraceAction = 'audit-start' | 'tier1' | 'contract' | 'audit-complete';
 
-/** Result of a trace step; `info` marks walk boundaries and skips (not pass/fail checks). */
+/** Result of a trace step; `info` marks walk boundaries (not pass/fail checks). */
 export type AuditTraceOutcome = 'pass' | 'fail' | 'info';
 
 /** One observable step in a render-audit walk, accumulated until `drainTrace()`. */

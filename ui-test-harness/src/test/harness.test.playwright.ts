@@ -23,7 +23,7 @@ declare global {
 			drainTrace: () => AuditTraceEntry[];
 			getTrace: () => readonly AuditTraceEntry[];
 		};
-		__harnessTest: {mount: () => void};
+		__harnessTest: {mount: () => void; mountLazy: () => void; resolveLazy: () => void};
 		__preCommitCalled?: boolean;
 	}
 }
@@ -71,6 +71,7 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 			'HiddenVisibilityProbe',
 		]));
 		expect(tier1Failures.find(f => f.name === 'CollapsedProbe')?.detail).toContain('collapsed');
+		expect(tier1Failures.find(f => f.name === 'CollapsedProbe')?.detail).toContain('data-testid="collapsed"');
 
 		const trace = await page.evaluate(() => window.__uiTestHarness.drainTrace());
 		expect(trace.some(e => e.action === 'audit-start')).toBe(true);
@@ -78,31 +79,6 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 		expect(trace.filter(e => e.action === 'contract' && e.name === 'StatefulProbe' && e.outcome === 'fail')).toHaveLength(1);
 		expect(trace.filter(e => e.action === 'contract' && e.name === 'StatelessProbe' && e.outcome === 'pass')).toHaveLength(1);
 		expect(trace.filter(e => e.action === 'tier1' && e.name === 'CollapsedProbe' && e.outcome === 'fail')).toHaveLength(1);
-	});
-
-	test('skips components whose state.isLoading is true', async ({page}) => {
-		// A contract that would ALWAYS fail — but LoadingProbe reports isLoading:true and must be skipped,
-		// so this contract must never run. StatefulProbe (isLoading:false) is the control: it keeps a failing
-		// contract, isolating "skipped" from "contract never registered".
-		await page.evaluate(() => {
-			const harness = window.__uiTestHarness;
-			harness.registerContract('LoadingProbe', () => 'must-not-run-while-loading');
-			harness.registerContract('StatefulProbe', () => 'control-contract-fires');
-			window.__harnessTest.mount();
-		});
-
-		// Wait until the control component has been audited, so we know the audit ran fully.
-		await page.waitForFunction(() => window.__uiTestHarness.peek().some(f => f.name === 'StatefulProbe'));
-		const drainedNames = await page.evaluate(() => window.__uiTestHarness.drain().map(f => f.name));
-
-		// The loading component is skipped (its contract never ran) ...
-		expect(drainedNames).not.toContain('LoadingProbe');
-		// ... while the non-loading control IS audited (contract fired) — proving skip, not silence.
-		expect(drainedNames).toContain('StatefulProbe');
-
-		const trace = await page.evaluate(() => window.__uiTestHarness.drainTrace());
-		expect(trace.filter(e => e.action === 'skip' && e.name === 'LoadingProbe')).toHaveLength(1);
-		expect(trace.some(e => e.action === 'contract' && e.name === 'LoadingProbe')).toBe(false);
 	});
 
 	test('extracts class props from instance and function props from memoizedProps', async ({page}) => {
@@ -132,14 +108,55 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 		await page.evaluate(() => {
 			const harness = window.__uiTestHarness;
 			harness.registerContract('StatefulProbe', t => {
-				if (t.state?.isLoading !== false)
-					return `class state.isLoading expected false, got ${JSON.stringify(t.state?.isLoading)}`;
+				if (t.state?.tick !== 0)
+					return `class state.tick expected 0, got ${JSON.stringify(t.state?.tick)}`;
 				return undefined;
 			});
 			harness.registerContract('StatelessProbe', t => {
 				if (t.state !== undefined)
 					return `function state expected undefined, got ${JSON.stringify(t.state)}`;
+				if (t.hooks !== undefined)
+					return `function hooks expected undefined, got ${JSON.stringify(t.hooks)}`;
 				return undefined;
+			});
+			harness.registerContract('HookStateProbe', t => {
+				if (t.hooks?.[0] !== 7)
+					return `hooks[0] expected 7, got ${JSON.stringify(t.hooks?.[0])}`;
+				return undefined;
+			});
+			window.__harnessTest.mount();
+		});
+
+		await waitForAudit(page);
+		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
+			.filter(f => f.kind === 'contract');
+
+		expect(contractFailures).toEqual([]);
+	});
+
+	test('audits memo and forwardRef wrappers under inner component names', async ({page}) => {
+		await page.evaluate(() => {
+			const harness = window.__uiTestHarness;
+			const expectTestId = (expected: string) => (t: ExtractedComponent) => {
+				const testId = t.node?.getAttribute('data-testid');
+				if (testId !== expected)
+					return `node data-testid expected "${expected}", got "${testId ?? 'null'}"`;
+				return undefined;
+			};
+			harness.registerContract('MemoProbe', t => {
+				if (t.props?.label !== 'memo')
+					return `memo props.label expected "memo", got ${JSON.stringify(t.props?.label)}`;
+				return expectTestId('memo')(t);
+			});
+			harness.registerContract('ForwardRefProbe', t => {
+				if (t.props?.label !== 'forward')
+					return `forwardRef props.label expected "forward", got ${JSON.stringify(t.props?.label)}`;
+				return expectTestId('forward-ref')(t);
+			});
+			harness.registerContract('MemoHookProbe', t => {
+				if (t.hooks?.[0] !== true)
+					return `memo hooks[0] expected true, got ${JSON.stringify(t.hooks?.[0])}`;
+				return expectTestId('memo-hook')(t);
 			});
 			window.__harnessTest.mount();
 		});
@@ -185,8 +202,133 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 		const displayFailure = tier1Failures.find(f => f.name === 'HiddenDisplayProbe');
 		const visibilityFailure = tier1Failures.find(f => f.name === 'HiddenVisibilityProbe');
 
-		expect(displayFailure?.detail).toBe('not-visible: display=none');
-		expect(visibilityFailure?.detail).toBe('not-visible: visibility=hidden');
+		expect(displayFailure?.detail).toBe('node[0] data-testid="hidden-display": not-visible: display=none');
+		expect(visibilityFailure?.detail).toBe('node[0] data-testid="hidden-visibility": not-visible: visibility=hidden');
+	});
+
+	test('collects every owned host root for multi-host fragments', async ({page}) => {
+		await page.evaluate(() => {
+			const harness = window.__uiTestHarness;
+			harness.registerContract('MultiHostFragmentProbe', t => {
+				const testIds = t.nodes.map(n => n.getAttribute('data-testid'));
+				if (testIds.length !== 2)
+					return `nodes.length expected 2, got ${testIds.length}`;
+				if (testIds[0] !== 'multi-a' || testIds[1] !== 'multi-b')
+					return `nodes testids expected ["multi-a","multi-b"], got ${JSON.stringify(testIds)}`;
+				return undefined;
+			});
+			window.__harnessTest.mount();
+		});
+
+		await waitForAudit(page);
+		const failures = await page.evaluate(() => window.__uiTestHarness.drain());
+		const contractFailures = failures.filter(f => f.kind === 'contract');
+		const multiHostTier1 = failures.filter(f => f.kind === 'tier1' && f.name === 'MultiHostFragmentProbe');
+
+		expect(contractFailures).toEqual([]);
+		const displayNoneFailure = multiHostTier1.find(f => f.detail.includes('display=none'));
+		expect(displayNoneFailure).toBeDefined();
+		expect(displayNoneFailure?.detail).toContain('node[1] data-testid="multi-b"');
+	});
+
+	test('does not assign child component hosts to parent nodes', async ({page}) => {
+		await page.evaluate(() => {
+			const harness = window.__uiTestHarness;
+			harness.registerContract('ParentChildBoundaryProbe', t => {
+				const testIds = t.nodes.map(n => n.getAttribute('data-testid'));
+				if (testIds.length !== 1)
+					return `parent nodes.length expected 1, got ${testIds.length}: ${JSON.stringify(testIds)}`;
+				if (testIds[0] !== 'parent-owned-host')
+					return `parent node expected parent-owned-host, got ${JSON.stringify(testIds[0])}`;
+				if (testIds.includes('child-owned-host'))
+					return 'parent nodes must not include child-owned-host';
+				return undefined;
+			});
+			window.__harnessTest.mount();
+		});
+
+		await waitForAudit(page);
+		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
+			.filter(f => f.kind === 'contract' && f.name === 'ParentChildBoundaryProbe');
+
+		expect(contractFailures).toEqual([]);
+	});
+
+	test('audits lazy-loaded inner components after Suspense resolves', async ({page}) => {
+		await page.evaluate(() => {
+			const harness = window.__uiTestHarness;
+			harness.registerContract('LazyInnerProbe', t => {
+				const testId = t.node?.getAttribute('data-testid');
+				if (testId !== 'lazy-inner')
+					return `lazy inner node expected lazy-inner, got "${testId ?? 'null'}"`;
+				return undefined;
+			});
+			window.__harnessTest.mountLazy();
+		});
+
+		await page.waitForFunction(() => document.querySelector('[data-testid="lazy-fallback"]') !== null);
+		await page.evaluate(() => window.__harnessTest.resolveLazy());
+		await page.waitForFunction(() => document.querySelector('[data-testid="lazy-inner"]') !== null);
+		await page.waitForFunction(() =>
+			window.__uiTestHarness.getTrace().some(e =>
+				e.name === 'LazyInnerProbe' && e.action === 'contract' && e.outcome === 'pass',
+			),
+		);
+
+		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
+			.filter(f => f.kind === 'contract' && f.name === 'LazyInnerProbe');
+
+		expect(contractFailures).toEqual([]);
+	});
+
+	test('verifies Suspense and Lazy fiber tags against react@18.3.1 WorkTags', async ({page}) => {
+		await page.evaluate(() => window.__harnessTest.mountLazy());
+		await page.waitForFunction(() => document.querySelector('[data-testid="lazy-fallback"]') !== null);
+
+		const tags = await page.evaluate(() => {
+			const host = document.getElementById('lazy-app');
+			if (!host)
+				throw new Error('lazy-app missing');
+
+			const fiberKey = Object.keys(host).find(key => key.startsWith('__reactFiber$'));
+			if (!fiberKey)
+				throw new Error('react fiber key missing on lazy-app');
+
+			type FiberNode = {
+				tag: number;
+				child: FiberNode | null;
+				sibling: FiberNode | null;
+				return: FiberNode | null;
+			};
+
+			let rootFiber = (host as Record<string, FiberNode>)[fiberKey];
+			while (rootFiber.return)
+				rootFiber = rootFiber.return;
+
+			const tagSet = new Set<number>();
+			const walk = (fiber: FiberNode | null): void => {
+				if (!fiber)
+					return;
+
+				tagSet.add(fiber.tag);
+				walk(fiber.child);
+				walk(fiber.sibling);
+			};
+
+			walk(rootFiber.child);
+			return {
+				suspense: tagSet.has(13) ? 13 : undefined,
+				lazy: tagSet.has(16) ? 16 : undefined,
+				all: [...tagSet].sort((a, b) => a - b),
+			};
+		});
+
+		expect(tags.suspense).toBe(13);
+		// React 18 commits the deferred lazy branch as Offscreen (22) while fallback is shown.
+		expect(tags.all).toContain(22);
+		// LazyComponent (16) is not in the committed fallback tree; verified from react-dom@18.3.1
+		// getComponentNameFromFiber switch (case 16 -> "Lazy") and exercised by lazy pass-through audit.
+		expect(tags.lazy).toBeUndefined();
 	});
 });
 

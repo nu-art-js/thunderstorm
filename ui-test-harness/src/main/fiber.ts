@@ -40,7 +40,18 @@ export const FiberTag = {
 	HostPortal: 4,
 	HostComponent: 5,
 	HostText: 6,
+	ForwardRef: 11,
+	/** Verified against react-reconciler WorkTags for react@18.3.1 (react-reconciler@0.29.2). */
+	SuspenseComponent: 13,
+	MemoComponent: 14,
+	SimpleMemoComponent: 15,
+	/** Verified against react-reconciler WorkTags for react@18.3.1 (react-reconciler@0.29.2). */
+	LazyComponent: 16,
+	/** React 18 deferred Suspense branches — visible in the committed tree during fallback. */
+	OffscreenComponent: 22,
 } as const;
+
+type NamedType = {displayName?: string; name?: string};
 
 // Element (not HTMLElement): host nodes may be SVG (icons/charts). getComputedStyle and
 // getBoundingClientRect both operate on any Element, so SVG-rooted components must be auditable too.
@@ -48,6 +59,46 @@ const isElement = (value: unknown): value is Element => value instanceof Element
 
 const asRecord = (value: unknown): Record<string, unknown> | undefined =>
 	(typeof value === 'object' && value !== null) ? value as Record<string, unknown> : undefined;
+
+const asNamedType = (value: unknown): NamedType | undefined =>
+	(typeof value === 'function') ? value as NamedType : undefined;
+
+const isClassComponentType = (type: unknown): boolean =>
+	typeof type === 'function'
+	&& (type as {prototype?: {isReactComponent?: unknown}}).prototype?.isReactComponent != null;
+
+const isWrapperComponentTag = (tag: number): boolean =>
+	tag === FiberTag.ForwardRef
+	|| tag === FiberTag.MemoComponent
+	|| tag === FiberTag.SimpleMemoComponent;
+
+const isAuditableComponentTag = (tag: number): boolean =>
+	tag === FiberTag.FunctionComponent
+	|| tag === FiberTag.ClassComponent
+	|| isWrapperComponentTag(tag);
+
+/** Suspense/Lazy/Offscreen are not audit targets; host collection passes through them transparently. */
+const isPassThroughBoundaryTag = (tag: number): boolean =>
+	tag === FiberTag.SuspenseComponent
+	|| tag === FiberTag.LazyComponent
+	|| tag === FiberTag.OffscreenComponent;
+
+/**
+ * Unwrap memo / forwardRef fiber types to the inner component type used for naming and class detection.
+ */
+const resolveInnerType = (fiber: Fiber): unknown => {
+	const {tag, type} = fiber;
+	if (tag === FiberTag.ForwardRef)
+		return asRecord(type)?.render ?? type;
+
+	if (tag === FiberTag.MemoComponent || tag === FiberTag.SimpleMemoComponent)
+		return asRecord(type)?.type ?? type;
+
+	return type;
+};
+
+const resolveNamedType = (fiber: Fiber): NamedType | undefined =>
+	asNamedType(resolveInnerType(fiber));
 
 /**
  * Depth-first pre-order walk of a fiber subtree via `child`/`sibling`.
@@ -63,61 +114,112 @@ export const walkFibers = (fiber: Fiber | null, visit: (fiber: Fiber) => void): 
 	walkFibers(fiber.sibling, visit);
 };
 
+const portalContainerOf = (fiber: Fiber): Element | null => {
+	const container = asRecord(fiber.stateNode)?.containerInfo;
+	return isElement(container) ? container : null;
+};
+
 /**
- * Resolve the live DOM node a fiber represents. Edge cases (documented, all handled here):
- * - **host component** (`tag 5`): `stateNode` IS the element → return it.
- * - **portal** (`tag 4`): the rendered content lives in `stateNode.containerInfo` → return that container.
- * - **fragment / composite**: no own node → return the FIRST host descendant only.
- * - **text / null** (`tag 6` / nothing rendered): no element → `null`.
+ * Collect every host root owned by `fiber` without crossing into nested component fibers.
+ * Returns top-most owned hosts in document order; nested hosts inside an already-collected
+ * host are omitted. Portals contribute their `containerInfo` element.
  */
-export const domNodeOf = (fiber: Fiber): Element | null => {
-	if (isElement(fiber.stateNode))
-		return fiber.stateNode;
+export const ownedHostNodesOf = (fiber: Fiber): Element[] => {
+	if (fiber.tag === FiberTag.HostComponent && isElement(fiber.stateNode))
+		return [fiber.stateNode];
 
 	if (fiber.tag === FiberTag.HostPortal) {
-		const container = asRecord(fiber.stateNode)?.containerInfo;
-		return isElement(container) ? container : null;
+		const container = portalContainerOf(fiber);
+		return container ? [container] : [];
 	}
 
-	let found: Element | null = null;
-	walkFibers(fiber.child, candidate => {
-		if (found)
-			return;
+	const nodes: Element[] = [];
+	collectOwnedHostRoots(fiber.child, nodes);
+	return nodes;
+};
 
-		if (candidate.tag === FiberTag.HostPortal) {
-			const container = asRecord(candidate.stateNode)?.containerInfo;
-			if (isElement(container))
-				found = container;
-			return;
+const collectOwnedHostRoots = (fiber: Fiber | null, nodes: Element[]): void => {
+	let cursor = fiber;
+	while (cursor) {
+		if (isAuditableComponentTag(cursor.tag)) {
+			cursor = cursor.sibling;
+			continue;
 		}
 
-		if (candidate.tag === FiberTag.HostComponent && isElement(candidate.stateNode))
-			found = candidate.stateNode;
-	});
+		if (cursor.tag === FiberTag.HostComponent && isElement(cursor.stateNode)) {
+			nodes.push(cursor.stateNode);
+			cursor = cursor.sibling;
+			continue;
+		}
 
-	return found;
+		if (cursor.tag === FiberTag.HostPortal) {
+			const container = portalContainerOf(cursor);
+			if (container)
+				nodes.push(container);
+			cursor = cursor.sibling;
+			continue;
+		}
+
+		if (isPassThroughBoundaryTag(cursor.tag)) {
+			collectOwnedHostRoots(cursor.child, nodes);
+			cursor = cursor.sibling;
+			continue;
+		}
+
+		collectOwnedHostRoots(cursor.child, nodes);
+		cursor = cursor.sibling;
+	}
+};
+
+/**
+ * Resolve the live DOM node a fiber represents — the first owned host root, if any.
+ * Convenience alias for `ownedHostNodesOf(fiber)[0] ?? null`.
+ */
+export const domNodeOf = (fiber: Fiber): Element | null =>
+	ownedHostNodesOf(fiber)[0] ?? null;
+
+/** Hook list head on function / wrapper component fibers — values in call order. */
+const readHookStates = (fiber: Fiber): readonly unknown[] | undefined => {
+	const values: unknown[] = [];
+	let cursor = fiber.memoizedState;
+	while (cursor) {
+		const hook = asRecord(cursor);
+		if (!hook)
+			break;
+
+		values.push(hook.memoizedState);
+		cursor = hook.next;
+	}
+
+	return values.length > 0 ? values : undefined;
 };
 
 /**
  * Extract the normalized component view from a fiber. Class fibers read `props`/`state` off the
- * live instance (`stateNode`); function fibers read `memoizedProps` and have no state.
+ * live instance (`stateNode`); function fibers read `memoizedProps` and hook values from `memoizedState`.
+ * Memo and forwardRef wrappers are unwrapped for naming; wrapper fibers remain the audit target.
  */
 export const extractComponent = (fiber: Fiber): ExtractedComponent => {
-	const type = fiber.type;
-	const named = (typeof type === 'function') ? type as {displayName?: string; name?: string} : undefined;
+	const innerType = resolveInnerType(fiber);
+	const named = resolveNamedType(fiber);
 	const name = named?.displayName ?? named?.name;
 
-	const isClass = fiber.tag === FiberTag.ClassComponent;
+	const isClass = fiber.tag === FiberTag.ClassComponent
+		|| (isWrapperComponentTag(fiber.tag) && isClassComponentType(innerType));
 	const instance = isClass ? asRecord(fiber.stateNode) : undefined;
+
+	const nodes = ownedHostNodesOf(fiber);
 
 	return {
 		name,
-		node: domNodeOf(fiber),
+		nodes,
+		node: nodes[0] ?? null,
 		props: isClass ? asRecord(instance?.props) : asRecord(fiber.memoizedProps),
 		state: isClass ? asRecord(instance?.state) : undefined,
+		hooks: isClass ? undefined : readHookStates(fiber),
 	};
 };
 
-/** Whether a fiber is an auditable component (function or class) — host/text/root fibers are skipped. */
+/** Whether a fiber is an auditable component — function, class, memo, or forwardRef. */
 export const isComponentFiber = (fiber: Fiber): boolean =>
-	fiber.tag === FiberTag.FunctionComponent || fiber.tag === FiberTag.ClassComponent;
+	isAuditableComponentTag(fiber.tag);

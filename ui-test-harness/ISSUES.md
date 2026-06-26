@@ -2,35 +2,53 @@
 
 ## File: `src/main/fiber.ts`
 
-### Symbol: `Fiber`, `extractComponent()`, `domNodeOf()`
+### Symbol: `Fiber`, `extractComponent()`, `ownedHostNodesOf()`, `domNodeOf()`
 
 **Issue**: Depends on undocumented React fiber internals (work tags, `stateNode`, `memoizedProps`,
 `child`/`sibling`, portal `containerInfo`).
 
-**Details**: Tags `0/1/3/4/5/6` are stable across React 16–18 but are not a public contract. This is
-intentionally isolated to this single adapter file so a React-version break has exactly one fix site.
-`ForwardRef` / `Memo` (tags 11/14/15) are currently NOT treated as component targets — only function
-(0) and class (1). Revisit if framework components wrapped in `forwardRef`/`memo` need first-class audit.
+**Details**: Tags `0/1/3/4/5/6/11/13/14/15/16/22` are stable across React 16–18 but are not a public contract.
+This is intentionally isolated to this single adapter file so a React-version break has exactly one fix
+site. Memo (`14`/`15`) and forwardRef (`11`) fibers are unwrapped for naming; hook values are read from
+`memoizedState` on function and wrapper fibers. Suspense (`13`), Lazy (`16`), and Offscreen (`22`, React 18
+deferred Suspense branches) are pass-through for host ownership — verified against react-dom@18.3.1.
+
+### Symbol: hook state extraction (`readHookStates`)
+
+**Issue**: Hook values are positional (call order), not named.
+
+**Details**: Extracting named hook state (e.g. `useState` variable names) would require fragile
+React-dispatcher parsing. Out of scope by decision — contracts should assert on `hooks[n]` order or
+use props/DOM instead.
+
+## File: `src/main/tier1.ts`
+
+### Symbol: positional / RTL layout invariants
+
+**Issue**: Tier-1 checks visibility and box size only — no logical-direction or RTL positional checks.
+
+**Details**: Speculative until a concrete invariant needs position; any future positional check must use
+logical inline-start/end, never hardcoded left/right.
 
 ## File: `src/main/RenderAudit.ts`
 
-### Symbol: `audit()` — `state.isLoading` skip
+### Symbol: `onCommit` (rAF debounce + hidden-tab fallback)
 
-**Issue**: The skip predicate (`target.state?.isLoading === true`) bakes a consuming-app convention into
-an otherwise feature-agnostic engine, and is effective for **class components only**.
+**Issue**: Audits run on `requestAnimationFrame` when the document is visible; when `document.hidden`,
+`setTimeout(0)` is used instead because rAF is throttled in background tabs.
 
-**Details**: Function components expose no fiber state (`state` is always `undefined`), so a hooks-based
-loading component cannot be skipped and may raise false Tier-1 failures while mid-load. The convention
-also couples the engine to a specific app's `isLoading` flag. Planned for T2: replace the hardcoded
-predicate with an injected skip predicate (registered like contracts), keeping the engine generic.
+**Details**: The hidden-tab path is not deterministically exercised in Playwright headless — the
+`document.hidden` property is read-only and headless Chromium typically reports visible. The fallback
+is implemented and idempotent via the existing `scheduled` guard; manual verification in a backgrounded
+browser tab is the practical check.
 
-### Symbol: `onCommit` (rAF debounce)
+### Symbol: `audit()` — single renderer / single root
 
-**Issue**: Audits run on `requestAnimationFrame`. In a backgrounded tab rAF is throttled/paused, so an
-audit may be deferred until the tab is foregrounded.
+**Issue**: The engine assumes one React renderer and walks the committed root forwarded by the DevTools
+hook.
 
-**Details**: Acceptable for Playwright (foregrounded headless). For non-test injection (T2+), consider a
-`setTimeout` fallback when `document.hidden`.
+**Details**: Multiple React roots or multiple renderers need explicit design before support (root
+selection, per-root contract scoping).
 
 ### Symbol: `audit()` — trace buffer
 

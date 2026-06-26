@@ -12,30 +12,40 @@ import {createRoot, Root} from 'react-dom/client';
 
 /** Class component → fiber tag 1 → props AND state extracted from the live instance. */
 class StatefulProbe
-	extends React.Component<{label: string}, {isLoading: boolean}> {
+	extends React.Component<{label: string}, {tick: number}> {
 
-	state = {isLoading: false};
+	state = {tick: 0};
 
 	render() {
 		return <div data-testid="stateful">{this.props.label}</div>;
 	}
 }
 
-/** Class component reporting state.isLoading === true → the audit must skip it entirely. */
-class LoadingProbe
-	extends React.Component<{label: string}, {isLoading: boolean}> {
-
-	state = {isLoading: true};
-
-	render() {
-		return <div data-testid="loading">{this.props.label}</div>;
-	}
-}
-
-/** Function component → fiber tag 0 → props from memoizedProps, state undefined. */
+/** Function component → fiber tag 0 → props from memoizedProps, no hooks. */
 function StatelessProbe(props: {label: string}) {
 	return <span data-testid="stateless">{props.label}</span>;
 }
+
+/** Function component with useState → hook values exposed via `ExtractedComponent.hooks`. */
+function HookStateProbe() {
+	const [tick] = React.useState(7);
+	return <div data-testid="hook-state">{tick}</div>;
+}
+
+const MemoProbe = React.memo(function MemoProbe(props: {label: string}) {
+	return <div data-testid="memo">{props.label}</div>;
+});
+
+const MemoHookProbe = React.memo(function MemoHookProbe() {
+	const [ready] = React.useState(true);
+	return <div data-testid="memo-hook">{ready ? 'ready' : 'pending'}</div>;
+});
+
+const ForwardRefProbe = React.forwardRef<HTMLDivElement, {label: string}>(
+	function ForwardRefProbe(props, ref) {
+		return <div ref={ref} data-testid="forward-ref">{props.label}</div>;
+	},
+);
 
 /** Function component whose only host node is deliberately collapsed (zero height) → trips Tier-1. */
 function CollapsedProbe() {
@@ -65,6 +75,51 @@ function FragmentProbe() {
 	);
 }
 
+/** Multi-host fragment → ownedHostNodesOf collects every root without nesting into child components. */
+function MultiHostFragmentProbe() {
+	return (
+		<>
+			<div data-testid="multi-a">visible</div>
+			<div data-testid="multi-b" style={{display: 'none'}}>hidden</div>
+		</>
+	);
+}
+
+/** Child host appears before parent-owned host — parent must not claim the child's node. */
+function ChildHostProbe() {
+	return <div data-testid="child-owned-host">child</div>;
+}
+
+function ParentChildBoundaryProbe() {
+	return (
+		<>
+			<ChildHostProbe/>
+			<div data-testid="parent-owned-host">parent</div>
+		</>
+	);
+}
+
+function LazyInnerProbe() {
+	return <div data-testid="lazy-inner">loaded</div>;
+}
+
+LazyInnerProbe.displayName = 'LazyInnerProbe';
+
+let resolveLazyInner: ((value: {default: React.ComponentType}) => void) | undefined;
+const lazyInnerLoadPromise = new Promise<{default: React.ComponentType}>(resolve => {
+	resolveLazyInner = resolve;
+});
+
+const LazyInnerModule = React.lazy(() => lazyInnerLoadPromise);
+
+function LazySuspenseProbe() {
+	return (
+		<React.Suspense fallback={<div data-testid="lazy-fallback">loading</div>}>
+			<LazyInnerModule/>
+		</React.Suspense>
+	);
+}
+
 /** SVG host root → domNodeOf must return an Element (not limited to HTMLElement). */
 function SvgProbe() {
 	return (
@@ -90,21 +145,38 @@ function App() {
 	return (
 		<>
 			<StatefulProbe label="stateful"/>
-			<LoadingProbe label="loading"/>
 			<StatelessProbe label="stateless"/>
+			<HookStateProbe/>
+			<MemoProbe label="memo"/>
+			<MemoHookProbe/>
+			<ForwardRefProbe label="forward"/>
 			<CollapsedProbe/>
 			<HiddenDisplayProbe/>
 			<HiddenVisibilityProbe/>
 			<FragmentProbe/>
+			<MultiHostFragmentProbe/>
+			<ParentChildBoundaryProbe/>
 			<SvgProbe/>
 			<PortalProbe/>
 		</>
 	);
 }
 
+function LazySuspenseApp() {
+	return (
+		<div id="lazy-app">
+			<LazySuspenseProbe/>
+		</div>
+	);
+}
+
 declare global {
 	interface Window {
-		__harnessTest: {mount: () => void};
+		__harnessTest: {
+			mount: () => void;
+			mountLazy: () => void;
+			resolveLazy: () => void;
+		};
 	}
 }
 
@@ -118,5 +190,19 @@ window.__harnessTest = {
 
 		root ??= createRoot(container);
 		root.render(<App/>);
+	},
+	mountLazy: () => {
+		const container = document.getElementById('test-root');
+		if (!container)
+			throw new Error('test-root container missing');
+
+		root ??= createRoot(container);
+		root.render(<LazySuspenseApp/>);
+	},
+	resolveLazy: () => {
+		if (!resolveLazyInner)
+			throw new Error('lazy resolver not initialized');
+
+		resolveLazyInner({default: LazyInnerProbe});
 	},
 };

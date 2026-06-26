@@ -40,6 +40,7 @@ export class RenderAudit
 	 * Hook entry point — invoked with the root fiber after each React commit.
 	 * Coalesces bursts of commits into a single audit via `requestAnimationFrame`, so audits run
 	 * once per frame against the latest tree (and after layout, so box measurements are valid).
+	 * When the document is hidden (background tab), rAF is throttled — `setTimeout(0)` runs instead.
 	 */
 	readonly onCommit = (rootFiber: Fiber): void => {
 		this.latestRoot = rootFiber;
@@ -47,14 +48,19 @@ export class RenderAudit
 			return;
 
 		this.scheduled = true;
-		requestAnimationFrame(() => {
+		const run = (): void => {
 			this.scheduled = false;
 			const root = this.latestRoot;
 			if (!root)
 				return;
 
 			this.audit(root);
-		});
+		};
+
+		if (document.hidden)
+			setTimeout(run, 0);
+		else
+			requestAnimationFrame(run);
 	};
 
 	/** Drain and clear the accumulated failures. */
@@ -79,7 +85,6 @@ export class RenderAudit
 
 	private readonly audit = (root: Fiber): void => {
 		let componentFibers = 0;
-		let skipped = 0;
 		const toAudit: ExtractedComponent[] = [];
 
 		walkFibers(root, fiber => {
@@ -87,20 +92,7 @@ export class RenderAudit
 				return;
 
 			componentFibers++;
-			const target = extractComponent(fiber);
-			if (target.state?.isLoading === true) {
-				skipped++;
-				this.logVerbose(`skip — component=${target.name} reason=isLoading`);
-				this.pushTrace({
-					name: target.name,
-					action: 'skip',
-					detail: 'isLoading',
-					outcome: 'info',
-				});
-				return;
-			}
-
-			toAudit.push(target);
+			toAudit.push(extractComponent(fiber));
 		});
 
 		const contractCount = Object.keys(this.contracts).length;
@@ -119,11 +111,11 @@ export class RenderAudit
 			this.evaluate(target);
 		}
 
-		this.logInfo(`audit complete — audited=${audited} skipped=${skipped} failures=${this.failures.length}`);
+		this.logInfo(`audit complete — audited=${audited} failures=${this.failures.length}`);
 		this.pushTrace({
 			name: undefined,
 			action: 'audit-complete',
-			detail: `audited=${audited} skipped=${skipped} failures=${this.failures.length}`,
+			detail: `audited=${audited} failures=${this.failures.length}`,
 			outcome: 'info',
 		});
 	};
@@ -131,20 +123,30 @@ export class RenderAudit
 	private readonly evaluate = (target: ExtractedComponent): void => {
 		const name = target.name;
 
-		if (target.node) {
-			const tier1Failures = runTier1(target.node);
-			if (tier1Failures.length === 0) {
-				this.logVerbose(`tier1 pass — component=${name}`);
-				this.pushTrace({name, action: 'tier1', outcome: 'pass'});
-			} else {
-				tier1Failures.forEach(detail => {
+		if (target.nodes.length === 0) {
+			this.logVerbose(`tier1 skipped — component=${name} reason=no-node`);
+		} else {
+			let tier1Passed = true;
+			target.nodes.forEach((node, index) => {
+				const nodeLabel = describeOwnedNode(node, index);
+				const tier1Failures = runTier1(node);
+				if (tier1Failures.length === 0)
+					return;
+
+				tier1Passed = false;
+				tier1Failures.forEach(failureDetail => {
+					const detail = `${nodeLabel}: ${failureDetail}`;
 					this.logDebug(`tier1 fail — component=${name} detail=${detail}`);
 					this.pushTrace({name, action: 'tier1', detail, outcome: 'fail'});
 					this.pushFailure(name, 'tier1', detail);
 				});
+			});
+
+			if (tier1Passed) {
+				this.logVerbose(`tier1 pass — component=${name}`);
+				this.pushTrace({name, action: 'tier1', outcome: 'pass'});
 			}
-		} else
-			this.logVerbose(`tier1 skipped — component=${name} reason=no-node`);
+		}
 
 		const contract = name ? this.contracts[name] : undefined;
 		if (!contract)
@@ -170,3 +172,11 @@ export class RenderAudit
 		this.failures.push({name, kind, detail});
 	};
 }
+
+const describeOwnedNode = (node: Element, index: number): string => {
+	const testId = node.getAttribute('data-testid');
+	if (testId)
+		return `node[${index}] data-testid="${testId}"`;
+
+	return `node[${index}] <${node.tagName.toLowerCase()}>`;
+};
