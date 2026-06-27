@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {addItemToArrayAtIndex, currentTimeMillis, generateHex, Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
+import {addItemToArrayAtIndex, currentTimeMillis, exists, generateHex, Logger, LogLevel, removeItemFromArray} from '@nu-art/ts-common';
 import {ChildProcess, ChildProcessWithoutNullStreams, spawn} from 'node:child_process';
 import {LogTypes} from '../types.js';
 
@@ -245,6 +245,57 @@ export class InteractiveShell
 
 		await this.waitForExit(pid, timeout);
 		this.logWarning(`Subprocess PID ${pid} terminated`);
+	};
+
+// Send a signal to the entire detached process group led by pid; swallow ESRCH (group already gone)
+	private signalGroup = (pid: number, signal: NodeJS.Signals): boolean => {
+		try {
+			process.kill(-pid, signal);
+			return true;
+		} catch (e: any) {
+			if (e.code === 'ESRCH')
+				return false;
+
+			this.logError(`Failed to send ${signal} to process group ${pid}`, e);
+			throw e;
+		}
+	};
+
+// Check whether any process remains in the detached process group led by pid
+	private isGroupAlive = (pid: number): boolean => {
+		try {
+			process.kill(-pid, 0); // Non-intrusive check against the whole group
+			return true;
+		} catch (e: any) {
+			return e.code === 'EPERM'; // EPERM => process exists but not signalable; ESRCH => group gone
+		}
+	};
+
+// Kill the ENTIRE detached process group led by this shell (PGID == this.shell.pid).
+// SIGTERM the group, poll for liveness up to graceMs, then SIGKILL any stragglers.
+	killGroup = async (graceMs = 5000): Promise<void> => {
+		const pid = this.shell.pid;
+		if (!this.alive || !exists(pid)) {
+			this.logDebug(`Shell not alive or missing pid — nothing to group-kill`);
+			return;
+		}
+
+		this.logWarning(`Sending SIGTERM to process group PGID: ${pid}`);
+		if (!this.signalGroup(pid, 'SIGTERM'))
+			return;
+
+		const startTime = currentTimeMillis();
+		while (this.isGroupAlive(pid)) {
+			if (currentTimeMillis() - startTime > graceMs) {
+				this.logWarning(`Process group ${pid} did not exit in ${graceMs}ms. Sending SIGKILL.`);
+				this.signalGroup(pid, 'SIGKILL');
+				return;
+			}
+
+			await new Promise<void>(resolve => setTimeout(resolve, 100));
+		}
+
+		this.logWarning(`Process group ${pid} terminated`);
 	};
 
 	/**

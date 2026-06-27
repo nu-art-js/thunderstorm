@@ -9,9 +9,10 @@ import {
 	CONST_VersionApp
 } from '../../../config/consts.js';
 import {FirebasePackageConfig} from '../../../config/types/package/package.js';
-import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
+import {__stringify, _keys, _logger_logPrefixes, deepClone, exists, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, Default_Files, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
 import {Commando_NVM, CommandoException} from '@nu-art/commando';
+import {TerminatableFactory} from '../../base/BaseUnit.js';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/consts.js';
 import {resolve} from 'path';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
@@ -25,6 +26,12 @@ export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 export const firebaseFunctionEmulator_WarningStrings: string[] = [
 	'⚠',
 ];
+
+/**
+ * Grace window granted to the firebase CLI to perform export-on-exit + cleanShutdown
+ * of its (reparented) Java emulator children before the process group is force-killed.
+ */
+export const Default_EmulatorShutdownGraceMs = 20 * Second;
 
 type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean };
 
@@ -62,6 +69,7 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 	sslKey: string
 	sslCert: string
 	pathToEmulatorData: string
+	emulatorShutdownGraceMs?: number;
 	sources?: string[];
 	functions: string[] | FunctionConfig[];
 	runtime?: 'firebase-emulator' | 'node';
@@ -1214,9 +1222,34 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const inspectFlag = this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect=0.0.0.0:${this.config.debugPort}` : '';
 
-		await this.executeAsyncCommando(commando, `trap 'exit 0' SIGINT SIGTERM; while true; do while [ ! -f ${this.config.output}/index.js ]; do echo "Waiting for ${this.config.output}/index.js..."; sleep 2; done; node --watch ${inspectFlag} ${this.config.output}/index.js; code=$?; if [ $code -eq 0 ] || [ $code -eq 130 ] || [ $code -eq 143 ]; then break; fi; echo "Process exited ($code), restarting..."; sleep 1; done`);
+		await this.executeAsyncCommando(commando, `child=0; trap 'kill -TERM "$child" 2>/dev/null; exit 143' SIGINT SIGTERM; while true; do while [ ! -f ${this.config.output}/index.js ]; do echo "Waiting for ${this.config.output}/index.js..."; sleep 2; done; node --watch ${inspectFlag} ${this.config.output}/index.js & child=$!; wait "$child"; code=$?; if [ $code -eq 0 ] || [ $code -eq 130 ] || [ $code -eq 143 ]; then break; fi; echo "Process exited ($code), restarting..."; sleep 1; done`);
 		this.logWarning('NODE SERVER TERMINATED');
 	}
+
+	/**
+	 * Graceful teardown for the firebase emulator process.
+	 *
+	 * The Java emulators (firestore/database/pubsub) reparent into their OWN process groups, so a
+	 * group-SIGKILL can't reach them — they are reaped only by the firebase CLI's own cleanShutdown.
+	 * firebase-tools treats SIGTERM == SIGINT (single handler → export-on-exit). So we send ONE
+	 * graceful signal to the CLI ($!) and wait a generous, configurable window for it to export and
+	 * shut its children down; only if it overruns do we sweep any stragglers via group SIGKILL.
+	 */
+	private gracefulEmulatorTerminatable: TerminatableFactory = (commando, getPid) => async () => {
+		const graceMs = this.config.emulatorShutdownGraceMs ?? Default_EmulatorShutdownGraceMs;
+		const pid = getPid();
+		if (!exists(pid)) {
+			this.logWarning('Emulator CLI pid not captured — falling back to process-group kill');
+			return commando.killGroup(0);
+		}
+
+		try {
+			await commando.killSubprocess(pid, 'SIGINT', graceMs);
+		} catch (e: any) {
+			this.logWarning(`Firebase CLI ${pid} did not exit within ${graceMs}ms — sweeping process group`);
+			await commando.killGroup(0);
+		}
+	};
 
 	private async startEmulatorsAndWait() {
 		return new Promise<void>((resolve) => {
@@ -1235,7 +1268,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 					resolve();
 				});
 
-			this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --only database,auth,storage,firestore,pubsub --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData}`)
+			this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --only database,auth,storage,firestore,pubsub --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData}`, undefined, this.gracefulEmulatorTerminatable)
 				.then(() => this.logWarning('EMULATORS TERMINATED'));
 		});
 	}
@@ -1257,7 +1290,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			commando.custom(`export MONGODB_EMULATOR_HOST=localhost:${this.resolveMongoPort()}`);
 
 		await this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData} ${this.runtimeContext.runtimeParams.debugBackend
-			? `--inspect-functions ${this.config.debugPort}` : ''}`);
+			? `--inspect-functions ${this.config.debugPort}` : ''}`, undefined, this.gracefulEmulatorTerminatable);
 		this.logWarning('EMULATORS TERMINATED');
 	}
 

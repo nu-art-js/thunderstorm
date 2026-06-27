@@ -111,10 +111,19 @@ export class CommandoInteractive
 	/**
 	 * Gracefully kills a process by its PID.
 	 * @param {number} [pid] - The PID of the process to kill.
-	 * @param signal
+	 * @param signal - The signal to send (defaults to SIGINT).
+	 * @param timeout - How long to wait for the PID to exit before failing.
 	 */
-	async killSubprocess(pid: number, signal?: NodeJS.Signals) {
-		return this.shell.killSubprocess(pid, signal);
+	async killSubprocess(pid: number, signal?: NodeJS.Signals, timeout?: number) {
+		return this.shell.killSubprocess(pid, signal, timeout);
+	}
+
+	/**
+	 * Kills the entire detached process group led by the underlying shell.
+	 * @param {number} [graceMs] - Grace period before SIGKILL is sent to stragglers.
+	 */
+	async killGroup(graceMs?: number) {
+		return this.shell.killGroup(graceMs);
 	}
 
 	/**

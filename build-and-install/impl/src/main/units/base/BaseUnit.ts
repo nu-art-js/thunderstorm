@@ -26,6 +26,16 @@ import {Workspace} from '../../workspace/Workspace.js';
 
 
 /**
+ * Factory that builds the teardown terminatable for an async commando.
+ *
+ * Receives the running commando and a getter for the background process PID
+ * (the inner `$!`, captured asynchronously once the command starts). The
+ * default builds a whole-process-group kill; specific units can supply a
+ * graceful alternative (e.g. signal-then-wait for the firebase emulator).
+ */
+export type TerminatableFactory = (commando: CommandoInteractive, getPid: () => number | undefined) => AsyncVoidFunction;
+
+/**
  * Base configuration for all units.
  */
 export type BaseUnit_Config = {
@@ -105,10 +115,10 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 		return CommandoPool.allocateCommando(this.config.key, ...plugins);
 	}
 
-	async executeAsyncCommando<T>(commando: CommandoInteractive, command: string, callback?: (stdout: string, stderr: string, exitCode: number) => T) {
-		let pid: number;
+	async executeAsyncCommando<T>(commando: CommandoInteractive, command: string, callback?: (stdout: string, stderr: string, exitCode: number) => T, createTerminatable: TerminatableFactory = (cmd) => () => cmd.killGroup()) {
+		let pid: number | undefined;
 
-		const terminatable = () => commando.killSubprocess(pid);
+		const terminatable = createTerminatable(commando, () => pid);
 		try {
 			this.registerTerminatable(terminatable);
 			return await commando
