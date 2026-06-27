@@ -303,6 +303,7 @@ export class CommandoInteractive
 				return true;
 
 			const pid = +match[1];
+			this.shell.logInfo(`appendAsync captured pid=${pid} (inner subshell = $!) shell.pid=${this.shell.getShellPid()} (group leader) cmd="${command.slice(0, 80).replace(/\s+/g, ' ')}"`);
 			await pidListener?.(pid);
 			return false;
 		};

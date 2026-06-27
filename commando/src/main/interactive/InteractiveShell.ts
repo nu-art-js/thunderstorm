@@ -97,6 +97,8 @@ export class InteractiveShell
 
 		this.alive = true;
 
+		this.logInfo(`commando shell spawned: shell.pid=${this.shell.pid} (detached session/group leader, PGID=${this.shell.pid})`);
+
 		const printer = (std: LogTypes) => async (data: Buffer) => {
 			const messages = data.toString().trim().split('\n');
 			if (!messages.length)
@@ -173,6 +175,9 @@ export class InteractiveShell
 		});
 	};
 
+// Expose the detached shell (session/group leader) pid for diagnostics/correlation
+	getShellPid = (): number | undefined => this.shell.pid;
+
 // Check if a given PID is alive
 	isAlive = (pid: number): boolean => {
 		try {
@@ -234,7 +239,7 @@ export class InteractiveShell
 			return;
 		}
 
-		this.logWarning(`Sending ${signal} to subprocess PID: ${pid}`);
+		this.logWarning(`killSubprocess target pid=${pid} signal=${signal} (single-pid; shell.pid/leader=${this.shell.pid})`);
 
 		try {
 			process.kill(pid, signal);
@@ -280,7 +285,7 @@ export class InteractiveShell
 			return;
 		}
 
-		this.logWarning(`Sending SIGTERM to process group PGID: ${pid}`);
+		this.logWarning(`killGroup target PGID=${pid} (signaling whole group via -${pid}) signal=SIGTERM`);
 		if (!this.signalGroup(pid, 'SIGTERM'))
 			return;
 

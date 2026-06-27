@@ -115,14 +115,21 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 		return CommandoPool.allocateCommando(this.config.key, ...plugins);
 	}
 
-	async executeAsyncCommando<T>(commando: CommandoInteractive, command: string, callback?: (stdout: string, stderr: string, exitCode: number) => T, createTerminatable: TerminatableFactory = (cmd) => () => cmd.killGroup()) {
+	async executeAsyncCommando<T>(commando: CommandoInteractive, command: string, callback?: (stdout: string, stderr: string, exitCode: number) => T, createTerminatable?: TerminatableFactory) {
 		let pid: number | undefined;
 
-		const terminatable = createTerminatable(commando, () => pid);
+		const isCustomTeardown = exists(createTerminatable);
+		const teardownStrategy = isCustomTeardown ? 'custom/graceful' : 'group-kill';
+		const terminatableFactory = createTerminatable ?? ((cmd) => () => cmd.killGroup());
+		const terminatable = terminatableFactory(commando, () => pid);
+		this.logInfo(`executeAsyncCommando: unit='${this.config.key}' teardown=${teardownStrategy} cmd="${command.slice(0, 80).replace(/\s+/g, ' ')}"`);
 		try {
 			this.registerTerminatable(terminatable);
 			return await commando
-				.appendAsync(command, _pid => pid = _pid)
+				.appendAsync(command, _pid => {
+					pid = _pid;
+					this.logInfo(`executeAsyncCommando: unit='${this.config.key}' captured async pid=${_pid} teardown=${teardownStrategy}`);
+				})
 				.execute(callback);
 		} finally {
 			this.unregisterTerminatable(terminatable);

@@ -1243,6 +1243,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			return commando.killGroup(0);
 		}
 
+		this.logInfo(`gracefulEmulatorTerminatable: unit='${this.config.key}' signaling firebase CLI $!=${pid} signal=SIGINT graceMs=${graceMs}`);
 		try {
 			await commando.killSubprocess(pid, 'SIGINT', graceMs);
 		} catch (e: any) {
