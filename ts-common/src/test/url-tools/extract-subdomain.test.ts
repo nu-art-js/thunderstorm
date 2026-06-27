@@ -12,7 +12,7 @@ const runTestCase = (testCase: TestCase_ExtractSubdomain) => {
 	return () => runSingleTestCase(test, testCase);
 };
 
-const expectUndefined = (actual: string | undefined) => {
+const expectUndefined = async (actual: string | undefined) => {
 	expect(actual).to.equal(undefined);
 };
 
