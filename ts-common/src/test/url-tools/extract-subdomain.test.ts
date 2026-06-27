@@ -12,50 +12,66 @@ const runTestCase = (testCase: TestCase_ExtractSubdomain) => {
 };
 
 describe('extractSubdomain', () => {
-	const cases: TestCase_ExtractSubdomain[] = [
+	const cases: { title: string; testCase: TestCase_ExtractSubdomain }[] = [
 		{
-			description: 'single-label root — acme.localhost',
-			input: {origin: 'https://acme.localhost:8364', baseHost: 'localhost'},
-			result: 'acme',
+			title: 'single-label root — acme.localhost',
+			testCase: {
+				input: {origin: 'https://acme.localhost:8364', baseHost: 'localhost'},
+				result: 'acme',
+			},
 		},
 		{
-			description: 'multi-label root — beta.beamz.dev',
-			input: {origin: 'https://beta.beamz.dev', baseHost: 'beamz.dev'},
-			result: 'beta',
+			title: 'multi-label root — beta.beamz.dev',
+			testCase: {
+				input: {origin: 'https://beta.beamz.dev', baseHost: 'beamz.dev'},
+				result: 'beta',
+			},
 		},
 		{
-			description: 'nested subdomain — a.b.beamz.dev',
-			input: {origin: 'https://a.b.beamz.dev', baseHost: 'beamz.dev'},
-			result: 'a.b',
+			title: 'nested subdomain — a.b.beamz.dev',
+			testCase: {
+				input: {origin: 'https://a.b.beamz.dev', baseHost: 'beamz.dev'},
+				result: 'a.b',
+			},
 		},
 		{
-			description: 'bare multi-label root — beamz.dev',
-			input: {origin: 'https://beamz.dev', baseHost: 'beamz.dev'},
-			result: undefined,
+			title: 'bare multi-label root — beamz.dev',
+			testCase: {
+				input: {origin: 'https://beamz.dev', baseHost: 'beamz.dev'},
+				result: undefined,
+			},
 		},
 		{
-			description: 'bare localhost',
-			input: {origin: 'https://localhost:8363', baseHost: 'localhost'},
-			result: undefined,
+			title: 'bare localhost',
+			testCase: {
+				input: {origin: 'https://localhost:8363', baseHost: 'localhost'},
+				result: undefined,
+			},
 		},
 		{
-			description: 'IPv4 host — no subdomain',
-			input: {origin: 'https://127.0.0.1:8363', baseHost: 'localhost'},
-			result: undefined,
+			title: 'IPv4 host — no subdomain',
+			testCase: {
+				input: {origin: 'https://127.0.0.1:8363', baseHost: 'localhost'},
+				result: undefined,
+			},
 		},
 		{
-			description: 'hostname does not match base host',
-			input: {origin: 'https://beta.example.com', baseHost: 'beamz.dev'},
-			result: undefined,
+			title: 'hostname does not match base host',
+			testCase: {
+				input: {origin: 'https://beta.example.com', baseHost: 'beamz.dev'},
+				result: undefined,
+			},
 		},
 		{
-			description: 'invalid origin',
-			input: {origin: 'not-a-url', baseHost: 'localhost'},
-			result: undefined,
+			title: 'invalid origin',
+			testCase: {
+				input: {origin: 'not-a-url', baseHost: 'localhost'},
+				result: undefined,
+			},
 		},
 	];
 
-	cases.forEach(testCase => {
-		it(testCase.description, runTestCase(testCase));
+	cases.forEach(({title, testCase}) => {
+		it(title, runTestCase(testCase));
 	});
 });
