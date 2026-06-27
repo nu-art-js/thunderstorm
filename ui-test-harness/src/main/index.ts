@@ -6,6 +6,6 @@
 
 export * from './types.js';
 export * from './fiber.js';
-export * from './tier1.js';
+export * from './exceptions.js';
 export * from './install.js';
-export * from './RenderAudit.js';
+export * from './UI_AssertionEngine.js';

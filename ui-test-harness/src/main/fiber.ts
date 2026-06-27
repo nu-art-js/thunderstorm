@@ -53,6 +53,14 @@ export const FiberTag = {
 
 type NamedType = {displayName?: string; name?: string};
 
+/**
+ * Predicate the engine threads into the adapter so ownership stays assertion-aware without the
+ * adapter ever importing `UI_AssertionEngine` or reaching a global singleton. Returns `true` when the
+ * named component has a registered assertion — i.e. it is a real ownership boundary. A `undefined`
+ * name or a name with no assertion is transparent: the walk descends through it.
+ */
+export type UI_AssertionLookup = (name: string | undefined) => boolean;
+
 // Element (not HTMLElement): host nodes may be SVG (icons/charts). getComputedStyle and
 // getBoundingClientRect both operate on any Element, so SVG-rooted components must be auditable too.
 const isElement = (value: unknown): value is Element => value instanceof Element;
@@ -72,7 +80,7 @@ const isWrapperComponentTag = (tag: number): boolean =>
 	|| tag === FiberTag.MemoComponent
 	|| tag === FiberTag.SimpleMemoComponent;
 
-const isAuditableComponentTag = (tag: number): boolean =>
+export const isComponentTag = (tag: number): boolean =>
 	tag === FiberTag.FunctionComponent
 	|| tag === FiberTag.ClassComponent
 	|| isWrapperComponentTag(tag);
@@ -120,11 +128,16 @@ const portalContainerOf = (fiber: Fiber): Element | null => {
 };
 
 /**
- * Collect every host root owned by `fiber` without crossing into nested component fibers.
- * Returns top-most owned hosts in document order; nested hosts inside an already-collected
- * host are omitted. Portals contribute their `containerInfo` element.
+ * Collect every host root owned by `fiber` without crossing into nested component fibers that
+ * have a registered assertion. Returns top-most owned hosts in document order; nested hosts inside
+ * an already-collected host are omitted. Portals contribute their `containerInfo` element.
+ *
+ * `hasAssertion` makes the ownership boundary assertion-aware: a child component is a boundary only
+ * when it has a registered assertion. Assertion-less components (generic layout primitives like
+ * `LL_H_C`) are transparent — the walk descends through them so their hosts bubble up to the
+ * nearest enclosing component that DOES have an assertion.
  */
-export const ownedHostNodesOf = (fiber: Fiber): Element[] => {
+export const ownedHostNodesOf = (fiber: Fiber, hasAssertion: UI_AssertionLookup): Element[] => {
 	if (fiber.tag === FiberTag.HostComponent && isElement(fiber.stateNode))
 		return [fiber.stateNode];
 
@@ -134,14 +147,22 @@ export const ownedHostNodesOf = (fiber: Fiber): Element[] => {
 	}
 
 	const nodes: Element[] = [];
-	collectOwnedHostRoots(fiber.child, nodes);
+	collectOwnedHostRoots(fiber.child, nodes, hasAssertion);
 	return nodes;
 };
 
-const collectOwnedHostRoots = (fiber: Fiber | null, nodes: Element[]): void => {
+const collectOwnedHostRoots = (fiber: Fiber | null, nodes: Element[], hasAssertion: UI_AssertionLookup): void => {
 	let cursor = fiber;
 	while (cursor) {
-		if (isAuditableComponentTag(cursor.tag)) {
+		if (isComponentTag(cursor.tag)) {
+			const named = resolveNamedType(cursor);
+			const name = named?.displayName ?? named?.name;
+			if (name != null && hasAssertion(name)) {
+				cursor = cursor.sibling;
+				continue;
+			}
+
+			collectOwnedHostRoots(cursor.child, nodes, hasAssertion);
 			cursor = cursor.sibling;
 			continue;
 		}
@@ -161,22 +182,22 @@ const collectOwnedHostRoots = (fiber: Fiber | null, nodes: Element[]): void => {
 		}
 
 		if (isPassThroughBoundaryTag(cursor.tag)) {
-			collectOwnedHostRoots(cursor.child, nodes);
+			collectOwnedHostRoots(cursor.child, nodes, hasAssertion);
 			cursor = cursor.sibling;
 			continue;
 		}
 
-		collectOwnedHostRoots(cursor.child, nodes);
+		collectOwnedHostRoots(cursor.child, nodes, hasAssertion);
 		cursor = cursor.sibling;
 	}
 };
 
 /**
  * Resolve the live DOM node a fiber represents — the first owned host root, if any.
- * Convenience alias for `ownedHostNodesOf(fiber)[0] ?? null`.
+ * Convenience alias for `ownedHostNodesOf(fiber, hasAssertion)[0] ?? null`.
  */
-export const domNodeOf = (fiber: Fiber): Element | null =>
-	ownedHostNodesOf(fiber)[0] ?? null;
+export const domNodeOf = (fiber: Fiber, hasAssertion: UI_AssertionLookup): Element | null =>
+	ownedHostNodesOf(fiber, hasAssertion)[0] ?? null;
 
 /** Hook list head on function / wrapper component fibers — values in call order. */
 const readHookStates = (fiber: Fiber): readonly unknown[] | undefined => {
@@ -199,7 +220,7 @@ const readHookStates = (fiber: Fiber): readonly unknown[] | undefined => {
  * live instance (`stateNode`); function fibers read `memoizedProps` and hook values from `memoizedState`.
  * Memo and forwardRef wrappers are unwrapped for naming; wrapper fibers remain the audit target.
  */
-export const extractComponent = (fiber: Fiber): ExtractedComponent => {
+export const extractComponent = (fiber: Fiber, hasAssertion: UI_AssertionLookup): ExtractedComponent => {
 	const innerType = resolveInnerType(fiber);
 	const named = resolveNamedType(fiber);
 	const name = named?.displayName ?? named?.name;
@@ -208,7 +229,7 @@ export const extractComponent = (fiber: Fiber): ExtractedComponent => {
 		|| (isWrapperComponentTag(fiber.tag) && isClassComponentType(innerType));
 	const instance = isClass ? asRecord(fiber.stateNode) : undefined;
 
-	const nodes = ownedHostNodesOf(fiber);
+	const nodes = ownedHostNodesOf(fiber, hasAssertion);
 
 	return {
 		name,
@@ -219,7 +240,3 @@ export const extractComponent = (fiber: Fiber): ExtractedComponent => {
 		hooks: isClass ? undefined : readHookStates(fiber),
 	};
 };
-
-/** Whether a fiber is an auditable component — function, class, memo, or forwardRef. */
-export const isComponentFiber = (fiber: Fiber): boolean =>
-	isAuditableComponentTag(fiber.tag);

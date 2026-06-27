@@ -11,14 +11,14 @@
  */
 
 import {installHook} from './install.js';
-import {RenderAudit} from './RenderAudit.js';
+import {UI_AssertionEngine} from './UI_AssertionEngine.js';
 
 declare global {
 	interface Window {
-		__uiTestHarness?: RenderAudit;
+		__uiTestHarness?: UI_AssertionEngine;
 	}
 }
 
-const audit = window.__uiTestHarness ?? new RenderAudit();
+const audit = window.__uiTestHarness ?? new UI_AssertionEngine();
 installHook(audit.onCommit);
 window.__uiTestHarness = audit;

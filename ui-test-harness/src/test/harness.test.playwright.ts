@@ -1,12 +1,12 @@
 /*
- * @nu-art/ui-test-harness - Playwright self-test: proves the trigger -> extract -> assert -> drain
- * loop end-to-end against the REAL injected IIFE artifact, with zero Beamz dependency.
+ * @nu-art/ui-test-harness - Playwright self-test: proves fail-fast contract + exception halt end-to-end
+ * against the REAL injected IIFE artifact, with zero Beamz dependency.
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
 
 import {expect, test} from '@playwright/test';
-import type {AuditFailure, AuditTraceEntry, Contract, ExtractedComponent} from '@nu-art/ui-test-harness';
+import type {ExtractedComponent, UI_Assertion, UI_AssertionFailure, UI_AssertionOptions, UI_AssertionTrace} from '@nu-art/ui-test-harness';
 import {resolve} from 'path';
 import {fileURLToPath} from 'url';
 
@@ -17,24 +17,35 @@ const testPagePath = '/src/test/index.html';
 declare global {
 	interface Window {
 		__uiTestHarness: {
-			registerContract: (name: string, contract: Contract) => void;
-			drain: () => AuditFailure[];
-			peek: () => AuditFailure[];
-			drainTrace: () => AuditTraceEntry[];
-			getTrace: () => readonly AuditTraceEntry[];
+			registerAssertion: (name: string, assertion: UI_Assertion, options?: UI_AssertionOptions) => void;
+			registerExpectedException: (rule: {component: string; messageSubstring: string}) => void;
+			getFirstFailure: () => UI_AssertionFailure | null;
+			drainTrace: () => UI_AssertionTrace[];
+			getTrace: () => readonly UI_AssertionTrace[];
 		};
-		__harnessTest: {mount: () => void; mountLazy: () => void; resolveLazy: () => void};
+		__harnessTest: {
+			mount: () => void;
+			mountLazy: () => void;
+			resolveLazy: () => void;
+			mountException: () => void;
+			mountExceptionWithBoundary: () => void;
+			mountExpectedException: () => void;
+		};
 		__preCommitCalled?: boolean;
 	}
 }
 
-/** Wait until Tier-1 has flagged the collapsed probe — proves the rAF audit finished. */
-const waitForAudit = (page: import('@playwright/test').Page) =>
-	page.waitForFunction(() => window.__uiTestHarness.peek().some(f => f.name === 'CollapsedProbe'));
+/** Wait until the rAF-debounced run finished (run-complete in trace). */
+const waitForRunComplete = (page: import('@playwright/test').Page) =>
+	page.waitForFunction(() =>
+		window.__uiTestHarness.getTrace().some(e => e.action === 'run-complete'),
+	);
 
-test.describe('ui-test-harness — fiber audit self-test', () => {
-	// Inject the real shippable bundle BEFORE any page script, so the DevTools hook is in place
-	// before the page's React initializes.
+/** Wait until the engine recorded its first halt failure. */
+const waitForHalt = (page: import('@playwright/test').Page) =>
+	page.waitForFunction(() => window.__uiTestHarness.getFirstFailure() !== null);
+
+test.describe('ui-test-harness — fail-fast audit self-test', () => {
 	test.beforeEach(async ({page}) => {
 		await page.addInitScript({path: iifePath});
 		await page.goto(testPagePath);
@@ -42,54 +53,46 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 		await page.waitForFunction(() => window.__harnessTest !== undefined);
 	});
 
-	test('drains exactly the seeded contract failure and the collapsed-node Tier-1 failure', async ({page}) => {
-		// One intentionally-failing contract, one passing contract — then trigger the render (commit).
+	test('contract failure halts on first and reports component, state, and detail', async ({page}) => {
 		await page.evaluate(() => {
-			const harness = window.__uiTestHarness;
-			harness.registerContract('StatefulProbe', () => 'intentional-contract-violation');
-			harness.registerContract('StatelessProbe', () => undefined);
+			window.__uiTestHarness.registerAssertion('StatefulProbe', t => {
+				if (t.state?.tick !== 0)
+					return `expected tick 0, got ${JSON.stringify(t.state?.tick)}`;
+				return 'intentional-contract-violation';
+			});
 			window.__harnessTest.mount();
 		});
 
-		// Deterministic: wait until the rAF-debounced audit has actually produced output.
-		await waitForAudit(page);
-		const failures = await page.evaluate(() => window.__uiTestHarness.drain());
+		await waitForHalt(page);
+		const failure = await page.evaluate(() => window.__uiTestHarness.getFirstFailure());
 
-		const contractFailures = failures.filter(f => f.kind === 'contract');
-		const tier1Failures = failures.filter(f => f.kind === 'tier1');
+		expect(failure).toEqual({
+			name: 'StatefulProbe',
+			state: {tick: 0},
+			kind: 'assertion',
+			detail: 'intentional-contract-violation',
+		});
+	});
 
-		// Exactly the seeded contract failure — the passing contract contributes nothing.
-		expect(contractFailures).toEqual([
-			{name: 'StatefulProbe', kind: 'contract', detail: 'intentional-contract-violation'}
-		]);
+	test('passing contract yields no failure', async ({page}) => {
+		await page.evaluate(() => {
+			window.__uiTestHarness.registerAssertion('StatelessProbe', () => undefined);
+			window.__harnessTest.mount();
+		});
 
-		// Tier-1 flags layout/visibility probes; collapsed is the anchor assertion.
-		expect(tier1Failures.map(f => f.name)).toContain('CollapsedProbe');
-		expect(tier1Failures.map(f => f.name)).toEqual(expect.arrayContaining([
-			'CollapsedProbe',
-			'HiddenDisplayProbe',
-			'HiddenVisibilityProbe',
-		]));
-		expect(tier1Failures.find(f => f.name === 'CollapsedProbe')?.detail).toContain('collapsed');
-		expect(tier1Failures.find(f => f.name === 'CollapsedProbe')?.detail).toContain('data-testid="collapsed"');
-
-		const trace = await page.evaluate(() => window.__uiTestHarness.drainTrace());
-		expect(trace.some(e => e.action === 'audit-start')).toBe(true);
-		expect(trace.some(e => e.action === 'audit-complete')).toBe(true);
-		expect(trace.filter(e => e.action === 'contract' && e.name === 'StatefulProbe' && e.outcome === 'fail')).toHaveLength(1);
-		expect(trace.filter(e => e.action === 'contract' && e.name === 'StatelessProbe' && e.outcome === 'pass')).toHaveLength(1);
-		expect(trace.filter(e => e.action === 'tier1' && e.name === 'CollapsedProbe' && e.outcome === 'fail')).toHaveLength(1);
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 
 	test('extracts class props from instance and function props from memoizedProps', async ({page}) => {
 		await page.evaluate(() => {
 			const harness = window.__uiTestHarness;
-			harness.registerContract('StatefulProbe', t => {
+			harness.registerAssertion('StatefulProbe', t => {
 				if (t.props?.label !== 'stateful')
 					return `class props.label expected "stateful", got ${JSON.stringify(t.props?.label)}`;
 				return undefined;
 			});
-			harness.registerContract('StatelessProbe', t => {
+			harness.registerAssertion('StatelessProbe', t => {
 				if (t.props?.label !== 'stateless')
 					return `fn props.label expected "stateless", got ${JSON.stringify(t.props?.label)}`;
 				return undefined;
@@ -97,29 +100,37 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 			window.__harnessTest.mount();
 		});
 
-		await waitForAudit(page);
-		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
-			.filter(f => f.kind === 'contract');
-
-		expect(contractFailures).toEqual([]);
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 
-	test('extracts state for class components and undefined for function components', async ({page}) => {
+	test('class named state reaches the contract', async ({page}) => {
 		await page.evaluate(() => {
-			const harness = window.__uiTestHarness;
-			harness.registerContract('StatefulProbe', t => {
+			window.__uiTestHarness.registerAssertion('StatefulProbe', t => {
 				if (t.state?.tick !== 0)
 					return `class state.tick expected 0, got ${JSON.stringify(t.state?.tick)}`;
 				return undefined;
 			});
-			harness.registerContract('StatelessProbe', t => {
-				if (t.state !== undefined)
-					return `function state expected undefined, got ${JSON.stringify(t.state)}`;
-				if (t.hooks !== undefined)
-					return `function hooks expected undefined, got ${JSON.stringify(t.hooks)}`;
+			window.__harnessTest.mount();
+		});
+
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
+	});
+
+	test('hookKeys produce named state; positional hooks fallback without keys', async ({page}) => {
+		await page.evaluate(() => {
+			const harness = window.__uiTestHarness;
+			harness.registerAssertion('HookKeysProbe', t => {
+				if (t.state?.loading !== false)
+					return `state.loading expected false, got ${JSON.stringify(t.state?.loading)}`;
+				if (t.state?.count !== 3)
+					return `state.count expected 3, got ${JSON.stringify(t.state?.count)}`;
 				return undefined;
-			});
-			harness.registerContract('HookStateProbe', t => {
+			}, {hookKeys: ['loading', 'count']});
+			harness.registerAssertion('HookStateProbe', t => {
+				if (t.state !== undefined)
+					return `state expected undefined without hookKeys, got ${JSON.stringify(t.state)}`;
 				if (t.hooks?.[0] !== 7)
 					return `hooks[0] expected 7, got ${JSON.stringify(t.hooks?.[0])}`;
 				return undefined;
@@ -127,11 +138,40 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 			window.__harnessTest.mount();
 		});
 
-		await waitForAudit(page);
-		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
-			.filter(f => f.kind === 'contract');
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
+	});
 
-		expect(contractFailures).toEqual([]);
+	test('drift guard fires when hook count differs from declared hookKeys', async ({page}) => {
+		await page.evaluate(() => {
+			window.__uiTestHarness.registerAssertion('HookDriftProbe', () => undefined, {hookKeys: ['a', 'b']});
+			window.__harnessTest.mount();
+		});
+
+		await waitForHalt(page);
+		const failure = await page.evaluate(() => window.__uiTestHarness.getFirstFailure());
+
+		expect(failure?.kind).toBe('hook-drift');
+		expect(failure?.name).toBe('HookDriftProbe');
+		expect(failure?.detail).toContain('hooks changed for HookDriftProbe');
+		expect(failure?.detail).toContain('update its key map');
+	});
+
+	test('state-aware contract accepts zero-box when collapsed state is true', async ({page}) => {
+		await page.evaluate(() => {
+			window.__uiTestHarness.registerAssertion('StateAwareLayoutProbe', t => {
+				if (t.state?.collapsed !== true)
+					return `expected collapsed=true, got ${JSON.stringify(t.state?.collapsed)}`;
+				const rect = t.node?.getBoundingClientRect();
+				if (rect && rect.height === 0)
+					return undefined;
+				return 'expected zero-height when collapsed';
+			}, {hookKeys: ['collapsed']});
+			window.__harnessTest.mount();
+		});
+
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 
 	test('audits memo and forwardRef wrappers under inner component names', async ({page}) => {
@@ -143,17 +183,17 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 					return `node data-testid expected "${expected}", got "${testId ?? 'null'}"`;
 				return undefined;
 			};
-			harness.registerContract('MemoProbe', t => {
+			harness.registerAssertion('MemoProbe', t => {
 				if (t.props?.label !== 'memo')
 					return `memo props.label expected "memo", got ${JSON.stringify(t.props?.label)}`;
 				return expectTestId('memo')(t);
 			});
-			harness.registerContract('ForwardRefProbe', t => {
+			harness.registerAssertion('ForwardRefProbe', t => {
 				if (t.props?.label !== 'forward')
 					return `forwardRef props.label expected "forward", got ${JSON.stringify(t.props?.label)}`;
 				return expectTestId('forward-ref')(t);
 			});
-			harness.registerContract('MemoHookProbe', t => {
+			harness.registerAssertion('MemoHookProbe', t => {
 				if (t.hooks?.[0] !== true)
 					return `memo hooks[0] expected true, got ${JSON.stringify(t.hooks?.[0])}`;
 				return expectTestId('memo-hook')(t);
@@ -161,11 +201,8 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 			window.__harnessTest.mount();
 		});
 
-		await waitForAudit(page);
-		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
-			.filter(f => f.kind === 'contract');
-
-		expect(contractFailures).toEqual([]);
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 
 	test('resolves domNodeOf to the correct host element per probe shape', async ({page}) => {
@@ -177,39 +214,32 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 					return `node data-testid expected "${expected}", got "${testId ?? 'null'}"`;
 				return undefined;
 			};
-			harness.registerContract('StatefulProbe', expectTestId('stateful'));
-			harness.registerContract('StatelessProbe', expectTestId('stateless'));
-			harness.registerContract('FragmentProbe', expectTestId('fragment-inner'));
-			harness.registerContract('SvgProbe', expectTestId('svg-root'));
-			harness.registerContract('PortalProbe', expectTestId('portal-target'));
+			harness.registerAssertion('StatefulProbe', expectTestId('stateful'));
+			harness.registerAssertion('StatelessProbe', expectTestId('stateless'));
+			harness.registerAssertion('FragmentProbe', expectTestId('fragment-inner'));
+			harness.registerAssertion('SvgProbe', expectTestId('svg-root'));
+			harness.registerAssertion('PortalProbe', expectTestId('portal-target'));
 			window.__harnessTest.mount();
 		});
 
-		await waitForAudit(page);
-		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
-			.filter(f => f.kind === 'contract');
-
-		expect(contractFailures).toEqual([]);
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 
-	test('Tier-1 flags display:none and visibility:hidden host nodes', async ({page}) => {
+	test('unregistered hidden/collapsed components produce no layout failure', async ({page}) => {
 		await page.evaluate(() => window.__harnessTest.mount());
 
-		await waitForAudit(page);
-		const tier1Failures = (await page.evaluate(() => window.__uiTestHarness.drain()))
-			.filter(f => f.kind === 'tier1');
+		await waitForRunComplete(page);
+		const failure = await page.evaluate(() => window.__uiTestHarness.getFirstFailure());
+		expect(failure).toBeNull();
 
-		const displayFailure = tier1Failures.find(f => f.name === 'HiddenDisplayProbe');
-		const visibilityFailure = tier1Failures.find(f => f.name === 'HiddenVisibilityProbe');
-
-		expect(displayFailure?.detail).toBe('node[0] data-testid="hidden-display": not-visible: display=none');
-		expect(visibilityFailure?.detail).toBe('node[0] data-testid="hidden-visibility": not-visible: visibility=hidden');
+		const trace = await page.evaluate(() => window.__uiTestHarness.drainTrace());
+		expect(trace.some(e => e.action === 'tier1' as string)).toBe(false);
 	});
 
 	test('collects every owned host root for multi-host fragments', async ({page}) => {
 		await page.evaluate(() => {
-			const harness = window.__uiTestHarness;
-			harness.registerContract('MultiHostFragmentProbe', t => {
+			window.__uiTestHarness.registerAssertion('MultiHostFragmentProbe', t => {
 				const testIds = t.nodes.map(n => n.getAttribute('data-testid'));
 				if (testIds.length !== 2)
 					return `nodes.length expected 2, got ${testIds.length}`;
@@ -220,21 +250,16 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 			window.__harnessTest.mount();
 		});
 
-		await waitForAudit(page);
-		const failures = await page.evaluate(() => window.__uiTestHarness.drain());
-		const contractFailures = failures.filter(f => f.kind === 'contract');
-		const multiHostTier1 = failures.filter(f => f.kind === 'tier1' && f.name === 'MultiHostFragmentProbe');
-
-		expect(contractFailures).toEqual([]);
-		const displayNoneFailure = multiHostTier1.find(f => f.detail.includes('display=none'));
-		expect(displayNoneFailure).toBeDefined();
-		expect(displayNoneFailure?.detail).toContain('node[1] data-testid="multi-b"');
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 
-	test('does not assign child component hosts to parent nodes', async ({page}) => {
+	test('does not assign a contracted child component host to parent nodes', async ({page}) => {
 		await page.evaluate(() => {
-			const harness = window.__uiTestHarness;
-			harness.registerContract('ParentChildBoundaryProbe', t => {
+			// ChildHostProbe carries its own contract → it is a real ownership boundary, so the
+			// contract-aware walk must stop there and NOT bubble its host up to the parent.
+			window.__uiTestHarness.registerAssertion('ChildHostProbe', () => undefined);
+			window.__uiTestHarness.registerAssertion('ParentChildBoundaryProbe', t => {
 				const testIds = t.nodes.map(n => n.getAttribute('data-testid'));
 				if (testIds.length !== 1)
 					return `parent nodes.length expected 1, got ${testIds.length}: ${JSON.stringify(testIds)}`;
@@ -247,17 +272,49 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 			window.__harnessTest.mount();
 		});
 
-		await waitForAudit(page);
-		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
-			.filter(f => f.kind === 'contract' && f.name === 'ParentChildBoundaryProbe');
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
+	});
 
-		expect(contractFailures).toEqual([]);
+	test('attributes a host rendered through a contract-less wrapper to the enclosing contracted owner', async ({page}) => {
+		await page.evaluate(() => {
+			window.__uiTestHarness.registerAssertion('OwnerProbe', t => {
+				if (!t.node)
+					return 'OwnerProbe: expected to own a host through the contract-less PlainWrapper, got none';
+				if (!t.node.classList.contains('plain-wrapper'))
+					return `OwnerProbe: owned root expected .plain-wrapper, got ${JSON.stringify(t.node.className)}`;
+				if (!t.node.querySelector('[data-testid="owner-host"]'))
+					return 'OwnerProbe: owned host must contain the owner-host element';
+				return undefined;
+			});
+			window.__harnessTest.mount();
+		});
+
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
+	});
+
+	test('fail-fast still halts on a real contract failure for the nested-through-wrapper case', async ({page}) => {
+		await page.evaluate(() => {
+			window.__uiTestHarness.registerAssertion('OwnerProbe', t => {
+				if (!t.node?.querySelector('[data-testid="owner-host"]'))
+					return 'OwnerProbe: precondition — owned host with owner-host must be visible through the wrapper';
+				return 'intentional-wrapper-owner-violation';
+			});
+			window.__harnessTest.mount();
+		});
+
+		await waitForHalt(page);
+		const failure = await page.evaluate(() => window.__uiTestHarness.getFirstFailure());
+
+		expect(failure?.kind).toBe('assertion');
+		expect(failure?.name).toBe('OwnerProbe');
+		expect(failure?.detail).toBe('intentional-wrapper-owner-violation');
 	});
 
 	test('audits lazy-loaded inner components after Suspense resolves', async ({page}) => {
 		await page.evaluate(() => {
-			const harness = window.__uiTestHarness;
-			harness.registerContract('LazyInnerProbe', t => {
+			window.__uiTestHarness.registerAssertion('LazyInnerProbe', t => {
 				const testId = t.node?.getAttribute('data-testid');
 				if (testId !== 'lazy-inner')
 					return `lazy inner node expected lazy-inner, got "${testId ?? 'null'}"`;
@@ -271,64 +328,43 @@ test.describe('ui-test-harness — fiber audit self-test', () => {
 		await page.waitForFunction(() => document.querySelector('[data-testid="lazy-inner"]') !== null);
 		await page.waitForFunction(() =>
 			window.__uiTestHarness.getTrace().some(e =>
-				e.name === 'LazyInnerProbe' && e.action === 'contract' && e.outcome === 'pass',
+				e.name === 'LazyInnerProbe' && e.action === 'assertion' && e.outcome === 'pass',
 			),
 		);
 
-		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
-			.filter(f => f.kind === 'contract' && f.name === 'LazyInnerProbe');
-
-		expect(contractFailures).toEqual([]);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 
-	test('verifies Suspense and Lazy fiber tags against react@18.3.1 WorkTags', async ({page}) => {
-		await page.evaluate(() => window.__harnessTest.mountLazy());
-		await page.waitForFunction(() => document.querySelector('[data-testid="lazy-fallback"]') !== null);
+	test('render exception without boundary halts with component name', async ({page}) => {
+		await page.evaluate(() => window.__harnessTest.mountException());
+		await waitForHalt(page);
 
-		const tags = await page.evaluate(() => {
-			const host = document.getElementById('lazy-app');
-			if (!host)
-				throw new Error('lazy-app missing');
+		const failure = await page.evaluate(() => window.__uiTestHarness.getFirstFailure());
+		expect(failure?.kind).toBe('exception');
+		expect(failure?.name).toBe('ThrowNoBoundaryProbe');
+		expect(failure?.detail).toMatch(/probe-render-boom|ThrowNoBoundaryProbe/);
+	});
 
-			const fiberKey = Object.keys(host).find(key => key.startsWith('__reactFiber$'));
-			if (!fiberKey)
-				throw new Error('react fiber key missing on lazy-app');
+	test('render exception caught by boundary still halts with component name', async ({page}) => {
+		await page.evaluate(() => window.__harnessTest.mountExceptionWithBoundary());
+		await waitForHalt(page);
 
-			type FiberNode = {
-				tag: number;
-				child: FiberNode | null;
-				sibling: FiberNode | null;
-				return: FiberNode | null;
-			};
+		const failure = await page.evaluate(() => window.__uiTestHarness.getFirstFailure());
+		expect(failure?.kind).toBe('exception');
+		expect(failure?.name).toBe('ThrowNoBoundaryProbe');
+	});
 
-			let rootFiber = (host as Record<string, FiberNode>)[fiberKey];
-			while (rootFiber.return)
-				rootFiber = rootFiber.return;
-
-			const tagSet = new Set<number>();
-			const walk = (fiber: FiberNode | null): void => {
-				if (!fiber)
-					return;
-
-				tagSet.add(fiber.tag);
-				walk(fiber.child);
-				walk(fiber.sibling);
-			};
-
-			walk(rootFiber.child);
-			return {
-				suspense: tagSet.has(13) ? 13 : undefined,
-				lazy: tagSet.has(16) ? 16 : undefined,
-				all: [...tagSet].sort((a, b) => a - b),
-			};
+	test('allowlisted expected exception does not halt', async ({page}) => {
+		await page.evaluate(() => {
+			window.__uiTestHarness.registerExpectedException({
+				component: 'ThrowExpectedProbe',
+				messageSubstring: 'expected-probe-boom',
+			});
+			window.__harnessTest.mountExpectedException();
 		});
 
-		expect(tags.suspense).toBe(13);
-		// React 18 commits the deferred lazy branch as Offscreen (22) while fallback is shown.
-		expect(tags.all).toContain(22);
-		// LazyComponent (16) is not in the committed fallback tree; verified from react-dom@18.3.1
-		// getComponentNameFromFiber switch (case 16 -> "Lazy") and exercised by lazy pass-through audit.
-		expect(tags.lazy).toBeUndefined();
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 });
 
@@ -351,15 +387,16 @@ test.describe('ui-test-harness — DevTools hook install', () => {
 		await page.waitForFunction(() => window.__uiTestHarness !== undefined);
 
 		await page.evaluate(() => {
-			window.__uiTestHarness.registerContract('StatefulProbe', () => 'chain-smoke-contract');
+			window.__uiTestHarness.registerAssertion('StatefulProbe', () => 'chain-smoke-contract');
 			window.__harnessTest.mount();
 		});
 
 		await page.waitForFunction(() => window.__preCommitCalled === true);
-		await page.waitForFunction(() => window.__uiTestHarness.peek().some(f => f.name === 'StatefulProbe'));
+		await waitForHalt(page);
 
-		const failures = await page.evaluate(() => window.__uiTestHarness.drain());
-		expect(failures.some(f => f.name === 'StatefulProbe' && f.kind === 'contract')).toBe(true);
+		const failure = await page.evaluate(() => window.__uiTestHarness.getFirstFailure());
+		expect(failure?.name).toBe('StatefulProbe');
+		expect(failure?.kind).toBe('assertion');
 	});
 
 	test('double IIFE injection leaves hook wrap idempotent and audit functional', async ({page}) => {
@@ -374,7 +411,7 @@ test.describe('ui-test-harness — DevTools hook install', () => {
 		expect(hookState.wrapped).toBe(true);
 
 		await page.evaluate(() => {
-			window.__uiTestHarness.registerContract('StatelessProbe', t => {
+			window.__uiTestHarness.registerAssertion('StatelessProbe', t => {
 				if (t.props?.label !== 'stateless')
 					return `props broken after double inject: ${JSON.stringify(t.props)}`;
 				return undefined;
@@ -382,10 +419,7 @@ test.describe('ui-test-harness — DevTools hook install', () => {
 			window.__harnessTest.mount();
 		});
 
-		await waitForAudit(page);
-		const contractFailures = (await page.evaluate(() => window.__uiTestHarness.drain()))
-			.filter(f => f.kind === 'contract' && f.name === 'StatelessProbe');
-
-		expect(contractFailures).toEqual([]);
+		await waitForRunComplete(page);
+		expect(await page.evaluate(() => window.__uiTestHarness.getFirstFailure())).toBeNull();
 	});
 });

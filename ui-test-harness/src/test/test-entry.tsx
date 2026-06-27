@@ -32,6 +32,30 @@ function HookStateProbe() {
 	return <div data-testid="hook-state">{tick}</div>;
 }
 
+/** Named hook state via declared hookKeys at registration. */
+function HookKeysProbe() {
+	const [loading] = React.useState(false);
+	const [count] = React.useState(3);
+	return <div data-testid="hook-keys">{loading ? 'loading' : count}</div>;
+}
+
+/** Deliberately three hooks — registration will declare two to trigger drift guard. */
+function HookDriftProbe() {
+	const [a] = React.useState(1);
+	const [b] = React.useState(2);
+	const [c] = React.useState(3);
+	return <div data-testid="hook-drift">{a + b + c}</div>;
+}
+
+/** State-aware contract probe — zero-box is valid when collapsed=true. */
+function StateAwareLayoutProbe() {
+	const [collapsed] = React.useState(true);
+	if (collapsed)
+		return <div data-testid="state-aware" style={{height: 0, overflow: 'hidden'}}>collapsed</div>;
+
+	return <div data-testid="state-aware">expanded</div>;
+}
+
 const MemoProbe = React.memo(function MemoProbe(props: {label: string}) {
 	return <div data-testid="memo">{props.label}</div>;
 });
@@ -47,21 +71,12 @@ const ForwardRefProbe = React.forwardRef<HTMLDivElement, {label: string}>(
 	},
 );
 
-/** Function component whose only host node is deliberately collapsed (zero height) → trips Tier-1. */
-function CollapsedProbe() {
-	return (
-		<div data-testid="collapsed" style={{height: 0, overflow: 'hidden'}}>
-			<span>structurally-collapsed content</span>
-		</div>
-	);
-}
-
-/** Host node with display:none → Tier-1 not-visible invariant. */
+/** Host node with display:none — valid when a contract does not claim layout for this component. */
 function HiddenDisplayProbe() {
 	return <div data-testid="hidden-display" style={{display: 'none'}}>hidden</div>;
 }
 
-/** Host node with visibility:hidden → Tier-1 not-visible invariant. */
+/** Host node with visibility:hidden — no generic Tier-1; unregistered components make no layout claim. */
 function HiddenVisibilityProbe() {
 	return <div data-testid="hidden-visibility" style={{visibility: 'hidden'}}>hidden</div>;
 }
@@ -96,6 +111,28 @@ function ParentChildBoundaryProbe() {
 			<ChildHostProbe/>
 			<div data-testid="parent-owned-host">parent</div>
 		</>
+	);
+}
+
+/**
+ * Contract-LESS wrapper that renders a host div around its children — mimics a generic framework
+ * layout primitive (e.g. `LL_H_C`). It has no registered contract, so the ownership boundary must
+ * see through it: any host it renders belongs to the nearest enclosing component that HAS a contract.
+ */
+function PlainWrapper(props: {children: React.ReactNode}) {
+	return <div className="plain-wrapper">{props.children}</div>;
+}
+
+/**
+ * Component WITH a registered contract whose root is delegated through the contract-less
+ * `PlainWrapper`. Proves transparency: `OwnerProbe` must own the `plain-wrapper` host (and the
+ * `owner-host` element nested inside it), NOT lose it to the intermediate primitive.
+ */
+function OwnerProbe() {
+	return (
+		<PlainWrapper>
+			<div data-testid="owner-host">owned through wrapper</div>
+		</PlainWrapper>
 	);
 }
 
@@ -141,21 +178,52 @@ function PortalProbe() {
 	return createPortal(<span>portal content</span>, portalContainer);
 }
 
+class ThrowNoBoundaryProbe
+	extends React.Component {
+
+	render(): React.ReactNode {
+		throw new Error('probe-render-boom');
+	}
+}
+
+class ErrBoundary
+	extends React.Component<{children: React.ReactNode}, {error: {message: string} | null}> {
+
+	state: {error: {message: string} | null} = {error: null};
+
+	static getDerivedStateFromError(error: Error): {error: {message: string}} {
+		return {error: {message: error.message}};
+	}
+
+	render(): React.ReactNode {
+		if (this.state.error)
+			return <div data-testid="boundary-fallback">fallback</div>;
+		return this.props.children;
+	}
+}
+
+function ThrowExpectedProbe(): React.ReactNode {
+	throw new Error('expected-probe-boom');
+}
+
 function App() {
 	return (
 		<>
 			<StatefulProbe label="stateful"/>
 			<StatelessProbe label="stateless"/>
 			<HookStateProbe/>
+			<HookKeysProbe/>
+			<HookDriftProbe/>
+			<StateAwareLayoutProbe/>
 			<MemoProbe label="memo"/>
 			<MemoHookProbe/>
 			<ForwardRefProbe label="forward"/>
-			<CollapsedProbe/>
 			<HiddenDisplayProbe/>
 			<HiddenVisibilityProbe/>
 			<FragmentProbe/>
 			<MultiHostFragmentProbe/>
 			<ParentChildBoundaryProbe/>
+			<OwnerProbe/>
 			<SvgProbe/>
 			<PortalProbe/>
 		</>
@@ -170,12 +238,39 @@ function LazySuspenseApp() {
 	);
 }
 
+function ExceptionApp() {
+	return (
+		<div data-testid="exception-wrap">
+			<ThrowNoBoundaryProbe/>
+		</div>
+	);
+}
+
+function ExceptionBoundaryApp() {
+	return (
+		<ErrBoundary>
+			<ThrowNoBoundaryProbe/>
+		</ErrBoundary>
+	);
+}
+
+function ExpectedExceptionApp() {
+	return (
+		<ErrBoundary>
+			<ThrowExpectedProbe/>
+		</ErrBoundary>
+	);
+}
+
 declare global {
 	interface Window {
 		__harnessTest: {
 			mount: () => void;
 			mountLazy: () => void;
 			resolveLazy: () => void;
+			mountException: () => void;
+			mountExceptionWithBoundary: () => void;
+			mountExpectedException: () => void;
 		};
 	}
 }
@@ -204,5 +299,29 @@ window.__harnessTest = {
 			throw new Error('lazy resolver not initialized');
 
 		resolveLazyInner({default: LazyInnerProbe});
+	},
+	mountException: () => {
+		const container = document.getElementById('test-root');
+		if (!container)
+			throw new Error('test-root container missing');
+
+		root ??= createRoot(container);
+		root.render(<ExceptionApp/>);
+	},
+	mountExceptionWithBoundary: () => {
+		const container = document.getElementById('test-root');
+		if (!container)
+			throw new Error('test-root container missing');
+
+		root ??= createRoot(container);
+		root.render(<ExceptionBoundaryApp/>);
+	},
+	mountExpectedException: () => {
+		const container = document.getElementById('test-root');
+		if (!container)
+			throw new Error('test-root container missing');
+
+		root ??= createRoot(container);
+		root.render(<ExpectedExceptionApp/>);
 	},
 };

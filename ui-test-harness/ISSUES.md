@@ -13,28 +13,35 @@ site. Memo (`14`/`15`) and forwardRef (`11`) fibers are unwrapped for naming; ho
 `memoizedState` on function and wrapper fibers. Suspense (`13`), Lazy (`16`), and Offscreen (`22`, React 18
 deferred Suspense branches) are pass-through for host ownership — verified against react-dom@18.3.1.
 
-### Symbol: hook state extraction (`readHookStates`)
+`ownedHostNodesOf` / `domNodeOf` / `extractComponent` take a trailing `hasAssertion: UI_AssertionLookup`
+(`(name: string | undefined) => boolean`) predicate so the ownership boundary is **assertion-aware**:
+the walk stops only at a child component that HAS a registered assertion; assertion-less components are
+transparent and their hosts bubble to the nearest asserted owner. The adapter stays pure — it never
+imports `UI_AssertionEngine` or reaches a global; the predicate is the sole channel (`UI_AssertionEngine` supplies
+`name => name != null && name in this.assertions`).
 
-**Issue**: Hook values are positional (call order), not named.
+### Symbol: hook state extraction (`readHookStates`) + `hookKeys` registration
 
-**Details**: Extracting named hook state (e.g. `useState` variable names) would require fragile
-React-dispatcher parsing. Out of scope by decision — contracts should assert on `hooks[n]` order or
-use props/DOM instead.
+**Issue**: Hook values are positional in the fiber; named state requires declared `hookKeys` at registration.
 
-## File: `src/main/tier1.ts`
+**Details**: Reordering two **same-typed** hooks is not detectable by count alone — add/remove/type-change is.
+Authors must keep `hookKeys` in `useState`/`useReducer` declaration order; drift guard halts when count mismatches.
 
-### Symbol: positional / RTL layout invariants
+## File: `src/main/exceptions.ts`
 
-**Issue**: Tier-1 checks visibility and box size only — no logical-direction or RTL positional checks.
+### Symbol: `ExceptionCapture`
 
-**Details**: Speculative until a concrete invariant needs position; any future positional check must use
-logical inline-start/end, never hardcoded left/right.
+**Issue**: Exception attribution and dedupe depend on React **dev** build console.error formatting.
 
-## File: `src/main/RenderAudit.ts`
+**Details**: Production React minifies/suppresses messages; this channel targets test/journey environments only.
+`window` error events may fire 2–3× per throw in dev — deduped per audit cycle. Boundary-handled throws are
+still reported (by design). Fiber walk is not used as the exception trigger.
+
+## File: `src/main/UI_AssertionEngine.ts`
 
 ### Symbol: `onCommit` (rAF debounce + hidden-tab fallback)
 
-**Issue**: Audits run on `requestAnimationFrame` when the document is visible; when `document.hidden`,
+**Issue**: Assertion runs execute on `requestAnimationFrame` when the document is visible; when `document.hidden`,
 `setTimeout(0)` is used instead because rAF is throttled in background tabs.
 
 **Details**: The hidden-tab path is not deterministically exercised in Playwright headless — the
@@ -42,21 +49,27 @@ logical inline-start/end, never hardcoded left/right.
 is implemented and idempotent via the existing `scheduled` guard; manual verification in a backgrounded
 browser tab is the practical check.
 
-### Symbol: `audit()` — single renderer / single root
+### Symbol: `getFirstFailure()` halt signal
+
+**Issue**: First failure is sticky for the page lifetime — there is no reset API.
+
+**Details**: Fresh Playwright pages (or navigation) are the expected isolation boundary. Re-running assertions
+after a halt skips further assertion evaluation until reload. Trace still accumulates for observability.
+
+### Symbol: `runAssertions()` — single renderer / single root
 
 **Issue**: The engine assumes one React renderer and walks the committed root forwarded by the DevTools
 hook.
 
 **Details**: Multiple React roots or multiple renderers need explicit design before support (root
-selection, per-root contract scoping).
+selection, per-root assertion scoping).
 
-### Symbol: `audit()` — trace buffer
+### Symbol: `runAssertions()` — trace buffer
 
-**Issue**: Trace entries accumulate across commits until `drainTrace()` — same lifecycle as failures.
+**Issue**: Trace entries accumulate across commits until `drainTrace()`.
 
 **Details**: Tests should drain trace after asserting; leaving it uncleared causes entries from later
-commits to stack. `getTrace()` is non-destructive for mid-flight observation (e.g. waiting for a
-specific component to appear in trace before draining failures).
+commits to stack. Failures are **not** buffered — only `getFirstFailure()`.
 
 ## File: `src/main/*` — logging
 
