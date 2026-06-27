@@ -1,5 +1,6 @@
 import {extractSubdomain} from '../../main/utils/url-tools.js';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
+import {expect} from 'chai';
 
 type Input = { origin: string; baseHost: string };
 type Result = string | undefined;
@@ -9,6 +10,10 @@ const test = async (input: Input): Promise<Result> => extractSubdomain(input.ori
 
 const runTestCase = (testCase: TestCase_ExtractSubdomain) => {
 	return () => runSingleTestCase(test, testCase);
+};
+
+const expectUndefined = (actual: string | undefined) => {
+	expect(actual).to.equal(undefined);
 };
 
 describe('extractSubdomain', () => {
@@ -38,35 +43,35 @@ describe('extractSubdomain', () => {
 			title: 'bare multi-label root — beamz.dev',
 			testCase: {
 				input: {origin: 'https://beamz.dev', baseHost: 'beamz.dev'},
-				result: undefined,
+				result: expectUndefined,
 			},
 		},
 		{
 			title: 'bare localhost',
 			testCase: {
 				input: {origin: 'https://localhost:8363', baseHost: 'localhost'},
-				result: undefined,
+				result: expectUndefined,
 			},
 		},
 		{
 			title: 'IPv4 host — no subdomain',
 			testCase: {
 				input: {origin: 'https://127.0.0.1:8363', baseHost: 'localhost'},
-				result: undefined,
+				result: expectUndefined,
 			},
 		},
 		{
 			title: 'hostname does not match base host',
 			testCase: {
 				input: {origin: 'https://beta.example.com', baseHost: 'beamz.dev'},
-				result: undefined,
+				result: expectUndefined,
 			},
 		},
 		{
 			title: 'invalid origin',
 			testCase: {
 				input: {origin: 'not-a-url', baseHost: 'localhost'},
-				result: undefined,
+				result: expectUndefined,
 			},
 		},
 	];
