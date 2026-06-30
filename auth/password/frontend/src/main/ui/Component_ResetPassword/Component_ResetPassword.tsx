@@ -18,7 +18,7 @@
 
 import {_keys} from '@nu-art/ts-common';
 import {Button, ComponentSync, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunder-widgets';
-import {TS_Input} from '@nu-art/thunder-widgets/v3';
+import {Label, TS_Input} from '@nu-art/thunder-widgets/v3';
 import {ModuleFE_PasswordAuth} from '../../ModuleFE_PasswordAuth.js';
 import './Component_ResetPassword.scss';
 
@@ -109,7 +109,7 @@ export class Component_ResetPassword
 	render() {
 		if (this.state.success)
 			return <LL_V_C className="ts-account__authenticate">
-				<p className={'ts-account__message'}>Your password has been reset successfully. You can now log in.</p>
+				<Label className={'ts-account__message'}>Your password has been reset successfully. You can now log in.</Label>
 			</LL_V_C>;
 
 		const data = this.state.data;
@@ -143,8 +143,8 @@ export class Component_ResetPassword
 		if (!this.state.errorMessages?.length)
 			return '';
 
-		return <ul className={'ts-account__error-messages'}>
-			{this.state.errorMessages.map((message, i) => <li key={i}>{message}</li>)}
-		</ul>;
+		return <LL_V_C className={'ts-account__error-messages'}>
+			{this.state.errorMessages.map((message, i) => <Label key={i} className={'ts-account__error-message'}>{message}</Label>)}
+		</LL_V_C>;
 	};
 }
