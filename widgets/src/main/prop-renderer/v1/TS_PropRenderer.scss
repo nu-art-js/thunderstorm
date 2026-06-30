@@ -1,14 +1,27 @@
+// .ts-prop-renderer — tokenized field label chrome; every design value is a
+// var(--ts-prop-renderer--*) (defaults in theme.scss).
 .ts-prop-renderer {
   width: 100%;
 
+  .ts-prop-renderer__label {
+    color: var(--ts-prop-renderer--label-color);
+    font-size: var(--ts-prop-renderer--label-font-size);
+    font-weight: var(--ts-prop-renderer--label-font-weight);
+  }
+
+  .ts-prop-renderer__error {
+    color: var(--ts-prop-renderer--error-color);
+    font-size: var(--ts-prop-renderer--label-font-size);
+  }
+
   &.disabled {
     .ts-prop-renderer__label {
-      color: #929292;
+      color: var(--ts-prop-renderer--label-color-disabled);
     }
   }
 
   &.vertical {
-    row-gap: 4px;
+    row-gap: var(--ts-prop-renderer--vertical-gap);
 
     .ts-prop-renderer__label {
       width: 100%;
