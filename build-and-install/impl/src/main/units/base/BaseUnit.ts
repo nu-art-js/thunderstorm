@@ -5,12 +5,14 @@ import {
 	AsyncVoidFunction,
 	BeLogged,
 	Constructor,
+	currentTimeMillis,
 	exists,
 	lastElement,
 	LogClient_MemBuffer,
 	Logger,
 	LogLevel,
 	removeItemFromArray,
+	sleep,
 	TimeCounter,
 	timeCounter
 } from '@nu-art/ts-common';
@@ -80,6 +82,7 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 	private readonly classStack: string[] = [];
 	private processTerminator: AsyncVoidFunction[] = [];
 	private timeCounter?: TimeCounter;
+	private terminating = false;
 	protected runtimeContext!: RT_Context;
 
 	protected constructor(config: C) {
@@ -99,6 +102,26 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 
 	unregisterTerminatable(terminatable: AsyncVoidFunction) {
 		removeItemFromArray(this.processTerminator, terminatable);
+	}
+
+	/**
+	 * Whether this unit is being torn down (kill() was invoked). Long-running
+	 * loops (e.g. a node-watch restart loop) must poll this to break out.
+	 */
+	protected shouldStop = (): boolean => this.terminating;
+
+	/**
+	 * Sleeps for `ms`, returning early the moment the unit starts terminating —
+	 * so a restart/back-off delay never swallows an interrupt.
+	 */
+	protected async interruptibleSleep(ms: number, sampleInterval = 100): Promise<void> {
+		const deadline = currentTimeMillis() + ms;
+		while (currentTimeMillis() < deadline) {
+			if (this.terminating)
+				return;
+
+			await sleep(Math.min(sampleInterval, deadline - currentTimeMillis()));
+		}
 	}
 
 	allocateCommando<T extends Constructor<any>[]>(...plugins: T): MergeTypes<[...T]> & CommandoInteractive & BaseCommando & Commando_Basic {
@@ -190,6 +213,8 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 	}
 
 	public async kill() {
+		this.terminating = true;
+
 		if (!this.processTerminator.length)
 			return this.setStatus('Killed');
 

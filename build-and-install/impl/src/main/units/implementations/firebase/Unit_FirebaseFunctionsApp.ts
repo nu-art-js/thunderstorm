@@ -14,6 +14,7 @@ import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, Default_Files
 import {Commando_NVM, CommandoException} from '@nu-art/commando';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/consts.js';
 import {resolve} from 'path';
+import {existsSync} from 'fs';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
@@ -1178,7 +1179,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const projectId = this.config.envConfig.projectId;
 		const port = this.config.basePort;
 
-		await this.startEmulatorsAndWait();
+		const {ready, terminated: emulatorTerminated} = this.startEmulators();
+		await ready;
 
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
@@ -1214,30 +1216,77 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const inspectFlag = this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect=0.0.0.0:${this.config.debugPort}` : '';
 
-		await this.executeAsyncCommando(commando, `trap 'exit 0' SIGINT SIGTERM; while true; do while [ ! -f ${this.config.output}/index.js ]; do echo "Waiting for ${this.config.output}/index.js..."; sleep 2; done; node --watch ${inspectFlag} ${this.config.output}/index.js; code=$?; if [ $code -eq 0 ] || [ $code -eq 130 ] || [ $code -eq 143 ]; then break; fi; echo "Process exited ($code), restarting..."; sleep 1; done`);
+		// The restart loop lives here (not in bash) on purpose: a bash compound
+		// command runs in a persistent subshell whose pid ($!) is NOT the node
+		// process, so teardown signals never reach the server. Keeping the command
+		// a single `node --watch` means the captured pid IS node --watch, which
+		// forwards the signal to the app for a graceful shutdown.
+		const entryPoint = `${this.config.output}/index.js`;
+		const nodeCommand = `node --watch ${inspectFlag} ${entryPoint}`;
+
+		while (!existsSync(entryPoint)) {
+			if (this.shouldStop())
+				return this.terminateNode(emulatorTerminated);
+
+			this.logInfo(`Waiting for ${entryPoint}...`);
+			await this.interruptibleSleep(2 * Second);
+		}
+
+		while (!this.shouldStop()) {
+			let exitCode = -1;
+			await this.executeAsyncCommando(commando, nodeCommand, (stdout, stderr, code) => exitCode = code);
+
+			// Clean exit (0), SIGINT (130) or SIGTERM (143) → intentional shutdown, stop.
+			if (this.shouldStop() || exitCode === 0 || exitCode === 130 || exitCode === 143)
+				break;
+
+			this.logWarning(`Process exited (${exitCode}), restarting...`);
+			await this.interruptibleSleep(Second);
+		}
+
+		return this.terminateNode(emulatorTerminated);
+	}
+
+	/**
+	 * The node loop ending is NOT the end of teardown: the firebase emulator runs
+	 * as a sibling child that must finish its clean shutdown (export-on-exit) too.
+	 * Awaiting its termination here keeps `launch()` open until the emulator is
+	 * actually down — otherwise the outer run completes and `process.exit(0)` races
+	 * the emulator's shutdown, orphaning firestore/pubsub.
+	 */
+	private async terminateNode(emulatorTerminated: Promise<void>) {
+		await emulatorTerminated;
 		this.logWarning('NODE SERVER TERMINATED');
 	}
 
-	private async startEmulatorsAndWait() {
-		return new Promise<void>((resolve) => {
-			const commando = this.allocateCommando(Commando_NVM).applyNVM()
-				.setUID(`${this.config.key}-emulators`)
-				.cd(this.config.fullPath)
-				.setLogLevelFilter((log, type) => {
-					if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
-						return LogLevel.Error;
+	/**
+	 * Starts the firebase emulators and exposes two lifecycle handles:
+	 * - `ready`: resolves once all emulators are up (the node server may start)
+	 * - `terminated`: resolves once the emulator CLI has fully shut down
+	 */
+	private startEmulators(): { ready: Promise<void>; terminated: Promise<void> } {
+		let resolveReady!: () => void;
+		const ready = new Promise<void>(resolve => resolveReady = resolve);
 
-					if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
-						return LogLevel.Warning;
-				})
-				.onLog(/.*All emulators ready.*/, () => {
-					this.logInfo('Firebase emulators ready — starting Node server');
-					resolve();
-				});
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.setUID(`${this.config.key}-emulators`)
+			.cd(this.config.fullPath)
+			.setLogLevelFilter((log, type) => {
+				if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
+					return LogLevel.Error;
 
-			this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --only database,auth,storage,firestore,pubsub --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData}`)
-				.then(() => this.logWarning('EMULATORS TERMINATED'));
-		});
+				if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
+					return LogLevel.Warning;
+			})
+			.onLog(/.*All emulators ready.*/, () => {
+				this.logInfo('Firebase emulators ready — starting Node server');
+				resolveReady();
+			});
+
+		const terminated = this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --only database,auth,storage,firestore,pubsub --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData}`)
+			.then(() => this.logWarning('EMULATORS TERMINATED'));
+
+		return {ready, terminated};
 	}
 
 	private async runEmulator() {
