@@ -239,6 +239,14 @@
   --ts-label--tooltip-font-size: var(--font-size-control);
   --ts-label--tooltip-arrow-size: 6px;
 
+  // PropRenderer (prop-renderer/v1/TS_PropRenderer.scss)
+  --ts-prop-renderer--label-color: var(--color-text-muted-hi);
+  --ts-prop-renderer--label-color-disabled: var(--color-text-disabled);
+  --ts-prop-renderer--error-color: var(--color-state-danger);
+  --ts-prop-renderer--label-font-size: var(--font-size-control);
+  --ts-prop-renderer--label-font-weight: var(--font-weight-medium);
+  --ts-prop-renderer--vertical-gap: var(--space-xs);
+
   // Slider (slider/TS_Slider.scss)
   --ts-slider--gap: var(--space-sm);
   --ts-slider--track-height: 8px;
