@@ -128,14 +128,17 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 		return CommandoPool.allocateCommando(this.config.key, ...plugins);
 	}
 
-	async executeAsyncCommando<T>(commando: CommandoInteractive, command: string, callback?: (stdout: string, stderr: string, exitCode: number) => T) {
+	async executeAsyncCommando<T>(commando: CommandoInteractive, command: string, callback?: (stdout: string, stderr: string, exitCode: number) => T, onPid?: (pid: number) => void) {
 		let pid: number;
 
 		const terminatable = () => commando.killSubprocess(pid);
 		try {
 			this.registerTerminatable(terminatable);
 			return await commando
-				.appendAsync(command, _pid => pid = _pid)
+				.appendAsync(command, _pid => {
+					pid = _pid;
+					onPid?.(_pid);
+				})
 				.execute(callback);
 		} finally {
 			this.unregisterTerminatable(terminatable);

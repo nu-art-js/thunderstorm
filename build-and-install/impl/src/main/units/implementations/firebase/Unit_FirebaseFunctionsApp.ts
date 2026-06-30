@@ -19,6 +19,9 @@ import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
 
+/** Exit code BaseStorm uses when RTDB config changes and the node server must restart. */
+const StormConfigChangeExitCode = 2;
+
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
 ];
@@ -1216,13 +1219,20 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const inspectFlag = this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect=0.0.0.0:${this.config.debugPort}` : '';
 
-		// The restart loop lives here (not in bash) on purpose: a bash compound
-		// command runs in a persistent subshell whose pid ($!) is NOT the node
-		// process, so teardown signals never reach the server. Keeping the command
-		// a single `node --watch` means the captured pid IS node --watch, which
-		// forwards the signal to the app for a graceful shutdown.
 		const entryPoint = `${this.config.output}/index.js`;
 		const nodeCommand = `node --watch ${inspectFlag} ${entryPoint}`;
+
+		// BaseStorm calls process.exit(StormConfigChangeExitCode) on RTDB config change.
+		// node --watch should exit with that code, but can stay alive with a dead child;
+		// force-kill the captured pid when we see the log so the restart loop unblocks.
+		let nodePid: number | undefined;
+		commando.onLog(/CONFIGURATION HAS CHANGED.*KILLING PROCESS/, () => {
+			if (nodePid === undefined)
+				return;
+
+			this.logInfo('RTDB config changed — stopping node for restart...');
+			void commando.killSubprocess(nodePid);
+		});
 
 		while (!existsSync(entryPoint)) {
 			if (this.shouldStop())
@@ -1234,13 +1244,27 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		while (!this.shouldStop()) {
 			let exitCode = -1;
-			await this.executeAsyncCommando(commando, nodeCommand, (stdout, stderr, code) => exitCode = code);
+			nodePid = undefined;
+			await this.executeAsyncCommando(commando, nodeCommand, (stdout, stderr, code) => exitCode = code, _pid => nodePid = _pid);
 
-			// Clean exit (0), SIGINT (130) or SIGTERM (143) → intentional shutdown, stop.
-			if (this.shouldStop() || exitCode === 0 || exitCode === 130 || exitCode === 143)
+			// SIGINT (130) or SIGTERM (143) → intentional shutdown, stop.
+			if (this.shouldStop() || exitCode === 130 || exitCode === 143)
 				break;
 
-			this.logWarning(`Process exited (${exitCode}), restarting...`);
+			// Exit 0 without kill() in progress is not launch teardown — restart.
+			// (BaseStorm uses exit 2 for RTDB config change; a spurious 0 must not
+			// reach terminateNode while the emulator is still running.)
+			if (exitCode === 0) {
+				this.logWarning('Process exited (0) unexpectedly — restarting...');
+				await this.interruptibleSleep(Second);
+				continue;
+			}
+
+			if (exitCode === StormConfigChangeExitCode)
+				this.logInfo('RTDB config changed — restarting node server...');
+			else
+				this.logWarning(`Process exited (${exitCode}), restarting...`);
+
 			await this.interruptibleSleep(Second);
 		}
 
