@@ -2,6 +2,7 @@ import {_keys, exists, formatTimestamp} from '@nu-art/ts-common';
 import {AccountPassword, API_PasswordAuth, ErrorType_LoginBlocked} from '@nu-art/password-auth-shared';
 import './Component_Login.scss';
 import {Button, ComponentSync, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunder-widgets';
+import {Label} from '@nu-art/thunder-widgets/v3';
 import {ModuleFE_PasswordAuth} from '../../ModuleFE_PasswordAuth.js';
 import {StorageKey_DeviceId} from '@nu-art/user-account-frontend';
 import {Component_LoginBlocked} from '../Component_LoginBlocked/Component_LoginBlocked.js';
@@ -134,11 +135,11 @@ export class Component_Login
 		if (!this.state.errorMessages?.length)
 			return '';
 
-		return <ul className={'ts-account__error-messages'}>
+		return <LL_V_C className={'ts-account__error-messages'}>
 			{this.state.errorMessages.map((message, i) => {
-				return <li key={i}>{message}</li>;
+				return <Label key={i} className={'ts-account__error-message'}>{message}</Label>;
 			})}
-		</ul>;
+		</LL_V_C>;
 	};
 
 	private renderAccountBlockedTimer = () => {
