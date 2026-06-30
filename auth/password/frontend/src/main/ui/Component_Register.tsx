@@ -17,7 +17,7 @@ import {AccountEmail} from '@nu-art/user-account-shared';
 import {ModuleFE_PasswordAuth} from '../ModuleFE_PasswordAuth.js';
 import {StorageKey_DeviceId} from '@nu-art/user-account-frontend';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_Input} from '@nu-art/thunder-widgets/v3';
+import {Label, TS_Input} from '@nu-art/thunder-widgets/v3';
 import {_className} from '@nu-art/thunder-core';
 
 type State<T> = {
@@ -177,7 +177,9 @@ export class Component_Register
 					</TS_PropRenderer.Vertical>;
 				}
 			)}
-			{this.renderErrorMessages()}
+			<LL_H_C className={'ts-account__error-container'}>
+				{this.renderErrorMessages()}
+			</LL_H_C>
 			<Button
 				variant={'primary'}
 				onClick={this.registerClicked}
@@ -192,11 +194,11 @@ export class Component_Register
 		if (!this.state.errorMessages?.length)
 			return '';
 
-		return <ul className={'ts-account__error-messages'}>
+		return <LL_V_C className={'ts-account__error-messages'}>
 			{this.state.errorMessages.map((message, i) => {
-				return <li key={i}>{message}</li>;
+				return <Label key={i} className={'ts-account__error-message'}>{message}</Label>;
 			})}
-		</ul>;
+		</LL_V_C>;
 	};
 
 	private renderPasswordRules = () => {

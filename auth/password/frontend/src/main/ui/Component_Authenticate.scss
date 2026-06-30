@@ -16,57 +16,65 @@
  * limitations under the License.
  */
 
-@use '@nu-art/ts-styles' as styles;
-
 .ts-account__authenticate {
-  margin-top: 6px;
-  width: 300px;
-
-  > input {
-    margin-block: 4px;
-  }
+  margin-top: var(--space-xs);
+  width: 100%;
+  gap: var(--space-base);
 
   .ts-account__error-container {
     justify-content: center;
     align-items: center;
-    min-height: 22px;
+    min-height: var(--space-lg);
+    width: 100%;
+  }
 
-    .ts-account__error-messages {
-      margin-block: 0;
+  .ts-account__error-messages {
+    align-items: center;
+    gap: var(--space-xs);
+    width: 100%;
+
+    .ts-account__error-message {
+      color: var(--color-state-danger);
+      font-size: var(--font-size-control);
+      text-align: center;
     }
   }
 
   .ts-account__message {
     text-align: center;
-    margin-block: 8px 0;
-    color: var(--text-color-secondary, inherit);
+    margin-block: var(--space-sm) 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-control);
+  }
+
+  .ts-account__action-button {
+    width: 100%;
   }
 
   .ts-account__authenticate__password-rules {
-    border: 1px solid black;
-    border-radius: 10px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
     width: 100%;
-    padding: 10px;
+    padding: var(--space-md);
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 10px;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
 
     .ts-account__authenticate__password-rule {
-      gap: 10px;
+      gap: var(--space-md);
       align-items: center;
-      color: styles.red(3);
-
-      .icon--wrapper {
-        @include styles.mouse-interactive-icon(styles.red(3));
-      }
+      color: var(--color-state-danger);
+      font-size: var(--font-size-control);
 
       &.valid {
-        color: styles.green(2);
-
-        .icon--wrapper {
-          @include styles.mouse-interactive-icon(styles.green(2));
-        }
+        color: var(--color-state-success);
       }
     }
   }
+}
+
+.login-blocked {
+  justify-content: center;
+  color: var(--color-state-warn);
+  font-size: var(--font-size-control);
 }
