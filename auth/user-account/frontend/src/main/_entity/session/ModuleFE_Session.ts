@@ -109,8 +109,10 @@ class ModuleFE_Session_Class
 			return;
 		}
 
-		if (!prevSessionId)
+		if (!prevSessionId) {
+			queueMicrotask(() => void this.onSessionUpdated(undefined));
 			return;
+		}
 
 		this.isSessionValid().then((sessionValid) => {
 			if (!sessionValid)

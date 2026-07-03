@@ -117,6 +117,8 @@ class ModuleFE_Account_Class
 	}
 
 
+	private loginStatusPublished = false;
+
 	getAccounts() {
 		return this.cache.all().map(i => cloneObj(i)) as UI_Account[];
 	}
@@ -126,14 +128,29 @@ class ModuleFE_Account_Class
 	isStatus = (status: LoggedStatus | LoggedStatus[]) => asArray(status).includes(this.status);
 
 	__onSessionUpdated() {
+		const nextStatus = this.deriveLoggedStatusFromSession();
+
+		if (!this.loginStatusPublished) {
+			this.loginStatusPublished = true;
+			const prevStatus = this.status;
+			this.status = nextStatus;
+			this.logInfo(`Login status initialized: ${LoggedStatus[prevStatus]} => ${LoggedStatus[nextStatus]}`);
+			dispatch_onLoginStatusChanged.dispatchAll();
+			return;
+		}
+
+		this.setLoggedStatus(nextStatus);
+	}
+
+	private deriveLoggedStatusFromSession = () => {
 		if (!ModuleFE_Session.hasSession())
-			return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+			return LoggedStatus.LOGGED_OUT;
 
 		if (!ModuleFE_Session.isSessionValid())
-			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+			return LoggedStatus.SESSION_TIMEOUT;
 
-		return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
-	}
+		return LoggedStatus.LOGGED_IN;
+	};
 
 	protected setLoggedStatus = (newStatus: LoggedStatus) => {
 		if (this.status === newStatus)
