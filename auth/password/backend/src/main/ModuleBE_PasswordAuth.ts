@@ -69,6 +69,18 @@ export class ModuleBE_PasswordAuth_Class
 		};
 	}
 
+	assertRegistrationPassword(accountToAssert: AccountToAssertPassword): void {
+		this.password.assertPasswordCheck(accountToAssert);
+	}
+
+	async createRegisteredAccount(body: { email: string; password: string }): Promise<DB_Account> {
+		const dbAccount = await ModuleBE_AccountDB.impl.create({email: body.email, type: 'user'});
+		await this.credentials.create(dbAccount, body.password);
+		await ModuleBE_AccountDB.impl.setAccountMemKeys(dbAccount);
+		await ModuleBE_AccountDB.impl.onAccountCreated(dbAccount);
+		return dbAccount;
+	}
+
 	@ApiHandler(ApiDef_PasswordAuth.registerAccount)
 	async registerAccount(body: API_PasswordAuth['registerAccount']['Body']): Promise<API_PasswordAuth['registerAccount']['Response']> {
 		if (!this.config.enabled)
@@ -80,15 +92,10 @@ export class ModuleBE_PasswordAuth_Class
 		ModuleBE_AuthGate.assertRegistrationAllowed();
 
 		ModuleBE_AccountDB.impl.fixEmail(body);
-		this.password.assertPasswordCheck({email: body.email, password: body.password, passwordCheck: body.passwordCheck});
+		this.assertRegistrationPassword(body);
 
-		const dbAccount = await ModuleBE_AccountDB.runTransaction(async () => {
-			const dbAccount = await ModuleBE_AccountDB.impl.create({email: body.email, type: 'user'});
-			await this.credentials.create(dbAccount, body.password);
-			await ModuleBE_AccountDB.impl.setAccountMemKeys(dbAccount);
-			await ModuleBE_AccountDB.impl.onAccountCreated(dbAccount);
-			return dbAccount;
-		});
+		const dbAccount = await ModuleBE_AccountDB.runTransaction(() =>
+			this.createRegisteredAccount({email: body.email, password: body.password}));
 
 		this.logInfo(JSON.stringify({
 			event: 'user.registered',

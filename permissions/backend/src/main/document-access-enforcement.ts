@@ -84,13 +84,15 @@ function createPreWriteInterceptor<Database extends DB_Prototype>(
 		delete item.__access;
 
 		if (!original) {
-			const selfIds = scopedDict[AccessScope_Self] ?? [];
 			const resolver = resolverProvider();
-			const resolved = resolver ? await resolver(dbItem) : defaultAccessFields(selfIds);
-			item.__access = {
-				...resolved.__access,
-				owners: filterDuplicates([...(resolved.__access.owners ?? []), ...selfIds]),
-			};
+			if (resolver) {
+				const resolved = await resolver(dbItem);
+				item.__access = resolved.__access;
+			} else {
+				const selfIds = scopedDict[AccessScope_Self] ?? [];
+				item.__access = defaultAccessFields(selfIds).__access;
+			}
+
 			return;
 		}
 

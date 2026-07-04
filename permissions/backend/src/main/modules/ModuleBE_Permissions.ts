@@ -276,6 +276,13 @@ class ModuleBE_Permissions_Class
 
 	// --- Account lifecycle hooks ---
 
+	async ensureAccountPermissionIdentity(account: DB_Account): Promise<void> {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			await this.ensurePersonalAccessGroup(account);
+			await this.addToDefaultGroup(account);
+		});
+	}
+
 	async __onUserLogin(account: DB_Account) {
 		this.logDebug(`__onUserLogin: processing permissions for _id='${account._id}' email='${account.email}'`);
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
