@@ -1,0 +1,70 @@
+@mixin skeleton-animation-pulse($duration: 1500ms) {
+	animation: $duration linear infinite ts-skeleton-pulse;
+
+	@keyframes ts-skeleton-pulse {
+		0% {
+			opacity: 0.5;
+		}
+
+		47% {
+			opacity: 1;
+		}
+
+		53% {
+			opacity: 1;
+		}
+
+		100% {
+			opacity: 0.5;
+		}
+	}
+}
+
+@mixin skeleton-animation-shimmer($duration: 2000ms) {
+	.ts-skeleton-text,
+	.ts-skeleton-button,
+	.ts-skeleton-icon,
+	.ts-skeleton-header__title,
+	.ts-skeleton-header__subtitle {
+		&::after {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(
+				to right,
+				transparent,
+				var(--color-surface-overlay),
+				transparent
+			);
+			translate: -200% 0;
+			animation: $duration ease-out infinite ts-skeleton-shimmer;
+			opacity: 0.35;
+		}
+	}
+
+	@keyframes ts-skeleton-shimmer {
+		from {
+			translate: -200% 0;
+		}
+
+		to {
+			translate: 200% 0;
+		}
+	}
+}
+
+@mixin skeleton-animation($variant: 'pulse', $duration: null) {
+	@if $variant == 'shimmer' {
+		@include skeleton-animation-shimmer(if(sass($duration): $duration; else: 2000ms));
+	} @else {
+		@include skeleton-animation-pulse(if(sass($duration): $duration; else: 1500ms));
+	}
+}
+
+.ts-skeleton--pulse {
+	@include skeleton-animation('pulse');
+}
+
+.ts-skeleton--shimmer {
+	@include skeleton-animation('shimmer');
+}

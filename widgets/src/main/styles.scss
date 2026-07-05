@@ -6,6 +6,7 @@
 // Consumers load this one entry (directly, or via an app-level forwarder) and layer their
 // own [data-theme] packages on top.
 @use 'theme';
+@use 'breadcrumb/v3/TS_Breadcrumb';
 @use 'button/Button';
 @use 'input/TS_Input';
 @use 'prop-renderer/v1/TS_PropRenderer';

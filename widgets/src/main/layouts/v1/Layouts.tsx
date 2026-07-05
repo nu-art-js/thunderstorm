@@ -57,6 +57,13 @@ export class LL_V_R
 	}
 }
 
+export class LL_V_S
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_v_s');
+	}
+}
+
 export class LL_H_T
 	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
@@ -75,6 +82,13 @@ export class LL_H_B
 	extends LinearLayout {
 	constructor(props: LinearLayoutProps) {
 		super(props, 'll_h_b');
+	}
+}
+
+export class LL_H_S
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_h_s');
 	}
 }
 

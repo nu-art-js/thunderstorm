@@ -227,26 +227,50 @@ export class ModuleBE_PasswordAuth_Class
 		}
 	};
 
+	/**
+	 * Validates email/password and runs account login hooks without minting a session or
+	 * writing `X-Auth-Token`. Used by org-package apex login where the session must not
+	 * persist on the org-less launcher host.
+	 */
+	async verifyLoginCredentials(loginCredentials: API_PasswordAuth['login']['Body']): Promise<DB_Account> {
+		if (!this.config.enabled)
+			throw HttpCodes._4XX.FORBIDDEN('Password authentication is disabled');
+
+		return this.account.verifyLoginCredentials(loginCredentials);
+	}
+
 	private account = {
-		login: async (loginCredentials: API_PasswordAuth['login']['Body']): Promise<API_PasswordAuth['login']['Response']> => {
-			this.logDebug(`login: attempting for email='${loginCredentials.email}' deviceId='${loginCredentials.deviceId}'`);
+		verifyLoginCredentials: async (loginCredentials: API_PasswordAuth['login']['Body']): Promise<DB_Account> => {
+			this.logDebug(`verifyLoginCredentials: attempting for email='${loginCredentials.email}' deviceId='${loginCredentials.deviceId}'`);
 			ModuleBE_AccountDB.impl.fixEmail(loginCredentials);
 
 			const dbAccount = await ModuleBE_AccountDB.impl.queryAccountByEmail({email: loginCredentials.email});
 			if (dbAccount.type === 'service')
 				throw HttpCodes._4XX.FORBIDDEN('Cannot use password authentication for service accounts');
 
-			this.logDebug(`login: account found _id='${dbAccount._id}' type='${dbAccount.type}'`);
+			this.logDebug(`verifyLoginCredentials: account found _id='${dbAccount._id}' type='${dbAccount.type}'`);
 
 			const credentials = await this.credentials.queryByAccountId(dbAccount._id);
 			if (!credentials)
 				throw HttpCodes._4XX.UNAUTHORIZED('Account was never logged in using username and password, probably logged using SAML');
 
 			await this.password.assertPasswordMatch(credentials, loginCredentials.password);
-			this.logDebug(`login: password match OK`);
+			this.logDebug(`verifyLoginCredentials: password match OK`);
 
 			MemKey_AccountId.set(dbAccount._id);
 			await ModuleBE_AccountDB.impl.onAccountLogin(dbAccount);
+
+			this.logInfo(JSON.stringify({
+				event: 'auth.login.verified',
+				accountId: dbAccount._id,
+				email: dbAccount.email,
+				transport: 'no-session',
+			}));
+
+			return dbAccount;
+		},
+		login: async (loginCredentials: API_PasswordAuth['login']['Body']): Promise<API_PasswordAuth['login']['Response']> => {
+			const dbAccount = await this.account.verifyLoginCredentials(loginCredentials);
 
 			const initialClaims = {
 				accountId: dbAccount._id,

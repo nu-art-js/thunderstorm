@@ -6,7 +6,7 @@ declare const PermissionScopeBrand: unique symbol;
 
 /**
  * Branded permission scope for function-based permissions.
- * Only instances created via definePermissionScope() are valid.
+ * Valid instances are created via definePermissionScope() or buildPermissionScope().
  */
 export type PermissionScope = {
 	readonly key: string;
@@ -16,12 +16,24 @@ export type PermissionScope = {
 
 const scopeRegistry = new Map<string, PermissionScope>();
 
+function createPermissionScope<K extends string, V extends readonly string[]>(key: K, values: V): PermissionScope & { key: K; values: V } {
+	return Object.freeze({key, values}) as PermissionScope & { key: K; values: V };
+}
+
 /**
- * Creates a frozen, branded permission scope. Use this to define scopes
- * for the @RequirePermission decorator (e.g. pathway: read, write, delete, admin).
+ * Creates a frozen, branded permission scope without registering it in the global scope registry.
+ * Use for dynamic per-instance scopes (e.g. per-organization) that must not pollute bootstrap.
+ */
+export function buildPermissionScope<K extends string, V extends readonly string[]>(key: K, values: V): PermissionScope & { key: K; values: V } {
+	return createPermissionScope(key, values);
+}
+
+/**
+ * Creates a frozen, branded permission scope and registers it in the global scope registry.
+ * Use this to define scopes for the @RequirePermission decorator (e.g. pathway: read, write, delete, admin).
  */
 export function definePermissionScope<K extends string, V extends readonly string[]>(key: K, values: V): PermissionScope & { key: K; values: V } {
-	const scope = Object.freeze({key, values}) as PermissionScope & { key: K; values: V };
+	const scope = createPermissionScope(key, values);
 	scopeRegistry.set(key, scope);
 	return scope;
 }

@@ -14,6 +14,7 @@ export * from './_core/ComponentSync.js';
 export * from './_utils/TS_MemoryMonitor/TS_MemoryMonitor.js';
 export * from './adapter/Adapter.js';
 export * from './adapter/BaseRenderer.js';
+export * from './breadcrumb/v3/TS_Breadcrumb.js';
 export * from './adapter/dropdown/v1/TS_DropDown.js';
 export * from './adapter/tree/v3/index.js';
 export * from './button-group/types.js';
@@ -49,9 +50,18 @@ export * from './slider/v3/TS_Slider.js';
 export * from './table/v1/TS_Table.js';
 export * from './tabs/v3/index.js';
 export * from './textarea/v2/index.js';
-export * from './toaster/TS_ToastOverlay.js';
+export * from './toaster/global/TS_ToastOverlay.js';
 export * from './toaster/TS_Toast.js';
-export * from './toaster/ModuleFE_Toaster.js';
+export * from './toaster/global/ModuleFE_Toaster.js';
+export * from './toaster/placement/index.js';
+export {TOAST_KEY_GLOBAL} from './toaster/global/consts.js';
+export {
+	BaseToastVariant,
+	ModuleFE_Toasting,
+	Toaster,
+	type Model_Toast,
+	type ToastProperties,
+} from '@nu-art/toasting';
 export * from './toggle/v3/TS_Toggle.js';
 export * from './video/types.js';
 export * from './video/Video.js';

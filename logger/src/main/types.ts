@@ -44,4 +44,4 @@ export type LogPrefixComposer = (tag: string, level: LogLevel) => string;
 /**
  * Type for log message parameters - can be any value that can be logged.
  */
-export type LogParam = string | boolean | number | object | any[] | Error | undefined | null | symbol | bigint
+export type LogParam = string | boolean | number | object | any[] | Error | undefined | null | symbol | bigint;

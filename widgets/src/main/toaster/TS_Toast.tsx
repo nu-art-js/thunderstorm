@@ -1,4 +1,4 @@
-import './TS_ToastOverlay.scss';
+import './TS_Toast.scss';
 import * as React from 'react';
 import {_className} from '@nu-art/thunder-core';
 export type TS_ToastType = 'info' | 'success' | 'warning' | 'error' | string; // matches the classname of the background

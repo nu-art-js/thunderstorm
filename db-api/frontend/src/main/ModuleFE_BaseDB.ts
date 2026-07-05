@@ -158,9 +158,29 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 		if (!exists(after) || after === before)
 			return;
 
+		this.logVerbose(JSON.stringify({
+			event: 'sync.idb-last-updated/changed',
+			dbKey: this.config.dbKey,
+			before,
+			after,
+		}));
 		await this.loadCache();
 
 		this.dispatcher('update', {} as Database['dbType']);
+	};
+
+	/** Structured IDB vs MemCache snapshot for sync troubleshooting (MCP filter: `sync\\.`). */
+	logCacheState = async (event: string, extra?: Record<string, unknown>) => {
+		const idbItems = await this.IDB.getAll();
+		this.logDebug(JSON.stringify({
+			event,
+			dbKey: this.config.dbKey,
+			idbCount: idbItems.length,
+			cacheCount: this.cache.all().length,
+			dataStatus: DataStatus[this.getDataStatus()],
+			idbLastSync: this.IDB.getLastSync(),
+			...extra,
+		}));
 	};
 
 	async openIDB() {
@@ -187,6 +207,7 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 
 		this.cache.load(allItems);
 		this.logDebug(`Cache finished loading, count: ${this.cache.all().length}`);
+		await this.logCacheState('sync.load-cache/completed', {loadedFromIdbCount: allItems.length});
 	}
 
 

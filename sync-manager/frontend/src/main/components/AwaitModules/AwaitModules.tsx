@@ -55,6 +55,7 @@ export class AwaitModules
 	}
 
 	protected deriveStateFromProps(nextProps: Props, state: State) {
+		const wasReady = state.ready;
 		//Collect modules that are awaitable
 		state.validModules ??= resolveContent(nextProps.modules).filter(module => {
 			const validModule = RuntimeModules().includes(module) && exists(module.isInstanceOf(ModuleFE_BaseDB));
@@ -68,7 +69,21 @@ export class AwaitModules
 		});
 		// Set awaiting true if not all valid modules are ready
 		state.ready = state.validModules.length === state.readyModules.length;
+		if (!wasReady && state.ready)
+			void this.logAwaitModulesReady(state.validModules);
 		return state;
+	}
+
+	private async logAwaitModulesReady(modules: ModuleFE_BaseDB<any>[]) {
+		this.logDebug(JSON.stringify({
+			event: 'sync.await-modules/ready',
+			modules: await Promise.all(modules.map(async module => ({
+				dbKey: module.config.dbKey,
+				dataStatus: DataStatus[module.getDataStatus()],
+				cacheCount: module.cache.all().length,
+				idbCount: (await module.IDB.getAll()).length,
+			}))),
+		}));
 	}
 
 	// ######################### Logic #########################

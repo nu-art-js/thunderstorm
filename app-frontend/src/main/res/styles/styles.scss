@@ -34,43 +34,10 @@ input {
 }
 
 /**
- * Flex shit
+ * Layout primitives (ll_*) are owned by @nu-art/thunder-widgets (_Layouts_.scss /
+ * _Layouts.scss + the LL_* components) and arrive via widget imports. Do not
+ * redefine them here — widgets is the single source.
  */
-.ll_v_l {
-  display: flex;
-  flex-flow: column;
-  align-items: flex-start;
-}
-
-.ll_v_c {
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-}
-
-.ll_v_r {
-  display: flex;
-  flex-flow: column;
-  align-items: flex-end;
-}
-
-.ll_h_t {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-start;
-}
-
-.ll_h_c {
-  display: flex;
-  flex-flow: row;
-  align-items: center;
-}
-
-.ll_h_r {
-  display: flex;
-  flex-flow: row;
-  align-items: flex-end;
-}
 
 /**
  * Dimension shit

@@ -93,6 +93,7 @@ class ModuleFE_Session_Class
 				return;
 
 			const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
+			this.logInfo(`[session-auth] auto-captured JWT from ${ResponseHeaderKey_JWTToken} header — url=${request.getUrl()}, jwt=${sessionId.slice(0, 8)}…`);
 			this.StorageKey_SessionId.set(sessionId);
 		});
 

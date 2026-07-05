@@ -39,6 +39,10 @@ export function LL_V_R(props: LinearLayoutProps): React.ReactElement {
 	return <LinearLayout {...props} layoutClass="ll_v_r"/>;
 }
 
+export function LL_V_S(props: LinearLayoutProps): React.ReactElement {
+	return <LinearLayout {...props} layoutClass="ll_v_s"/>;
+}
+
 export function LL_H_T(props: LinearLayoutProps): React.ReactElement {
 	return <LinearLayout {...props} layoutClass="ll_h_t"/>;
 }
@@ -49,6 +53,10 @@ export function LL_H_C(props: LinearLayoutProps): React.ReactElement {
 
 export function LL_H_B(props: LinearLayoutProps): React.ReactElement {
 	return <LinearLayout {...props} layoutClass="ll_h_b"/>;
+}
+
+export function LL_H_S(props: LinearLayoutProps): React.ReactElement {
+	return <LinearLayout {...props} layoutClass="ll_h_s"/>;
 }
 
 export function LL_VH_C(props: LinearLayoutProps): React.ReactElement {

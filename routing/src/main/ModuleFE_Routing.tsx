@@ -89,10 +89,13 @@ class ModuleFE_Routing_Class
 	}
 
 	buildRouteMap(route: TS_Route, _path: string = '') {
-		const path = `${_path}/`;
 		this.routesMapByKey[route.key] = {route, fullPath: _path};
 		this.routesMapByPath[_path] = route;
-		route.children?.map(route => this.buildRouteMap(route, `${path}${route.path}`));
+		// Collapse duplicate slashes when composing child paths: a nested empty-path
+		// layout route (e.g. Landing resolves to '/') would otherwise yield '//child',
+		// which the browser treats as a protocol-relative URL — '//org-details' becomes
+		// 'https://org-details/' and throws a cross-origin SecurityError on pushState.
+		route.children?.forEach(child => this.buildRouteMap(child, `${_path}/${child.path}`.replace(/\/{2,}/g, '/')));
 	}
 
 	private routeBuilder = (route: TS_Route<any>) => {

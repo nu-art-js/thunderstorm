@@ -1,0 +1,12 @@
+.ts-skeleton-button {
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	justify-content: center;
+	padding-inline: 8px;
+	border-radius: var(--radius-control);
+	background: var(--color-action-secondary);
+	flex-shrink: 0;
+}
