@@ -8,6 +8,7 @@ export {ModuleFE_SyncManager_Class, ModuleFE_SyncManager, Default_SyncManagerNod
 export type {PermissibleModulesUpdated} from './modules/ModuleFE_SyncManager.js';
 export {ModuleFE_SyncManager_CSV_Class, ModuleFE_SyncManager_CSV} from './modules/ModuleFE_SyncManager_CSV.js';
 export {AwaitModules} from './components/AwaitModules/AwaitModules.js';
+export type {AwaitModule_LoaderProps} from './components/AwaitModules/AwaitModules.js';
 export type {OnSyncStatusChanged} from './components/AwaitModules/dispatchers.js';
 export {withRouteAwaiters} from './utils/route-awaiters.js';
 export type {RouteAwaiterOptions} from './utils/route-awaiters.js';

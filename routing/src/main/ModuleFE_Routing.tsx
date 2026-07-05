@@ -70,6 +70,57 @@ class ModuleFE_Routing_Class
 		}
 	}
 
+	goToRouteByKey(routeKey: string, params?: Partial<RouteParams>, hash?: string) {
+		const route = this.getRouteByKey(routeKey);
+		if (!route)
+			throw new BadImplementationException(`Cannot find route for key: ${routeKey}`);
+
+		this.goToRoute(route, params, hash);
+	}
+
+	getRouteByPath(pathname: string): TS_Route | undefined {
+		return this.routesMapByPath[pathname];
+	}
+
+	navigateToUrl(url: string) {
+		if (!url.startsWith('http://') && !url.startsWith('https://')) {
+			this.navigateToPath(url);
+			return;
+		}
+
+		const target = new URL(url);
+		if (target.origin !== window.location.origin) {
+			window.location.href = url;
+			return;
+		}
+
+		this.navigateToPath(`${target.pathname}${target.search}${target.hash}`);
+	}
+
+	private navigateToPath(pathWithQuery: string) {
+		const hashIndex = pathWithQuery.indexOf('#');
+		const withoutHash = hashIndex >= 0 ? pathWithQuery.substring(0, hashIndex) : pathWithQuery;
+		const hash = hashIndex >= 0 ? pathWithQuery.substring(hashIndex + 1) : undefined;
+		const queryIndex = withoutHash.indexOf('?');
+		const pathname = queryIndex >= 0 ? withoutHash.substring(0, queryIndex) : withoutHash;
+		const search = queryIndex >= 0 ? withoutHash.substring(queryIndex) : '';
+
+		const route = this.getRouteByPath(pathname);
+		if (route) {
+			const params: RouteParams = {};
+			if (search.length > 0) {
+				const searchParams = new URLSearchParams(search.startsWith('?') ? search.substring(1) : search);
+				searchParams.forEach((value, key) => {
+					params[key] = value;
+				});
+			}
+			this.goToRoute(route, params, hash);
+			return;
+		}
+
+		this.push({pathname, search: search || undefined, hash: hash ? `#${hash}` : undefined});
+	}
+
 	redirect<P extends RouteParams>(route: TS_Route<P>, params?: P) {
 		const url = composeUrl(this.getFullPath(route.key), params);
 		return <Navigate to={url}/>;

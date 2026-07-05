@@ -134,9 +134,15 @@ export class AwaitModules
 	};
 	private onLoaderClick = () => {
 		const awaitedModules = this.getUnpreparedModules();
-		if (!awaitedModules.length)
+		if (!awaitedModules.length) {
 			this.logInfo('Not awaiting any modules');
-		this.logInfo('Waiting for modules:', ...awaitedModules.map(module => module.getName()));
+			return;
+		}
+		this.logInfo('Waiting for modules:', awaitedModules.map(module => ({
+			name: module.getName(),
+			dbKey: module.config.dbKey,
+			dataStatus: DataStatus[module.getDataStatus()],
+		})));
 	};
 
 	render() {
