@@ -227,9 +227,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	async releaseEmulatorPorts() {
 		const allPorts = Array.from({length: 11}, (_, i) => `${this.config.basePort + i}`);
-		if (this.config.mongo)
-			allPorts.push(`${this.resolveMongoPort()}`);
-
+		// Mongo is docker-managed (mongo-emu--*); startMongoEmulator/stopMongoEmulator use
+		// docker rm — never releasePorts on the mongo port (kills com.docker on macOS).
 		return this.releasePorts(allPorts);
 	}
 

@@ -92,7 +92,7 @@ to `dist-iife/harness.iife.js` for Playwright `addInitScript` (before the app's 
 
 ```bash
 bai -up=ui-test-harness                      # build (tsc lib)
-bai -t -tt=playwright -up=ui-test-harness    # self-test (builds the IIFE in globalSetup, then runs)
+bai -t -nb -tt=playwright -up=ui-test-harness    # self-test (builds the IIFE in globalSetup, then runs)
 ```
 
 Never use raw `tsc`/`npx tsc` or `pnpm` here.
