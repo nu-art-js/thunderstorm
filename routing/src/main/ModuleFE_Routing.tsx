@@ -1,6 +1,7 @@
 import {useEffect} from 'react';
 import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types.js';
+import {TS_RoutePage} from './TS_RoutePage.js';
 import {UrlQueryParams} from '@nu-art/api-types';
 import {
 	_keys,
@@ -162,13 +163,13 @@ class ModuleFE_Routing_Class
 
 		let _indexRoute;
 		if (indexRoute) {
-			const Component = this.resolveRouteComponent(indexRoute);
+			const element = this.resolveRouteElement(indexRoute);
 			if (indexRoute.path) {
 				this.logDebug(`index route redirect to path: ${path}/${indexRoute.path}`);
 				_indexRoute = <Route index element={<Navigate to={`${path}/${indexRoute.path}`}/>}/>;
 			} else {
 				this.logDebug(`index route render component: ${path}/${indexRoute.path}`);
-				_indexRoute = <Route index Component={Component} element={indexRoute.element}/>;
+				_indexRoute = <Route index element={element}/>;
 			}
 		}
 
@@ -190,16 +191,25 @@ class ModuleFE_Routing_Class
 			}
 			return isEnabled;
 		}) ?? [];
-		const Component = this.resolveRouteComponent(route);
-		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
+		const element = this.resolveRouteElement(route);
+		return <Route key={route.key} path={route.path} element={element}>
 			{_indexRoute}
 			{children.map(route => this.routeBuilder(route))}
 			{route.fallback && <Route path="*" element={<RoutingFallbackRedirect to={path || '/'}/>}/>}
 		</Route>;
 	};
 
-	private resolveRouteComponent = (route: TS_Route) => {
-		return route.Component;
+	private resolveRouteElement = (route: TS_Route): React.ReactNode | undefined => {
+		if (route.element)
+			return route.element;
+
+		if (!route.Component)
+			return undefined;
+
+		if (route.paramKeys?.length)
+			return <TS_RoutePage route={route}/>;
+
+		return <route.Component/>;
 	};
 
 	getRouteByKey(routeKey: string): TS_Route | undefined {

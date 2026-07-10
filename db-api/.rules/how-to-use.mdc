@@ -290,7 +290,7 @@ Custom API endpoints can be added to any DB module using `@ApiHandler` from `@nu
 - `this.query.where(clauseWhere)` — convenience for `query.custom({where})`, with `manipulateQuery` applied
 - `this.query.unique(id)` — get by `_id`
 - `this.query.uniqueWhere({field: value})` — get by unique field combination
-- `this.query.unManipulatedQuery(firestoreQuery)` — bypasses `manipulateQuery`
+- `this.query.unManipulatedQuery(firestoreQuery)` — bypasses `manipulateQuery` and all query interceptors; **do not use unless explicitly approved** — prefer service-account permission context with normal query APIs
 
 **Write:**
 - `this.create.item(preDbItem, transaction?)` — insert a new item

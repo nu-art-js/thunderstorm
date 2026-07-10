@@ -174,6 +174,11 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		query: async (query: FirestoreQuery<Proto['dbType']>) => {
 			return (await this._customQuery(query, true)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
 		},
+		/**
+		 * Bypasses query interceptors (including document __access enforcement).
+		 * Do not use unless explicitly approved — prefer service-account permission context
+		 * with normal query APIs so access rules still apply.
+		 */
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>) => {
 			return (await this._customQuery(query, false)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
 		},

@@ -572,6 +572,22 @@ class ModuleBE_Permissions_Class
 
 	// --- Service account elevation ---
 
+	async runAsSystemContext<R>(extraSelfAccessIds: UniqueId[], action: () => Promise<R>): Promise<R> {
+		const baseAccessIds = await this.materializeBootstrapAccessIds();
+		const accessIds: ScopedAccessIds = {
+			...baseAccessIds,
+			[AccessScope_Self]: filterDuplicates([...(baseAccessIds[AccessScope_Self] ?? []), ...extraSelfAccessIds]),
+		};
+
+		const memStorage = new MemStorage();
+		return memStorage.init(async () => {
+			MemKey_ServiceAccountId.set(ServiceAccountId_Bootstrap);
+			MemKey_UserScopePermissions.set(this.resolveBootstrapScopes());
+			MemKey_UserAccessIds.set(accessIds);
+			return action();
+		});
+	}
+
 	async runAsServiceAccount<R>(saId: string, action: () => Promise<R>): Promise<R> {
 		const saConfig = this.config.serviceAccounts[saId];
 		if (!saConfig || !saConfig.enabled)
@@ -589,7 +605,7 @@ class ModuleBE_Permissions_Class
 
 		const personalGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(saId);
 		const accessIds = saId === ServiceAccountId_Bootstrap
-			? this.resolveBootstrapAccessIds()
+			? await this.materializeBootstrapAccessIds()
 			: await this.resolveSAAccessIds(personalGroupId, saConfig.accessIdCache);
 
 		const memStorage = new MemStorage();
@@ -657,10 +673,12 @@ class ModuleBE_Permissions_Class
 		return Date.now() + ttlMs;
 	}
 
-	private resolveBootstrapAccessIds(): ScopedAccessIds {
+	private async materializeBootstrapAccessIds(): Promise<ScopedAccessIds> {
+		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
+		const {accessIds} = await this.materializeFromGroups(BootstrapSAGroupId, allGroups);
 		return {
-			[AccessScope_Self]: [BootstrapSAGroupId],
-			'permissions-admin': [GroupId_PermissionsAdmin],
+			...accessIds,
+			'permissions-admin': filterDuplicates([...(accessIds['permissions-admin'] ?? []), GroupId_PermissionsAdmin]),
 		};
 	}
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {buildConfigFromDBDef, ModuleFE_BaseApi} from '@nu-art/db-api-frontend';
-import {ApiCallContext, ApiCaller, HttpClient} from '@nu-art/http-client';
-import {ApiCallerEventType, CrudApiDef} from '@nu-art/db-api-shared';
+import { buildConfigFromDBDef, ModuleFE_BaseApi } from '@nu-art/db-api-frontend';
+import { ApiCallContext, ApiCaller, HttpClient } from '@nu-art/http-client';
+import { ApiCallerEventType, CrudApiDef } from '@nu-art/db-api-shared';
 import {
 	API_UserAccount,
 	ApiDef_UserAccount,
@@ -12,11 +12,11 @@ import {
 	HeaderKey_TabId,
 	UI_Account
 } from '@nu-art/user-account-shared';
-import {SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId} from './consts.js';
-import {asArray, cloneObj, Exception, generateHex, KB} from '@nu-art/ts-common';
-import {ModuleFE_Session, OnSessionUpdated} from '../session/ModuleFE_Session.js';
-import {readFileAs_ArrayBuffer, ThunderDispatcher} from '@nu-art/thunder-core';
-import {dispatcher_onAuthRequired} from '../session/no-auth-listener.js';
+import { SessionKeyFE_Account, StorageKey_DeviceId, StorageKey_TabId } from './consts.js';
+import { asArray, cloneObj, Exception, generateHex, KB } from '@nu-art/ts-common';
+import { ModuleFE_Session, OnSessionUpdated } from '../session/ModuleFE_Session.js';
+import { dispatch_onClearWebsiteData, readFileAs_ArrayBuffer, StorageKey, ThunderDispatcher } from '@nu-art/thunder-core';
+import { dispatcher_onAuthRequired } from '../session/no-auth-listener.js';
 
 
 export interface OnLoginStatusUpdated {
@@ -39,12 +39,10 @@ export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdate
 
 class ModuleFE_Account_Class
 	extends ModuleFE_BaseApi<DatabaseDef_Account>
-	implements OnLoginStatusUpdated, OnSessionUpdated {
+	implements OnSessionUpdated {
 
 	private status: LoggedStatus = LoggedStatus.LOGGED_OUT;
-
-	__onLoginStatusUpdated() {
-	}
+	private StorageKey_AccountId: StorageKey<string> = new StorageKey<string>('accountId');
 
 	constructor() {
 		super({
@@ -59,7 +57,7 @@ class ModuleFE_Account_Class
 		return undefined as unknown as API_UserAccount['refreshSession']['Response'];
 	}
 
-	@ApiCaller(ApiDef_UserAccount.createAccount, {onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['createAccount']>) => m.onAccountCreated(ctx)})
+	@ApiCaller(ApiDef_UserAccount.createAccount, { onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['createAccount']>) => m.onAccountCreated(ctx) })
 	async createAccount(body: API_UserAccount['createAccount']['Body']): Promise<API_UserAccount['createAccount']['Response']> {
 		void body;
 		return undefined as unknown as API_UserAccount['createAccount']['Response'];
@@ -82,13 +80,13 @@ class ModuleFE_Account_Class
 		return undefined as unknown as API_UserAccount['getSessions']['Response'];
 	}
 
-	@ApiCaller(ApiDef_UserAccount.changeThumbnail, {onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['changeThumbnail']>) => m.onThumbnailChanged(ctx)})
+	@ApiCaller(ApiDef_UserAccount.changeThumbnail, { onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['changeThumbnail']>) => m.onThumbnailChanged(ctx) })
 	async changeThumbnail(body: API_UserAccount['changeThumbnail']['Body']): Promise<API_UserAccount['changeThumbnail']['Response']> {
 		void body;
 		return undefined as unknown as API_UserAccount['changeThumbnail']['Response'];
 	}
 
-	@ApiCaller(ApiDef_UserAccount.deleteAccount, {onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['deleteAccount']>) => m.onAccountDeleted(ctx)})
+	@ApiCaller(ApiDef_UserAccount.deleteAccount, { onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['deleteAccount']>) => m.onAccountDeleted(ctx) })
 	async deleteAccount(params: API_UserAccount['deleteAccount']['Params']): Promise<API_UserAccount['deleteAccount']['Response']> {
 		void params;
 		return undefined as unknown as API_UserAccount['deleteAccount']['Response'];
@@ -127,8 +125,8 @@ class ModuleFE_Account_Class
 
 	isStatus = (status: LoggedStatus | LoggedStatus[]) => asArray(status).includes(this.status);
 
-	__onSessionUpdated() {
-		const nextStatus = this.deriveLoggedStatusFromSession();
+	async __onSessionUpdated() {
+		const nextStatus = await this.deriveLoggedStatusFromSession();
 
 		if (!this.loginStatusPublished) {
 			this.loginStatusPublished = true;
@@ -142,13 +140,25 @@ class ModuleFE_Account_Class
 		this.setLoggedStatus(nextStatus);
 	}
 
-	private deriveLoggedStatusFromSession = () => {
+	private deriveLoggedStatusFromSession = async () => {
 		if (!ModuleFE_Session.hasSession())
 			return LoggedStatus.LOGGED_OUT;
 
-		if (!ModuleFE_Session.isSessionValid())
+		if (!(await ModuleFE_Session.isSessionValid()))
 			return LoggedStatus.SESSION_TIMEOUT;
 
+		const accountId = SessionKeyFE_Account.get()._id;
+		const storedAccountId = this.StorageKey_AccountId.get(accountId);
+		if (storedAccountId !== accountId) {
+			// HERE we should store the current url and then clear the website data and reload the page
+			const currentUrl = window.location.href;
+			await dispatch_onClearWebsiteData.dispatchModuleAsyncSerial();
+			this.StorageKey_AccountId.delete();
+			window.location.href = currentUrl;
+			return LoggedStatus.LOGGED_OUT;
+		}
+
+		this.StorageKey_AccountId.set(accountId);
 		return LoggedStatus.LOGGED_IN;
 	};
 
@@ -181,7 +191,7 @@ class ModuleFE_Account_Class
 
 			try {
 				const hash = await this.encodeFile(file);
-				await this.changeThumbnail({accountId: account._id, hash});
+				await this.changeThumbnail({ accountId: account._id, hash });
 			} catch (err: any) {
 				this.logError(err.message, err);
 			}

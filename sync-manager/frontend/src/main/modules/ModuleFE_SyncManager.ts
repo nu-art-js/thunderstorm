@@ -50,7 +50,7 @@ import {
 	SyncDbData,
 	SyncManagerAPI_SmartSync
 } from '@nu-art/sync-manager-shared';
-import {ThunderDispatcher} from '@nu-art/thunder-core';
+import {ThunderDispatcher, OnClearWebsiteData} from '@nu-art/thunder-core';
 import {EventType_Query} from '@nu-art/db-api-shared';
 import {DataStatus, ModuleFE_BaseApi, RuntimeFE_ModulesAPI} from '@nu-art/db-api-frontend';
 import {DataSnapshot} from 'firebase/database';
@@ -71,7 +71,7 @@ const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleMo
 
 export class ModuleFE_SyncManager_Class
 	extends Module
-	implements OnConnectivityChange {
+	implements OnConnectivityChange, OnClearWebsiteData {
 
 	async __onConnectivityChange() {
 		if (ModuleFE_ConnectivityModule.isConnected()) {
@@ -151,6 +151,11 @@ export class ModuleFE_SyncManager_Class
 		this.pendingSync = false;
 		this.syncQueue.cancelAll();
 	};
+
+	__onClearWebsiteData() {
+		this.cancelSync();
+		this.stopListening();
+	}
 
 	// ######################### Smart Sync #########################
 

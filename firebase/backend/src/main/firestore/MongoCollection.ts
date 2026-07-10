@@ -207,6 +207,11 @@ export class MongoCollection<Proto extends DB_Prototype>
 		where: async (where: Clause_Where<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return this.query.custom({where});
 		},
+		/**
+		 * Bypasses query interceptors (including document __access enforcement).
+		 * Do not use unless explicitly approved — prefer service-account permission context
+		 * with normal query APIs so access rules still apply.
+		 */
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return this._customQuery(query, false);
 		},

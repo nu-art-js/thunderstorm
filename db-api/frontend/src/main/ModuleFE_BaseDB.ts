@@ -17,6 +17,7 @@ import {
 	ValidationException
 } from '@nu-art/ts-common';
 import {getDatabase, IDB_Store} from '@nu-art/idb-frontend';
+import {OnClearWebsiteData} from '@nu-art/thunder-core';
 import {
 	ApiCallerEventType,
 	composeDbObjectUniqueId,
@@ -78,7 +79,8 @@ export type DBConfig_ModuleFE<Types extends DB_Prototype> = {
  * @template Types - DB_Prototype that define the entity types (decoupled from Proto)
  */
 export class ModuleFE_BaseDB<Database extends DB_Prototype>
-	extends Module {
+	extends Module
+	implements OnClearWebsiteData {
 
 	readonly validator: Database['modifiablePropsValidator'];
 	readonly cache: MemCache<Database['dbType']>;
@@ -389,6 +391,10 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 		await this.IDB.clearAll();
 		this.cache.clear();
 		this.setDataStatus(DataStatus.NoData);
+	}
+
+	async __onClearWebsiteData() {
+		await this.clearData();
 	}
 
 	/**

@@ -224,6 +224,20 @@ async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['
 }
 ```
 
+**With onBeforeExecute hook** (edit the built request before it is sent — headers, timeout, body):
+
+```typescript
+@ApiCaller(ApiDef_<Domain>.<actionA>, {
+	onBeforeExecute: (m: MyModule_Class, req: HttpRequest<API_<Domain>['<actionA>']>) => m.attachContextHeader(req)
+})
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	void body;
+	return undefined as unknown as API_<Domain>['<actionA>']['Response'];
+}
+```
+
+Use this for a **per-endpoint** contextual header (e.g. a one-off token) — it scopes the header to that call. Reserve `addDefaultHeader` for headers that belong on **every** request (Authorization, DeviceId, TabId).
+
 **Resolver form** (for generic/base classes):
 
 ```typescript
@@ -238,6 +252,7 @@ async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['
 | Option | Default | Purpose |
 |--------|---------|---------|
 | `httpClient` | `HttpClient.default` | Client instance to use for the request |
+| `onBeforeExecute` | — | `(module, request) => void \| Promise<void>` — edit the built `HttpRequest` before execution (headers, timeout, body) |
 | `onComplete` | — | `(module, ctx) => void` callback after successful response |
 
 - GET/DELETE → decorator sends params.
@@ -273,7 +288,7 @@ Every API endpoint **must** follow the full typed pipeline: `API_<Domain>` type 
 
 ### Raw `HttpClient.createRequest()` in application code
 
-**Forbidden.** Always use the `@ApiCaller` decorator for HTTP calls. `HttpClient.createRequest()` is never acceptable in application code — the decorator pipeline is the only valid calling pattern. The "HttpRequest (manual usage)" section above documents the API for framework-level code only.
+**Forbidden.** Always use the `@ApiCaller` decorator for HTTP calls. `HttpClient.createRequest()` is never acceptable in application code — the decorator pipeline is the only valid calling pattern. The "HttpRequest (manual usage)" section above documents the API for framework-level code only. To customize a request (add a header, set a timeout, tweak the body), use the `onBeforeExecute` hook — never hand-build the request to do it.
 
 ### External third-party API calls
 
