@@ -155,7 +155,7 @@ export class ModuleManager
 	 */
 	// @ts-ignore
 	static async destroy() {
-		await Promise.all(_modules.map(async module => {
+		await Promise.allSettled(_modules.map(async module => {
 			// @ts-ignore
 			return await module.destroy();
 		}));

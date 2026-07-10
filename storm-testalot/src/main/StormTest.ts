@@ -64,8 +64,11 @@ export const stormTester = async <TestCase extends TestModel<any, any>>(stormTes
 			await stormTestInput.before?.();
 			await testCaseRunner();
 		} finally {
-			await stormTestInput.after?.();
-			await stormTest.cleanup();
+			try {
+				await stormTestInput.after?.();
+			} finally {
+				await stormTest.cleanup();
+			}
 		}
 	});
 };
