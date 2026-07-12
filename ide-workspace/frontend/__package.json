@@ -1,0 +1,51 @@
+{
+  "name": "@nu-art/ide-workspace-frontend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "IDE Workspace — frontend shell (dockable panels, editor split tree, work-hub host)",
+  "keywords": [
+    "TacB0sS",
+    "ide",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "workspace"
+  ],
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ide-workspace-shared": "?",
+    "@nu-art/thunder-core": "?",
+    "@nu-art/thunder-widgets": "?",
+    "@nu-art/ts-common": "?",
+    "react": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    "./core": {
+      "types": "./_core/panel-item.d.ts",
+      "import": "./_core/panel-item.js"
+    },
+    "./ui": {
+      "types": "./_ui/Component_IdeWorkspace/Component_IdeWorkspace.d.ts",
+      "import": "./_ui/Component_IdeWorkspace/Component_IdeWorkspace.js"
+    },
+    "./modules": {
+      "types": "./_module/ModuleFE_IdeWorkspace/ModuleFE_IdeWorkspace.d.ts",
+      "import": "./_module/ModuleFE_IdeWorkspace/ModuleFE_IdeWorkspace.js"
+    }
+  }
+}

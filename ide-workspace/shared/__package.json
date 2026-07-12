@@ -1,0 +1,41 @@
+{
+  "name": "@nu-art/ide-workspace-shared",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "IDE Workspace — shared layout types (tool panels, editor split tree)",
+  "keywords": [
+    "TacB0sS",
+    "ide",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "workspace"
+  ],
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {},
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}
