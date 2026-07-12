@@ -13,6 +13,11 @@ import {IDB_Store, StoreConfig} from './IDB_Store.js';
 export const StorageKeyPrefix_DBStores = 'idb-stores--';
 
 
+type OpenImplOptions = {
+	forceUpgrade?: boolean;
+	minDbVersion?: number;
+};
+
 type StoreRegistry = {
 	stores: string[];       // Store names
 	hash: string;           // Hash of store configs for change detection
@@ -60,8 +65,11 @@ export class IDB_Database
 	private readonly IDBAPI: IDBFactory = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
 	private readonly dbName: string;
-	private db!: IDBDatabase;
+	private db?: IDBDatabase;
 	private openPromise?: Promise<IDB_Database>;
+	private missingStoreUpgradeAttempts = 0;
+
+	private static readonly MaxMissingStoreUpgradeAttempts = 5;
 
 	// Store management
 	private readonly stores: Map<string, IDB_Store<any>> = new Map();
@@ -86,6 +94,15 @@ export class IDB_Database
 	 */
 	async open(): Promise<IDB_Database> {
 		if (this.db) {
+			const missingStores = this.getMissingPhysicalStores(this.db);
+			if (missingStores.length > 0) {
+				this.logWarningBold(`Open connection missing stores: ${missingStores.join(', ')} — reopening with upgrade`);
+				const dbVersion = this.db.version;
+				this.close();
+				this.openPromise = this.reopenForMissingStores(dbVersion);
+				return this.openPromise;
+			}
+
 			this.logDebug(`[OPEN] Already open`);
 			return this;
 		}
@@ -102,6 +119,14 @@ export class IDB_Database
 		return this.openPromise = this._openImpl();
 	}
 
+	private reopenForMissingStores(minDbVersion: number): Promise<IDB_Database> {
+		this.missingStoreUpgradeAttempts++;
+		if (this.missingStoreUpgradeAttempts > IDB_Database.MaxMissingStoreUpgradeAttempts)
+			throw new Error(`Failed to create registered IDB stores on "${this.dbName}" after ${IDB_Database.MaxMissingStoreUpgradeAttempts} upgrade attempts`);
+
+		return this._openImpl({forceUpgrade: true, minDbVersion});
+	}
+
 	/**
 	 * Close the database connection.
 	 */
@@ -111,6 +136,7 @@ export class IDB_Database
 
 		this.logInfo(`Database closing...`);
 		this.db.close();
+		this.db = undefined;
 		this.logInfo(`Database closed`);
 	}
 
@@ -141,6 +167,8 @@ export class IDB_Database
 		if (this.db)
 			throw new Error(`Cannot create store "${config.name}" - database already open. Create stores before calling open().`);
 
+		// Allowed while open() is in flight — _openImpl reopens with upgrade if stores land after the first open request.
+
 		if (this.stores.has(config.name))
 			throw new Error(`Store "${config.name}" already registered on database "${this.dbName}"`);
 
@@ -157,7 +185,7 @@ export class IDB_Database
 	}
 
 
-	private async _openImpl(): Promise<IDB_Database> {
+	private async _openImpl(options?: OpenImplOptions): Promise<IDB_Database> {
 		const start = currentTimeMillis();
 		const openId = generateHex(6);
 		this.logInfo(`Opening Database`);
@@ -166,10 +194,13 @@ export class IDB_Database
 		// Determine version based on store changes
 		const currentRegistry = this.loadRegistry();
 		const newHash = this.computeStoreHash();
-		const needsUpgrade = !currentRegistry || currentRegistry.hash !== newHash;
-		const version = needsUpgrade ? (currentRegistry?.version ?? 0) + 1 : currentRegistry?.version;
+		const hashChanged = !currentRegistry || currentRegistry.hash !== newHash;
+		const needsUpgrade = options?.forceUpgrade || hashChanged;
+		const version = needsUpgrade
+			? Math.max(options?.minDbVersion ?? 0, currentRegistry?.version ?? 0) + 1
+			: currentRegistry?.version;
 
-		this.logDebug(`Version: ${version}, NeedsUpgrade: ${needsUpgrade}`);
+		this.logDebug(`Version: ${version}, NeedsUpgrade: ${needsUpgrade}, ForceUpgrade: ${options?.forceUpgrade ?? false}`);
 
 		return new Promise((resolve, reject) => {
 			const request = this.IDBAPI.open(this.dbName, version);
@@ -222,14 +253,31 @@ export class IDB_Database
 			};
 
 			request.onsuccess = async () => {
+				const openedDb = request.result;
+				const missingStores = this.getMissingPhysicalStores(openedDb);
+
+				if (missingStores.length > 0) {
+					this.logWarningBold(`Registered stores missing from IDB: ${missingStores.join(', ')} — reopening with upgrade`);
+					openedDb.close();
+					try {
+						this.openPromise = this.reopenForMissingStores(openedDb.version);
+						resolve(await this.openPromise);
+					} catch (err) {
+						delete this.openPromise;
+						reject(err);
+					}
+					return;
+				}
+
 				const elapsed = currentTimeMillis() - start;
-				this.db = request.result;
+				this.db = openedDb;
+				this.missingStoreUpgradeAttempts = 0;
 				this.logInfo(`Success - ${this.db.objectStoreNames.length} stores (${elapsed}ms)`);
 
 				// Setup lifecycle handlers
 				this.db.onversionchange = () => {
 					this.logWarningBold(`Version change detected - closing`);
-					this.db.close();
+					this.close();
 				};
 				this.db.onclose = () => this.logInfo(`Connection closed`);
 				this.db.onerror = (e) => this.logErrorBold(`Database error`, e);
@@ -273,6 +321,9 @@ export class IDB_Database
 	 */
 	async getObjectStore(storeName: string, write: boolean = false): Promise<IDBObjectStore> {
 		await this.open();
+		if (!this.db)
+			throw new Error(`Database "${this.dbName}" is not open`);
+
 		const tx = this.db.transaction(storeName, write ? 'readwrite' : 'readonly');
 		return tx.objectStore(storeName);
 	}
@@ -282,6 +333,9 @@ export class IDB_Database
 	 */
 	async storeExists(storeName: string): Promise<boolean> {
 		await this.open();
+		if (!this.db)
+			throw new Error(`Database "${this.dbName}" is not open`);
+
 		return this.db.objectStoreNames.contains(storeName);
 	}
 
@@ -306,6 +360,11 @@ export class IDB_Database
 
 	private saveRegistry(registry: StoreRegistry): void {
 		localStorage.setItem(this.registryKey, JSON.stringify(registry));
+	}
+
+	private getMissingPhysicalStores(db: IDBDatabase): string[] {
+		return Array.from(this.storeConfigs.keys())
+			.filter(name => !db.objectStoreNames.contains(name));
 	}
 
 	private computeStoreHash(): string {
