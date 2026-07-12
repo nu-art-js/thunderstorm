@@ -10,7 +10,7 @@ export class Component_IdeWorkspace
 	implements OnIdeWorkspaceLayout {
 
 	__onIdeWorkspaceLayoutUpdated = () => {
-		this.forceUpdate();
+		this.setState({});
 	};
 
 	protected deriveStateFromProps(nextProps: Readonly<Props>, state: State): State {

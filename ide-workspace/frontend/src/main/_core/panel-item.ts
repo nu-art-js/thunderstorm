@@ -2,9 +2,9 @@ import {Logger} from '@nu-art/ts-common';
 import {ReactNode} from 'react';
 import {ModuleFE_IdeWorkspace} from '../_module/ModuleFE_IdeWorkspace/ModuleFE_IdeWorkspace.js';
 
-type PanelItemRenderer<Args extends unknown = void> = (panelItem: PanelItem<Args>, args: Args) => ReactNode;
+type PanelItemRenderer<Args extends any = void> = (panelItem: PanelItem<Args>, args: Args) => ReactNode;
 
-export class PanelItem<Args extends unknown = void>
+export class PanelItem<Args extends any = void>
 	extends Logger {
 
 	public readonly key: string;

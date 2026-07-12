@@ -11,7 +11,7 @@ const defaultEditor: PaneNode = {
 class ModuleFE_IdeWorkspace_Class
 	extends Module {
 
-	private readonly _panelItemMap: Record<string, PanelItem> = {};
+	private readonly _panelItemMap: Record<string, PanelItem<any>> = {};
 	private _layout: WorkspaceState = {
 		schemaVersion: IDE_WORKSPACE_SCHEMA_VERSION,
 		panels: [],
@@ -23,10 +23,10 @@ class ModuleFE_IdeWorkspace_Class
 	};
 
 	public readonly panelItem = {
-		register: (item: PanelItem) => {
+		register: (item: PanelItem<any>) => {
 			this._panelItemMap[item.key] ??= item;
 		},
-		getByKey: (key: string): PanelItem => {
+		getByKey: (key: string): PanelItem<any> => {
 			if (!this._panelItemMap[key])
 				throw new BadImplementationException(`No PanelItem registered for key ${key}`);
 			return this._panelItemMap[key];

@@ -25,10 +25,12 @@
     "@nu-art/thunder-core": "?",
     "@nu-art/thunder-widgets": "?",
     "@nu-art/ts-common": "?",
-    "react": "?"
+    "react": "?",
+    "react-dom": "?"
   },
   "devDependencies": {
-    "@types/react": "?"
+    "@types/react": "?",
+    "@types/react-dom": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"
