@@ -25,8 +25,8 @@ import {ModuleBE_AccessGroupDB} from '../_entity/access-group/ModuleBE_AccessGro
 import {FirebaseRef, ModuleBE_Firebase, MongoCollection} from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
-import {ModuleBE_AccountDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
-import {DB_Account} from '@nu-art/user-account-shared';
+import {ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
+import {DB_Account, DatabaseDef_Account, DatabaseDef_Session} from '@nu-art/user-account-shared';
 import {HttpCodes} from '@nu-art/api-types';
 
 export type ShareAccessContext = Partial<DocumentAccessInner>;
@@ -137,12 +137,40 @@ class ModuleBE_Permissions_Class
 		};
 	};
 
+	/** Self-own + bootstrap SA — stamped at account create under auth SA context. */
+	private readonly accountAccessResolver = (item: DatabaseDef_Account['uiType']): DocumentAccessFields => {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(item._id!);
+		return {
+			__access: {
+				owners: [personalGroupId],
+				readers: [personalGroupId, BootstrapSAGroupId],
+				writers: [personalGroupId, BootstrapSAGroupId],
+				deleters: [BootstrapSAGroupId],
+			}
+		};
+	};
+
+	/** Scoped to accountId — owner must delete superseded rows on session reissue/rotate. */
+	private readonly sessionAccessResolver = (item: DatabaseDef_Session['uiType']): DocumentAccessFields => {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(item.accountId!);
+		return {
+			__access: {
+				owners: [personalGroupId],
+				readers: [personalGroupId, BootstrapSAGroupId],
+				writers: [personalGroupId, BootstrapSAGroupId],
+				deleters: [personalGroupId, BootstrapSAGroupId],
+			}
+		};
+	};
+
 	protected init() {
 		super.init();
 		this.adminGrantFlagRef = ModuleBE_Firebase.createModuleStateFirebaseRef<boolean>(this, 'grantAdminOnLogin');
 		this.setAccessContextResolver(ModuleBE_AccessGroupDB, this.permissionsAccessResolver);
 		this.setAccessContextResolver(ModuleBE_PermissionScopeDB, this.permissionsAccessResolver);
 		this.setAccessContextResolver(ModuleBE_UserPermissionsDB, this.permissionsAccessResolver);
+		this.setAccessContextResolver(ModuleBE_AccountDB, this.accountAccessResolver);
+		this.setAccessContextResolver(ModuleBE_SessionDB, this.sessionAccessResolver);
 		this.wireDocumentAccessToAllModules();
 	}
 

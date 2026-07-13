@@ -20,6 +20,7 @@ import {
 import {DB_Account} from '@nu-art/user-account-shared';
 import {ModuleBE_AccountDB, ModuleBE_AuthGate, CollectAuthMethodStatus} from '@nu-art/user-account-backend';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountEmail, MemKey_AccountId, MemKey_DB_Session, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '@nu-art/permissions-backend';
 import {ModuleBE_FailedLoginAttemptDB} from './_entity/failed-login-attempt/ModuleBE_FailedLoginAttemptDB.js';
 import {ModuleBE_PasswordCredentialDB} from './_entity/password-credentials/ModuleBE_PasswordCredentialDB.js';
 import {ModuleBE_PasswordResetTokenDB} from './_entity/password-reset-token/ModuleBE_PasswordResetTokenDB.js';
@@ -278,7 +279,9 @@ export class ModuleBE_PasswordAuth_Class
 				label: 'password-login'
 			};
 
-			await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
+			await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () =>
+				ModuleBE_SessionDB._session.create.andReturn({initialClaims}),
+			);
 			this.logInfo(JSON.stringify({
 				event: 'auth.login.success',
 				accountId: dbAccount._id,

@@ -56,15 +56,8 @@ class ModuleFE_Routing_Class
 			const search = queryString.length > 0 ? `?${queryString}` : '';
 			const url = composeUrl(fullPath, params, hash);
 
-			if (url === window.location.href)
+			if (!this.navigateIfChanged(url, 'push'))
 				return this.logWarning(`attempting to set same route: ${fullPath}${search}`);
-
-			// Also update window.location to trigger BrowserRouter's popstate listener
-			// This ensures React Router detects the navigation change
-			window.history.pushState({}, '', url);
-
-			// Manually dispatch popstate event to trigger BrowserRouter update
-			window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 		} catch (e: any) {
 			this.logError(`cannot resolve route for route: `, route, e);
 			throw e;
@@ -344,8 +337,7 @@ class ModuleFE_Routing_Class
 	 */
 	push(location: { pathname: string; search?: string; hash?: string }) {
 		const url = this.locationToUrl(location);
-		window.history.pushState({}, '', url);
-		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
+		this.navigateIfChanged(url, 'push');
 	}
 
 	/**
@@ -354,8 +346,7 @@ class ModuleFE_Routing_Class
 	 */
 	replace(location: { pathname: string; search?: string; hash?: string }) {
 		const url = this.locationToUrl(location);
-		window.history.replaceState({}, '', url);
-		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
+		this.navigateIfChanged(url, 'replace');
 	}
 
 	// ######################## Private Helper Methods ########################
@@ -409,11 +400,30 @@ class ModuleFE_Routing_Class
 
 	private updateQueryParams(encodedQueryParams: UrlQueryParams) {
 		const search = this.composeQuery(encodedQueryParams);
-		const url = `${window.location.pathname}${search ? `?${search}` : ''}`;
-		window.history.replaceState({}, '', url);
+		const url = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
+		this.navigateIfChanged(url, 'replace');
+	}
 
-		// Manually dispatch popstate event to trigger BrowserRouter update
+	private getCurrentLocationUrl(): string {
+		return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+	}
+
+	private resolveLocationUrl(url: string): string {
+		const resolved = new URL(url, window.location.origin);
+		return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+	}
+
+	private navigateIfChanged(url: string, mode: 'push' | 'replace'): boolean {
+		if (this.resolveLocationUrl(url) === this.getCurrentLocationUrl())
+			return false;
+
+		if (mode === 'push')
+			window.history.pushState({}, '', url);
+		else
+			window.history.replaceState({}, '', url);
+
 		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
+		return true;
 	}
 
 }
