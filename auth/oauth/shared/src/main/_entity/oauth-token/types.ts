@@ -23,6 +23,10 @@ export type DB_OAuthToken = DB_Object<DBKey> & {
 	issuedAt: number;
 	revoked: boolean;
 	tokenType: 'access' | 'refresh';
+	resource?: string;
+	orgUnitId?: string;
+	projectId?: string;
+	tokenKind?: 'oauth-jwt' | 'session-jwt';
 };
 
 export type DatabaseDef_OAuthToken = DB_Prototype<DB_ProtoSeed<DB_OAuthToken, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>>;

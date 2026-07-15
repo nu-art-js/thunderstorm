@@ -5,13 +5,17 @@
  */
 
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {DatabaseDef_OAuthToken, DBDef_OAuthToken} from '@nu-art/oauth-shared';
+import {DatabaseDef_OAuthToken, DBDef_OAuthToken, OAuthTokenKind_OAuthJwt, UI_OAuthToken} from '@nu-art/oauth-shared';
 
 export class ModuleBE_OAuthTokenDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_OAuthToken> {
 
 	constructor() {
 		super(DBDef_OAuthToken);
+	}
+
+	protected async preWriteProcessing(dbInstance: UI_OAuthToken): Promise<void> {
+		dbInstance.tokenKind ??= OAuthTokenKind_OAuthJwt;
 	}
 }
 

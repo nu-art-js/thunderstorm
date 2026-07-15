@@ -4,7 +4,4 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-// TODO: Consent/authorization page and active sessions management
-// This package will contain:
-// - OAuthConsentPage: scope selection, TTL picker, approve/deny
-// - OAuthSessionsPage: list active grants, revoke agent access
+export * from './ModuleFE_OAuth.js';

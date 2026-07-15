@@ -24,6 +24,12 @@ export type DB_OAuthGrant = DB_Object<DBKey> & {
 	redirectUri: string;
 	expiresAt: number;
 	used: boolean;
+	resource?: string;
+	oauthState?: string;
+	orgUnitId?: string;
+	projectId?: string;
+	sessionJwt?: string;
+	tokenKind?: 'oauth-jwt' | 'session-jwt';
 };
 
 export type DatabaseDef_OAuthGrant = DB_Prototype<DB_ProtoSeed<DB_OAuthGrant, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>>;

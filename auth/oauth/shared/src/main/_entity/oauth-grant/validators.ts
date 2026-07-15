@@ -15,6 +15,12 @@ export const OAuthGrant_modifiablePropsValidator: DatabaseDef_OAuthGrant['modifi
 	codeChallengeMethod: tsValidateValue(['S256'] as const),
 	redirectUri: tsValidateString(),
 	used: tsValidateBoolean(),
+	resource: tsValidateString(undefined, false),
+	oauthState: tsValidateString(undefined, false),
+	orgUnitId: tsValidateString(undefined, false),
+	projectId: tsValidateString(undefined, false),
+	sessionJwt: tsValidateString(undefined, false),
+	tokenKind: tsValidateValue(['oauth-jwt', 'session-jwt'] as const, true),
 };
 
 export const OAuthGrant_generatedPropsValidator: DatabaseDef_OAuthGrant['generatedPropsValidator'] = {

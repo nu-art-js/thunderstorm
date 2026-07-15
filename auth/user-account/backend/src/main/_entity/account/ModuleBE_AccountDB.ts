@@ -26,7 +26,7 @@ import {
 	UI_Account
 } from '@nu-art/user-account-shared';
 
-import {Header_Authorization, MemKey_AccountEmail, MemKey_AccountId, MemKey_AccountType, SessionKey_Account_BE} from '../session/consts.js';
+import {Header_AuthorizationDeprecated403, MemKey_AccountEmail, MemKey_AccountId, MemKey_AccountType, SessionKey_Account_BE} from '../session/consts.js';
 import {BaseSessionClaims, CollectSessionData, ModuleBE_SessionDB} from '../session/ModuleBE_SessionDB.js';
 
 
@@ -203,7 +203,7 @@ export class ModuleBE_AccountDB_Class
 			});
 		},
 		logout: async () => {
-			const sessionId = Header_Authorization.get();
+			const sessionId = Header_AuthorizationDeprecated403.get();
 			if (!sessionId)
 				throw HttpCodes._4XX.FORBIDDEN('Missing sessionId');
 

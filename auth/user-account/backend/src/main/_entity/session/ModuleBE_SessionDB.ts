@@ -14,7 +14,7 @@ import {
 } from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {AccountType_Service, DatabaseDef_Account, DatabaseDef_Session, DB_Account, DB_Session, DBDef_Session} from '@nu-art/user-account-shared';
-import {Header_Authorization, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
+import {Header_Authorization, Header_AuthorizationDeprecated403, MemKey_DB_Session, MemKey_Jwt, MemKey_SessionData, SessionKey_Account_BE} from './consts.js';
 import {MemKey_HttpResponse} from '@nu-art/http-server';
 import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/api-types';
@@ -277,8 +277,15 @@ export class ModuleBE_SessionDB_Class
 	};
 
 
+	// 401 challenge: asserts an Authorization header is present, emitting 401 (not the legacy 403)
+	// when it is absent. Machine planes (e.g. MCP) register this ahead of the auth chain so their
+	// clients receive the 401 that bootstraps the OAuth flow; a 403 would not trigger it.
+	readonly AuthChallengeMiddleware = async () => {
+		Header_Authorization.get();
+	};
+
 	readonly Middleware = async () => {
-		const jwt = Header_Authorization.get(); //jwt
+		const jwt = Header_AuthorizationDeprecated403.get(); //jwt
 
 		const expired = await this.jwtHandler.isExpired(jwt);
 		if (expired)

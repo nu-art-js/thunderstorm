@@ -9,13 +9,15 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ApiHandler, MemKey_HttpRawResponse, MemKey_HttpRequest, MemKey_HttpResponse} from '@nu-art/http-server';
 import * as jose from 'jose';
 import {randomUUID, createHash} from 'node:crypto';
-import type {OAuthServerMetadata, OAuthTokenClaims, OAuthClientRegistrationResponse} from '@nu-art/oauth-shared';
-import {API_OAuth, ApiDef_OAuth} from '@nu-art/oauth-shared';
+import type {OAuthServerMetadata, OAuthTokenClaims, OAuthClientRegistrationResponse, OAuthContextBinder} from '@nu-art/oauth-shared';
+import {API_OAuth, ApiDef_OAuth, OAuthGrantUserId_PendingConsent, OAuthTokenKind_OAuthJwt, OAuthTokenKind_SessionJwt} from '@nu-art/oauth-shared';
 import type {DB_OAuthClient} from '@nu-art/oauth-shared';
 import {ModuleBE_OAuthClientDB} from './ModuleBE_OAuthClientDB.js';
 import {ModuleBE_OAuthGrantDB} from './ModuleBE_OAuthGrantDB.js';
 import {ModuleBE_OAuthSigningKeyDB} from './ModuleBE_OAuthSigningKeyDB.js';
 import {ModuleBE_OAuthTokenDB} from './ModuleBE_OAuthTokenDB.js';
+import {MemKey_AccountId} from '@nu-art/user-account-backend';
+import {HttpCodes} from '@nu-art/api-types';
 
 type Config = {
 	issuer: string;
@@ -24,6 +26,8 @@ type Config = {
 	refreshTokenTtlMs: number;
 	authorizationCodeTtlMs: number;
 	signingAlgorithm: 'RS256' | 'ES256';
+	adminPortalBaseUrl?: string;
+	skyResourcePath?: string;
 };
 
 const DefaultConfig: Config = {
@@ -33,6 +37,8 @@ const DefaultConfig: Config = {
 	refreshTokenTtlMs: 86_400_000 * 30,
 	authorizationCodeTtlMs: 600_000,
 	signingAlgorithm: 'RS256',
+	adminPortalBaseUrl: 'https://beamz-local.dev',
+	skyResourcePath: '/mcp/sky',
 };
 
 export type OAuthUserResolver = {
@@ -48,6 +54,7 @@ export class ModuleBE_OAuthServer_Class
 	private kid!: string;
 	private keysReady!: Promise<void>;
 	private userResolver?: OAuthUserResolver;
+	private contextBinder?: OAuthContextBinder;
 
 	constructor() {
 		super();
@@ -59,9 +66,14 @@ export class ModuleBE_OAuthServer_Class
 		return this;
 	}
 
+	setContextBinder(binder: OAuthContextBinder): this {
+		this.contextBinder = binder;
+		return this;
+	}
+
 	protected init(): void {
 		this.logInfo(`OAuth server initializing — issuer: '${this.config.issuer}', baseUrl: '${this.config.baseUrl}'`);
-		this.logInfo(`OAuth server: userResolver=${!!this.userResolver}`);
+		this.logInfo(`OAuth server: userResolver=${!!this.userResolver}, contextBinder=${!!this.contextBinder}`);
 		if (!this.config.issuer || !this.config.baseUrl)
 			this.logWarningBold('OAuth server issuer and baseUrl must be configured. Using empty defaults.');
 
@@ -173,12 +185,14 @@ export class ModuleBE_OAuthServer_Class
 		const codeChallenge = req.query['code_challenge'] as string;
 		const codeChallengeMethod = req.query['code_challenge_method'] as string;
 		const responseType = req.query['response_type'] as string;
+		const resource = req.query['resource'] as string | undefined;
 
 		this.logInfo(`/oauth/authorize request:`);
 		this.logInfo(`  client_id: ${clientId}`);
 		this.logInfo(`  redirect_uri: ${redirectUri}`);
 		this.logInfo(`  scope: ${scope}`);
 		this.logInfo(`  state: ${state}`);
+		this.logInfo(`  resource: ${resource ?? 'none'}`);
 		this.logInfo(`  code_challenge: ${codeChallenge}`);
 		this.logInfo(`  code_challenge_method: ${codeChallengeMethod}`);
 		this.logInfo(`  response_type: ${responseType}`);
@@ -214,11 +228,12 @@ export class ModuleBE_OAuthServer_Class
 		}
 
 		const authorizationCode = randomUUID();
-		const requestedScopes = scope?.split(' ') ?? [];
+		const requestedScopes = scope?.split(' ').filter(Boolean) ?? [];
+		const skyConsent = this.isSkyResource(resource);
 
-		await ModuleBE_OAuthGrantDB.create.item({
+		const grant = await ModuleBE_OAuthGrantDB.create.item({
 			clientId,
-			userId: 'pending-auth',
+			userId: skyConsent ? OAuthGrantUserId_PendingConsent : 'pending-auth',
 			scopes: requestedScopes,
 			authorizationCode,
 			codeChallenge,
@@ -226,7 +241,19 @@ export class ModuleBE_OAuthServer_Class
 			redirectUri,
 			expiresAt: Date.now() + this.config.authorizationCodeTtlMs,
 			used: false,
+			resource,
+			oauthState: state,
+			tokenKind: skyConsent ? OAuthTokenKind_SessionJwt : OAuthTokenKind_OAuthJwt,
 		});
+
+		if (skyConsent) {
+			this.assertContextBinder();
+			const org = this.parseOrgFromResource(resource);
+			const consentUrl = this.contextBinder!.resolveConsentRedirect(grant._id, org);
+			this.logInfo(`  SKY CONSENT: grantId=${grant._id} org=${org ?? 'none'} → redirect=${consentUrl}`);
+			res.redirect(consentUrl);
+			return;
+		}
 
 		const redirectUrl = new URL(redirectUri);
 		redirectUrl.searchParams.set('code', authorizationCode);
@@ -235,6 +262,45 @@ export class ModuleBE_OAuthServer_Class
 
 		this.logInfo(`  GRANTED: code=${authorizationCode.substring(0, 8)}... → redirect=${redirectUrl.origin}${redirectUrl.pathname}`);
 		res.redirect(redirectUrl.toString());
+	}
+
+	@ApiHandler(ApiDef_OAuth.consentContext)
+	async handleConsentContext(params: API_OAuth['consentContext']['Params']): Promise<API_OAuth['consentContext']['Response']> {
+		this.assertContextBinder();
+		const grant = await this.loadPendingSkyGrant(params.authReqId);
+		void grant;
+		return this.contextBinder!.loadConsentContext(MemKey_AccountId.get());
+	}
+
+	@ApiHandler(ApiDef_OAuth.completeAuthorization)
+	async handleCompleteAuthorization(body: API_OAuth['completeAuthorization']['Body']): Promise<API_OAuth['completeAuthorization']['Response']> {
+		this.assertContextBinder();
+		const grant = await this.loadPendingSkyGrant(body.authReqId);
+		const accountId = MemKey_AccountId.get();
+		const deviceId = `oauth-consent-${grant.clientId}`;
+
+		const sessionJwt = await this.contextBinder!.mintSessionJwt({
+			accountId,
+			deviceId,
+			orgUnitId: body.orgUnitId,
+			projectId: body.projectId,
+			label: `mcp-sky-consent-${grant.clientId}`,
+		});
+
+		await ModuleBE_OAuthGrantDB.set.item({
+			...grant,
+			userId: accountId,
+			orgUnitId: body.orgUnitId,
+			projectId: body.projectId,
+			sessionJwt,
+			used: false,
+		});
+
+		return {
+			redirectUri: grant.redirectUri,
+			code: grant.authorizationCode,
+			state: grant.oauthState,
+		};
 	}
 
 	@ApiHandler(ApiDef_OAuth.token)
@@ -356,6 +422,11 @@ export class ModuleBE_OAuthServer_Class
 			return;
 		}
 
+		if (grant.userId === OAuthGrantUserId_PendingConsent) {
+			res.status(400).json({error: 'invalid_grant', error_description: 'Authorization consent is not complete'});
+			return;
+		}
+
 		if (grant.clientId !== clientId) {
 			res.status(400).json({error: 'invalid_grant', error_description: 'Client ID mismatch'});
 			return;
@@ -376,6 +447,33 @@ export class ModuleBE_OAuthServer_Class
 		}
 
 		await ModuleBE_OAuthGrantDB.set.item({...grant, used: true});
+
+		if (grant.tokenKind === OAuthTokenKind_SessionJwt) {
+			if (!grant.sessionJwt)
+				throw new Error('Sky grant is missing sessionJwt');
+
+			const refreshTokenValue = await this.issueRefreshToken(
+				grant.userId,
+				grant.clientId,
+				grant.scopes,
+				{
+					resource: grant.resource,
+					orgUnitId: grant.orgUnitId,
+					projectId: grant.projectId,
+					tokenKind: OAuthTokenKind_SessionJwt,
+				},
+			);
+
+			this.logInfo(`  SESSION JWT ISSUED: clientId=${clientId}, accountId=${grant.userId}`);
+			res.json({
+				access_token: grant.sessionJwt,
+				token_type: 'Bearer',
+				expires_in: Math.floor(this.config.accessTokenTtlMs / 1000),
+				scope: grant.scopes.join(' '),
+				refresh_token: refreshTokenValue,
+			});
+			return;
+		}
 
 		const accessToken = await this.issueAccessToken(grant.userId, grant.clientId, grant.scopes);
 		const refreshTokenValue = await this.issueRefreshToken(grant.userId, grant.clientId, grant.scopes);
@@ -409,6 +507,40 @@ export class ModuleBE_OAuthServer_Class
 		}
 
 		await ModuleBE_OAuthTokenDB.set.item({...tokenRecord, revoked: true});
+
+		if (tokenRecord.tokenKind === OAuthTokenKind_SessionJwt) {
+			this.assertContextBinder();
+			if (!tokenRecord.orgUnitId || !tokenRecord.projectId)
+				throw new Error('Sky refresh token is missing orgUnitId/projectId context');
+
+			const accessToken = await this.contextBinder!.mintSessionJwt({
+				accountId: tokenRecord.userId,
+				deviceId: `oauth-refresh-${tokenRecord.clientId}`,
+				orgUnitId: tokenRecord.orgUnitId,
+				projectId: tokenRecord.projectId,
+				label: `mcp-sky-refresh-${tokenRecord.clientId}`,
+			});
+			const newRefreshToken = await this.issueRefreshToken(
+				tokenRecord.userId,
+				tokenRecord.clientId,
+				tokenRecord.scopes,
+				{
+					resource: tokenRecord.resource,
+					orgUnitId: tokenRecord.orgUnitId,
+					projectId: tokenRecord.projectId,
+					tokenKind: OAuthTokenKind_SessionJwt,
+				},
+			);
+
+			res.json({
+				access_token: accessToken,
+				token_type: 'Bearer',
+				expires_in: Math.floor(this.config.accessTokenTtlMs / 1000),
+				scope: tokenRecord.scopes.join(' '),
+				refresh_token: newRefreshToken,
+			});
+			return;
+		}
 
 		const accessToken = await this.issueAccessToken(tokenRecord.userId, tokenRecord.clientId, tokenRecord.scopes);
 		const newRefreshToken = await this.issueRefreshToken(tokenRecord.userId, tokenRecord.clientId, tokenRecord.scopes);
@@ -457,7 +589,17 @@ export class ModuleBE_OAuthServer_Class
 		return jwt;
 	}
 
-	private async issueRefreshToken(userId: string, clientId: string, scopes: string[]): Promise<string> {
+	private async issueRefreshToken(
+		userId: string,
+		clientId: string,
+		scopes: string[],
+		context?: {
+			resource?: string;
+			orgUnitId?: string;
+			projectId?: string;
+			tokenKind?: typeof OAuthTokenKind_SessionJwt | typeof OAuthTokenKind_OAuthJwt;
+		},
+	): Promise<string> {
 		const refreshToken = randomUUID();
 		const tokenHash = createHash('sha256').update(refreshToken).digest('hex');
 
@@ -470,6 +612,10 @@ export class ModuleBE_OAuthServer_Class
 			issuedAt: Date.now(),
 			revoked: false,
 			tokenType: 'refresh',
+			resource: context?.resource,
+			orgUnitId: context?.orgUnitId,
+			projectId: context?.projectId,
+			tokenKind: context?.tokenKind ?? OAuthTokenKind_OAuthJwt,
 		});
 
 		return refreshToken;
@@ -483,6 +629,58 @@ export class ModuleBE_OAuthServer_Class
 				scopes.add(scope);
 		}
 		return Array.from(scopes);
+	}
+
+	private isSkyResource(resource: string | undefined): boolean {
+		if (!resource)
+			return false;
+
+		try {
+			const url = new URL(resource, this.config.baseUrl);
+			const skyPath = this.config.skyResourcePath ?? '/mcp/sky';
+			return url.pathname === skyPath || url.pathname.endsWith(skyPath);
+		} catch {
+			const skyPath = this.config.skyResourcePath ?? '/mcp/sky';
+			return resource === `${this.config.baseUrl}${skyPath}` || resource.split('?')[0].endsWith(skyPath);
+		}
+	}
+
+	private parseOrgFromResource(resource: string | undefined): string | undefined {
+		if (!resource)
+			return undefined;
+
+		try {
+			const url = new URL(resource, this.config.baseUrl);
+			return url.searchParams.get('org') ?? undefined;
+		} catch {
+			const queryIndex = resource.indexOf('?');
+			if (queryIndex === -1)
+				return undefined;
+
+			return new URLSearchParams(resource.slice(queryIndex + 1)).get('org') ?? undefined;
+		}
+	}
+
+	private assertContextBinder(): void {
+		if (!this.contextBinder)
+			throw HttpCodes._5XX.SERVICE_UNAVAILABLE('OAuth context binder is not configured');
+	}
+
+	private async loadPendingSkyGrant(authReqId: string) {
+		const grant = await ModuleBE_OAuthGrantDB.query.uniqueUnmanipulated(authReqId as any);
+		if (!grant)
+			throw HttpCodes._4XX.NOT_FOUND('Authorization request not found');
+
+		if (!this.isSkyResource(grant.resource))
+			throw HttpCodes._4XX.BAD_REQUEST('Authorization request is not a sky consent grant');
+
+		if (grant.userId !== OAuthGrantUserId_PendingConsent)
+			throw HttpCodes._4XX.BAD_REQUEST('Authorization request is no longer pending consent');
+
+		if (grant.used || grant.expiresAt < Date.now())
+			throw HttpCodes._4XX.BAD_REQUEST('Authorization request is expired or already used');
+
+		return grant;
 	}
 
 	async createTokenVerifier(): Promise<OAuthTokenVerifier> {
