@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {Module} from '@nu-art/ts-common';
+import {BadImplementationException, ImplementationMissingException, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import type {TS_Object} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ApiHandler, MemKey_HttpRawResponse, MemKey_HttpRequest, MemKey_HttpResponse} from '@nu-art/http-server';
@@ -94,7 +94,7 @@ export class ModuleBE_OAuthServer_Class
 				const importedPrivate = await jose.importJWK(JSON.parse(record.privateJwk), alg);
 				const importedPublic = await jose.importJWK(JSON.parse(record.publicJwk), alg);
 				if (importedPrivate instanceof Uint8Array || importedPublic instanceof Uint8Array)
-					throw new Error(`OAuth signing key import returned symmetric key material for alg ${alg}`);
+					throw new MUSTNeverHappenException(`OAuth signing key import returned symmetric key material for alg ${alg}`);
 
 				this.privateKey = importedPrivate;
 				this.publicKey = importedPublic;
@@ -458,7 +458,7 @@ export class ModuleBE_OAuthServer_Class
 
 		if (grant.tokenKind === OAuthTokenKind_SessionJwt) {
 			if (!grant.sessionJwt)
-				throw new Error('Consent grant is missing sessionJwt');
+				throw new BadImplementationException('Consent grant is missing sessionJwt');
 
 			const refreshTokenValue = await this.issueRefreshToken(
 				grant.userId,
@@ -518,7 +518,7 @@ export class ModuleBE_OAuthServer_Class
 		if (tokenRecord.tokenKind === OAuthTokenKind_SessionJwt) {
 			const binder = this.resolveContextBinder(tokenRecord.resource);
 			if (!binder)
-				throw new Error(`No consent binder registered for resource '${tokenRecord.resource ?? 'none'}' on refresh`);
+				throw new ImplementationMissingException(`No consent binder registered for resource '${tokenRecord.resource ?? 'none'}' on refresh`);
 
 			const accessToken = await binder.mintSessionJwt({
 				accountId: tokenRecord.userId,
@@ -685,7 +685,7 @@ export class ModuleBE_OAuthServer_Class
 				const tokenHash = createHash('sha256').update(token).digest('hex');
 				const tokenRecord = (await ModuleBE_OAuthTokenDB.query.custom({where: {tokenHash}, limit: 1}))[0];
 				if (tokenRecord?.revoked)
-					throw new Error('Token has been revoked');
+					throw HttpCodes._4XX.UNAUTHORIZED('Token has been revoked');
 
 				return {
 					clientId: payload.client_id as string,
