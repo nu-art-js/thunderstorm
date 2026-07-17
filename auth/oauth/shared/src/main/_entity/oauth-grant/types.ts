@@ -5,6 +5,7 @@
  */
 
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
+import type {TS_Object} from '@nu-art/ts-common';
 
 export const OAuthGrant_DbKey = 'oauth--grants';
 type DBKey = typeof OAuthGrant_DbKey;
@@ -26,8 +27,7 @@ export type DB_OAuthGrant = DB_Object<DBKey> & {
 	used: boolean;
 	resource?: string;
 	oauthState?: string;
-	orgUnitId?: string;
-	projectId?: string;
+	context?: TS_Object;
 	sessionJwt?: string;
 	tokenKind?: 'oauth-jwt' | 'session-jwt';
 };

@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {tsValidateArray, tsValidateBoolean, tsValidateNumber, tsValidateString, tsValidateValue} from '@nu-art/ts-common';
+import {tsValidateArray, tsValidateBoolean, tsValidateExists, tsValidateNumber, tsValidateString, tsValidateValue} from '@nu-art/ts-common';
 import type {DatabaseDef_OAuthToken} from './types.js';
 
 export const OAuthToken_modifiablePropsValidator: DatabaseDef_OAuthToken['modifiablePropsValidator'] = {
@@ -14,8 +14,7 @@ export const OAuthToken_modifiablePropsValidator: DatabaseDef_OAuthToken['modifi
 	revoked: tsValidateBoolean(),
 	tokenType: tsValidateValue(['access', 'refresh'] as const),
 	resource: tsValidateString(undefined, false),
-	orgUnitId: tsValidateString(undefined, false),
-	projectId: tsValidateString(undefined, false),
+	context: tsValidateExists(false),
 	tokenKind: tsValidateValue(['oauth-jwt', 'session-jwt'] as const, true),
 };
 

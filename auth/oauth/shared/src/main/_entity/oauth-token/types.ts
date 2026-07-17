@@ -5,6 +5,7 @@
  */
 
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
+import type {TS_Object} from '@nu-art/ts-common';
 
 export const OAuthToken_DbKey = 'oauth--tokens';
 type DBKey = typeof OAuthToken_DbKey;
@@ -24,8 +25,7 @@ export type DB_OAuthToken = DB_Object<DBKey> & {
 	revoked: boolean;
 	tokenType: 'access' | 'refresh';
 	resource?: string;
-	orgUnitId?: string;
-	projectId?: string;
+	context?: TS_Object;
 	tokenKind?: 'oauth-jwt' | 'session-jwt';
 };
 
