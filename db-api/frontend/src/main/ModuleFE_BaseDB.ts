@@ -8,7 +8,6 @@ import {
 	_keys,
 	deleteKeysObject,
 	exists,
-	filterDuplicates,
 	InvalidResult,
 	lastElement,
 	MemCache,
@@ -226,7 +225,11 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 		this.versionUpgrades[version] = processor;
 	}
 
-	async upgradeInstances(instances: Database['dbType'][], force = false): Promise<Database['dbType'][]> {
+	/**
+	 * Run version upgrade processors in place. Always returns the same input array
+	 * (mutated). Missing processor for a version = skip that step; item stays valid.
+	 */
+	async upgradeInstances(instances: Database['dbType'][]): Promise<Database['dbType'][]> {
 		if (!_keys(this.versionUpgrades).length) {
 			this.logVerbose(`No registered upgrade processors for module ${this.config.dbKey}`);
 			return instances;
@@ -240,8 +243,6 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 					instance._v = latestVersion;
 			});
 		}
-
-		let instancesToSave: Database['dbType'][] = [];
 
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i];
@@ -260,14 +261,12 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 			} else {
 				this.logVerbose(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
 				await upgradeProcessor(instancesToUpgrade);
-				instancesToSave.push(...instancesToUpgrade);
 			}
 
-			instancesToSave = filterDuplicates(instancesToSave);
 			instancesToUpgrade.forEach(instance => (instance._v = nextVersion));
 		}
 
-		return force ? instances : instancesToSave;
+		return instances;
 	}
 
 

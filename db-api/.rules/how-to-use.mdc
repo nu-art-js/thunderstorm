@@ -311,7 +311,7 @@ Custom API endpoints can be added to any DB module using `@ApiHandler` from `@nu
 | `manipulateQuery(query)` | Inject scoping/filtering into every query (e.g. multi-tenant isolation) |
 | `preWriteProcessing(dbInstance, originalDbInstance, transaction?)` | Validate or transform before write (e.g. set generated fields, assert references) |
 | `postWriteProcessing(data, actionType, transaction?)` | Side effects after write (sync, notify, cascade updates) |
-| `upgradeInstances(instances, force?)` | Run version upgrade processors |
+| `upgradeInstances(instances)` | Run version upgrade processors in place; always returns the input array |
 
 ### Interceptor chain (external, mandatory)
 

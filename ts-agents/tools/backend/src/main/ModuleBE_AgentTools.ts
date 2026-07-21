@@ -11,8 +11,8 @@ export class ModuleBE_AgentTools_Class
 	protected init(): void {
 	}
 
-	registerTool<T extends TS_Object, V extends any>(tool: TS_AgentTool<T, V>) {
-		this.tools[tool.name] = tool;
+	registerTool<T extends TS_Object, V>(tool: TS_AgentTool<T, V>) {
+		this.tools[tool.name] = tool as TS_AgentTool<any, any>;
 		const originalExecute = tool.execute;
 		tool.execute = async (args: T) => {
 			this.logDebug(`Calling tool: ${tool.name} with args:`, args);

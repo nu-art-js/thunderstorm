@@ -30,6 +30,7 @@ import {
 	DotNotation,
 	filterDuplicates,
 	filterInstances,
+	filterKeys,
 	getDotNotatedValue,
 	merge,
 	Module, RuntimeModules, TS_Object,
@@ -280,6 +281,9 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	}
 
 	private _preWriteProcessing = async (dbItem: DatabaseProto['uiType'], originalDbInstance: DatabaseProto['dbType']) => {
+		// Mongo / spreads often leave optional fields as null — validators expect absent/undefined.
+		filterKeys(dbItem as TS_Object);
+
 		for (const interceptor of this.preWriteInterceptors)
 			await interceptor(dbItem, originalDbInstance);
 
