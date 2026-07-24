@@ -20,7 +20,7 @@
 
 import {DB_Object} from './db-object.js';
 
-/** Query comparator operators (same shape as Firestore for wire compatibility). */
+/** Query comparator operators (Firestore-parity plus Mongo-capable `$regex`). */
 export type CrudQueryComparator<T> =
 	| { $ac: T extends (infer I)[] ? I : never }
 	| { $aca: T extends (infer I)[] ? I[] : never }
@@ -31,7 +31,8 @@ export type CrudQueryComparator<T> =
 	| { $lt: number }
 	| { $lte: number }
 	| { $eq: number }
-	| { $neq: T };
+	| { $neq: T }
+	| { $regex: RegExp };
 
 export type CrudOrderByDirection = 'desc' | 'asc';
 
@@ -39,7 +40,11 @@ export type CrudWhereValue<Value> =
 	| CrudQueryComparator<Value>
 	| (Value extends DB_Object ? CrudClause_Where<Value> : Value | [Value]);
 
-export type CrudClause_Where<T extends DB_Object> = { [P in keyof T]?: CrudWhereValue<T[P]> };
+export type CrudClause_Where<T extends DB_Object> = {
+	[P in keyof T]?: CrudWhereValue<T[P]>
+} & {
+	$or?: CrudClause_Where<T>[]
+};
 
 export type CrudClause_OrderBy<T extends DB_Object> = [{ key: keyof T; order: CrudOrderByDirection }];
 

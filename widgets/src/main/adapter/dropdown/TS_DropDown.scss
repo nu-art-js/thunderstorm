@@ -7,6 +7,21 @@
   z-index: 0;
   flex-shrink: 0;
 
+  // Consumers often set `* { font-size: … }`, which blocks inheritance into item
+  // renderers (spans, badges). Pin the token on surfaces, then re-enable inherit.
+  .ts-dropdown__placeholder,
+  .ts-dropdown__selected,
+  .ts-dropdown__empty,
+  .ts-dropdown__items-container,
+  .ts-dropdown__header .ts-input {
+    font-size: var(--ts-dropdown--font-size);
+
+    *,
+    .ts-tree {
+      font-size: inherit;
+    }
+  }
+
   .ts-dropdown__header {
     width: 100%;
     height: var(--ts-dropdown--header-height);
@@ -22,6 +37,8 @@
       color: var(--ts-dropdown--text);
       border: none;
       padding-block: 0;
+      // Override --ts-input--padding so filter text shares the dropdown content inset.
+      padding-inline: var(--ts-dropdown--content-padding-inline);
 
       &:focus-visible { outline: none; }
     }
@@ -30,12 +47,11 @@
     .ts-dropdown__selected {
       height: 100%;
       flex-grow: 1;
-      font-size: var(--ts-dropdown--font-size);
       color: var(--ts-dropdown--text);
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      padding-inline: 4px;
+      padding-inline: var(--ts-dropdown--content-padding-inline);
     }
   }
 
@@ -44,7 +60,7 @@
     color: var(--ts-dropdown--text);
     border-radius: 0 0 var(--ts-dropdown--radius) var(--ts-dropdown--radius);
     border: 1px solid var(--ts-dropdown--border);
-    padding: 5px;
+    padding: var(--ts-dropdown--item-padding-block) var(--ts-dropdown--content-padding-inline);
     position: absolute;
     text-align: center;
   }
@@ -66,8 +82,7 @@
 
     .ts-dropdown__unselect-item {
       width: 100%;
-      padding: 5px;
-      font-size: var(--ts-dropdown--font-size);
+      padding: var(--ts-dropdown--item-padding-block) var(--ts-dropdown--content-padding-inline);
       border-bottom: 2px dotted var(--ts-dropdown--item-separator);
 
       &:hover { background: var(--ts-dropdown--item-hover-bg); }
@@ -77,11 +92,16 @@
       width: 100%;
       min-height: 10px;
 
+      // Flat / root options must share the header inset; nested levels keep --ts-tree--indent.
+      > .ts-tree__children-container {
+        padding-left: 0;
+      }
+
       .ts-tree__children-container {
         margin: 0;
 
         .ts-tree__node {
-          padding: 5px;
+          padding: var(--ts-dropdown--item-padding-block) var(--ts-dropdown--content-padding-inline);
 
           &:hover { background: var(--ts-dropdown--item-hover-bg); }
         }

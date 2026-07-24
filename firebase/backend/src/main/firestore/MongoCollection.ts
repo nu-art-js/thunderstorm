@@ -20,6 +20,7 @@ import {Database, dbObjectToId, DB_Prototype, EntityNotFoundException, EntityOut
 import {
 	__stringify,
 	_keys,
+	asArray,
 	BadImplementationException,
 	batchActionParallel,
 	compare,
@@ -50,7 +51,7 @@ import {composeDbObjectUniqueId, _EmptyQuery, maxBatch} from '@nu-art/firebase-s
 import {addDeletedToTransaction, getActiveTransaction, markTransactionWrite, MemKey_FirestoreTransaction} from './consts.js';
 import {MongoInterface} from './MongoInterface.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
-import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb} from 'mongodb';
+import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb, UpdateFilter} from 'mongodb';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
 
 
@@ -317,19 +318,40 @@ export class MongoCollection<Proto extends DB_Prototype>
 		},
 	});
 
-	private _setAll = async (items: (Proto['uiType'] | Proto['dbType'])[]): Promise<Proto['dbType'][]> => {
+	/**
+	 * Persist instances already upgraded by {@link ModuleBE_BaseDB.upgradeCollection}.
+	 * Mirrors FirestoreCollection.upgradeInstances — callable via ts-ignore from db-api.
+	 * Loads existing rows unmanipulated so access filters do not drop docs mid-migrate.
+	 */
+	// @ts-ignore — invoked from ModuleBE_BaseDB.upgradeCollection (same pattern as FirestoreCollection)
+	private upgradeInstances = async (items: (Proto['uiType'] | Proto['dbType'])[]): Promise<Proto['dbType'][]> => {
+		if (this.getSession())
+			return this._setAll(items, false, true);
+
+		return this.runTransactionInChunks(items, (chunk) => this._setAll(chunk, false, true));
+	};
+
+	private _setAll = async (
+		items: (Proto['uiType'] | Proto['dbType'])[],
+		performUpgrade = true,
+		unmanipulatedExisting = false,
+	): Promise<Proto['dbType'][]> => {
 		const ids = items.map(item => {
 			(item as any)._id = this.assertUniqueId(item);
 			return (item as any)._id as string;
 		});
-		const existingItems = await this.query.all(ids as Proto['uniqueParam'][]);
-		const existingMap = new Map(filterInstances(existingItems).map(item => [item._id, item]));
+		const existingItems = filterInstances(
+			unmanipulatedExisting
+				? await Promise.all(ids.map(id => this.query.uniqueUnmanipulated(id as Proto['uniqueParam'])))
+				: await this.query.all(ids as Proto['uniqueParam'][]),
+		);
+		const existingMap = new Map(existingItems.map(item => [item._id, item]));
 
 		const preparedItems = await Promise.all(items.map(async (item) => {
 			const existing = existingMap.get((item as any)._id);
 			return !exists(existing)
-				? await this.prepareForCreate(item)
-				: await this.prepareForSet(item as Proto['dbType'], existing!);
+				? await this.prepareForCreate(item, performUpgrade)
+				: await this.prepareForSet(item as Proto['dbType'], existing!, performUpgrade);
 		}));
 
 		this.assertNoDuplicatedIds(preparedItems, 'set.all');
@@ -348,6 +370,62 @@ export class MongoCollection<Proto extends DB_Prototype>
 			await this.hooks?.postWriteProcessing?.({before: existingItems, updated: preparedItems}, 'set');
 
 		return preparedItems;
+	};
+
+	/** Access-asserted partial update — Mongo update operators only (e.g. `$inc`, `$set`). */
+	update = Object.freeze({
+		item: async (_id: Proto['uniqueParam'], operators: UpdateFilter<Proto['dbType']>): Promise<Proto['dbType']> => {
+			const session = this.getSession();
+			if (!session)
+				return this.runTransaction(() => this.update.item(_id, operators), 'update.item');
+
+			const idStr = typeof _id !== 'string' ? this.assertUniqueId(_id as Proto['uiType']) : _id;
+			const currDBItem = await this.query.uniqueUnmanipulated(_id);
+			if (!currDBItem)
+				throw new EntityNotFoundException(`Could not find ${this.dbDef.entityName} with _id: ${__stringify(_id)}`);
+
+			const uiItem = deepClone(currDBItem) as Proto['uiType'];
+			await this.hooks?.preWriteProcessing?.(uiItem, currDBItem);
+
+			const now = currentTimeMillis();
+			const mergedOperators = {
+				...operators,
+				$set: {
+					...(operators.$set as Record<string, unknown> | undefined),
+					__updated: now,
+					_v: this.getVersion(),
+				},
+			} as UpdateFilter<Proto['dbType']>;
+
+			markTransactionWrite();
+			this.logDebug(`update.item [${this.dbDef.dbKey}] _id=${idStr}`);
+			const updated = await this.mongoCollection.findOneAndUpdate(
+				{_id: idStr} as any,
+				mergedOperators,
+				{returnDocument: 'after', ...this.sessionOpts()},
+			) as Proto['dbType'] | null;
+
+			if (!updated)
+				throw new EntityNotFoundException(`Could not find ${this.dbDef.entityName} with _id: ${__stringify(_id)} after update`);
+
+			this.validateItem(updated);
+			await this.hooks?.postWriteProcessing?.({before: currDBItem, updated}, 'update');
+			return updated;
+		},
+	});
+
+	ensureIndices = async (): Promise<void> => {
+		const indices = this.dbDef.indices ?? [];
+		for (const idx of indices) {
+			const spec = asArray(idx.keys).reduce<Record<string, 1>>((acc, key) => {
+				acc[String(key)] = 1;
+				return acc;
+			}, {});
+			await this.mongoCollection.createIndex(spec, {
+				name: idx.id,
+				unique: idx.params?.unique ?? false,
+			});
+		}
 	};
 
 	private _deleteAll = async (ids: UniqueId[]): Promise<Proto['dbType'][]> => {

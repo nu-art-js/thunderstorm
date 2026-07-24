@@ -366,18 +366,22 @@ dbModule.registerPreDeleteInterceptor(async (dbItems, tx?) => {
 - **Construction vs production:** Check the project mental model for the project lifecycle phase. During construction, schemas can be changed freely and versions reset to `['1.0.0']` — no migration processors needed. In production, every schema change requires a new version and an upgrade processor.
 
 **Version upgrades:**
-- `registerVersionUpgradeProcessor(version, processor)` — register a function to migrate items from one version to the next; call in constructor
+- `defineVersionUpgradeProcessor(itemProcessor)` — wrap a per-item step as the batch processor `registerVersionUpgradeProcessor` expects (shared, BE + FE)
+- Name each step explicitly: `UpgradeProcessor_<Entity>_1_0_0`, … in `<entity>/upgrade-processors.ts` (shared when BE + FE; backend-only file when the step needs DB authority)
+- `registerVersionUpgradeProcessor(version, processor)` — register in the module constructor
 - `upgradeCollection(force?)` — process the entire collection through registered upgrade processors
 
 Version upgrade example:
 
 ```typescript
-constructor() {
-	super(DBDef_<Entity>);
-	this.registerVersionUpgradeProcessor('1.0.0', async (items: DB_<Entity>_1_0_0[]) => {
-		items.forEach(item => (item as DB_<Entity>).newField = item.oldField);
-	});
-}
+// shared/.../upgrade-processors.ts
+import {defineVersionUpgradeProcessor} from '@nu-art/db-api-shared';
+import {stampNewFieldDefault} from './upgrade-fields.js';
+
+export const UpgradeProcessor_<Entity>_1_0_0 = defineVersionUpgradeProcessor(stampNewFieldDefault);
+
+// ModuleBE_<Entity>DB.ts / ModuleFE_<Entity>.ts constructor
+this.registerVersionUpgradeProcessor('1.0.0', UpgradeProcessor_<Entity>_1_0_0);
 ```
 
 ### Module packs

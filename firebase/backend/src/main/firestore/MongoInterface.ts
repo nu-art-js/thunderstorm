@@ -29,7 +29,7 @@ export type MqlCompiledQuery<T extends TS_Object = TS_Object> = {
 	limit?: number;
 };
 
-const MqlComparatorMap: { [k in keyof QueryComparator<any>]: string } = {
+const MqlComparatorMap: Record<string, string> = {
 	$nin: '$nin',
 	$in: '$in',
 	$ac: '$elemMatch',
@@ -76,6 +76,14 @@ export class MongoInterface {
 			if (value === undefined || value === null)
 				continue;
 
+			if (field === '$or') {
+				if (!Array.isArray(value) || value.length === 0)
+					throw new BadImplementationException(`$or requires a non-empty array in filter: ${__stringify(where)}`);
+
+				filter.$or = value.map((clause: Record<string, any>) => this.buildFilter(clause, prefix));
+				continue;
+			}
+
 			const key = prefix ? `${prefix}.${field}` : field;
 
 			if (Array.isArray(value)) {
@@ -92,13 +100,25 @@ export class MongoInterface {
 
 			if (this.isQueryComparator(value)) {
 				const comparatorKey = Object.keys(value)[0] as keyof QueryComparator<any>;
-				const mqlOp = MqlComparatorMap[comparatorKey];
-				if (!mqlOp)
-					throw new ImplementationMissingException(`No MQL comparator for: ${comparatorKey} in filter: ${__stringify(where)}`);
-
 				const operand = value[comparatorKey];
 				if (operand === undefined)
 					throw new ImplementationMissingException(`No value for comparator ${comparatorKey} in filter: ${__stringify(where)}`);
+
+				if (comparatorKey === '$regex') {
+					if (!(operand instanceof RegExp))
+						throw new BadImplementationException(`$regex requires a RegExp instance for field '${key}' in filter: ${__stringify(where)}`);
+
+					const regexFilter: Document = {$regex: operand.source};
+					if (operand.flags)
+						regexFilter.$options = operand.flags;
+
+					filter[key] = regexFilter;
+					continue;
+				}
+
+				const mqlOp = MqlComparatorMap[comparatorKey as string];
+				if (!mqlOp)
+					throw new ImplementationMissingException(`No MQL comparator for: ${comparatorKey} in filter: ${__stringify(where)}`);
 
 				if (comparatorKey === '$ac') {
 					filter[key] = operand;
@@ -140,7 +160,8 @@ export class MongoInterface {
 			value['$lt'] !== undefined ||
 			value['$lte'] !== undefined ||
 			value['$neq'] !== undefined ||
-			value['$eq'] !== undefined);
+			value['$eq'] !== undefined ||
+			value['$regex'] !== undefined);
 	}
 
 	private static buildProjection(select: string[]): Document {

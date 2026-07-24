@@ -40,6 +40,10 @@ export class FirestoreInterface {
 					if (whereValue === undefined || whereValue === null)
 						return _query;
 
+					if (whereField === '$or')
+						throw new ImplementationMissingException(
+							`Firestore does not support $or — use the Mongo backend. Query: ${JSON.stringify(query)}`);
+
 					const processObject = (___query: FirestoreType_Query, whereKey: string, _whereValue: any): FirestoreType_Query => {
 						const valueType = typeof _whereValue;
 
@@ -57,8 +61,11 @@ export class FirestoreInterface {
 
 						if (this.isQueryObject(_whereValue)) {
 							const comparatorKey = Object.keys(_whereValue)[0] as keyof QueryComparator<any>;
+							if (comparatorKey === '$regex')
+								throw new ImplementationMissingException(
+									`Firestore does not support $regex — use the Mongo backend. Query: ${JSON.stringify(query)}`);
 
-							const comparator = ComparatorMap[comparatorKey];
+							const comparator = ComparatorMap[comparatorKey as keyof typeof ComparatorMap];
 							if (!comparator)
 								throw new ImplementationMissingException(`could not find comparator for: ${comparatorKey} in query: ${JSON.stringify(query)}`);
 
@@ -124,7 +131,8 @@ export class FirestoreInterface {
 			whereValue['$lt'] !== undefined ||
 			whereValue['$lte'] !== undefined ||
 			whereValue['$neq'] !== undefined ||
-			whereValue['$eq'] !== undefined);
+			whereValue['$eq'] !== undefined ||
+			whereValue['$regex'] !== undefined);
 	}
 
 	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>, collectionName: string): (FirestoreType_DocumentSnapshot | undefined) {

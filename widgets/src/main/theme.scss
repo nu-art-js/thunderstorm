@@ -70,6 +70,10 @@
   --color-icon-button-bg-hover: var(--color-surface-overlay);
   --color-icon-button-bg-active: var(--color-action-primary-soft);
 
+  // Scrollbar colour tokens (themes remap THESE).
+  --color-scrollbar-track: transparent;
+  --color-scrollbar-thumb: var(--color-surface-overlay);
+
   // ── dimension tokens (mode-agnostic; NOT overridden by themes) ─────────────
   // Radius scale (4px base): xs tags · sm inputs · md buttons · lg panels ·
   // xl cards · 2xl dialogs · pill.
@@ -105,6 +109,24 @@
   --motion-fast: 100ms ease-out;
   --motion-default: 150ms ease-out;
   --motion-slow: 250ms ease-in-out;
+
+  // Scrollbar size tokens (no matching step on the spacing scale).
+  --size-scrollbar-width: 9px;
+  --size-scrollbar-height: 12px;
+  --size-scrollbar-thumb-border: 2px;
+
+  // Scrollbar chrome props → theme tokens only (never literals).
+  // Reveal is colour (transparent → token), not width — WebKit does not
+  // reliably collapse ::-webkit-scrollbar width after hover leave.
+  --scrollbar-width: var(--size-scrollbar-width);
+  --scrollbar-height: var(--size-scrollbar-height);
+  --scrollbar-track-bg: var(--color-scrollbar-track);
+  --scrollbar-thumb-bg: var(--color-scrollbar-thumb);
+  --scrollbar-thumb-bg-idle: transparent;
+  --scrollbar-track-bg-idle: transparent;
+  --scrollbar-thumb-border-width: var(--size-scrollbar-thumb-border);
+  --scrollbar-thumb-border-color: var(--color-scrollbar-track);
+  --scrollbar-thumb-radius: var(--radius-xs);
 
   // ── component tokens — --ts-<component>--<prop> (structural from real SCSS) ─
   // Button (button/Button.scss)
@@ -230,6 +252,12 @@
   --ts-dropdown--item-hover-bg: var(--color-action-primary-soft);
   --ts-dropdown--item-separator: var(--color-border);
   --ts-dropdown--empty-bg: var(--color-surface-raised);
+  // Shared horizontal inset for header text/input and list item content (closed === open start).
+  --ts-dropdown--content-padding-inline: var(--space-sm);
+  --ts-dropdown--item-padding-block: var(--space-xs);
+
+  // MultiSelect adder (editable-item TS_MultiSelect.scss) — floor so closed trigger isn't placeholder-thin
+  --ts-multi-select--selector-min-width: 160px;
 
   // Label (label/Label.scss)
   --ts-label--tooltip-bg: var(--color-surface-overlay);
@@ -391,4 +419,43 @@
 ::-moz-selection {
   background: var(--color-text-selection-bg);
   color: var(--color-text-selection-text);
+}
+
+// Scrollbar — global theme chrome. Idle = transparent (overlay can auto-hide);
+// hover paints thumb/track. Do not toggle ::-webkit-scrollbar width — WebKit
+// leaves the classic gutter stuck after leave.
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb-bg-idle) var(--scrollbar-track-bg-idle);
+}
+
+*:hover {
+  scrollbar-color: var(--scrollbar-thumb-bg) var(--scrollbar-track-bg);
+  // Safari: force style recomputation on hover (Chrome scrollbar-styling docs).
+  --fix: ;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-bg-idle);
+  border: var(--scrollbar-thumb-border-width) solid var(--scrollbar-track-bg-idle);
+  border-radius: var(--scrollbar-thumb-radius);
+}
+
+*::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-track-bg-idle);
+}
+
+*::-webkit-scrollbar {
+  // Cap size without setting width/height — setting those forces classic gutter.
+  max-width: var(--scrollbar-width);
+  max-height: var(--scrollbar-height);
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-bg);
+  border-color: var(--scrollbar-thumb-border-color);
+}
+
+*:hover::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-track-bg);
 }

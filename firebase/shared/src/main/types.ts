@@ -57,9 +57,13 @@ export type QueryComparator<T> =
 	{ $lt: number } |
 	{ $lte: number } |
 	{ $eq: number } |
-	{ $neq: T };
+	{ $neq: T } |
+	{ $regex: RegExp };
 
-export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = {
+/** Firestore-parity comparators only — `$regex` is Mongo-capable and fail-fast on Firestore. */
+export type QueryComparator_Firestore<T> = Exclude<QueryComparator<T>, { $regex: RegExp }>;
+
+export const ComparatorMap: { [k in keyof QueryComparator_Firestore<any>]: Comparator } = {
 	$nin: 'not-in',
 	$in: 'in',
 	$ac: 'array-contains',
@@ -77,7 +81,11 @@ export type FirestoreType_OrderByDirection = 'desc' | 'asc';
 export type WhereValue<Value> =
 	QueryComparator<Value>
 	| (Value extends TS_Object ? Clause_Where<Value> : Value | [Value]);
-export type Clause_Where<T extends TS_Object> = { [P in keyof T]?: WhereValue<T[P]> }
+export type Clause_Where<T extends TS_Object> = {
+	[P in keyof T]?: WhereValue<T[P]>
+} & {
+	$or?: Clause_Where<T>[]
+}
 export type Clause_OrderBy<T extends TS_Object> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
 export type Clause_Select<T extends TS_Object, K extends keyof T = keyof T> = K[];
 

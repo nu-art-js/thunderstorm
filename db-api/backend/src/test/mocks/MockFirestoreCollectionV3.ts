@@ -10,23 +10,38 @@ import {DB_Object, generateHex, currentTimeMillis} from '@nu-art/ts-common';
 
 type DocRefLike = { ref: { id: string }; data?: DB_Object };
 
+function matchesWhereClause<T extends DB_Object>(item: T, where: Record<string, unknown>): boolean {
+	for (const [key, value] of Object.entries(where)) {
+		if (value === undefined || value === null)
+			continue;
+
+		if (key === '$or') {
+			if (!Array.isArray(value) || value.length === 0)
+				return false;
+			if (!value.some(clause => matchesWhereClause(item, clause as Record<string, unknown>)))
+				return false;
+			continue;
+		}
+
+		const itemVal = (item as Record<string, unknown>)[key];
+		if (typeof value === 'object' && value !== null && '$regex' in value) {
+			const pattern = (value as { $regex: unknown }).$regex;
+			if (!(pattern instanceof RegExp) || typeof itemVal !== 'string' || !pattern.test(itemVal))
+				return false;
+		} else if (typeof value === 'object' && value !== null && '$in' in value) {
+			const arr = (value as { $in: unknown[] }).$in;
+			if (!Array.isArray(arr) || !arr.includes(itemVal))
+				return false;
+		} else if (itemVal !== value)
+			return false;
+	}
+	return true;
+}
+
 function filterByWhere<T extends DB_Object>(items: T[], where: Record<string, unknown> | undefined): T[] {
 	if (!where || Object.keys(where).length === 0)
 		return [...items];
-	return items.filter(item => {
-		for (const [key, value] of Object.entries(where)) {
-			if (value === undefined || value === null)
-				continue;
-			const itemVal = (item as Record<string, unknown>)[key];
-			if (typeof value === 'object' && value !== null && '$in' in value) {
-				const arr = (value as { $in: unknown[] }).$in;
-				if (!Array.isArray(arr) || !arr.includes(itemVal))
-					return false;
-			} else if (itemVal !== value)
-				return false;
-		}
-		return true;
-	});
+	return items.filter(item => matchesWhereClause(item, where));
 }
 
 function applyLimit<T>(items: T[], limit: { page?: number; itemsCount?: number } | undefined): T[] {

@@ -41,13 +41,18 @@ export type DB_Object<Key extends string = string> = DB_BaseObject<Key> & {
 }
 
 /**
- * Database pointer (reference to another database object).
+ * Branded database pointer (`dbKey` + correlated `DB_UniqueId`).
  *
- * Contains the database key (collection name) and object ID.
+ * Distributes over key unions so narrowing `dbKey` also narrows `id`:
+ * `DBPointer<'docs' | 'tasks'>` ≡ `DBPointer<'docs'> | DBPointer<'tasks'>`.
+ *
+ * Prefer a concrete key or a closed key union — `DBPointer<string>` erases the brand.
  *
  * @template Key - The database key (collection name)
  */
-export type DBPointer<Key extends string> = { dbKey: DB_Key<Key>['key']; id: DB_Key<Key>['id'] };
+export type DBPointer<Key extends string> = Key extends infer K extends string
+	? { dbKey: K; id: DB_UniqueId<K> }
+	: never;
 
 
 /** @deprecated Unique identifier type (string) - should be replaced by a branded DB_Key<Key>['id'] and the generic version of it is DB_Key['id']*/

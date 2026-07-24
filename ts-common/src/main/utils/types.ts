@@ -259,9 +259,12 @@ export type DB_Object = DB_BaseObject & {
 export type UniqueId = string;
 
 /**
- * Database pointer (reference to another database object).
+ * Unbranded database pointer (`dbKey: string`, `id: UniqueId`).
  *
- * Contains the database key (collection name) and object ID.
+ * @deprecated Use branded `DBPointer<Key>` from `@nu-art/db-api-shared`.
+ * That form brands `id` as `DB_UniqueId<Key>` and distributes over key unions so
+ * narrowing `dbKey` also narrows `id`. Prefer a concrete key or closed key union —
+ * not `DBPointer<string>`.
  */
 export type DBPointer = { dbKey: string; id: UniqueId };
 

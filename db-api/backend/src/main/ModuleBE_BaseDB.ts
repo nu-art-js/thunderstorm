@@ -211,6 +211,13 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 		return this.collection as FirestoreCollection<DatabaseProto>;
 	}
 
+	public asMongoCollection(): MongoCollection<DatabaseProto> {
+		if (!(this.collection instanceof MongoCollection))
+			throw new BadImplementationException(`${this.getName()} requires MongoCollection but is configured with ${ModuleBE_BaseDB.defaultBackend}`);
+
+		return this.collection;
+	}
+
 	/**
 	 * Executed during the initialization of the module.
 	 * The collection reference is set in this method.
@@ -255,6 +262,9 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
 		if ('doc' in this.collection)
 			this.doc = wrapInTryCatch(this.collection.doc, 'doc');
+
+		if (this.collection instanceof MongoCollection)
+			void this.collection.ensureIndices().catch((e: unknown) => this.logError(`ensureIndices failed: ${e}`));
 	}
 
 	protected resolveCollection() {
