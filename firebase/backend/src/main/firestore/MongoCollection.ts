@@ -51,7 +51,7 @@ import {composeDbObjectUniqueId, _EmptyQuery, maxBatch} from '@nu-art/firebase-s
 import {addDeletedToTransaction, getActiveTransaction, markTransactionWrite, MemKey_FirestoreTransaction} from './consts.js';
 import {MongoInterface} from './MongoInterface.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
-import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb, UpdateFilter} from 'mongodb';
+import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb, Document, UpdateFilter} from 'mongodb';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
 
 
@@ -215,6 +215,11 @@ export class MongoCollection<Proto extends DB_Prototype>
 		 */
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return this._customQuery(query, false);
+		},
+		join: async (pipeline: Document[]): Promise<Record<string, unknown>[]> => {
+			this.logDebug(`query.join [${this.dbDef.dbKey}] stages=${pipeline.length}`);
+			const results = await this.mongoCollection.aggregate(pipeline, this.sessionOpts()).toArray();
+			return results as Record<string, unknown>[];
 		},
 	});
 

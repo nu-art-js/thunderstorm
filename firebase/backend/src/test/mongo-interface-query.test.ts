@@ -56,6 +56,63 @@ describe('MongoInterface.buildQuery — $regex / $or', () => {
 	});
 });
 
+describe('MongoInterface.buildJoinPipeline', () => {
+	it('builds local match, lookup with foreign where, unwind, and whereAfter', () => {
+		const pipeline = MongoInterface.buildJoinPipeline(
+			{active: true, _path: {$regex: 'vision', $options: 'i'}},
+			[{
+				from: 'node-assignments',
+				localField: '_id',
+				foreignField: 'nodeId',
+				as: 'assignment',
+				where: {active: true},
+			}],
+			{'doc.body': {$regex: 'smoke', $options: 'i'}},
+		);
+
+		expect(pipeline).to.deep.equal([
+			{$match: {active: true, _path: {$regex: 'vision', $options: 'i'}}},
+			{
+				$lookup: {
+					from: 'node-assignments',
+					let: {joinLocal: '$_id'},
+					pipeline: [
+						{$match: {$expr: {$eq: ['$nodeId', '$$joinLocal']}}},
+						{$match: {active: true}},
+					],
+					as: 'assignment',
+				},
+			},
+			{$unwind: {path: '$assignment', preserveNullAndEmptyArrays: false}},
+			{$match: {'doc.body': {$regex: 'smoke', $options: 'i'}}},
+		]);
+	});
+
+	it('uses simple lookup when hop has no foreign where', () => {
+		const pipeline = MongoInterface.buildJoinPipeline(
+			undefined,
+			[{
+				from: 'docs',
+				localField: 'assignment.target.id',
+				foreignField: '_id',
+				as: 'doc',
+			}],
+		);
+
+		expect(pipeline).to.deep.equal([
+			{
+				$lookup: {
+					from: 'docs',
+					localField: 'assignment.target.id',
+					foreignField: '_id',
+					as: 'doc',
+				},
+			},
+			{$unwind: {path: '$doc', preserveNullAndEmptyArrays: false}},
+		]);
+	});
+});
+
 describe('FirestoreInterface.buildQuery — $regex / $or fail-fast', () => {
 	const collection = {collection: {}} as any;
 

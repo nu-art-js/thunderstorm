@@ -37,7 +37,7 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {CollectionActionType, FirestoreCollection, getActiveTransaction, MemKey_DeletedDocs, MongoCollection} from '@nu-art/firebase-backend';
+import {CollectionActionType, FirestoreCollection, getActiveTransaction, MemKey_DeletedDocs, MongoCollection, MongoInterface} from '@nu-art/firebase-backend';
 import {DocWrapper} from '@nu-art/firebase-backend/firestore/DocWrapper';
 import {
 	DBApiBEConfig,
@@ -49,6 +49,7 @@ import {
 } from './storm-stubs.js';
 import {CrudClause_Where, Database as Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {BaseDBDefBE, PostWriteInterceptor, PostWriteProcessingDataShape, PreDeleteInterceptor, PreWriteInterceptor, QueryInterceptor} from './backend-types.js';
+import type {CrudJoinQuerySpec, CrudJoinRow} from './join-query-types.js';
 
 export type BackendType = 'firestore' | 'mongo';
 
@@ -99,7 +100,9 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	protected backendType?: BackendType;
 	public collection!: FirestoreCollection<DatabaseProto> | MongoCollection<DatabaseProto>;
 	public readonly dbDef: BaseDBDefBE;
-	public query!: FirestoreCollection<DatabaseProto>['query'];
+	public query!: FirestoreCollection<DatabaseProto>['query'] & {
+		join: (spec: CrudJoinQuerySpec<DatabaseProto['dbType']>) => Promise<CrudJoinRow[]>;
+	};
 	public create!: FirestoreCollection<DatabaseProto>['create'];
 	public set!: FirestoreCollection<DatabaseProto>['set'];
 	public delete!: FirestoreCollection<DatabaseProto>['delete'];
@@ -256,7 +259,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 			return acc;
 		}, {} as T);
 
-		this.query = wrapInTryCatch(this.collection.query, 'query');
+		this.query = wrapInTryCatch(this.collection.query, 'query') as ModuleBE_BaseDB<DatabaseProto>['query'];
+		this.query.join = (spec) => this.executeJoinQuery(spec);
 		this.create = wrapInTryCatch(this.collection.create, 'create');
 		this.set = wrapInTryCatch(this.collection.set, 'set');
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
@@ -333,6 +337,49 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	manipulateQuery(query: FirestoreQuery<any>): FirestoreQuery<any> {
 		return query;
 	}
+
+	compileQueryWhere(where?: CrudClause_Where<DatabaseProto['dbType']>): CrudClause_Where<DatabaseProto['dbType']> | undefined {
+		if (!where)
+			return undefined;
+
+		return this._manipulateQuery({where}).where;
+	}
+
+	private executeJoinQuery = async (spec: CrudJoinQuerySpec<DatabaseProto['dbType']>): Promise<CrudJoinRow[]> => {
+		if (!(this.collection instanceof MongoCollection))
+			throw new BadImplementationException('query.join requires mongo backend');
+
+		const localWhere = MongoInterface.compileWhereClause(
+			this.compileQueryWhere(spec.where) as Record<string, unknown> | undefined,
+		);
+
+		const hops = spec.joins.map(hop => {
+			const foreignCollection = hop.module.collection;
+			if (!(foreignCollection instanceof MongoCollection))
+				throw new BadImplementationException(
+					`query.join foreign module ${hop.module.dbDef.dbKey} requires mongo backend`,
+				);
+
+			return {
+				from: foreignCollection.dbDef.backend.name,
+				localField: hop.localField,
+				foreignField: hop.foreignField,
+				as: hop.as,
+				where: hop.module.compileQueryWhere(hop.where),
+			};
+		});
+
+		const whereAfter = MongoInterface.compileWhereClause(spec.whereAfter as Record<string, unknown> | undefined);
+		const pipeline = MongoInterface.buildJoinPipeline(
+			localWhere,
+			hops,
+			whereAfter,
+			spec.orderBy,
+			spec.limit,
+		);
+
+		return this.collection.query.join(pipeline) as Promise<CrudJoinRow[]>;
+	};
 
 	preUpsertProcessing!: never;
 

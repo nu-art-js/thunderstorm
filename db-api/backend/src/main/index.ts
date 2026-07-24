@@ -19,6 +19,7 @@
  */
 
 export type {BaseDBDefBE, BaseDBDefBE_Dependency, DBApiBEConfigShape, PostWriteProcessingDataShape, PreWriteInterceptor, PostWriteInterceptor, QueryInterceptor, PreDeleteInterceptor} from './backend-types.js';
+export type {CrudJoinHopSpec, CrudJoinQuerySpec, CrudJoinRow} from './join-query-types.js';
 export {ModuleBE_BaseDB, BaseDBApiConfig, DBApiConfig, RuntimeBE_ModulesDB} from './ModuleBE_BaseDB.js';
 export type {BackendType} from './ModuleBE_BaseDB.js';
 export {migrateCollection} from './migrate-collection.js';

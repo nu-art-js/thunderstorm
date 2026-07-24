@@ -17,6 +17,7 @@
  */
 
 import {FirestoreQuery, QueryComparator} from '@nu-art/firebase-shared';
+import type {CrudJoinHopCompiled} from '@nu-art/db-api-shared';
 import {__stringify, BadImplementationException, ImplementationMissingException, StaticLogger, TS_Object} from '@nu-art/ts-common';
 import type {Document, Filter, Sort} from 'mongodb';
 
@@ -66,6 +67,78 @@ export class MongoInterface {
 			StaticLogger.logError(`Error: ${e}`);
 			throw e;
 		}
+	}
+
+	static compileWhereClause(where?: Record<string, unknown>): Filter<any> | undefined {
+		if (!where)
+			return undefined;
+
+		const compiled = this.buildQuery({where: where as FirestoreQuery<any>['where']} as FirestoreQuery<any>);
+		if (!compiled.filter || !Object.keys(compiled.filter).length)
+			return undefined;
+
+		return compiled.filter;
+	}
+
+	static buildJoinPipeline(
+		localWhere: Filter<any> | undefined,
+		hops: CrudJoinHopCompiled[],
+		whereAfter?: Filter<any>,
+		orderBy?: FirestoreQuery<any>['orderBy'],
+		limit?: FirestoreQuery<any>['limit'],
+	): Document[] {
+		const pipeline: Document[] = [];
+
+		if (localWhere && Object.keys(localWhere).length)
+			pipeline.push({$match: localWhere});
+
+		for (const hop of hops) {
+			const foreignMatch = this.compileWhereClause(hop.where as Record<string, unknown> | undefined);
+			if (foreignMatch) {
+				pipeline.push({
+					$lookup: {
+						from: hop.from,
+						let: {joinLocal: `$${hop.localField}`},
+						pipeline: [
+							{$match: {$expr: {$eq: [`$${hop.foreignField}`, '$$joinLocal']}}},
+							{$match: foreignMatch},
+						],
+						as: hop.as,
+					},
+				});
+			} else {
+				pipeline.push({
+					$lookup: {
+						from: hop.from,
+						localField: hop.localField,
+						foreignField: hop.foreignField,
+						as: hop.as,
+					},
+				});
+			}
+
+			pipeline.push({$unwind: {path: `$${hop.as}`, preserveNullAndEmptyArrays: false}});
+		}
+
+		if (whereAfter && Object.keys(whereAfter).length)
+			pipeline.push({$match: whereAfter});
+
+		const tailQuery = {} as FirestoreQuery<any>;
+		if (orderBy)
+			tailQuery.orderBy = orderBy;
+		if (limit !== undefined)
+			tailQuery.limit = limit;
+		const tail = this.buildQuery(Object.keys(tailQuery).length ? tailQuery : undefined);
+		if (tail.sort)
+			pipeline.push({$sort: tail.sort});
+
+		if (tail.skip !== undefined)
+			pipeline.push({$skip: tail.skip});
+
+		if (tail.limit !== undefined)
+			pipeline.push({$limit: tail.limit});
+
+		return pipeline;
 	}
 
 	private static buildFilter(where: Record<string, any>, prefix?: string): Document {

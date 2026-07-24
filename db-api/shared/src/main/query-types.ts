@@ -58,6 +58,23 @@ export type CrudQuery<T extends DB_Object> = {
 	limit?: number | { page?: number; itemsCount: number };
 };
 
+/** One hop in a compiled Mongo join pipeline (collection name resolved). */
+export type CrudJoinHopCompiled = {
+	from: string;
+	localField: string;
+	foreignField: string;
+	as: string;
+	where?: CrudClause_Where<any>;
+};
+
+/** Join query input after foreign modules are resolved to collection names. */
+export type CrudJoinQueryCompiled<TLocal extends DB_Object = DB_Object> = {
+	where?: CrudClause_Where<TLocal>;
+	joins: CrudJoinHopCompiled[];
+	whereAfter?: CrudClause_Where<any>;
+	orderBy?: CrudClause_OrderBy<TLocal>;
+	limit?: CrudQuery<TLocal>['limit'];
+};
 
 /** Empty query constant (same shape as Firestore _EmptyQuery for wire compatibility). */
 export const CrudEmptyQuery = Object.freeze({where: {}}) as CrudQuery<DB_Object>;
