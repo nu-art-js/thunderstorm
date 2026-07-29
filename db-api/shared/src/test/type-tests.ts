@@ -18,3 +18,12 @@ const docsPointer: DBPointer<'docs'> = {
 	id: 'doc-1' as DB_UniqueId<'docs'>,
 };
 void docsPointer;
+
+// Bare string is rejected; type parameters still work.
+type RejectBareString = DBPointer<string>;
+const _assertNever: RejectBareString = null as never;
+void _assertNever;
+
+declare function identityPointer<Key extends string>(dbKey: Key, id: DB_UniqueId<Key>): DBPointerOf<Key>;
+const genericOk = identityPointer('docs', 'x' as DB_UniqueId<'docs'>);
+void genericOk;

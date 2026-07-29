@@ -90,6 +90,22 @@ export class JWT_Handler<T extends RecursiveObjectOfPrimitives>
 		return {validated: false};
 	}
 
+	async verifySignatureAllowExpired(jwt: string): Promise<{ validated: true, claims: T & JWT_BaseClaims } | { validated: false }> {
+		jwt = jwt.replace(/^Bearer\s/, '');
+		const secrets = await this.getSecret();
+		this.logVerbose(`Verifying JWT signature (allow expired) with secrets:`, secrets, jwt);
+
+		for (const secret of secrets) {
+			try {
+				return {validated: true, claims: await JwtTools.verifySignatureAllowExpired(jwt, secret)};
+			} catch (ignore: any) {
+				this.logError('Error verifying JWT signature (allow expired)', ignore);
+			}
+		}
+
+		return {validated: false};
+	}
+
 	async assert(jwt: string): Promise<T & JWT_BaseClaims> {
 		if (await this.isExpired(jwt))
 			throw new MUSTNeverHappenException(`JWT is expired: ${jwt}`);

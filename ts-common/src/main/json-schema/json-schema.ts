@@ -55,7 +55,13 @@ type JSON_NumberSchema = {
 	maximum?: number;
 };
 
-type JSON_ObjectSchema<T> = {
+/** Open string-keyed map (TypedMap / Record<string, V>) — values via additionalProperties. */
+type JSON_OpenMapSchema<T> = {
+	additionalProperties: JSON_Schema<NonNullable<T[string & keyof T]>>;
+};
+
+/** Fixed-key object — every key of T must appear in properties. */
+type JSON_FixedObjectSchema<T> = {
 	properties: [T] extends [TS_Object]
 		? { [P in keyof T]-?: JSON_Schema<NonNullable<T[P]>> }
 		: never;
@@ -65,7 +71,27 @@ type JSON_ObjectSchema<T> = {
 };
 
 /**
- * Type-strict JSON Schema — every key of T must appear in object properties.
+ * True for TypedMap / Record<string, V> with real values.
+ * False for fixed-key objects and empty stand-ins (`Record<string, never>`).
+ */
+type IsOpenStringMap<T> =
+	string extends keyof T
+		? [T[string & keyof T]] extends [never]
+			? false
+			: true
+		: false;
+
+/**
+ * Object schema: open maps use additionalProperties;
+ * fixed-key (and empty) objects list every property + required.
+ */
+type JSON_ObjectSchema<T> = IsOpenStringMap<T> extends true
+	? JSON_OpenMapSchema<T>
+	: JSON_FixedObjectSchema<T>;
+
+/**
+ * Type-strict JSON Schema for agent tool contracts.
+ * Fixed-key objects require every key in properties; open maps (TypedMap) use additionalProperties.
  * Branded strings/numbers are wire-identical to their base primitives.
  */
 export type JSON_Schema<T = unknown> =

@@ -182,9 +182,14 @@ export class ModuleBE_SessionDB_Class
 	_session = {
 		query: {
 			byJwt: async (jwt: string) => {
+				// We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
+				return await this._session.query.byId(hashToUniqueId<DatabaseDef_Session['dbKey']>(jwt));
+			},
+			// A session id stays resolvable across rotations — every rotation carries the previous ids
+			// in validSessionJwtMd5s, so an id held by an external credential keeps finding the live row.
+			byId: async (sessionId: string) => {
 				return await this.query.uniqueCustom({
-					// We use an md5 to save and query for the session object. The original sessionId(JWT) is too big.
-					where: {validSessionJwtMd5s: {$ac: hashToUniqueId<DatabaseDef_Session['dbKey']>(jwt)}},
+					where: {validSessionJwtMd5s: {$ac: sessionId as DatabaseDef_Session['id']}},
 					orderBy: [{key: '__created', order: 'desc'}],
 					limit: 1
 				});
@@ -246,6 +251,35 @@ export class ModuleBE_SessionDB_Class
 
 					this.logInfo(`Refreshing Session by dbSession for account(${dbSession.accountId}) sessionId(${dbSession._id})`);
 					return await this.__session.refresh(dbSession);
+				}
+			},
+			// OAuth refresh_token path: access JWT may already be expired. Signature is verified;
+			// claims are re-signed as-is (no collectSessionData). Caller must have authorized via
+			// a separate credential before invoking this.
+			refreshViaExpiredJwt: {
+				byId: async (sessionId: string) => {
+					const dbSession = await this._session.query.byId(sessionId);
+					this.logInfo(`Refreshing via expired JWT for account(${dbSession.accountId}) sessionId(${dbSession._id})`);
+
+					const verified = await this.jwtHandler.verifySignatureAllowExpired(dbSession.sessionIdJwt);
+					if (!verified.validated)
+						throw new MUSTNeverHappenException(`JWT signature is invalid for session ${dbSession._id}`);
+
+					if (SessionKey_Account_BE.get(verified.claims).type === 'service')
+						throw new MUSTNeverHappenException(`Cannot refreshViaExpiredJwt for service account session ${dbSession._id}`);
+
+					const {iat: _iat, exp: _exp, ...claims} = verified.claims;
+					const jwt = await this.jwtHandler.create(claims, this.config.sessionTTLms);
+
+					return await this._session.save({
+						linkedSessionId: dbSession._id,
+						prevSessions: dbSession.validSessionJwtMd5s,
+						initialClaims: {
+							accountId: dbSession.accountId,
+							deviceId: dbSession.deviceId,
+							label: `refreshed-via-expired from ${dbSession._id}`,
+						},
+					}, jwt);
 				}
 			},
 			reissue: {

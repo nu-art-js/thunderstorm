@@ -255,7 +255,7 @@ flowchart TB
 | Multi-instance work-hub | One `ModuleFE_WorkHub` per split leaf — see `@track` |
 | Drag-and-drop | Tab/panel repositioning |
 | Top dock edge | Only left / right / bottom in v1 |
-| Cross-window / multi-tab sync | Vision: [cross-window sharing](../../../beamz/_docs/vision/2026-07-13_00:58-ide-workspace-cross-window-sharing.md) |
+| Cross-window / multi-tab sync | Vision: Sky knowledge `/vision/ide-workspace-cross-window-sharing` |
 | Resizable splitters | Fixed flex splits in v1; splitter handles later |
 
 ---
@@ -272,5 +272,5 @@ flowchart TB
 
 - [work-hub README](../work-hub/frontend/README.md) (if present) / [`ModuleFE_WorkHub`](../work-hub/frontend/src/main/_module/ModuleFE_WorkHub/ModuleFE_WorkHub.ts)
 - [Package standard](../../.rules/contributing/package-standard.mdc)
-- Vision: [IDE workspace cross-window sharing](../../../beamz/_docs/vision/2026-07-13_00:58-ide-workspace-cross-window-sharing.md)
+- Vision: Sky knowledge `/vision/ide-workspace-cross-window-sharing`
 - Interactive reference: [ide-workspace-sample.canvas.tsx](/Users/tacb0ss/.cursor/projects/Users-tacb0ss-dev-nu-art-beamz/canvases/ide-workspace-sample.canvas.tsx)

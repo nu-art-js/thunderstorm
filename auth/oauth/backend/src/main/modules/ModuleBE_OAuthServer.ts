@@ -4,8 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {BadImplementationException, ImplementationMissingException, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import type {TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ApiHandler, MemKey_HttpRawResponse, MemKey_HttpRequest, MemKey_HttpResponse} from '@nu-art/http-server';
 import * as jose from 'jose';
@@ -17,7 +16,7 @@ import {ModuleBE_OAuthClientDB} from './ModuleBE_OAuthClientDB.js';
 import {ModuleBE_OAuthGrantDB} from './ModuleBE_OAuthGrantDB.js';
 import {ModuleBE_OAuthSigningKeyDB} from './ModuleBE_OAuthSigningKeyDB.js';
 import {ModuleBE_OAuthTokenDB} from './ModuleBE_OAuthTokenDB.js';
-import {MemKey_AccountId} from '@nu-art/user-account-backend';
+import {MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {HttpCodes} from '@nu-art/api-types';
 
 type Config = {
@@ -281,25 +280,25 @@ export class ModuleBE_OAuthServer_Class
 
 	@ApiHandler(ApiDef_OAuth.completeAuthorization)
 	async handleCompleteAuthorization(body: API_OAuth['completeAuthorization']['Body']): Promise<API_OAuth['completeAuthorization']['Response']> {
-		this.logInfo(`/oauth/complete-authorization request: authReqId=${body.authReqId} context=${body.context ? 'present' : 'none'}`);
+		this.logInfo(`/oauth/complete-authorization request: authReqId=${body.authReqId} claims=${body.claims ? 'present' : 'none'}`);
 		const {grant, binder} = await this.loadPendingConsentGrant(body.authReqId);
 		const accountId = MemKey_AccountId.get();
 		const deviceId = `oauth-consent-${grant.clientId}`;
 		this.logInfo(`  grant resource=${grant.resource ?? 'none'} binder=${binder.constructor.name} accountId=${accountId}`);
 
-		const sessionJwt = await binder.mintSessionJwt({
+		const claims = {
 			accountId,
 			deviceId,
 			label: `oauth-consent-${grant.clientId}`,
-			context: body.context,
-		});
-		this.logInfo(`  session JWT minted: prefix=${sessionJwt.substring(0, 12)}… len=${sessionJwt.length}`);
+			...body.claims,
+		};
+		const sessionId = await binder.mintSession({claims});
+		this.logInfo(`  session minted: sessionId=${sessionId}`);
 
 		await ModuleBE_OAuthGrantDB.set.item({
 			...grant,
 			userId: accountId,
-			context: body.context,
-			sessionJwt,
+			sessionId,
 			used: false,
 		});
 		this.logInfo(`  grant updated: userId=${accountId} redirectUri=${grant.redirectUri}`);
@@ -457,8 +456,10 @@ export class ModuleBE_OAuthServer_Class
 		await ModuleBE_OAuthGrantDB.set.item({...grant, used: true});
 
 		if (grant.tokenKind === OAuthTokenKind_SessionJwt) {
-			if (!grant.sessionJwt)
-				throw new BadImplementationException('Consent grant is missing sessionJwt');
+			if (!grant.sessionId)
+				throw new BadImplementationException('Consent grant is missing sessionId');
+
+			const dbSession = await ModuleBE_SessionDB._session.query.byId(grant.sessionId);
 
 			const refreshTokenValue = await this.issueRefreshToken(
 				grant.userId,
@@ -466,14 +467,14 @@ export class ModuleBE_OAuthServer_Class
 				grant.scopes,
 				{
 					resource: grant.resource,
-					context: grant.context,
+					sessionId: dbSession._id,
 					tokenKind: OAuthTokenKind_SessionJwt,
 				},
 			);
 
-			this.logInfo(`  SESSION JWT ISSUED: clientId=${clientId}, accountId=${grant.userId}`);
+			this.logInfo(`  SESSION JWT ISSUED: clientId=${clientId}, accountId=${grant.userId}, sessionId=${dbSession._id}`);
 			res.json({
-				access_token: grant.sessionJwt,
+				access_token: dbSession.sessionIdJwt,
 				token_type: 'Bearer',
 				expires_in: Math.floor(this.config.accessTokenTtlMs / 1000),
 				scope: grant.scopes.join(' '),
@@ -513,32 +514,30 @@ export class ModuleBE_OAuthServer_Class
 			return;
 		}
 
-		await ModuleBE_OAuthTokenDB.set.item({...tokenRecord, revoked: true});
-
 		if (tokenRecord.tokenKind === OAuthTokenKind_SessionJwt) {
-			const binder = this.resolveContextBinder(tokenRecord.resource);
-			if (!binder)
-				throw new ImplementationMissingException(`No consent binder registered for resource '${tokenRecord.resource ?? 'none'}' on refresh`);
+			if (!tokenRecord.sessionId)
+				throw new BadImplementationException('Session-JWT refresh token is missing sessionId');
 
-			const accessToken = await binder.mintSessionJwt({
-				accountId: tokenRecord.userId,
-				deviceId: `oauth-refresh-${tokenRecord.clientId}`,
-				label: `oauth-refresh-${tokenRecord.clientId}`,
-				context: tokenRecord.context,
-			});
+			// Refresh token already authorized this call. Session module verifies the (possibly
+			// expired) JWT signature and re-mints claims without collectSessionData.
+			const dbSession = await ModuleBE_SessionDB._session.rotate.refreshViaExpiredJwt.byId(tokenRecord.sessionId);
+
 			const newRefreshToken = await this.issueRefreshToken(
 				tokenRecord.userId,
 				tokenRecord.clientId,
 				tokenRecord.scopes,
 				{
 					resource: tokenRecord.resource,
-					context: tokenRecord.context,
+					sessionId: dbSession._id,
 					tokenKind: OAuthTokenKind_SessionJwt,
 				},
 			);
 
+			await ModuleBE_OAuthTokenDB.set.item({...tokenRecord, revoked: true});
+
+			this.logInfo(`  SESSION JWT REFRESHED: clientId=${clientId}, sessionId=${dbSession._id}`);
 			res.json({
-				access_token: accessToken,
+				access_token: dbSession.sessionIdJwt,
 				token_type: 'Bearer',
 				expires_in: Math.floor(this.config.accessTokenTtlMs / 1000),
 				scope: tokenRecord.scopes.join(' '),
@@ -549,6 +548,8 @@ export class ModuleBE_OAuthServer_Class
 
 		const accessToken = await this.issueAccessToken(tokenRecord.userId, tokenRecord.clientId, tokenRecord.scopes);
 		const newRefreshToken = await this.issueRefreshToken(tokenRecord.userId, tokenRecord.clientId, tokenRecord.scopes);
+
+		await ModuleBE_OAuthTokenDB.set.item({...tokenRecord, revoked: true});
 
 		res.json({
 			access_token: accessToken,
@@ -600,7 +601,7 @@ export class ModuleBE_OAuthServer_Class
 		scopes: string[],
 		options?: {
 			resource?: string;
-			context?: TS_Object;
+			sessionId?: string;
 			tokenKind?: typeof OAuthTokenKind_SessionJwt | typeof OAuthTokenKind_OAuthJwt;
 		},
 	): Promise<string> {
@@ -617,7 +618,7 @@ export class ModuleBE_OAuthServer_Class
 			revoked: false,
 			tokenType: 'refresh',
 			resource: options?.resource,
-			context: options?.context,
+			sessionId: options?.sessionId,
 			tokenKind: options?.tokenKind ?? OAuthTokenKind_OAuthJwt,
 		});
 

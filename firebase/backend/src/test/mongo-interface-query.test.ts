@@ -54,6 +54,19 @@ describe('MongoInterface.buildQuery — $regex / $or', () => {
 			],
 		});
 	});
+
+	it('compiles compound range comparators on one field', () => {
+		const compiled = MongoInterface.buildQuery<DemoDoc & {__updated: number}>({
+			where: {
+				active: true,
+				__updated: {$gte: 1000, $lt: 2000},
+			},
+		});
+		expect(compiled.filter).to.deep.equal({
+			active: true,
+			__updated: {$gte: 1000, $lt: 2000},
+		});
+	});
 });
 
 describe('MongoInterface.buildJoinPipeline', () => {

@@ -25,7 +25,7 @@ export class ModuleFE_OAuth_Class
 	async completeAuthorization(body: API_OAuth['completeAuthorization']['Body']): Promise<API_OAuth['completeAuthorization']['Response']> {
 		this.logInfo('completeAuthorization → request', {
 			authReqId: body.authReqId,
-			hasContext: !!body.context,
+			hasClaims: !!body.claims,
 		});
 		void body;
 		return undefined as unknown as API_OAuth['completeAuthorization']['Response'];

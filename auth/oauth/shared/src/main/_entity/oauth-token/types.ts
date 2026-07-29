@@ -5,7 +5,6 @@
  */
 
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
-import type {TS_Object} from '@nu-art/ts-common';
 
 export const OAuthToken_DbKey = 'oauth--tokens';
 type DBKey = typeof OAuthToken_DbKey;
@@ -25,7 +24,8 @@ export type DB_OAuthToken = DB_Object<DBKey> & {
 	revoked: boolean;
 	tokenType: 'access' | 'refresh';
 	resource?: string;
-	context?: TS_Object;
+	// Pointer to the session this credential renews. The session module owns the JWT and its claims.
+	sessionId?: string;
 	tokenKind?: 'oauth-jwt' | 'session-jwt';
 };
 

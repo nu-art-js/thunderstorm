@@ -15,9 +15,9 @@ export type API_OAuth = {
 	consentContext: QueryApi<OAuthConsentContext, { authReqId: string }>;
 	completeAuthorization: BodyApi<OAuthCompleteAuthorizationResponse, {
 		authReqId: string;
-		// Opaque, app-defined consent selection. The auth server forwards it to the binder and
+		// Opaque JWT claim bag (infra + app peers). The auth server forwards it to the binder and
 		// persists it on the grant/token; it never inspects the shape.
-		context?: TS_Object;
+		claims?: TS_Object;
 	}>;
 	token: BodyApi<void, {
 		grant_type: 'authorization_code' | 'refresh_token';

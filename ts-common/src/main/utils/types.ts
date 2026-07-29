@@ -264,7 +264,7 @@ export type UniqueId = string;
  * @deprecated Use branded `DBPointer<Key>` from `@nu-art/db-api-shared`.
  * That form brands `id` as `DB_UniqueId<Key>` and distributes over key unions so
  * narrowing `dbKey` also narrows `id`. Prefer a concrete key or closed key union —
- * not `DBPointer<string>`.
+ * `DBPointer<string>` is rejected (`never`).
  */
 export type DBPointer = { dbKey: string; id: UniqueId };
 

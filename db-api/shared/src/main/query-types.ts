@@ -20,17 +20,33 @@
 
 import {DB_Object} from './db-object.js';
 
+/** Lower bound — exactly one of $gt / $gte. */
+type CrudNumberLower =
+	| { $gt: number; $gte?: never }
+	| { $gte: number; $gt?: never };
+
+/** Upper bound — exactly one of $lt / $lte. */
+type CrudNumberUpper =
+	| { $lt: number; $lte?: never }
+	| { $lte: number; $lt?: never };
+
+/**
+ * Number field comparator — at least one bound; lower/upper each pick at most one op; $eq alone.
+ * Allows closed ranges e.g. `{ $gte: 1000, $lt: 2000 }`; rejects `{ $gt, $gte }` and `{}`.
+ */
+export type CrudNumberComparator =
+	| ({ $eq: number } & { $gt?: never; $gte?: never; $lt?: never; $lte?: never })
+	| (CrudNumberLower & { $eq?: never; $lt?: never; $lte?: never })
+	| (CrudNumberUpper & { $eq?: never; $gt?: never; $gte?: never })
+	| (CrudNumberLower & CrudNumberUpper & { $eq?: never });
+
 /** Query comparator operators (Firestore-parity plus Mongo-capable `$regex`). */
 export type CrudQueryComparator<T> =
 	| { $ac: T extends (infer I)[] ? I : never }
 	| { $aca: T extends (infer I)[] ? I[] : never }
 	| { $nin: T extends (any)[] ? never : T[] }
 	| { $in: T extends (any)[] ? never : T[] }
-	| { $gt: number }
-	| { $gte: number }
-	| { $lt: number }
-	| { $lte: number }
-	| { $eq: number }
+	| CrudNumberComparator
 	| { $neq: T }
 	| { $regex: RegExp };
 
@@ -46,7 +62,7 @@ export type CrudClause_Where<T extends DB_Object> = {
 	$or?: CrudClause_Where<T>[]
 };
 
-export type CrudClause_OrderBy<T extends DB_Object> = [{ key: keyof T; order: CrudOrderByDirection }];
+export type CrudClause_OrderBy<T extends DB_Object> = { key: keyof T; order: CrudOrderByDirection }[];
 
 export type CrudClause_Select<T extends DB_Object, K extends keyof T = keyof T> = K[];
 

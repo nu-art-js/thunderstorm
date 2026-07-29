@@ -201,6 +201,11 @@ export class MongoInterface {
 				continue;
 			}
 
+			if (this.isCompoundQueryComparator(value)) {
+				filter[key] = this.compileCompoundFieldComparators(key, value, where);
+				continue;
+			}
+
 			const valueType = typeof value;
 			if (valueType === 'string' || valueType === 'number' || valueType === 'boolean') {
 				filter[key] = value;
@@ -218,23 +223,50 @@ export class MongoInterface {
 		return filter;
 	}
 
+	private static readonly ComparatorKeys = new Set([
+		'$ac', '$aca', '$in', '$nin', '$gt', '$gte', '$lt', '$lte', '$eq', '$neq', '$regex',
+	]);
+
 	private static isQueryComparator(value: any): boolean {
 		if (typeof value !== 'object' || Array.isArray(value))
 			return false;
 
 		const keys = Object.keys(value);
-		return keys.length === 1 && (
-			value['$ac'] !== undefined ||
-			value['$aca'] !== undefined ||
-			value['$in'] !== undefined ||
-			value['$nin'] !== undefined ||
-			value['$gt'] !== undefined ||
-			value['$gte'] !== undefined ||
-			value['$lt'] !== undefined ||
-			value['$lte'] !== undefined ||
-			value['$neq'] !== undefined ||
-			value['$eq'] !== undefined ||
-			value['$regex'] !== undefined);
+		return keys.length === 1 && this.ComparatorKeys.has(keys[0]!);
+	}
+
+	/** Multiple comparator keys on one field — e.g. `{ $gte, $lt }` for a closed time window. */
+	private static isCompoundQueryComparator(value: any): boolean {
+		if (typeof value !== 'object' || Array.isArray(value))
+			return false;
+
+		const keys = Object.keys(value);
+		return keys.length > 1 && keys.every(k => this.ComparatorKeys.has(k));
+	}
+
+	private static compileCompoundFieldComparators(
+		fieldKey: string,
+		value: Record<string, unknown>,
+		where: Record<string, any>,
+	): Document {
+		const compiled: Document = {};
+		for (const comparatorKey of Object.keys(value)) {
+			const operand = value[comparatorKey];
+			if (operand === undefined)
+				throw new ImplementationMissingException(`No value for comparator ${comparatorKey} in filter: ${__stringify(where)}`);
+
+			if (comparatorKey === '$regex' || comparatorKey === '$ac' || comparatorKey === '$aca')
+				throw new BadImplementationException(
+					`Comparator ${comparatorKey} cannot be combined with others on field '${fieldKey}' in filter: ${__stringify(where)}`,
+				);
+
+			const mqlOp = MqlComparatorMap[comparatorKey];
+			if (!mqlOp)
+				throw new ImplementationMissingException(`No MQL comparator for: ${comparatorKey} in filter: ${__stringify(where)}`);
+
+			compiled[mqlOp] = operand;
+		}
+		return compiled;
 	}
 
 	private static buildProjection(select: string[]): Document {

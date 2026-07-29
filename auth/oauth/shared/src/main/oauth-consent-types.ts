@@ -23,22 +23,21 @@ export type OAuthCompleteAuthorizationResponse = {
 	state?: string;
 };
 
+// Opaque JWT claim bag. Infra general claims and applicative claims are peers — same shape
+// the session JWT abstraction already uses. The auth server persists and forwards the bag;
+// only the binder (and app session collectors) read keys inside it.
 export type OAuthContextMintParams = {
-	accountId: string;
-	deviceId: string;
-	label: string;
-	// Opaque, app-defined selection captured at consent time (e.g. the payload posted by the
-	// consuming consent UI). The auth server persists and forwards it; only the binder reads it.
-	context?: TS_Object;
+	claims?: TS_Object;
 };
 
 // App-owned extension point. Each consuming module registers a binder for the resource(s) it owns;
 // the presence of a matching binder is what makes a resource consent-gated + session-JWT backed.
 // The auth server knows nothing about what a binder does beyond these three opaque calls.
+// `mintSession` returns the session id — the JWT itself is resolved from the session module.
 export type OAuthContextBinder = {
 	resolveConsentRedirect: (authReqId: string, resource?: string) => string;
 	loadConsentContext: (accountId: string, resource?: string) => Promise<OAuthConsentContext>;
-	mintSessionJwt: (params: OAuthContextMintParams) => Promise<string>;
+	mintSession: (params: OAuthContextMintParams) => Promise<string>;
 };
 
 // Predicate a module supplies at registration to claim the (opaque) RFC 8707 resource(s) it governs.
