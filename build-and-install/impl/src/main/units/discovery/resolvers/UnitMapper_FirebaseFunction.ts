@@ -37,7 +37,7 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 	sslKey?: string
 	sslCert?: string
 	functions: string[] | FunctionConfig[];
-	mongo?: { port?: number; dbName?: string };
+	mongo?: { port?: number; dbName?: string; dataDir?: string };
 };
 
 // Docker image name validation: lowercase, alphanumeric with dots, underscores, hyphens
@@ -121,6 +121,7 @@ const valuesValidator = {
 const mongoEmulatorValidator = {
 	port: tsValidateOptionalAnyNumber,
 	dbName: tsValidateOptionalAnyString,
+	dataDir: tsValidateOptionalAnyString,
 };
 
 function mergeFunctionConfigs(defaults: (string | FunctionConfig)[], overrides?: EnvFunctionOverride[]): FunctionConfig[] {

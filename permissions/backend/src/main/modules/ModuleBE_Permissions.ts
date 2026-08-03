@@ -77,7 +77,7 @@ const DefaultSAAccessIdCacheTtlMs = 60_000;
 
 export const GroupId_AppDefault = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/default');
 export const GroupId_PermissionsAdmin = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/permissions-admin');
-const BootstrapSAGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(ServiceAccountId_Bootstrap);
+export const GroupId_BootstrapServiceAccount = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(ServiceAccountId_Bootstrap);
 
 export const PermissionsInfraGroupIds: Record<keyof DocumentAccessInner, DatabaseDef_AccessGroup['id']> = AllDocumentAccessKeys.reduce((ids, key) => {
 	ids[key] = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`permissions-infra:${key}`);
@@ -117,11 +117,11 @@ class ModuleBE_Permissions_Class
 	}
 
 	private readonly permissionsAccessResolver = (item: any): DocumentAccessFields => {
-		if (item._id === BootstrapSAGroupId)
+		if (item._id === GroupId_BootstrapServiceAccount)
 			return {
 				__access: {
-					readers: [BootstrapSAGroupId],
-					writers: [BootstrapSAGroupId],
+					readers: [GroupId_BootstrapServiceAccount],
+					writers: [GroupId_BootstrapServiceAccount],
 					deleters: [],
 					owners: [],
 				}
@@ -143,9 +143,9 @@ class ModuleBE_Permissions_Class
 		return {
 			__access: {
 				owners: [personalGroupId],
-				readers: [personalGroupId, BootstrapSAGroupId],
-				writers: [personalGroupId, BootstrapSAGroupId],
-				deleters: [BootstrapSAGroupId],
+				readers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				writers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				deleters: [GroupId_BootstrapServiceAccount],
 			}
 		};
 	};
@@ -156,9 +156,9 @@ class ModuleBE_Permissions_Class
 		return {
 			__access: {
 				owners: [personalGroupId],
-				readers: [personalGroupId, BootstrapSAGroupId],
-				writers: [personalGroupId, BootstrapSAGroupId],
-				deleters: [personalGroupId, BootstrapSAGroupId],
+				readers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				writers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				deleters: [personalGroupId, GroupId_BootstrapServiceAccount],
 			}
 		};
 	};
@@ -391,7 +391,7 @@ class ModuleBE_Permissions_Class
 			return;
 		}
 
-		const hasRealMembers = adminGroup.members.some(m => m !== BootstrapSAGroupId);
+		const hasRealMembers = adminGroup.members.some(m => m !== GroupId_BootstrapServiceAccount);
 		if (hasRealMembers) {
 			this.logDebug(`[FIRST_USER] promoteIfNoAdmin: admin already has non-SA members — returning`);
 			return;
@@ -703,7 +703,7 @@ class ModuleBE_Permissions_Class
 
 	private async materializeBootstrapAccessIds(): Promise<ScopedAccessIds> {
 		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
-		const {accessIds} = await this.materializeFromGroups(BootstrapSAGroupId, allGroups);
+		const {accessIds} = await this.materializeFromGroups(GroupId_BootstrapServiceAccount, allGroups);
 		return {
 			...accessIds,
 			'permissions-admin': filterDuplicates([...(accessIds['permissions-admin'] ?? []), GroupId_PermissionsAdmin]),
@@ -720,12 +720,12 @@ class ModuleBE_Permissions_Class
 	// --- Bootstrap: ensure service account access group ---
 
 	private async ensureBootstrapSAAccessGroup() {
-		const existing = await ModuleBE_AccessGroupDB.query.unique(BootstrapSAGroupId);
+		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_BootstrapServiceAccount);
 		if (existing)
 			return;
 
 		await ModuleBE_AccessGroupDB.create.item({
-			_id: BootstrapSAGroupId,
+			_id: GroupId_BootstrapServiceAccount,
 			type: 'service-account',
 			key: ServiceAccountId_Bootstrap,
 			label: 'Bootstrap Admin (SA)',
@@ -837,7 +837,7 @@ class ModuleBE_Permissions_Class
 		];
 
 		const existingAdmin = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
-		const adminMembers = filterDuplicates([BootstrapSAGroupId, ...(existingAdmin?.members ?? [])]);
+		const adminMembers = filterDuplicates([GroupId_BootstrapServiceAccount, ...(existingAdmin?.members ?? [])]);
 		this.logDebug(`[FIRST_USER] ensurePermissionsAdminGroup: id=${GroupId_PermissionsAdmin}, existing=${!!existingAdmin}, members=${JSON.stringify(adminMembers)}, scopes=${scopeEntries.length}`);
 		await ModuleBE_AccessGroupDB.set.all([{
 			_id: GroupId_PermissionsAdmin,

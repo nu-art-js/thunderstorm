@@ -95,8 +95,12 @@ export class ModuleBE_PasswordAuth_Class
 		ModuleBE_AccountDB.impl.fixEmail(body);
 		this.assertRegistrationPassword(body);
 
-		const dbAccount = await ModuleBE_AccountDB.runTransaction(() =>
-			this.createRegisteredAccount({email: body.email, password: body.password}));
+		// Account __access is stamped only when MemKey_UserAccessIds is set (preWrite interceptor).
+		// Login creates the session as bootstrap SA, which filters Account reads by __access —
+		// so registration must create under the same SA context.
+		const dbAccount = await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () =>
+			ModuleBE_AccountDB.runTransaction(() =>
+				this.createRegisteredAccount({email: body.email, password: body.password})));
 
 		this.logInfo(JSON.stringify({
 			event: 'user.registered',

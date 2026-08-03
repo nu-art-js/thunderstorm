@@ -54,6 +54,7 @@ export type FunctionConfig = {
 export type MongoEmulatorConfig = {
 	port?: number;    // Defaults to basePort + 11
 	dbName?: string;  // Defaults to 'default'
+	dataDir?: string; // Folder name under unit .trash; defaults to 'mongo-data'
 };
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
@@ -243,7 +244,11 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private resolveMongoDataPath(): string {
-		return resolve(this.config.fullPath, CONST_TrashDir, 'mongo-data');
+		const dir = this.config.mongo?.dataDir ?? 'mongo-data';
+		if (dir.startsWith('/') || dir.includes('..'))
+			throw new ImplementationMissingException(`Invalid mongo.dataDir "${dir}": must be a folder name under unit .trash (no absolute paths or .. segments)`);
+
+		return resolve(this.config.fullPath, CONST_TrashDir, dir);
 	}
 
 	private async startMongoEmulator() {
