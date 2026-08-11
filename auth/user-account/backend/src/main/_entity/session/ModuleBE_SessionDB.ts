@@ -218,11 +218,15 @@ export class ModuleBE_SessionDB_Class
 				sessionIdJwt: jwt,
 			}, ['linkedSessionId', 'label'],);
 
-			const idsToDelete = dbSession.validSessionJwtMd5s.slice(1);
+			// Write the rotated row before deleting superseded docs — otherwise concurrent
+			// requests still holding a previous JWT miss validSessionJwtMd5s mid-rotation (401 → FE logout).
+			const saved = await this.set.item(dbSession);
+
+			const idsToDelete = saved.validSessionJwtMd5s.slice(1);
 			if (idsToDelete.length)
 				await this.delete.all(idsToDelete);
 
-			return await this.set.item(dbSession);
+			return saved;
 		},
 		create: Object.assign(async (content: Props_CreateSession, ttlInMs?: number) => {
 				this.logInfo(`Creating JWT for Account: ${content.initialClaims.accountId}`);

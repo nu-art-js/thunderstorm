@@ -78,4 +78,37 @@ describe('Reissue JWT Token', () => {
 				return testSessionReissued(async (session) => (await ModuleBE_SessionDB._session.rotate.reissue.byJwt(session.sessionIdJwt))!);
 			});
 	});
+
+	it('previous JWT stays resolvable during rotation (no delete-before-write gap)', async () => {
+		await stormTester(DefaultStormTest_WithClaims, async () => {
+			const session1 = await ModuleBE_SessionDB._session.create({initialClaims});
+			const jwt1 = session1.sessionIdJwt;
+
+			TimeProxy.setVirtualTime(currentTimeMillis() + 10000);
+
+			type DeleteAll = typeof ModuleBE_SessionDB.delete.all;
+			const deleteBag = ModuleBE_SessionDB.delete as {all: DeleteAll};
+			const originalDeleteAll = deleteBag.all;
+			let previousJwtResolvableAfterSupersededDelete = false;
+
+			deleteBag.all = (async (ids) => {
+				const deleted = await originalDeleteAll(ids);
+				// Concurrent requests still hold jwt1 while superseded docs are removed.
+				try {
+					await ModuleBE_SessionDB._session.query.byJwt(jwt1);
+					previousJwtResolvableAfterSupersededDelete = true;
+				} catch {
+					previousJwtResolvableAfterSupersededDelete = false;
+				}
+				return deleted;
+			}) as DeleteAll;
+
+			try {
+				await ModuleBE_SessionDB._session.rotate.reissue.bySession(session1);
+				expect(previousJwtResolvableAfterSupersededDelete).to.equal(true);
+			} finally {
+				deleteBag.all = originalDeleteAll;
+			}
+		});
+	});
 });

@@ -15,14 +15,28 @@ import type {
 	DocumentAccessInner,
 	ScopedAccessIds
 } from '@nu-art/permissions-shared';
-import {AccessScope_Self, AllDocumentAccessKeys, getAllRegisteredScopes, getRegisteredGroupDefinitions, permissionScopeId} from '@nu-art/permissions-shared';
+import {
+	AccessScope_Self,
+	AllDocumentAccessKeys,
+	getAllRegisteredScopes,
+	getPermissionScopeValues,
+	getRegisteredGroupDefinitions,
+	PermissionScope_ServiceAccount,
+	permissionScopeId,
+} from '@nu-art/permissions-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
-import {getPermissionScopeValues} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {ModuleBE_AccessGroupDB} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
-import {FirebaseRef, ModuleBE_Firebase, MongoCollection} from '@nu-art/firebase-backend';
+import {
+	FirebaseRef,
+	MemKey_FirestoreTransaction,
+	ModuleBE_Firebase,
+	MongoCollection,
+	registerTransactionPreClose,
+	type TransactionWrapper,
+} from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
 import {ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
@@ -90,6 +104,13 @@ const dispatcher_resolveAdditionalGroupMemberships = new Dispatcher<ResolveAddit
 
 export const SetupTaskKey_PermissionsGroups = asSetupTaskKey('permissions-groups');
 
+const PreCloseKey_PermissionsRematerialize = 'permissions.rematerialize';
+
+type PermissionsTxDirty = {
+	groups: Set<UniqueId>;
+	accounts: Set<UniqueId>;
+};
+
 class ModuleBE_Permissions_Class
 	extends Module<Config>
 	implements PerformProjectSetup, OnAccessGroupChanged, OnUserLogin, OnAccountDeleted {
@@ -102,13 +123,15 @@ class ModuleBE_Permissions_Class
 	// expiry at all (immutable SAs use Number.POSITIVE_INFINITY). Invalidated
 	// wholesale by __onAccessGroupChanged.
 	private readonly saAccessIdCache = new Map<UniqueId, SAAccessIdCacheEntry>();
+	/** Dirty rematerialize state scoped to an open TX wrapper — never module-global. */
+	private readonly dirtyByTx = new WeakMap<TransactionWrapper, PermissionsTxDirty>();
 
 	constructor() {
 		super();
 		this.setDefaultConfig({
 			serviceAccounts: {
 				[ServiceAccountId_Bootstrap]: {
-					scopes: ['permissions-ui:view', 'access-group:create'],
+					scopes: ['permissions-ui:view', 'access-group:create', 'service-account:run'],
 					enabled: true,
 					systemOnly: true,
 				}
@@ -324,8 +347,8 @@ class ModuleBE_Permissions_Class
 			this.logDebug(`__onUserLogin: checkAdminGrantFlag done`);
 			await this.resolveAdditionalGroupMemberships(account, 'login');
 			this.logDebug(`__onUserLogin: resolveAdditionalGroupMemberships done`);
-			await this.recomputePermissionsForUsers([account._id]);
-			this.logDebug(`__onUserLogin: recomputePermissionsForUsers done`);
+			await this.scheduleAccountPermissionsRefresh(account._id);
+			this.logDebug(`__onUserLogin: scheduleAccountPermissionsRefresh done`);
 		});
 	}
 
@@ -537,13 +560,21 @@ class ModuleBE_Permissions_Class
 		// re-materialize its access-ids on the next resolve.
 		this.logDebug(`__onAccessGroupChanged: clearing SA access-id cache (${this.saAccessIdCache.size} entries) for ${changedGroupIds.length} changed groups`);
 		this.saAccessIdCache.clear();
-		await this.rematerializeForGroups(changedGroupIds);
+		await this.scheduleGroupPermissionsRefresh(changedGroupIds);
 	}
 
 	async rematerializeForGroups(changedGroupIds: UniqueId[]): Promise<void> {
+		const affectedAccountIds = await this.resolveAffectedAccountIds(changedGroupIds);
+		if (affectedAccountIds.length > 0)
+			await this.recomputePermissionsForUsers(affectedAccountIds);
+	}
+
+	private async resolveAffectedAccountIds(changedGroupIds: UniqueId[]): Promise<UniqueId[]> {
+		if (!changedGroupIds.length)
+			return [];
+
 		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 		const userGroups = allGroups.filter(g => g.type === 'user');
-
 		const affectedAccountIds: UniqueId[] = [];
 		for (const personalGroup of userGroups) {
 			const reachable = this.walkGroupGraphUp(personalGroup._id, allGroups);
@@ -551,9 +582,54 @@ class ModuleBE_Permissions_Class
 			if (isAffected)
 				affectedAccountIds.push(personalGroup._id);
 		}
+		return affectedAccountIds;
+	}
 
-		if (affectedAccountIds.length > 0)
-			await this.recomputePermissionsForUsers(affectedAccountIds);
+	private async scheduleGroupPermissionsRefresh(changedGroupIds: UniqueId[]): Promise<void> {
+		const wrapper = MemStorage.getStore() ? MemKey_FirestoreTransaction.peak() : undefined;
+		if (!wrapper?.active) {
+			await this.rematerializeForGroups(changedGroupIds);
+			return;
+		}
+
+		const dirty = this.getOrCreateTxDirty(wrapper);
+		changedGroupIds.forEach(id => dirty.groups.add(id));
+		await registerTransactionPreClose(PreCloseKey_PermissionsRematerialize, () => this.flushDirtyRematerialize(wrapper));
+	}
+
+	private async scheduleAccountPermissionsRefresh(accountId: UniqueId): Promise<void> {
+		const wrapper = MemStorage.getStore() ? MemKey_FirestoreTransaction.peak() : undefined;
+		if (!wrapper?.active) {
+			await this.recomputePermissionsForUsers([accountId]);
+			return;
+		}
+
+		const dirty = this.getOrCreateTxDirty(wrapper);
+		dirty.accounts.add(accountId);
+		await registerTransactionPreClose(PreCloseKey_PermissionsRematerialize, () => this.flushDirtyRematerialize(wrapper));
+	}
+
+	private getOrCreateTxDirty(wrapper: TransactionWrapper): PermissionsTxDirty {
+		let dirty = this.dirtyByTx.get(wrapper);
+		if (!dirty) {
+			dirty = {groups: new Set(), accounts: new Set()};
+			this.dirtyByTx.set(wrapper, dirty);
+		}
+		return dirty;
+	}
+
+	private async flushDirtyRematerialize(wrapper: TransactionWrapper): Promise<void> {
+		const dirty = this.dirtyByTx.get(wrapper);
+		this.dirtyByTx.delete(wrapper);
+		if (!dirty)
+			return;
+
+		const accountIds = new Set(dirty.accounts);
+		if (dirty.groups.size)
+			(await this.resolveAffectedAccountIds([...dirty.groups])).forEach(id => accountIds.add(id));
+
+		if (accountIds.size)
+			await this.recomputePermissionsForUsers([...accountIds]);
 	}
 
 	private walkGroupGraphUp(startGroupId: UniqueId, allGroups: DB_AccessGroup[]): DB_AccessGroup[] {
@@ -621,11 +697,8 @@ class ModuleBE_Permissions_Class
 		if (!saConfig || !saConfig.enabled)
 			throw new ApiException(403, `Service account '${saId}' is not enabled`);
 
-		if (saConfig.systemOnly) {
-			const store = MemStorage.getStore();
-			if (store && MemKey_ServiceAccountId.peak() === undefined && MemKey_UserScopePermissions.peak() !== undefined)
-				throw new ApiException(403, `System-only service account '${saId}' cannot be used within a user context`);
-		}
+		if (saConfig.systemOnly)
+			this.assertSystemOnlyElevationAllowed(saId);
 
 		const scopes = saId === ServiceAccountId_Bootstrap
 			? this.resolveBootstrapScopes()
@@ -714,7 +787,31 @@ class ModuleBE_Permissions_Class
 		return [
 			'permissions-ui:view',
 			'access-group:create',
+			`${PermissionScope_ServiceAccount.key}:run`,
 		];
+	}
+
+	/**
+	 * System-only SAs may run outside a user request, when already elevated as an SA,
+	 * or when the caller holds `service-account:run` (seeded on permissions-admin).
+	 */
+	private assertSystemOnlyElevationAllowed(saId: string): void {
+		const store = MemStorage.getStore();
+		if (!store)
+			return;
+
+		if (MemKey_ServiceAccountId.peak() !== undefined)
+			return;
+
+		const userScopes = MemKey_UserScopePermissions.peak();
+		if (userScopes === undefined)
+			return;
+
+		const elevationScope = `${PermissionScope_ServiceAccount.key}:run`;
+		if (userScopes.includes(elevationScope))
+			return;
+
+		throw new ApiException(403, `System-only service account '${saId}' cannot be used within a user context without '${elevationScope}'`);
 	}
 
 	// --- Bootstrap: ensure service account access group ---
@@ -834,6 +931,7 @@ class ModuleBE_Permissions_Class
 		const scopeEntries = [
 			permissionScopeId('permissions-ui', 'view'),
 			permissionScopeId('access-group', 'create'),
+			permissionScopeId(PermissionScope_ServiceAccount.key, 'run'),
 		];
 
 		const existingAdmin = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);

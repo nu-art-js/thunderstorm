@@ -20,7 +20,7 @@ import {Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {Logger, Promise_all_sequentially, TypedMap} from '@nu-art/ts-common';
 import {MongoCollection} from './MongoCollection.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
-import {getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
+import {drainTransactionPreClose, getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
 import type {Db as MongoDriverDb, MongoClient} from 'mongodb';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
 
@@ -81,6 +81,7 @@ export class MongoWrapperBE
 					};
 
 					result = await processor();
+					await drainTransactionPreClose(wrapper);
 				}, parentStorage);
 			} catch (e) {
 				wrapper.active = false;

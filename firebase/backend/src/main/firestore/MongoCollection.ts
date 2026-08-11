@@ -48,7 +48,7 @@ import {
 } from '@nu-art/ts-common';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {composeDbObjectUniqueId, _EmptyQuery, maxBatch} from '@nu-art/firebase-shared';
-import {addDeletedToTransaction, getActiveTransaction, markTransactionWrite, MemKey_FirestoreTransaction} from './consts.js';
+import {addDeletedToTransaction, drainTransactionPreClose, getActiveTransaction, markTransactionWrite, MemKey_FirestoreTransaction} from './consts.js';
 import {MongoInterface} from './MongoInterface.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
 import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb, Document, UpdateFilter} from 'mongodb';
@@ -575,6 +575,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 				await new MemStorage().init(async () => {
 					MemKey_FirestoreTransaction.set(wrapper);
 					result = await processor();
+					await drainTransactionPreClose(wrapper);
 				}, parentStorage);
 			} catch (e) {
 				wrapper.active = false;

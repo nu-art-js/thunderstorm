@@ -19,6 +19,7 @@ const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, m
 describe('SA access-id cache (per-entry TTL / immutable)', () => {
 	let whereCalls = 0;
 	let originalQuery: any;
+	let originalMaterializeBootstrap: any;
 
 	beforeEach(() => {
 		// Stub the access-group DB query to count materializations without a DB.
@@ -30,12 +31,17 @@ describe('SA access-id cache (per-entry TTL / immutable)', () => {
 				return [];
 			},
 		};
+		// resolveSAAccessIds elevates via Bootstrap SA; that path also queries AccessGroup.
+		// Stub it so whereCalls counts only the SA under test.
+		originalMaterializeBootstrap = mod.materializeBootstrapAccessIds;
+		mod.materializeBootstrapAccessIds = async () => ({});
 		// Clear any cached entries from a previous test.
 		mod.saAccessIdCache.clear();
 	});
 
 	afterEach(() => {
 		(ModuleBE_AccessGroupDB as any).query = originalQuery;
+		mod.materializeBootstrapAccessIds = originalMaterializeBootstrap;
 		mod.saAccessIdCache.clear();
 	});
 

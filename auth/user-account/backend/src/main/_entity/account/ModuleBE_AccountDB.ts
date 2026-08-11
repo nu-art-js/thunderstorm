@@ -151,7 +151,9 @@ export class ModuleBE_AccountDB_Class
 		},
 		onAccountLogin: async (account: DB_Account) => {
 			this.logDebug(`onAccountLogin: dispatching for _id='${account._id}' email='${account.email}'`);
-			await dispatch_onAccountLogin.dispatchModuleAsync(account);
+			await this.runTransaction(async () => {
+				await dispatch_onAccountLogin.dispatchModuleAsyncSerial(account);
+			});
 			this.logDebug(`onAccountLogin: dispatch complete`);
 		},
 		queryAccountByEmail: async (credentials: AccountEmail): Promise<DB_Account> => {
