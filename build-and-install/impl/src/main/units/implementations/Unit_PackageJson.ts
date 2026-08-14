@@ -10,6 +10,7 @@ import {Commando_Basic} from '@nu-art/commando';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_NodeProject} from './Unit_NodeProject.js';
 import {FilesCache} from '../../core/FilesCache.js';
+import {loadJsonWithTemplateParams} from '../../core/template-params.js';
 
 
 /**
@@ -84,7 +85,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	}
 
 	protected deriveDistDependencies(): StringMap {
-		const baseParams = this.runtimeContext.baiConfig.templateParams?.packageJson ?? {};
+		const baseParams = this.runtimeContext.templateParams;
 		const params = (this.runtimeContext.parentUnit as Unit_NodeProject).innerUnits.reduce((dependencies, unit) => {
 			const rawVersion = (unit as Unit_PackageJson).config.packageJson.version;
 			dependencies[unit.config.key] = FileSystemUtils.file.template.transform(rawVersion, baseParams);
@@ -99,7 +100,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 		return this.runtimeContext.childUnits.reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = 'workspace:*';
 			return dependencies;
-		}, {...this.runtimeContext.baiConfig.templateParams?.packageJson, __ENV__: this.runtimeContext.runtimeParams.environment} as StringMap);
+		}, {...this.runtimeContext.templateParams, __ENV__: this.runtimeContext.runtimeParams.environment} as StringMap);
 	}
 
 
@@ -125,7 +126,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	async watchPrepare(): Promise<void> {
 		const pathToFile = resolve(this.config.fullPath, CONST_PackageJSONTemplate);
 		FilesCache.invalidate(pathToFile);
-		const raw = await FilesCache.load.json<TS_PackageJSON>(pathToFile);
+		const raw = await loadJsonWithTemplateParams<TS_PackageJSON>(pathToFile, this.runtimeContext.templateParams);
 		const freshPackageJson = Unit_PackageJson.transformDependencyPlaceholders(raw);
 
 		const targetPath = resolve(this.config.fullPath, CONST_PackageJSON);

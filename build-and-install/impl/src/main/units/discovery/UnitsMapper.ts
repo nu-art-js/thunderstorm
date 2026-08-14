@@ -1,9 +1,10 @@
 import {BaseUnit} from '../base/BaseUnit.js';
 import {ProjectUnit} from '../base/ProjectUnit.js';
 import {promises as fs} from 'fs';
-import {BadImplementationException, Logger, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, Logger, StringMap, TypedMap} from '@nu-art/ts-common';
 import {UnitMapper_Base} from './resolvers/UnitMapper_Base.js';
 import {BaiParams} from '../../core/params.js';
+import {BAI_Config} from '../../config/types/project-config.js';
 
 /**
  * Recursively scans workspace and discovers units using resolution rules.
@@ -101,6 +102,16 @@ export class UnitsMapper
 	 */
 	setRuntimeParams(runtimeParams: BaiParams) {
 		this.rules.forEach(rule => rule.setRuntimeParams(runtimeParams));
+		return this;
+	}
+
+	setConfig(config: BAI_Config) {
+		this.rules.forEach(rule => rule.setConfig(config));
+		return this;
+	}
+
+	setTemplateParams(templateParams: StringMap) {
+		this.rules.forEach(rule => rule.setTemplateParams(templateParams));
 		return this;
 	}
 

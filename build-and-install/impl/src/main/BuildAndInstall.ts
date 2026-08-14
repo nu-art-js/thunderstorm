@@ -32,6 +32,7 @@ import {CLIParamsResolver} from '@nu-art/cli-params';
 import {BaseCliParam} from '@nu-art/cli-params';
 import {RunningStatusHandler} from './runtime/RunningStatusHandler.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {resolveBaiTemplateParams} from './core/template-params.js';
 
 
 export const DefaultPhases = [
@@ -145,6 +146,14 @@ export class BuildAndInstall
 
 		this.workspace.addProjectUnits([Unit_HelpPrinter]);
 
+		const pathToBaiConfig = resolve(this.pathToProject, CONST_BaiConfig);
+		this.logDebug(`Loading BAI-Config from: ${pathToBaiConfig}`);
+		const baiConfig = await FilesCache.load.json<BAI_Config>(pathToBaiConfig);
+		this.logVerbose('Loaded BAI-Config', baiConfig);
+		const templateParams = resolveBaiTemplateParams(baiConfig);
+		this.unitsMapper.setConfig(baiConfig);
+		this.unitsMapper.setTemplateParams(templateParams);
+
 		// Scan units from workspace
 		await this.workspace.scanUnits(this.pathToProject, this.unitsMapper);
 
@@ -154,11 +163,6 @@ export class BuildAndInstall
 
 		// @ts-ignore
 		this['nodeProjectUnit'] = nodeProjectUnit;
-
-		const pathToBaiConfig = resolve(nodeProjectUnit.config.fullPath, CONST_BaiConfig);
-		this.logDebug(`Loading BAI-Config from: ${pathToBaiConfig}`);
-		const baiConfig = await FilesCache.load.json<BAI_Config>(pathToBaiConfig);
-		this.logVerbose('Loaded BAI-Config', baiConfig);
 
 		const globalOutputFolder = resolve(this.pathToProject, '.trash/output');
 		this.workspace.initializeDependencyMapper(globalOutputFolder);
@@ -183,6 +187,7 @@ export class BuildAndInstall
 			parentUnit: nodeProjectUnit,
 			childUnits: childProjectUnits,
 			baiConfig,
+			templateParams,
 			runtimeParams: this.runtimeParams,
 			unitsMapper: this.workspace.getDependencyMapper(),
 			unitsResolver: <Class extends BaseUnit>(keys: string[], className: Constructor<Class>): Class[] => {
