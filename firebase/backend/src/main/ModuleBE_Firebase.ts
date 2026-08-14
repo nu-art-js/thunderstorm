@@ -101,6 +101,10 @@ export class ModuleBE_Firebase_Class
 	}
 
 	public resolveMongoUrl(authKey?: string): string {
+		const emulatorHost = process.env.MONGODB_EMULATOR_HOST;
+		if (emulatorHost)
+			return emulatorHost.includes('://') ? emulatorHost : `mongodb://${emulatorHost}/?directConnection=true`;
+
 		const mongoConfig = this.resolveMongoConfig(authKey);
 
 		if (mongoConfig?.mongoUrl)

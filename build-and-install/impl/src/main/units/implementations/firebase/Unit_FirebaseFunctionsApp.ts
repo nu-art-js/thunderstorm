@@ -18,6 +18,7 @@ import {existsSync} from 'fs';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
+import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval} from './mongo-emulator.js';
 
 /** Exit code BaseStorm uses when RTDB config changes and the node server must restart. */
 const StormConfigChangeExitCode = 2;
@@ -240,7 +241,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private resolveMongoContainerName(): string {
-		return `mongo-emu-${this.config.key.replace(/[^a-z0-9-]/gi, '-')}`;
+		return mongoEmuContainerName(this.config.key, this.resolveMongoPort());
 	}
 
 	private resolveMongoDataPath(): string {
@@ -264,13 +265,15 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		this.registerTerminatable(stopAction);
 
 		const commando = this.allocateCommando();
-		await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:${port} -v ${mongoDataPath}:/data/db mongo:7 --replSet rs0 --port ${port}`, (stdout, stderr, exitCode) => {
+		const legacyName = mongoEmuContainerBaseName(this.config.key);
+		await this.executeAsyncCommando(commando, `docker rm -f ${legacyName} ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:${port} -v ${mongoDataPath}:/data/db mongo:7 --replSet rs0 --port ${port}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to start MongoDB emulator container`, stdout, stderr, exitCode);
 		});
 
 		const initCommando = this.allocateCommando();
-		await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${port} --quiet --eval "try{rs.status()}catch(e){rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:${port}'}]})} while(!rs.status().members.some(m=>m.stateStr==='PRIMARY')){sleep(200)} print('PRIMARY ready')"`, (stdout, stderr, exitCode) => {
+		const ensureEval = JSON.stringify(mongoReplicaSetEnsureEval(port));
+		await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${port} --quiet --eval ${ensureEval}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to initiate MongoDB replica set`, stdout, stderr, exitCode);
 		});
@@ -280,11 +283,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async stopMongoEmulator() {
 		const containerName = this.resolveMongoContainerName();
+		const legacyName = mongoEmuContainerBaseName(this.config.key);
 		this.logInfo(`Stopping MongoDB emulator (container: ${containerName})`);
 
 		try {
 			const commando = this.allocateCommando();
-			await this.executeAsyncCommando(commando, `docker rm -f ${containerName}`, () => {});
+			await this.executeAsyncCommando(commando, `docker rm -f ${legacyName} ${containerName}`, () => {});
 		} catch (e: any) {
 			this.logWarning(`Failed to stop MongoDB emulator container: ${e.message}`);
 		}
@@ -1203,6 +1207,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		if (this.config.mongo)
 			commando.custom(`export MONGODB_EMULATOR_HOST=localhost:${this.resolveMongoPort()}`);
+
+		// Storm HttpServer reads BACKEND_PORT (not BAI's unitConfig basePort).
+		commando.custom(`export BACKEND_PORT=${port}`);
+		commando.custom(`export PORT_BACKEND_APEX=${port}`);
+		const mcpBridgePort = process.env.PORT_MCP_BRIDGE || (port === 8352 ? '9999' : '10999');
+		commando.custom(`export PORT_MCP_BRIDGE=${mcpBridgePort}`);
 
 		commando.custom(`export GCLOUD_PROJECT=${projectId}`);
 		commando.custom(`export GOOGLE_CLOUD_PROJECT=${projectId}`);
