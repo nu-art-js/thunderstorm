@@ -55,6 +55,14 @@ describe('resolveBaiTemplateParams', () => {
 			expect(actual.PATH).to.equal('/tmp');
 		},
 	}));
+
+	it('bai-config params are enough with an empty env (watch / stable)', runResolve({
+		input: {env: {}},
+		result: async (actual) => {
+			expect(actual.PORT_BACKEND_APEX).to.equal('8352');
+			expect(actual.THUNDERSTORM_VERSION).to.equal('0.500.0');
+		},
+	}));
 });
 
 describe('transformJsonTemplate', () => {
