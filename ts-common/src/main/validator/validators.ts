@@ -123,10 +123,10 @@ export const tsValidate_optionalArrayOfUniqueIds = tsValidate_OptionalArray(tsVa
  */
 export const tsValidateDBPointer: (dbDefs: DBDef_V3<any>[], mandatory?: boolean) => ValidatorTypeResolver<DBPointer> = (dbDefs, mandatory = true) => {
 	const keys = dbDefs.map(def => def.dbKey);
-	return [tsValidateExists(mandatory), (dbRef) => tsValidateResult(dbRef, {
+	return [tsValidateExists(mandatory), (dbRef, _parent, strict = true) => tsValidateResult(dbRef, {
 		dbKey: tsValidateValue(keys),
 		id: tsValidateUniqueId,
-	})];
+	}, undefined, strict)];
 };
 
 export const tsValidateOptionalId = tsValidateId(dbIdLength, false);

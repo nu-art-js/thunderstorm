@@ -41,8 +41,9 @@ export type ValidatorTypeResolver<K> =
  *
  * Returns undefined if validation passes, or an InvalidResult if validation fails.
  * The parentObj parameter allows validators to access the parent object context.
+ * `strict` is the caller's unexpected-key mode and must be forwarded on any nested `tsValidateResult`.
  */
-export type ValidatorImpl<P> = (p?: P, parentObj?: any) => (InvalidResult<P> | undefined);
+export type ValidatorImpl<P> = (p?: P, parentObj?: any, strict?: boolean) => (InvalidResult<P> | undefined);
 
 /**
  * A validator can be a single function or an array of functions (all must pass).
@@ -167,7 +168,7 @@ export const tsValidateResult = <T>(instance: T | undefined, _validator: Validat
 	const validator: ValidatorImpl<T>[] | object = typeof _validator === 'function' ? [_validator] : _validator;
 	if (Array.isArray(validator)) {
 		const result = (validator as ValidatorImpl<T>[]).reduce((result, __validator) => {
-				return result === CONST_NO_ERROR ? result : result || __validator(instance, parentInstance);
+				return result === CONST_NO_ERROR ? result : result || __validator(instance, parentInstance, strict);
 			},
 			undefined as InvalidResult<T> | undefined);
 		return result !== CONST_NO_ERROR ? result : undefined;

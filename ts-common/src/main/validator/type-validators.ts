@@ -32,14 +32,14 @@ import {BadImplementationException} from '../core/exceptions/exceptions.js';
  */
 export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<keyof T>, mandatory = true) => {
 	return [tsValidateExists(mandatory),
-					(input?: T) => {
+					(input?: T, _parent?: any, strict = true) => {
 						if (!input)
 							return;
 
 						const keys = _keys(input);
 						const _result = keys.reduce<InvalidResultObject<T>>((res, key) => {
-							const _valRes = tsValidateResult(input[key as keyof T], valuesValidator);
-							const _keyRes = tsValidateResult(key, keysValidator);
+							const _valRes = tsValidateResult(input[key as keyof T], valuesValidator, undefined, strict);
+							const _keyRes = tsValidateResult(key, keysValidator, undefined, strict);
 
 							if (_valRes && _keyRes)
 								res[key as keyof T] = `Key: ${_keyRes}\nValue: ${_valRes}` as InvalidResult<T[keyof T]>;
@@ -69,10 +69,10 @@ export const tsValidateDynamicObject = <T extends object>(valuesValidator: Valid
  */
 export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], mandatory = true) => {
 	return [tsValidateExists(mandatory),
-					(input?: any) => {
+					(input?: any, _parent?: any, strict = true) => {
 						const results: InvalidResultArray<T>[] = [];
 						for (const validator of validators) {
-							const _res = tsValidateResult(input, validator);
+							const _res = tsValidateResult(input, validator, undefined, strict);
 							if (!_res)
 								return;
 							results.push(_res as InvalidResultArray<T>);
@@ -83,7 +83,7 @@ export const tsValidateUnion = <T>(validators: ValidatorTypeResolver<T>[], manda
 					}];
 };
 
-export const tsValidateCustom = <T>(processor: (input?: T, parentInput?: any) => InvalidResult<T>, mandatory = true): Validator<T>[] => {
+export const tsValidateCustom = <T>(processor: (input?: T, parentInput?: any, strict?: boolean) => InvalidResult<T>, mandatory = true): Validator<T>[] => {
 	return [tsValidateExists(mandatory), processor];
 };
 
@@ -93,10 +93,10 @@ type types = ReturnType<typeof typeFunc>;
 type validatorObject<T> = { [k in types]?: ValidatorTypeResolver<T> }
 export const tsValidateUnionV3 = <T>(validatorObject: validatorObject<T>, mandatory = true) => {
 	return [tsValidateExists(mandatory),
-					(input?: T) => {
+					(input?: T, _parent?: any, strict = true) => {
 						const _type = typeof input;
 						return _keys(validatorObject)
-							.includes(_type) ? tsValidateResult(input, validatorObject[_type] as ValidatorTypeResolver<T>) : 'Input does not match any of the possible types';
+							.includes(_type) ? tsValidateResult(input, validatorObject[_type] as ValidatorTypeResolver<T>, undefined, strict) : 'Input does not match any of the possible types';
 					}];
 };
 
@@ -119,15 +119,17 @@ export const tsValidateUnionV3 = <T>(validatorObject: validatorObject<T>, mandat
  * @returns Validator that validates each array element
  */
 export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I> | ValidatorTypeResolver<I>[], mandatory = true, minimumLength = 0, strict = true): Validator<I[]> => {
+	const constructionStrict = strict;
 	return [tsValidateExists(mandatory),
 					...asArray(validator).map(validator => {
-						return (input?: I[]) => {
+						return (input?: I[], _parent?: any, parentStrict?: boolean) => {
+							const effectiveStrict = (parentStrict ?? true) && constructionStrict;
 							const results: InvalidResultArray<I>[] = [];
 							const _input = input as unknown as I[];
 							if (_input.length < minimumLength)
 								return 'Array length smaller than minimum defined length';
 							for (let i = 0; i < _input.length; i++) {
-								results[i] = tsValidateResult(_input[i], validator, undefined, strict, input) as InvalidResultArray<I>;
+								results[i] = tsValidateResult(_input[i], validator, undefined, effectiveStrict, input) as InvalidResultArray<I>;
 							}
 
 							return filterInstances(results).length !== 0 ? results : undefined;
@@ -296,13 +298,13 @@ export const tsValidateTimestamp = (interval?: number, mandatory = true): Valida
 };
 
 export const tsValidateAudit = (range: RangeTimestamp = {min: 0, max: Number.MAX_VALUE}) => {
-	return (audit?: AuditBy) => {
-		return tsValidateResult(audit?.auditAt?.timestamp, tsValidateIsInRange([[range.min, range.max]]));
+	return (audit?: AuditBy, _parent?: any, strict = true) => {
+		return tsValidateResult(audit?.auditAt?.timestamp, tsValidateIsInRange([[range.min, range.max]]), undefined, strict);
 	};
 };
 
 export const tsValidateTimeRange = (mandatory: boolean = true): Validator<TimeRange> => {
-	return [tsValidateExists(mandatory), (instance?: TimeRange) => {
+	return [tsValidateExists(mandatory), (instance?: TimeRange, _parent?: any, strict = true) => {
 		if (!instance)
 			return 'No instance was provided to validation';
 
@@ -318,13 +320,13 @@ export const tsValidateTimeRange = (mandatory: boolean = true): Validator<TimeRa
 		if (!instance[1] && typeof instance[0] === 'number')
 			return;
 
-		return tsValidateResult(instance, tsValidateRange());
+		return tsValidateResult(instance, tsValidateRange(), undefined, strict);
 	}];
 };
 
 export const tsValidateNonMandatoryObject = <T extends object | undefined>(validator: ValidatorTypeResolver<T>) => {
 	return [tsValidateExists(false),
-					(input?: T) => tsValidateResult(input, validator)];
+					(input?: T, _parent?: any, strict = true) => tsValidateResult(input, validator, undefined, strict)];
 };
 
 export const tsValidateOptionalObject = tsValidateNonMandatoryObject;
@@ -332,8 +334,8 @@ export const tsValidateOptionalObject = tsValidateNonMandatoryObject;
 export const tsValidator_valueByKey = <T>(validatorObject: {
 	[k: string]: ValidatorTypeResolver<any>
 }, prop = 'type') => {
-	return tsValidateCustom((value?, parentObject?) => {
-		return tsValidateResult(value!, validatorObject[parentObject![prop]]) as InvalidResult<T>;
+	return tsValidateCustom((value?, parentObject?, strict = true) => {
+		return tsValidateResult(value!, validatorObject[parentObject![prop]], undefined, strict) as InvalidResult<T>;
 	}) as ValidatorTypeResolver<T>;
 };
 
@@ -356,24 +358,24 @@ export const tsValidator_valueByKey = <T>(validatorObject: {
 export const tsValidator_ArrayOfObjectsByKey = <T extends object>(key: keyof T, validatorMap: {
 	[k: string]: ValidatorTypeResolver<T>
 }) => {
-	return tsValidateArray(tsValidateCustom((value) => {
+	return tsValidateArray(tsValidateCustom((value, _parent, strict = true) => {
 		const _value = value as T;
 		const validator = validatorMap[_value[key] as string];
 		if (!validator)
 			throw new BadImplementationException(`No validator defined for key ${key as string} with value ${_value[key]}`);
 
-		return tsValidateResult(_value, validator);
+		return tsValidateResult(_value, validator, undefined, strict);
 	}) as ValidatorTypeResolver<T>);
 };
 
 export const tsValidator_stringOrNumber = (mandatory = true) => {
-	return tsValidateCustom((input?: string | number) => {
+	return tsValidateCustom((input?: string | number, _parent?: any, strict = true) => {
 		switch (typeof input) {
 			case 'string':
-				return tsValidateResult(input, tsValidateString());
+				return tsValidateResult(input, tsValidateString(), undefined, strict);
 
 			case 'number':
-				return tsValidateResult(input, tsValidateNumber());
+				return tsValidateResult(input, tsValidateNumber(), undefined, strict);
 		}
 		return 'Input is not string or number.';
 	}, mandatory) as ValidatorTypeResolver<string | number>;
