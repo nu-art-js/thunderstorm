@@ -30,8 +30,14 @@ export class ModuleFE_Message_Class
 		});
 	}
 
-	async createMessage(topicId: UniqueId, text?: string, attachments?: AssetRef[], parentMessageId?: UniqueId) {
-		const newMessage: DatabaseDef_Message['uiType'] = {topicId, text, attachments, parentMessageId} as DatabaseDef_Message['uiType'];
+	async createMessage(topicId: UniqueId, text?: string, attachments?: AssetRef[], parentMessageId?: UniqueId, mention?: DatabaseDef_Message['uiType']['mention']) {
+		const newMessage: DatabaseDef_Message['uiType'] = {
+			topicId,
+			text,
+			attachments,
+			parentMessageId,
+			...(mention !== undefined ? {mention} : {}),
+		} as DatabaseDef_Message['uiType'];
 		return this.upsert(newMessage);
 	}
 

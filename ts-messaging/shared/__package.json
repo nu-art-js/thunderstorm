@@ -34,7 +34,8 @@
     "@nu-art/ts-common": "?",
     "@nu-art/db-api-shared": "?",
     "@nu-art/api-types": "?",
-    "@nu-art/permissions-shared": "?"
+    "@nu-art/permissions-shared": "?",
+    "@nu-art/user-account-shared": "?"
   },
   "devDependencies": {
     "@nu-art/testalot": "?"

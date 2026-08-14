@@ -477,10 +477,20 @@ class ModuleBE_Permissions_Class
 
 	// --- Permission recomputation (materialized DB_UserPermissions) ---
 
+	/**
+	 * UserPermissions docs are PermissionsAdmin-writer-only. Always rematerialize under a
+	 * fresh bootstrap SA MemStorage so a polluted outer MemKey_UserAccessIds (e.g. apex
+	 * registration stamping the new account's access ids into an enclosing SA context)
+	 * cannot 403 the write — including deferred TX preClose rematerialize.
+	 */
 	async recomputePermissionsForUsers(accountIds: UniqueId[]): Promise<void> {
 		if (!accountIds.length)
 			return;
 
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.recomputePermissionsForUsersUnderBootstrap(accountIds));
+	}
+
+	private async recomputePermissionsForUsersUnderBootstrap(accountIds: UniqueId[]): Promise<void> {
 		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 		this.logDebug(`[FIRST_USER] recomputePermissionsForUsers: accountIds=${JSON.stringify(accountIds)}, allGroups=${allGroups.length}`);
 
@@ -500,6 +510,10 @@ class ModuleBE_Permissions_Class
 	}
 
 	async recomputePermissionsForAllUsers(): Promise<void> {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.recomputePermissionsForAllUsersUnderBootstrap());
+	}
+
+	private async recomputePermissionsForAllUsersUnderBootstrap(): Promise<void> {
 		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 		const userGroups = allGroups.filter(g => g.type === 'user');
 		if (!userGroups.length)
@@ -775,7 +789,10 @@ class ModuleBE_Permissions_Class
 	}
 
 	private async materializeBootstrapAccessIds(): Promise<ScopedAccessIds> {
-		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
+		// Unmanipulated: caller MemKey_UserAccessIds may be a polluted outer context
+		// (registration stamps account access into an enclosing SA MemStorage). Bootstrap
+		// elevation must see the full group graph to rebuild SA access ids.
+		const allGroups = await ModuleBE_AccessGroupDB.query.unManipulatedQuery({where: {}});
 		const {accessIds} = await this.materializeFromGroups(GroupId_BootstrapServiceAccount, allGroups);
 		return {
 			...accessIds,

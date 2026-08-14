@@ -255,7 +255,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	}
 
 	render() {
-		return <div className={_className('ts-tree', this.props.className)} style={this.props.treeContainerStyle}>
+		return <div
+			id={this.props.id}
+			className={_className('ts-tree', this.props.className)}
+			style={this.props.treeContainerStyle}>
 			{this.renderNode(this.state.adapter.data, '', '', (this.state.adapter.hideRoot ? -1 : 0))}
 		</div>;
 	}

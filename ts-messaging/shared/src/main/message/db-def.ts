@@ -2,7 +2,9 @@ import {Database} from '@nu-art/db-api-shared';
 import {
 	exists,
 	InvalidResult,
+	tsValidateResult,
 	tsValidateUniqueId,
+	tsValidator_arrayOfUniqueIds,
 } from '@nu-art/ts-common';
 import {DatabaseDef_Message, DB_Message} from './types.js';
 import {MessagingDBGroup} from '../consts.js';
@@ -22,6 +24,12 @@ const Validator_ModifiableProps_Message = (instance?: DB_Message): InvalidResult
 	const hasAttachments = exists(instance.attachments) && instance.attachments.length > 0;
 	if (!hasText && !hasAttachments)
 		return 'Message must have text or attachments (at least one)';
+
+	if (exists(instance.mention)) {
+		const mentionResult = tsValidateResult(instance.mention, tsValidator_arrayOfUniqueIds);
+		if (mentionResult)
+			return {mention: mentionResult};
+	}
 
 	return undefined;
 };

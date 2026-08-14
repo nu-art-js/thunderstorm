@@ -142,9 +142,18 @@ class ModuleFE_Session_Class
 	}
 
 	private async onSessionUpdated(sessionAsString?: string) {
+		// StorageKey.set fires onChange without await — a slower decode of an older JWT
+		// must not clobber sessionData after a newer token was already stored.
+		if (sessionAsString !== this.StorageKey_SessionId.get())
+			return;
+
 		if (sessionAsString)
 			try {
-				this.sessionData = await this.sessionDecoder(sessionAsString);
+				const decoded = await this.sessionDecoder(sessionAsString);
+				if (sessionAsString !== this.StorageKey_SessionId.get())
+					return;
+
+				this.sessionData = decoded;
 			} catch (e: any) {
 				this.logError('Error decoding session data', e);
 			}
@@ -167,6 +176,16 @@ class ModuleFE_Session_Class
 	}
 
 	public getJWT = () => this.StorageKey_SessionId.get();
+
+	/**
+	 * Persist + decode a session JWT and wait until {@link sessionData} matches.
+	 * Use after APIs that rotate the session in the response body (`jwtToken`) — the
+	 * `X-Auth-Token` header path is fire-and-forget via StorageKey.onChange.
+	 */
+	public applySessionJwt = async (jwt: string) => {
+		this.StorageKey_SessionId.set(jwt);
+		await this.onSessionUpdated(jwt);
+	};
 }
 
 export const ModuleFE_Session = new ModuleFE_Session_Class();

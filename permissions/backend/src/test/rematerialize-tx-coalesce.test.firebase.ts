@@ -11,8 +11,9 @@ import {stringToUniqueId} from '@nu-art/db-api-shared';
 import {stormTester, type StormTestInput} from '@nu-art/storm-testalot';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {ModuleBE_AccountDB} from '@nu-art/user-account-backend';
-import type {DatabaseDef_AccessGroup} from '@nu-art/permissions-shared';
+import {AccessScope_Self, type DatabaseDef_AccessGroup, type DatabaseDef_UserPermissions} from '@nu-art/permissions-shared';
 import {DefaultStormTestConfig_Permissions} from './utils/helpers.js';
+import {MemKey_UserAccessIds} from '../main/consts.js';
 import {ModuleBE_AccessGroupDB} from '../main/_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {ModuleBE_UserPermissionsDB} from '../main/_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import {ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '../main/modules/ModuleBE_Permissions.js';
@@ -101,6 +102,48 @@ describe('Permissions rematerialize TX coalesce', () => {
 				// Bug today: each AccessGroup postWrite rematerializes immediately → 2 writes.
 				// Fix: defer to TX preClose → 1 write.
 				expect(rematerializeWrites).to.equal(1);
+			});
+		});
+	});
+
+	it('TX preClose rematerialize succeeds when outer SA MemKey_UserAccessIds was polluted to a non-admin account', async () => {
+		await stormTester(StormTest_RematerializeCoalesce, async () => {
+			await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+				await ModuleBE_Permissions.ensureDefinedGroups();
+
+				const account = await ModuleBE_AccountDB.impl.create({
+					email: `rematerialize-polluted-${generateHex(8)}@test.local`,
+					type: 'user',
+				});
+				await ModuleBE_Permissions.ensureAccountPermissionIdentity(account);
+				await ModuleBE_Permissions.recomputePermissionsForUsers([account._id]);
+
+				const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+				const group = await ModuleBE_AccessGroupDB.create.item({
+					_id: stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(generateHex(32)),
+					type: 'custom',
+					key: 'rematerialize-polluted-ctx',
+					label: 'Rematerialize polluted context',
+					members: [],
+					scopeEntries: [],
+				});
+
+				// Simulate apex-register: stamp the new account's access ids into the enclosing SA context.
+				MemKey_UserAccessIds.set({[AccessScope_Self]: [personalGroupId]});
+
+				await ModuleBE_AccessGroupDB.runTransaction(async () => {
+					// Group writes elevate (createAccessStructure); deferred preClose rematerialize
+					// must still succeed even though the outer SA MemKey stays polluted.
+					await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+						group.members = [personalGroupId];
+						await ModuleBE_AccessGroupDB.set.item(group);
+					});
+				});
+
+				const permissionsId = stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(account._id);
+				const userPerm = await ModuleBE_UserPermissionsDB.query.uniqueUnmanipulated(permissionsId);
+				expect(userPerm).to.not.equal(undefined);
+				expect(userPerm!.accessIds).to.be.an('object');
 			});
 		});
 	});
