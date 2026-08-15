@@ -82,7 +82,6 @@ export class MongoCollection<Proto extends DB_Prototype>
 	readonly uniqueKeys: Proto['uniqueKeys'];
 	private readonly validator;
 	readonly hooks?: FirestoreCollectionHooks<Proto['dbType']>;
-	private lastKnownCount = 0;
 
 	constructor(db: MongoDriverDb, _dbDef: Database<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
 		super();
@@ -151,12 +150,6 @@ export class MongoCollection<Proto extends DB_Prototype>
 			cursor = cursor.limit(compiled.limit);
 
 		const results = await cursor.toArray() as Proto['dbType'][];
-		if (results.length > this.lastKnownCount)
-			this.lastKnownCount = results.length;
-
-		if (results.length === 0 && this.lastKnownCount > 0 && Object.keys(compiled.filter).length > 0)
-			this.logWarning(`_customQuery [${this.dbDef.dbKey}] returned 0 results but collection previously had ${this.lastKnownCount} items — filter=${__stringify(compiled.filter)}`);
-
 		this.logDebug(`_customQuery [${this.dbDef.dbKey}] results=${results.length} ids=${results.map(r => r._id).join(',')}`);
 		return results;
 	}
