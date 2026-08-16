@@ -1,5 +1,6 @@
-import {_keys, exists, formatTimestamp} from '@nu-art/ts-common';
-import {AccountPassword, API_PasswordAuth, ErrorType_LoginBlocked} from '@nu-art/password-auth-shared';
+import {_keys, exists} from '@nu-art/ts-common';
+import {AccountPassword, API_PasswordAuth} from '@nu-art/password-auth-shared';
+import {resolveLoginFailure} from '../resolve-login-failure.js';
 import './Component_Login.scss';
 import {Button, ComponentSync, LL_H_C, LL_V_C, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {Label} from '@nu-art/thunder-widgets/v3';
@@ -75,15 +76,8 @@ export class Component_Login
 			try {
 				await ModuleFE_PasswordAuth.login({...this.state.data, deviceId: StorageKey_DeviceId.get()} as API_PasswordAuth['login']['Body']);
 				this.setState({submitting: false});
-			} catch (err: any) {
-				if (err.errorResponse.error?.type === ErrorType_LoginBlocked) {
-					const blockedUntil = err.errorResponse.error.data.blockedUntil;
-					return this.setState({
-						blockedUntil: blockedUntil,
-						errorMessages: [`Login blocked until ${formatTimestamp('DD/MM/YYYY HH:mm', blockedUntil)}`],
-					});
-				}
-				this.setState({errorMessages: ['Email or password incorrect'], submitting: false});
+			} catch (err: unknown) {
+				this.setState({...resolveLoginFailure(err), submitting: false});
 			}
 		});
 	};

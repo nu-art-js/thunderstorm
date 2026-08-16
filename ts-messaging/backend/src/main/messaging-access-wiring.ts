@@ -109,6 +109,16 @@ export class ModuleBE_MessagingAccess_Class
 		throw HttpCodes._4XX.FORBIDDEN('Insufficient document access');
 	}
 
+	async addAccountToTopic(topicId: UniqueId, accountId: UniqueId): Promise<void> {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(accountId);
+		await ModuleBE_Permissions.runAsSystemContext([], async () => {
+			for (const accessKey of AllDocumentAccessKeys) {
+				const groupId = await this.ensureEntityGroup(topicId, accessKey);
+				await this.addMemberGroupToAccessGroup(groupId, personalGroupId);
+			}
+		});
+	}
+
 	private async mintTopicGroups(topicId: UniqueId): Promise<void> {
 		const creatorPersonalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(MemKey_AccountId.get());
 

@@ -676,16 +676,27 @@ class ModuleBE_Permissions_Class
 
 	private deduplicateScopeEntries(scopeEntities: DB_PermissionScope[]): string[] {
 		const scopeMaxIdx: Record<string, { value: string; idx: number }> = {};
+		const unregistered: string[] = [];
 		for (const entity of scopeEntities) {
 			const scopeValues = getPermissionScopeValues(entity.key);
-			const valueIdx = scopeValues ? scopeValues.indexOf(entity.value) : -1;
+			// Dynamic per-instance scopes (e.g. organization/{id}) are not in the
+			// global registry — collapsing them by idx=-1 keeps the first value
+			// (often can-invite) and drops admin. Keep every distinct key:value.
+			if (!scopeValues) {
+				unregistered.push(`${entity.key}:${entity.value}`);
+				continue;
+			}
 
+			const valueIdx = scopeValues.indexOf(entity.value);
 			const current = scopeMaxIdx[entity.key];
 			if (!current || valueIdx > current.idx)
 				scopeMaxIdx[entity.key] = {value: entity.value, idx: valueIdx};
 		}
 
-		return _keys(scopeMaxIdx).map(k => `${k}:${scopeMaxIdx[k].value}`);
+		return [
+			..._keys(scopeMaxIdx).map(k => `${k}:${scopeMaxIdx[k].value}`),
+			...filterDuplicates(unregistered),
+		];
 	}
 
 	// --- Service account elevation ---
