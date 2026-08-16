@@ -1,0 +1,44 @@
+{
+	"name": "@nu-art/e2e-harness",
+	"version": "{{THUNDERSTORM_VERSION}}",
+	"description": "Abstract programmatic bootstrap for product E2E stacks (backend + emulators + health gates)",
+	"type": "module",
+	"keywords": [
+		"e2e",
+		"harness",
+		"test",
+		"thunderstorm",
+		"nu-art"
+	],
+	"homepage": "https://github.com/nu-art-js/thunderstorm",
+	"bugs": {
+		"url": "https://github.com/nu-art-js/thunderstorm/issues?q=is%3Aissue+label%3Ae2e-harness"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+		"directory": "_thunderstorm/e2e-harness"
+	},
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	},
+	"license": "Apache-2.0",
+	"author": "TacB0sS",
+	"scripts": {
+		"build": "tsc"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@nu-art/testalot": "?"
+	},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		}
+	}
+}
