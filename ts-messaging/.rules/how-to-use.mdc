@@ -26,7 +26,7 @@ The ts-messaging lib provides a universal conversation primitive — entity-anch
 - **Permissions via per-topic entity groups.** On Topic create, `ModuleBE_MessagingAccess` mints four `entity` AccessGroups (`readers` / `writers` / `deleters` / `owners`) and stamps those IDs on `Topic.__access`. Messages **copy** that `__access` at create. The creator’s personal group is a member of all four. Static `AccessGroup_MessagingRead/Write/Delete/Admin` remain as optional **scope** roles (`@RequirePermission`), not document ACL.
 - **`message:create` is Topic.writers|owners.** A dedicated interceptor gates Message create (the permissions create interceptor only stamps). Message update requires the author (`_auditorId`) **or** Topic owners. Delete/read stay on the default deleters|owners and readers interceptors.
 - **Topic create owns membership.** Mint four entity groups and add the creator (and later conversation/project members at create time). Messages **copy Topic.__access** at create. `mention?` does **not** grant Topic ACL.
-- **`mention?` is optional directed-ask.** `DB_Account['_id'][]` when present. After a successful Message create with `(mention ?? []).length > 0`, dispatch `{topic, message, mentionedAccountIds}` once — `mentionedAccountIds` is the full `message.mention` array (not once-per-id). Omitted or empty `mention` does not dispatch (manual path). Set/update/delete do not dispatch. No listener = no-op. The library does not know Persona, LLM, or knowledge.
+- **`mention` is backend-owned.** Do not send `mention[]` from the UI. Do not persist client `mention[]`. On create, `resolveCreateMentions` stamps it: parse `@_id(<32-hex>)` from text; every token must be a topic writer other than the sender or the create is 400 (`Invalid mention`) — do not drop and continue. No tokens: 1:1 infers the other writer; multi stays empty. After a successful create with `(mention ?? []).length > 0`, dispatch `{topic, message, mentionedAccountIds}` once — full array, not once-per-id. Set/update/delete do not dispatch. No listener = no-op. The library does not know Persona, LLM, or knowledge. Persona wake is a second bar: access-filtered persona query in the listener — never unmanipulated.
 - **File attachments reference `DB_Asset` from file-upload.** The `AssetRef` type holds `{ assetId }` pointing to the file-upload library's asset collection.
 
 ---
@@ -285,6 +285,16 @@ if (!topic) {
 
 ---
 
+## Never ever (mentions)
+
+Changing these is a product defect. Architecture SSOT: `_docs/architecture/agent-consult.md` §8.1.
+
+- **Never persist or trust client `mention[]`.** The UI send path does not decide who was asked. Text may contain `@_id(<accountId>)` after `@name` resolve; `resolveCreateMentions` stamps `mention[]`.
+- **Never drop a bad `@_id` and continue.** Missing, other-org, not a topic writer, or the sender → 400, no row, no callback. One bad token fails the whole create.
+- **Never infer mentions on a multi-party topic.** No tokens → nobody is asked. 1:1 with no tokens infers the other writer.
+- **Never wake anyone by re-parsing Message.text after create.** Verdict is `mention[]` on the row.
+- **Never look up a persona unmanipulated to wake it.** Access-filtered query only.
+
 ## Forbidden patterns
 
 - **Do not create topics without an anchor** — every topic must have `anchor: { dbKey, id }`.
@@ -297,3 +307,5 @@ if (!topic) {
 - **Do not dispatch `OnMessageMentioned` once per mentioned id** — one dispatch per create, full `mentionedAccountIds`.
 - **Do not fire `OnMessageMentioned` from preWrite** — only `postWriteProcessing` after a successful create.
 - **Do not grant Topic ACL from `mention`** — membership is set at Topic create; messages copy Topic `__access`.
+- **Do not attach a mention in the UI send path** — see Never ever (mentions).
+- **Do not treat parsed `@_id` as authorized** — see Never ever (mentions).

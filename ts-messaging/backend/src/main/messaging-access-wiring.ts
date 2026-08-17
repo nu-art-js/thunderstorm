@@ -25,7 +25,8 @@ import {
 	ModuleBE_Permissions,
 } from '@nu-art/permissions-backend';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
-import type {DatabaseDef_Message, DatabaseDef_Topic} from '@nu-art/ts-messaging-shared';
+import type {DB_Account} from '@nu-art/user-account-shared';
+import {parseMessageMentionIds, type DatabaseDef_Message, type DatabaseDef_Topic} from '@nu-art/ts-messaging-shared';
 
 type AccessCarrier = {
 	__access?: DocumentAccessInner;
@@ -107,6 +108,41 @@ export class ModuleBE_MessagingAccess_Class
 
 		this.logWarning(`REJECTED: insufficient document access — topicId=${topicId} keys=${keys.join('|')}`);
 		throw HttpCodes._4XX.FORBIDDEN('Insufficient document access');
+	}
+
+	/**
+	 * Backend-owned mention allow-list. Do not "simplify" this.
+	 *
+	 * Client `mention[]` is ignored. `@_id(<accountId>)` in text is a claim.
+	 * A referenced account that is missing, not a topic writer, or the sender is a 400 —
+	 * do not drop it and continue. Mention never grants Topic ACL.
+	 *
+	 * Allow-list = topic writers other than the sender. Valid `@_id` tokens become mention[].
+	 * No tokens: 1:1 infers the other writer; multi stays empty.
+	 */
+	async resolveCreateMentions(
+		topicId: UniqueId,
+		senderAccountId: UniqueId,
+		text?: string,
+	): Promise<DB_Account['_id'][]> {
+		const writerIds = await this.listTopicWriterAccountIds(topicId);
+		const claimed = parseMessageMentionIds(text);
+		if (claimed.some(id => id === senderAccountId || !writerIds.has(id)))
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid mention');
+
+		if (claimed.length)
+			return claimed as DB_Account['_id'][];
+
+		const others = [...writerIds].filter(id => id !== senderAccountId);
+		if (others.length === 1)
+			return [others[0] as DB_Account['_id']];
+
+		return [];
+	}
+
+	async listTopicWriterAccountIds(topicId: UniqueId): Promise<Set<string>> {
+		const group = await ModuleBE_AccessGroupDB.query.uniqueUnmanipulated(deriveEntityGroupId(topicId, 'writers'));
+		return new Set(group?.members ?? []);
 	}
 
 	async addAccountToTopic(topicId: UniqueId, accountId: UniqueId): Promise<void> {

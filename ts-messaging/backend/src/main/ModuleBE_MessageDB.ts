@@ -26,9 +26,19 @@ export class ModuleBE_MessageDB_Class
 		ModuleBE_MessagingAccess.wireMessage(this);
 	}
 
-	protected async preWriteProcessing(dbInstance: DatabaseDef_Message['uiType'], _originalDbInstance: DatabaseDef_Message['dbType']) {
+	protected async preWriteProcessing(dbInstance: DatabaseDef_Message['uiType'], originalDbInstance: DatabaseDef_Message['dbType']) {
 		if (!dbInstance._auditorId)
 			dbInstance._auditorId = await getAuditorId();
+
+		if (originalDbInstance)
+			return;
+
+		// Always overwrite. Client mention[] is not an allow-list — see resolveCreateMentions.
+		dbInstance.mention = await ModuleBE_MessagingAccess.resolveCreateMentions(
+			dbInstance.topicId,
+			dbInstance._auditorId,
+			dbInstance.text,
+		);
 	}
 
 	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DatabaseDef_Message['dbType']>, actionType: CollectionActionType) {

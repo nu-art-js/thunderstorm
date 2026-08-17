@@ -104,3 +104,13 @@ export async function expectForbidden(action: () => Promise<unknown>): Promise<v
 		expect((e as ApiException).responseCode).to.equal(403);
 	}
 }
+
+export async function expectBadRequest(action: () => Promise<unknown>): Promise<void> {
+	try {
+		await action();
+		expect.fail('expected ApiException');
+	} catch (e) {
+		expect(e).to.be.instanceOf(ApiException);
+		expect((e as ApiException).responseCode).to.equal(400);
+	}
+}
