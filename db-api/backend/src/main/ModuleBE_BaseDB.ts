@@ -168,6 +168,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 					throw new BadImplementationException(`Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
 			}
 
+			// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+			// Why: delete-safety — "is anything still pointing at these ids?" must see references the caller cannot read.
 			acc.push(batchActionParallel(itemIds, 10, async ids => this.query.unManipulatedQuery({where: whereClause(ids)})));
 			return acc;
 		}, [] as Promise<DatabaseProto['dbType'][]>[]);
@@ -424,6 +426,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
 	 */
 	public isCollectionUpToDate = async () => {
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: version check must see stale rows the caller cannot read, or upgrade never runs.
 		return (await this.query.unManipulatedQuery({
 			limit: 1,
 			where: {_v: {$neq: this.dbDef.versions[0]}}
@@ -445,6 +449,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 			const query = {limit: {page: 0, itemsCount}};
 			let instances: DatabaseProto['dbType'][];
 
+			// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+			// Why: upgrade walks every page of the collection. Filtered pages skip rows and leave them on the old version.
 			while ((instances = await this.collection.query.unManipulatedQuery(query)).length > 0) {
 				(this as any).logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
 				await processInstances(instances);
@@ -461,6 +467,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 			limit: {page: 0, itemsCount},
 		};
 
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: Firestore upgrade walk — same as the Mongo page walk: every row, not every visible row.
 		while ((docs = await fsCollection.doc.unManipulatedQuery(query)).length > 0) {
 			const toDelete = docs.filter(doc => {
 				return doc.ref.id !== doc.data!._id;

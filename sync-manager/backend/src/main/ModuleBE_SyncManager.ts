@@ -149,6 +149,8 @@ export class ModuleBE_SyncManager_Class
 		const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
 		await Promise.all(staleModules.map(async module => {
 			try {
+				// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+				// Why: sync timestamp is the newest row in the collection. A filtered peek would pick a visible row and lie about freshness.
 				const newest = (await module.query.unManipulatedQuery(query))[0] as DB_Object | undefined;
 				if (newest?.__updated) {
 					rtdbSyncData[module.dbDef.dbKey] = {lastUpdated: newest.__updated};
@@ -249,6 +251,8 @@ export class ModuleBE_SyncManager_Class
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'desc'}]};
 			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
 				try {
+					// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+					// Why: same as backfill — newest row in the collection, not the newest row this caller can read.
 					return (await missingModule.query.unManipulatedQuery(query))[0] as DB_Object;
 				} catch (e: any) {
 					dispatch_onApplicationException.dispatchModule(e, this);

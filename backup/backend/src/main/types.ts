@@ -11,6 +11,7 @@ import type {FirestoreQuery} from '@nu-art/firebase-shared';
 export type BackupableModule = {
 	dbDef: { dbKey: string; versions: string[] };
 	query: {
+		/** NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT. Backup dumps the whole collection. */
 		unManipulatedQuery(query: FirestoreQuery<DB_Object>): Promise<DB_Object[]>;
 	};
 };

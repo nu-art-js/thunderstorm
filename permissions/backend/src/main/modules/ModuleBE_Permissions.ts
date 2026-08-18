@@ -1,4 +1,4 @@
-import {_keys, ApiException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, BadImplementationException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
@@ -23,6 +23,7 @@ import {
 	getRegisteredGroupDefinitions,
 	PermissionScope_ServiceAccount,
 	permissionScopeId,
+	type PermissionScope,
 } from '@nu-art/permissions-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
 import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
@@ -45,6 +46,14 @@ import {HttpCodes} from '@nu-art/api-types';
 
 export type ShareAccessContext = Partial<DocumentAccessInner>;
 
+export type DefaultScopeGrant = {
+	readonly scope: PermissionScope;
+	readonly value: string;
+};
+
+export interface CollectDefaultScopeValues {
+	__collectDefaultScopeValues(): DefaultScopeGrant[];
+}
 
 // --- Dispatcher for additional group memberships on registration/login ---
 
@@ -101,6 +110,7 @@ export const PermissionsInfraGroupIds: Record<keyof DocumentAccessInner, Databas
 // --- Module ---
 
 const dispatcher_resolveAdditionalGroupMemberships = new Dispatcher<ResolveAdditionalGroupMemberships, '__resolveAdditionalGroupMemberships'>('__resolveAdditionalGroupMemberships');
+const dispatcher_collectDefaultScopeValues = new Dispatcher<CollectDefaultScopeValues, '__collectDefaultScopeValues'>('__collectDefaultScopeValues');
 
 export const SetupTaskKey_PermissionsGroups = asSetupTaskKey('permissions-groups');
 
@@ -145,6 +155,7 @@ class ModuleBE_Permissions_Class
 				__access: {
 					readers: [GroupId_BootstrapServiceAccount],
 					writers: [GroupId_BootstrapServiceAccount],
+					creators: [],
 					deleters: [],
 					owners: [],
 				}
@@ -154,6 +165,7 @@ class ModuleBE_Permissions_Class
 			__access: {
 				readers: [GroupId_PermissionsAdmin, item._id],
 				writers: [GroupId_PermissionsAdmin],
+				creators: [],
 				deleters: [],
 				owners: [],
 			}
@@ -168,6 +180,7 @@ class ModuleBE_Permissions_Class
 				owners: [personalGroupId],
 				readers: [personalGroupId, GroupId_BootstrapServiceAccount],
 				writers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				creators: [],
 				deleters: [GroupId_BootstrapServiceAccount],
 			}
 		};
@@ -181,6 +194,7 @@ class ModuleBE_Permissions_Class
 				owners: [personalGroupId],
 				readers: [personalGroupId, GroupId_BootstrapServiceAccount],
 				writers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				creators: [],
 				deleters: [personalGroupId, GroupId_BootstrapServiceAccount],
 			}
 		};
@@ -213,7 +227,10 @@ class ModuleBE_Permissions_Class
 		const dbModule = this.resolveDbModule(dbKey);
 		const mongoCol = this.assertMongoCollection(dbModule);
 
-		const entity = await this.loadEntityUnmanipulated(mongoCol, entityId, dbKey);
+		const entity = await dbModule.query.unique(entityId);
+		if (!entity)
+			throw HttpCodes._4XX.NOT_FOUND(`Entity not found: ${dbKey}/${entityId}`);
+
 		this.assertShareAccess(entity);
 
 		const addToSet = this.buildAddToSetUpdate(accessContext);
@@ -242,14 +259,6 @@ class ModuleBE_Permissions_Class
 			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Share API requires MongoDB backend');
 
 		return dbModule.collection;
-	}
-
-	private async loadEntityUnmanipulated(mongoCol: MongoCollection<any>, entityId: UniqueId, dbKey: string): Promise<Record<string, any>> {
-		const results = await mongoCol.query.unManipulatedQuery({where: {_id: entityId} as any, limit: 1});
-		if (!results.length)
-			throw HttpCodes._4XX.NOT_FOUND(`Entity not found: ${dbKey}/${entityId}`);
-
-		return results[0];
 	}
 
 	private assertShareAccess(entity: Record<string, any>): void {
@@ -800,9 +809,8 @@ class ModuleBE_Permissions_Class
 	}
 
 	private async materializeBootstrapAccessIds(): Promise<ScopedAccessIds> {
-		// Unmanipulated: caller MemKey_UserAccessIds may be a polluted outer context
-		// (registration stamps account access into an enclosing SA MemStorage). Bootstrap
-		// elevation must see the full group graph to rebuild SA access ids.
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: outer MemKey_UserAccessIds can be a dirty user context. Bootstrap elevation must see the full group graph to rebuild its own access ids.
 		const allGroups = await ModuleBE_AccessGroupDB.query.unManipulatedQuery({where: {}});
 		const {accessIds} = await this.materializeFromGroups(GroupId_BootstrapServiceAccount, allGroups);
 		return {
@@ -941,16 +949,23 @@ class ModuleBE_Permissions_Class
 
 	private async ensureDefaultGroup() {
 		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_AppDefault);
+		const grants = dispatcher_collectDefaultScopeValues.dispatchModule().flat();
+		const scopeEntries = filterDuplicates(grants.map(grant => {
+			if (!grant.scope.values.includes(grant.value))
+				throw new BadImplementationException(`Invalid default scope value '${grant.value}' for scope '${grant.scope.key}'`);
+			return permissionScopeId(grant.scope.key, grant.value);
+		}));
+
 		await ModuleBE_AccessGroupDB.set.all([{
 			_id: GroupId_AppDefault,
 			type: 'custom' as const,
 			key: 'default',
 			label: 'Default',
 			members: existing?.members ?? [],
-			scopeEntries: [],
+			scopeEntries,
 		}]);
 
-		this.logInfoBold('Default group ensured');
+		this.logInfoBold(`Default group ensured with ${scopeEntries.length} scope entries`);
 	}
 
 	// --- Bootstrap: permissions admin group ---

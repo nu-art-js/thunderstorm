@@ -6,6 +6,7 @@ export const AccessScope_Self = '_self';
 export type DocumentAccessInner = {
 	readers: UniqueId[];
 	writers: UniqueId[];
+	creators: UniqueId[];
 	deleters: UniqueId[];
 	owners: UniqueId[];
 };
@@ -17,15 +18,17 @@ export type DocumentAccessFields = {
 export type DocumentAccessCapabilities = {
 	read?: boolean;
 	write?: boolean;
+	create?: boolean;
 	delete?: boolean;
 	own?: boolean;
 };
 
-export const AllDocumentAccessKeys: (keyof DocumentAccessInner)[] = ['readers', 'writers', 'deleters', 'owners'];
+export const AllDocumentAccessKeys: (keyof DocumentAccessInner)[] = ['readers', 'writers', 'creators', 'deleters', 'owners'];
 
 export const CapabilityToAccessKey: Record<keyof DocumentAccessCapabilities, keyof DocumentAccessInner> = {
 	read: 'readers',
 	write: 'writers',
+	create: 'creators',
 	delete: 'deleters',
 	own: 'owners',
 };

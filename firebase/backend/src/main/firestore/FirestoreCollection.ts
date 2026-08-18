@@ -176,8 +176,8 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		},
 		/**
 		 * Bypasses query interceptors (including document __access enforcement).
-		 * Do not use unless explicitly approved — prefer service-account permission context
-		 * with normal query APIs so access rules still apply.
+		 * NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		 * Prefer a service-account permission context with normal query APIs so access rules still apply.
 		 */
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>) => {
 			return (await this._customQuery(query, false)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
@@ -241,6 +241,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		where: async (where: Clause_Where<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return this.query.custom({where});
 		},
+		/** NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT. Engine data-query twin of doc.unManipulatedQuery. */
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return (await this._customQuery(query, false)).map(snapshot => snapshot.data());
 		},
@@ -353,6 +354,8 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: delete must collect every matching doc, not only ones the caller can read.
 		const docsToBeDeleted = await this.doc.unManipulatedQuery(query);
 		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!);
 		await this._deleteAll(docsToBeDeleted, multiWriteType);
@@ -420,6 +423,8 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 
 			return await this._deleteQuery(query);
 		},
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: delete must collect every matching doc, not only ones the caller can read.
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			if (!getActiveTransaction()) {
 				if (!exists(query) || compare(query, _EmptyQuery))

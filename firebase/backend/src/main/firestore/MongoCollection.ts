@@ -203,8 +203,8 @@ export class MongoCollection<Proto extends DB_Prototype>
 		},
 		/**
 		 * Bypasses query interceptors (including document __access enforcement).
-		 * Do not use unless explicitly approved — prefer service-account permission context
-		 * with normal query APIs so access rules still apply.
+		 * NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		 * Prefer a service-account permission context with normal query APIs so access rules still apply.
 		 */
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return this._customQuery(query, false);
@@ -505,6 +505,8 @@ export class MongoCollection<Proto extends DB_Prototype>
 		where: async (where: Clause_Where<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return this.delete.query({where});
 		},
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: delete must see every matching row, including ones the caller cannot read, or leftovers survive.
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			if (!exists(query) || compare(query, _EmptyQuery))
 				throw new MUSTNeverHappenException('An empty query was passed to delete.unManipulatedQuery!');

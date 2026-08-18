@@ -85,6 +85,8 @@ export class ModuleBE_OAuthServer_Class
 	private loadOrCreateSigningKey(): Promise<void> {
 		return new MemStorage().init(async () => {
 			const alg = this.config.signingAlgorithm;
+			// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+			// Why: boot, no user. The signing key must load even when no access ids exist yet.
 			const existing = await ModuleBE_OAuthSigningKeyDB.query.unManipulatedQuery({where: {alg}});
 			const record = existing[0];
 
