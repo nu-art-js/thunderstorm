@@ -287,7 +287,7 @@ if (!topic) {
 
 ## Never ever (mentions)
 
-Changing these is a product defect. Architecture SSOT: `_docs/architecture/agent-consult.md` §8.1.
+Changing these is a product defect. Product SSOT: Beamz knowledge `rules/product/agent-consult/design` §8.1.
 
 - **Never persist or trust client `mention[]`.** The UI send path does not decide who was asked. Text may contain `@_id(<accountId>)` after `@name` resolve; `resolveCreateMentions` stamps `mention[]`.
 - **Never drop a bad `@_id` and continue.** Missing, other-org, not a topic writer, or the sender → 400, no row, no callback. One bad token fails the whole create.

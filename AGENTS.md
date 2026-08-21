@@ -1,14 +1,13 @@
 # Thunderstorm
 
-Thunderstorm is a TypeScript ESM monorepo framework. Rules are organized into three groups: operational, contributing, and consuming.
+Thunderstorm is a TypeScript ESM monorepo framework.
 
-**Start here:** [`.cursor/rules/index.mdc`](.cursor/rules/index.mdc) — routing table to all rules.
-Read [`.rules/vocabulary.mdc`](.rules/vocabulary.mdc) first for the core mental model.
+**Start here:** Sky knowledge — Thunderstorm Home. Open `rules`; child labels are the routing table. Read lighthouse before generating Thunderstorm code. Read vocabulary on first touch of Thunderstorm in the session.
 
 ## Non-negotiable principles
 
-- **API / server or client:** Use the **http** lib patterns (`ApiDef`, decorators). See index → Consuming.
-- **DB / CRUD entities:** Use the **db-api** lib patterns. See index → Consuming.
+- **API / server or client:** Use the **http** lib patterns (`ApiDef`, decorators).
+- **DB / CRUD entities:** Use the **db-api** lib patterns.
 
 ## Veto
 
