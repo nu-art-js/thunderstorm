@@ -40,12 +40,7 @@
     "@nu-art/ts-common": "?",
     "@simplewebauthn/server": "^13.3.0"
   },
-  "devDependencies": {
-    "chai": "^5.1.2",
-    "@types/chai": "^5.0.1",
-    "@types/mocha": "^10.0.10",
-    "ts-mocha": "^10.1.0"
-  },
+  "devDependencies": {},
   "unitConfig": {
     "type": "typescript-lib"
   },

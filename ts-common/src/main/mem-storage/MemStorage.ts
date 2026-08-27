@@ -23,13 +23,16 @@ const asyncLocalStorage = new AsyncLocalStorage<MemStorage>();
  *
  * **Key features**:
  * - Automatic context isolation (each async context has its own storage)
- * - Context inheritance (child contexts can access parent storage)
+ * - Parent-chain inheritance (nested contexts read through the chain; child values override)
  * - Type-safe keys via MemKey
  * - Unique key enforcement (optional)
  */
 export class MemStorage {
 	/** Internal cache object */
 	private readonly cache: any = {};
+
+	/** Parent context — reads fall through when this level has no value for a key. */
+	private parent?: MemStorage;
 
 	constructor() {
 	}
@@ -52,30 +55,34 @@ export class MemStorage {
 	 * is available via `getStore()`. Optionally inherits data from an enclosing
 	 * context storage.
 	 *
-	 * **Context inheritance**: If `enclosingContextStorage` is provided, its
-	 * cache entries are copied to this storage. If the enclosing context is
-	 * the same as this one, the function runs directly without creating a new context.
+	 * **Context inheritance**: Nested contexts link to a parent (`enclosingContextStorage`
+	 * when provided, otherwise the active store at entry). Reads walk the parent chain;
+	 * writes stay on the current level (child overrides parent). If the enclosing context
+	 * is the same as this one, the function runs directly without creating a new context.
 	 *
 	 * @template R - Return type
 	 * @param makeItContext - Async function to run in the new context
-	 * @param enclosingContextStorage - Optional parent context to inherit from
+	 * @param enclosingContextStorage - Optional explicit parent context
 	 * @returns Promise resolving to the function's return value
 	 */
 	async init<R>(makeItContext: () => Promise<R>, enclosingContextStorage?: MemStorage): Promise<R> {
+		const parentContext = enclosingContextStorage ?? asyncLocalStorage.getStore();
+
+		if (parentContext === this)
+			return makeItContext();
+
 		let isSameContext = false;
 
 		const response = await asyncLocalStorage.run(this, async () => {
 			const currentStorage = MemStorage.getStore()!;
 
-			if (currentStorage === enclosingContextStorage) {
+			if (enclosingContextStorage && currentStorage === enclosingContextStorage) {
 				isSameContext = true;
 				return;
 			}
 
-			if (enclosingContextStorage)
-				for (const key in enclosingContextStorage.cache) {
-					currentStorage.cache[key] = enclosingContextStorage.cache[key];
-				}
+			if (parentContext && parentContext !== this)
+				this.parent = parentContext;
 
 			return makeItContext();
 		});
@@ -96,6 +103,10 @@ export class MemStorage {
 	 * @returns Function's return value
 	 */
 	initSync<R>(makeItContext: () => R) {
+		const parentContext = asyncLocalStorage.getStore();
+		if (parentContext && parentContext !== this)
+			this.parent = parentContext;
+
 		return asyncLocalStorage.run(this, makeItContext);
 	}
 
@@ -117,11 +128,16 @@ export class MemStorage {
 	 * Private — only accessible to MemKey via @ts-ignore (same file, friend-class pattern).
 	 */
 	private get = <T>(key: MemKey<T>, defaultValue?: T): T => {
-		let currentValue = this.cache[key.key];
-		if (!exists(currentValue))
-			currentValue = defaultValue;
+		let storage: MemStorage | undefined = this;
+		while (storage) {
+			const value = storage.cache[key.key];
+			if (exists(value))
+				return value as T;
 
-		return currentValue;
+			storage = storage.parent;
+		}
+
+		return defaultValue as T;
 	};
 }
 
@@ -231,11 +247,15 @@ export class MemKey<T> {
 	};
 
 	/**
-	 * Peaks at the stored value without throwing if the key is not set in the store.
+	 * ⚠️ RESTRICTED — ONLY USE WITH EXPLICIT USER PERMISSION.
 	 *
-	 * Returns undefined if the key has no value, unlike `get()` which throws.
+	 * `peak()` intentionally bypasses fail-fast: it returns `undefined` instead of throwing when the
+	 * key is unset. That silent-absence semantic hides missing-context bugs, so it is NOT the default
+	 * read. Prefer `get()` (throws when unset) everywhere; reach for `peak()` only when a value being
+	 * genuinely-absent is an expected, handled branch (e.g. an optional claim on open APIs, or a
+	 * transient override that may not be set yet) — and only after the user has agreed to it.
 	 *
-	 * MUST be called within an active MemStorage context (inside a MemStorage.init() callback).
+	 * MUST still be called within an active MemStorage context (inside a MemStorage.init() callback).
 	 * Throws BadImplementationException if called outside a context — the bug is in the call site.
 	 *
 	 * @returns Stored value or undefined

@@ -11,4 +11,10 @@
       margin-right: 4px;
     }
   }
+
+  // Adder dropdown shrink-wraps to placeholder without a floor; open panel grows with items.
+  .ts-dropdown,
+  .ts-multi-select__selector {
+    min-width: var(--ts-multi-select--selector-min-width);
+  }
 }

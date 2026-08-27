@@ -28,7 +28,6 @@ import {Adapter} from '../../Adapter.js';
 import {TS_Overlay} from '../../../components/TS_Overlay/TS_Overlay.js';
 import {TS_Tree} from '../../tree/v1/TS_Tree.js';
 import {TS_Input} from '../../../input/v1/TS_Input.js';
-import '../TS_DropDown.scss';
 import {LL_V_L} from '../../../layouts/v1/Layouts.js';
 import {ComponentProps_Error, convertToHTMLDataAttributes, getErrorTooltip} from '../../../components/types.js';
 import {ComponentSync} from '../../../_core/ComponentSync.js';
@@ -481,30 +480,33 @@ export class TS_DropDown<ItemType>
 	};
 
 	private renderSelectedItem = (selected?: ItemType) => {
-		if (this.props.selectedItemRenderer)
-			return this.props.selectedItemRenderer(selected);
-
-		if (selected === undefined)
+		if (selected === undefined && !this.props.selectedItemRenderer)
 			return <div className="ts-dropdown__placeholder">{this.props.placeholder || ''}</div>;
 
-		const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(this.state.filterText) : this.props.adapter;
-		const Renderer = adapter.treeNodeRenderer;
-		const node = {
-			propKey: 'string',
-			path: 'string',
-			item: 'any',
-			adapter: adapter,
-			expandToggler: (e: React.MouseEvent, expxand?: boolean) => {
-			},
-			expandFromNode: voidFunction,
-			onClick: (e: React.MouseEvent) => {
-			},
-			expanded: true,
-			focused: false,
-			selected: true
-		};
-		return <div className={'ts-dropdown__selected'} onContextMenu={this.props.onContextMenu}><Renderer
-			item={selected} node={node}/></div>;
+		let content: React.ReactNode;
+		if (this.props.selectedItemRenderer)
+			content = this.props.selectedItemRenderer(selected);
+		else {
+			const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(this.state.filterText) : this.props.adapter;
+			const Renderer = adapter.treeNodeRenderer;
+			const node = {
+				propKey: 'string',
+				path: 'string',
+				item: 'any',
+				adapter: adapter,
+				expandToggler: (e: React.MouseEvent, expxand?: boolean) => {
+				},
+				expandFromNode: voidFunction,
+				onClick: (e: React.MouseEvent) => {
+				},
+				expanded: true,
+				focused: false,
+				selected: true
+			};
+			content = <Renderer item={selected} node={node}/>;
+		}
+
+		return <div className={'ts-dropdown__selected'} onContextMenu={this.props.onContextMenu}>{content}</div>;
 	};
 
 	private renderSelectedOrFilterInput = (): React.ReactNode => {

@@ -1,6 +1,5 @@
 import {ComponentSync} from '../../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
-import '../TS_CheckboxGroup.scss';
 import {TS_Checkbox} from '../../checkbox/v1/TS_Checkbox.js';
 import {LL_V_L} from '../../layouts/v1/Layouts.js';
 import {BadImplementationException} from '@nu-art/ts-common';

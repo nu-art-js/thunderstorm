@@ -23,3 +23,9 @@ alwaysApply: false
 | **Help** | `-h` or `--help` |
 
 **Examples**: `bash ./build-and-install.sh -i` · `bash ./build-and-install.sh -t -tt=pure` · `bash ./build-and-install.sh -up=my-pkg -bt` · `bash ./build-and-install.sh -nb -up=app-backend -l` (launch app, no build)
+
+## Docker requirement (local emulation only)
+
+**Docker is required only to run/emulate the backend app locally** (`-l` / `--launch`). Launching `app-backend` starts a local **MongoDB** replica-set as a Docker container (`docker run … mongo:7 --replSet rs0`) plus Firebase emulators — so a running Docker daemon is needed for local runs.
+
+**Docker is NOT required for build or deploy.** The build/deploy flows run in the cloud (Google Cloud Build → Artifact Registry → Cloud Run); they need only the authenticated `gcloud` CLI, never a local Docker daemon. See the project's deploy-policy rule.

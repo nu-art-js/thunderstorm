@@ -32,3 +32,4 @@ export * from './_entity/access-group/ModuleBE_AccessGroupDB.js';
 export * from './_entity/access-group/module-pack.js';
 export * from './document-access-enforcement.js';
 export * from './document-access-api.js';
+export {MemKey_UserAccessIds, MemKey_UserScopePermissions, MemKey_ServiceAccountId} from './consts.js';

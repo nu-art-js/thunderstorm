@@ -381,6 +381,8 @@ class DBModuleReader
 
 		const dbKey = module.dbDef.dbKey;
 		try {
+			// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+			// Why: backup is a dump of the collection. A filtered page would omit documents and look complete.
 			const items = await module.query.unManipulatedQuery({
 				..._EmptyQuery,
 				limit: {page: this.page, itemsCount: this.pageSize}

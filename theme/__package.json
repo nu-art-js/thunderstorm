@@ -1,0 +1,43 @@
+{
+  "name": "@nu-art/thunder-theme",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Thunderstorm theming capability — runtime theme registry and live design-token overrides (ModuleFE_Theme)",
+  "keywords": [
+    "TacB0sS",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "theme",
+    "design-tokens"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

@@ -12,6 +12,7 @@ type AccessCarrier = { __access?: DocumentAccessInner };
 const documentAccessInnerValidator: Record<keyof DocumentAccessInner, typeof tsValidator_arrayOfUniqueIds> = {
 	readers: tsValidator_arrayOfUniqueIds,
 	writers: tsValidator_arrayOfUniqueIds,
+	creators: tsValidator_arrayOfUniqueIds,
 	deleters: tsValidator_arrayOfUniqueIds,
 	owners: tsValidator_arrayOfUniqueIds,
 };
@@ -39,6 +40,7 @@ function defaultAccessFields(callerAccessIds: UniqueId[]): DocumentAccessFields 
 		__access: {
 			readers: [callerId],
 			writers: [callerId],
+			creators: [callerId],
 			deleters: [callerId],
 			owners: [callerId],
 		}
@@ -84,13 +86,15 @@ function createPreWriteInterceptor<Database extends DB_Prototype>(
 		delete item.__access;
 
 		if (!original) {
-			const selfIds = scopedDict[AccessScope_Self] ?? [];
 			const resolver = resolverProvider();
-			const resolved = resolver ? await resolver(dbItem) : defaultAccessFields(selfIds);
-			item.__access = {
-				...resolved.__access,
-				owners: filterDuplicates([...(resolved.__access.owners ?? []), ...selfIds]),
-			};
+			if (resolver) {
+				const resolved = await resolver(dbItem);
+				item.__access = resolved.__access;
+			} else {
+				const selfIds = scopedDict[AccessScope_Self] ?? [];
+				item.__access = defaultAccessFields(selfIds).__access;
+			}
+
 			return;
 		}
 
@@ -98,7 +102,7 @@ function createPreWriteInterceptor<Database extends DB_Prototype>(
 		if (!existingAccess)
 			return;
 
-		item.__access = {...existingAccess};
+		item.__access = copyAccessFields(original as Record<string, unknown>).__access;
 		assertCallerAccess(existingAccess, resolveAccessIds(scopedDict, scopeKeysProvider()), 'writers', 'owners');
 	};
 }
@@ -128,6 +132,7 @@ export function copyAccessFields(source: Record<string, unknown>): DocumentAcces
 		__access: {
 			readers: [...(access?.readers ?? [])],
 			writers: [...(access?.writers ?? [])],
+			creators: [...(access?.creators ?? [])],
 			deleters: [...(access?.deleters ?? [])],
 			owners: [...(access?.owners ?? [])],
 		}

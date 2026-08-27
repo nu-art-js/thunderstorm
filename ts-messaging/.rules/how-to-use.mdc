@@ -10,7 +10,7 @@ The ts-messaging lib provides a universal conversation primitive — entity-anch
 | Package | Purpose |
 |---------|---------|
 | `@nu-art/ts-messaging-shared` | Types (`DB_Topic`, `DB_Message`, `AssetRef`), API defs, permission scopes, access groups |
-| `@nu-art/ts-messaging-backend` | `ModuleBE_TopicDB`, `ModuleBE_MessageDB`, `ModuleBE_MessagingApi` (paginated query), access wiring |
+| `@nu-art/ts-messaging-backend` | `ModuleBE_TopicDB`, `ModuleBE_MessageDB`, `ModuleBE_MessagingApi` (paginated query), access wiring, `OnMessageMentioned` |
 | `@nu-art/ts-messaging-frontend` | `ModuleFE_Topic`, `ModuleFE_Message` (CRUD + pagination), embeddable UI components |
 
 ---
@@ -23,8 +23,10 @@ The ts-messaging lib provides a universal conversation primitive — entity-anch
 - **Flexible content model.** A message can have `text`, `attachments` (array of `AssetRef`), or both. At least one must be present (validated).
 - **`_auditorId` is auto-set.** The backend stamps `_auditorId` from the session — callers never set it.
 - **Pagination is cursor-based.** The custom `getMessages` endpoint returns newest-first with `nextCursor` and `hasMore` for pagination.
-- **Permissions via access groups.** The library defines `PermissionScope_Messaging` with scopes: `read`, `write`, `delete`, `admin`. Static access groups (`AccessGroup_MessagingRead`, `AccessGroup_MessagingWrite`, `AccessGroup_MessagingDelete`, `AccessGroup_MessagingAdmin`) are provided. Document access is wired via `wireMessagingDocumentAccess()`.
-- **Dynamic per-topic access groups are a separate infra task.** The library is designed for it but currently uses static global groups. When the permissions infra supports dynamic per-entity groups, each topic will spawn its own access groups at creation time.
+- **Permissions via per-topic entity groups.** On Topic create, `ModuleBE_MessagingAccess` mints four `entity` AccessGroups (`readers` / `writers` / `deleters` / `owners`) and stamps those IDs on `Topic.__access`. Messages **copy** that `__access` at create. The creator’s personal group is a member of all four. Static `AccessGroup_MessagingRead/Write/Delete/Admin` remain as optional **scope** roles (`@RequirePermission`), not document ACL.
+- **`message:create` is Topic.writers|owners.** A dedicated interceptor gates Message create (the permissions create interceptor only stamps). Message update requires the author (`_auditorId`) **or** Topic owners. Delete/read stay on the default deleters|owners and readers interceptors.
+- **Topic create owns membership.** Mint four entity groups and add the creator (and later conversation/project members at create time). Messages **copy Topic.__access** at create. `mention?` does **not** grant Topic ACL.
+- **`mention` is backend-owned.** Do not send `mention[]` from the UI. Do not persist client `mention[]`. On create, `resolveCreateMentions` stamps it: parse `@_id(<32-hex>)` from text; every token must be a topic writer other than the sender or the create is 400 (`Invalid mention`) — do not drop and continue. No tokens: 1:1 infers the other writer; multi stays empty. After a successful create with `(mention ?? []).length > 0`, dispatch `{topic, message, mentionedAccountIds}` once — full array, not once-per-id. Set/update/delete do not dispatch. No listener = no-op. The library does not know Persona, LLM, or knowledge. Persona wake is a second bar: access-filtered persona query in the listener — never unmanipulated.
 - **File attachments reference `DB_Asset` from file-upload.** The `AssetRef` type holds `{ assetId }` pointing to the file-upload library's asset collection.
 
 ---
@@ -51,17 +53,11 @@ import {ModulePackFE_Messaging} from '@nu-art/ts-messaging-frontend';
 .addModules(...ModulePackFE_Messaging)
 ```
 
-### Step 2 — Wire document access
+### Step 2 — Document access is self-wired
 
-Call `wireMessagingDocumentAccess()` during backend initialization (e.g. in the app's module pack setup):
+`ModuleBE_TopicDB.init()` and `ModuleBE_MessageDB.init()` call `ModuleBE_MessagingAccess.wireTopic/wireMessage`. Adding the backend pack is enough — do not call a wiring function from the app.
 
-```typescript
-import {wireMessagingDocumentAccess} from '@nu-art/ts-messaging-backend';
-
-wireMessagingDocumentAccess();
-```
-
-This registers the `AccessContextResolver` for both `ModuleBE_TopicDB` and `ModuleBE_MessageDB`, stamping `__access` on every new topic and message with the static messaging access groups.
+This registers per-topic resolvers (no `scopeKeys` — entity group keys are `${topicId}:readers` etc., not `messaging`) plus the Message create-gate and author-or-owner update interceptors. Mention is not an ACL interceptor.
 
 ### Step 3 — Create a topic for an entity
 
@@ -173,6 +169,34 @@ All CSS classes are BEM-namespaced under `ts-messaging__*`. Override at the app 
 
 ---
 
+## Backend events
+
+### OnMessageMentioned
+
+Register a Storm module that implements `OnMessageMentioned`. Dispatch runs from `ModuleBE_MessageDB.postWriteProcessing` after persist, **create only**, and only when `(mention ?? []).length > 0`.
+
+**Contract: one dispatch per create.** The payload includes **all** mentioned ids in `mentionedAccountIds` (order = `message.mention`). Do not assume once-per-id.
+
+Do **not** fire this from a preWrite interceptor — a failed write must not dispatch. Mention does not grant Topic ACL.
+
+```typescript
+import {Module} from '@nu-art/ts-common';
+import type {OnMessageMentioned, MessageMentionedPayload} from '@nu-art/ts-messaging-backend';
+
+export class MyMentionListener_Class
+	extends Module
+	implements OnMessageMentioned {
+
+	public async __onMessageMentioned(payload: MessageMentionedPayload) {
+		// payload.topic, payload.message, payload.mentionedAccountIds
+	}
+}
+```
+
+Add the listener instance to the Storm module list so `Dispatcher` finds it. No listener = no-op.
+
+---
+
 ## When subscribing to messaging events
 
 ### Topic updates
@@ -248,7 +272,7 @@ if (!topic) {
 | DB entity types | `DB_Topic`, `DB_Message` |
 | DB defs | `DBDef_Topic`, `DBDef_Message` |
 | Database def types | `DatabaseDef_Topic`, `DatabaseDef_Message` |
-| Backend modules | `ModuleBE_TopicDB`, `ModuleBE_MessageDB`, `ModuleBE_MessagingApi` |
+| Backend modules | `ModuleBE_TopicDB`, `ModuleBE_MessageDB`, `ModuleBE_MessagingApi`, `ModuleBE_MessagingAccess` |
 | Frontend modules | `ModuleFE_Topic`, `ModuleFE_Message` |
 | Backend module pack | `ModulePackBE_Messaging` |
 | Frontend module pack | `ModulePackFE_Messaging` |
@@ -256,10 +280,20 @@ if (!topic) {
 | API def constant | `ApiDef_Messaging` |
 | Permission scope | `PermissionScope_Messaging` |
 | Access groups | `AccessGroup_MessagingRead`, `AccessGroup_MessagingWrite`, `AccessGroup_MessagingDelete`, `AccessGroup_MessagingAdmin` |
-| Dispatcher interfaces | `OnTopicsUpdated`, `OnMessagesUpdated` |
+| Dispatcher interfaces | `OnTopicsUpdated`, `OnMessagesUpdated` (frontend); `OnMessageMentioned`, `dispatch_OnMessageMentioned`, `MessageMentionedPayload` (backend) |
 | UI components | `Component_ChatPanel`, `Component_MessageList`, `Component_MessageInput`, `Component_MessageBubble`, `Component_ThreadPanel` |
 
 ---
+
+## Never ever (mentions)
+
+Changing these is a product defect. Product SSOT: Beamz knowledge `rules/product/agent-consult/design` §8.1.
+
+- **Never persist or trust client `mention[]`.** The UI send path does not decide who was asked. Text may contain `@_id(<accountId>)` after `@name` resolve; `resolveCreateMentions` stamps `mention[]`.
+- **Never drop a bad `@_id` and continue.** Missing, other-org, not a topic writer, or the sender → 400, no row, no callback. One bad token fails the whole create.
+- **Never infer mentions on a multi-party topic.** No tokens → nobody is asked. 1:1 with no tokens infers the other writer.
+- **Never wake anyone by re-parsing Message.text after create.** Verdict is `mention[]` on the row.
+- **Never look up a persona unmanipulated to wake it.** Access-filtered query only.
 
 ## Forbidden patterns
 
@@ -267,5 +301,11 @@ if (!topic) {
 - **Do not set `_auditorId` manually** — it is auto-stamped by `preWriteProcessing` from the session.
 - **Do not send messages with neither `text` nor `attachments`** — the validator rejects empty messages.
 - **Do not bypass CRUD for topic creation** — use `ModuleFE_Topic.upsert()` or the standard CRUD API so that `__access` is stamped by the `AccessContextResolver`.
+- **Do not call a document-access wiring function from the app** — Topic/Message `init()` already wires it.
 - **Do not create a second topic for the same anchor entity** — the unique key `['anchor.dbKey', 'anchor.id']` enforces one topic per anchor. Use `getTopicByAnchor()` to find existing topics.
 - **Do not import backend modules in frontend packages** — use the frontend modules and API callers.
+- **Do not dispatch `OnMessageMentioned` once per mentioned id** — one dispatch per create, full `mentionedAccountIds`.
+- **Do not fire `OnMessageMentioned` from preWrite** — only `postWriteProcessing` after a successful create.
+- **Do not grant Topic ACL from `mention`** — membership is set at Topic create; messages copy Topic `__access`.
+- **Do not attach a mention in the UI send path** — see Never ever (mentions).
+- **Do not treat parsed `@_id` as authorized** — see Never ever (mentions).

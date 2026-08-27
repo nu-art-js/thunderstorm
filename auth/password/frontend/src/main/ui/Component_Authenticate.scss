@@ -1,0 +1,80 @@
+/*!
+ * User secured registration and login management system..
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.ts-account__authenticate {
+  margin-top: var(--space-xs);
+  width: 100%;
+  gap: var(--space-base);
+
+  .ts-account__error-container {
+    justify-content: center;
+    align-items: center;
+    min-height: var(--space-lg);
+    width: 100%;
+  }
+
+  .ts-account__error-messages {
+    align-items: center;
+    gap: var(--space-xs);
+    width: 100%;
+
+    .ts-account__error-message {
+      color: var(--color-state-danger);
+      font-size: var(--font-size-control);
+      text-align: center;
+    }
+  }
+
+  .ts-account__message {
+    text-align: center;
+    margin-block: var(--space-sm) 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-control);
+  }
+
+  .ts-account__action-button {
+    width: 100%;
+  }
+
+  .ts-account__authenticate__password-rules {
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    padding: var(--space-md);
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+
+    .ts-account__authenticate__password-rule {
+      gap: var(--space-md);
+      align-items: center;
+      color: var(--color-state-danger);
+      font-size: var(--font-size-control);
+
+      &.valid {
+        color: var(--color-state-success);
+      }
+    }
+  }
+}
+
+.login-blocked {
+  justify-content: center;
+  color: var(--color-state-warn);
+  font-size: var(--font-size-control);
+}

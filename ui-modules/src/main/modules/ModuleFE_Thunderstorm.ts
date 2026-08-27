@@ -81,8 +81,8 @@ class ModuleFE_Thunderstorm_Class
 	}
 
 	async clearWebsiteData() {
-		this.logInfo('Cleaning IDB called.');
-		return await dispatch_onClearWebsiteData.dispatchModuleAsync();
+		this.logInfo('Clearing website data (localStorage, IndexedDB, sync)');
+		return await dispatch_onClearWebsiteData.dispatchModuleAsyncSerial();
 	}
 
 	async copyToClipboard(toCopy: string, customSuccessMessage?: string) {

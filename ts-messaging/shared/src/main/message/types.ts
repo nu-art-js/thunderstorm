@@ -1,4 +1,5 @@
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
+import type {DB_Account} from '@nu-art/user-account-shared';
 import {UniqueId} from '@nu-art/ts-common';
 
 export const Message_DbKey = 'messages';
@@ -20,6 +21,7 @@ export type DB_Message = DB_Object<DBKey> & {
 	parentMessageId?: UniqueId;
 	text?: string;
 	attachments?: AssetRef[];
+	mention?: DB_Account['_id'][];
 	_auditorId: string;
 };
 

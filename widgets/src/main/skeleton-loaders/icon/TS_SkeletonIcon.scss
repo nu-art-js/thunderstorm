@@ -1,0 +1,15 @@
+.ts-skeleton-icon {
+	position: relative;
+	overflow: hidden;
+	aspect-ratio: 1;
+	background: var(--color-surface-input);
+	flex-shrink: 0;
+
+	&.round {
+		border-radius: var(--radius-pill);
+	}
+
+	&.square {
+		border-radius: var(--radius-xs);
+	}
+}

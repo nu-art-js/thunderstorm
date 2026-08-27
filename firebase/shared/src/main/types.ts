@@ -45,21 +45,48 @@ export type FirebaseConfig = {
 	local?: boolean
 }
 
-type Comparator = 'in' | 'array-contains' | 'array-contains-any' | '>' | '>=' | '<' | '<=' | '==';
+type Comparator =
+	| 'in' | 'not-in'
+	| 'array-contains' | 'array-contains-any'
+	| '>' | '>=' | '<' | '<=' | '==' | '!=';
+
+/** Lower bound — exactly one of $gt / $gte. */
+type QueryNumberLower =
+	| { $gt: number; $gte?: never }
+	| { $gte: number; $gt?: never };
+
+/** Upper bound — exactly one of $lt / $lte. */
+type QueryNumberUpper =
+	| { $lt: number; $lte?: never }
+	| { $lte: number; $lt?: never };
+
+/**
+ * Number field comparator — at least one bound; lower/upper each pick at most one op; $eq alone.
+ * Allows closed ranges e.g. `{ $gte: 1000, $lt: 2000 }`; rejects `{ $gt, $gte }` and `{}`.
+ */
+export type QueryNumberComparator =
+	| ({ $eq: number } & { $gt?: never; $gte?: never; $lt?: never; $lte?: never })
+	| (QueryNumberLower & { $eq?: never; $lt?: never; $lte?: never })
+	| (QueryNumberUpper & { $eq?: never; $gt?: never; $gte?: never })
+	| (QueryNumberLower & QueryNumberUpper & { $eq?: never });
 
 export type QueryComparator<T> =
-	{ $ac: T extends (infer I)[] ? I : never } |
-	{ $aca: T extends (infer I)[] ? I[] : never } |
-	{ $nin: T extends (any)[] ? never : T[] } |
-	{ $in: T extends (any)[] ? never : T[] } |
-	{ $gt: number } |
-	{ $gte: number } |
-	{ $lt: number } |
-	{ $lte: number } |
-	{ $eq: number } |
-	{ $neq: T };
+	| { $ac: T extends (infer I)[] ? I : never }
+	| { $aca: T extends (infer I)[] ? I[] : never }
+	| { $nin: T extends (any)[] ? never : T[] }
+	| { $in: T extends (any)[] ? never : T[] }
+	| QueryNumberComparator
+	| { $neq: T }
+	| { $regex: RegExp };
 
-export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = {
+/** Firestore-parity comparators only — `$regex` is Mongo-capable and fail-fast on Firestore. */
+export type QueryComparator_Firestore<T> = Exclude<QueryComparator<T>, { $regex: RegExp }>;
+
+/** Explicit keys for ComparatorMap — keyof on the QueryComparator union is not enumerable. */
+export type QueryComparator_FirestoreKey =
+	| '$nin' | '$in' | '$ac' | '$aca' | '$gt' | '$gte' | '$lt' | '$lte' | '$eq' | '$neq';
+
+export const ComparatorMap: { [k in QueryComparator_FirestoreKey]: Comparator } = {
 	$nin: 'not-in',
 	$in: 'in',
 	$ac: 'array-contains',
@@ -77,8 +104,12 @@ export type FirestoreType_OrderByDirection = 'desc' | 'asc';
 export type WhereValue<Value> =
 	QueryComparator<Value>
 	| (Value extends TS_Object ? Clause_Where<Value> : Value | [Value]);
-export type Clause_Where<T extends TS_Object> = { [P in keyof T]?: WhereValue<T[P]> }
-export type Clause_OrderBy<T extends TS_Object> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
+export type Clause_Where<T extends TS_Object> = {
+	[P in keyof T]?: WhereValue<T[P]>
+} & {
+	$or?: Clause_Where<T>[]
+}
+export type Clause_OrderBy<T extends TS_Object> = { key: keyof T; order: FirestoreType_OrderByDirection }[];
 export type Clause_Select<T extends TS_Object, K extends keyof T = keyof T> = K[];
 
 export type FirestoreQuery<T extends TS_Object> = RequireOptionals<FirestoreQueryImpl<T>>

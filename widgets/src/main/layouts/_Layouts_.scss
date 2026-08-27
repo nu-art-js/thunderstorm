@@ -24,6 +24,12 @@
   align-items: flex-end;
 }
 
+%ll_v_s {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+}
+
 %ll_h_t {
   display: flex;
   flex-flow: row;
@@ -40,6 +46,12 @@
   display: flex;
   flex-flow: row;
   align-items: flex-end;
+}
+
+%ll_h_s {
+  display: flex;
+  flex-flow: row;
+  align-items: stretch;
 }
 
 %ts-grid {

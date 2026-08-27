@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
-import './TS_ButtonGroup.scss';
 import {ComponentSync} from '../_core/ComponentSync.js';
 import {_className} from '@nu-art/thunder-core';
 import {InferProps, InferState} from '../_core/component-types.js';
@@ -58,9 +57,11 @@ export class TS_ButtonGroup<ButtonKey extends string = string>
 		if (!button)
 			throw new ThisShouldNotHappenException(`Got to handle click with button key ${buttonKey}, but no button with this key exists in the state`);
 		const result = button.onClick(e);
-		//Sync operation - just return
-		if (!(result instanceof Promise))
+		//Sync operation - update selection and return
+		if (!(result instanceof Promise)) {
+			this.setState({selectedKey: buttonKey});
 			return;
+		}
 		//Async operation - Return a promise to trigger button loader
 		return new Promise<void>((resolve) => {
 			//Set in progress for this component

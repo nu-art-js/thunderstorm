@@ -20,9 +20,7 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "@nu-art/api-types": "?",
     "@nu-art/db-api-frontend": "?",
@@ -42,8 +40,7 @@
   "devDependencies": {
     "@types/papaparse": "?",
     "@types/react": "?",
-    "@nu-art/testalot": "?",
-    "chai": "?"
+    "@nu-art/testalot": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

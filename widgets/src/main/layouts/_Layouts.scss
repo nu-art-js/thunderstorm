@@ -12,6 +12,10 @@
   @extend %ll_v_r;
 }
 
+.ll_v_s {
+  @extend %ll_v_s;
+}
+
 .ll_h_t {
   @extend %ll_h_t;
 }
@@ -22,6 +26,10 @@
 
 .ll_h_b {
   @extend %ll_h_b;
+}
+
+.ll_h_s {
+  @extend %ll_h_s;
 }
 
 .ll_vh_c {

@@ -79,9 +79,10 @@ export const FilesCache = {
 		 */
 		text: async (pathToFile: string): Promise<string> => {
 			const fileContent = cachedFiles[pathToFile];
-			if (!fileContent)
-				cachedFiles[pathToFile] = await readFile(pathToFile);
+			if (typeof fileContent === 'string')
+				return fileContent;
 
+			cachedFiles[pathToFile] = await readFile(pathToFile);
 			return cachedFiles[pathToFile];
 		}
 	}

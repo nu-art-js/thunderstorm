@@ -10,23 +10,38 @@ import {DB_Object, generateHex, currentTimeMillis} from '@nu-art/ts-common';
 
 type DocRefLike = { ref: { id: string }; data?: DB_Object };
 
+function matchesWhereClause<T extends DB_Object>(item: T, where: Record<string, unknown>): boolean {
+	for (const [key, value] of Object.entries(where)) {
+		if (value === undefined || value === null)
+			continue;
+
+		if (key === '$or') {
+			if (!Array.isArray(value) || value.length === 0)
+				return false;
+			if (!value.some(clause => matchesWhereClause(item, clause as Record<string, unknown>)))
+				return false;
+			continue;
+		}
+
+		const itemVal = (item as Record<string, unknown>)[key];
+		if (typeof value === 'object' && value !== null && '$regex' in value) {
+			const pattern = (value as { $regex: unknown }).$regex;
+			if (!(pattern instanceof RegExp) || typeof itemVal !== 'string' || !pattern.test(itemVal))
+				return false;
+		} else if (typeof value === 'object' && value !== null && '$in' in value) {
+			const arr = (value as { $in: unknown[] }).$in;
+			if (!Array.isArray(arr) || !arr.includes(itemVal))
+				return false;
+		} else if (itemVal !== value)
+			return false;
+	}
+	return true;
+}
+
 function filterByWhere<T extends DB_Object>(items: T[], where: Record<string, unknown> | undefined): T[] {
 	if (!where || Object.keys(where).length === 0)
 		return [...items];
-	return items.filter(item => {
-		for (const [key, value] of Object.entries(where)) {
-			if (value === undefined || value === null)
-				continue;
-			const itemVal = (item as Record<string, unknown>)[key];
-			if (typeof value === 'object' && value !== null && '$in' in value) {
-				const arr = (value as { $in: unknown[] }).$in;
-				if (!Array.isArray(arr) || !arr.includes(itemVal))
-					return false;
-			} else if (itemVal !== value)
-				return false;
-		}
-		return true;
-	});
+	return items.filter(item => matchesWhereClause(item, where));
 }
 
 function applyLimit<T>(items: T[], limit: { page?: number; itemsCount?: number } | undefined): T[] {
@@ -42,8 +57,11 @@ function applyLimit<T>(items: T[], limit: { page?: number; itemsCount?: number }
  * Creates an in-memory mock that implements the FirestoreCollectionV3 shape used by ModuleBE_BaseDB and ModuleBE_BaseApi.
  * Backed by a Map keyed by _id. When the real V3 interface changes, update this mock to match.
  */
-export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
+export function createMockFirestoreCollectionV3(
+	options?: { manipulateQuery?: (query: FirestoreQuery<DB_Object>) => FirestoreQuery<DB_Object> }
+): FirestoreCollection<any> {
 	const store = new Map<string, DB_Object>();
+	const manipulateQuery = options?.manipulateQuery ?? ((q: FirestoreQuery<DB_Object>) => q);
 
 	const runTransaction = async <T>(fn: () => Promise<T>): Promise<T> => fn();
 
@@ -67,11 +85,18 @@ export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
 		return applyLimit(filtered, query.limit as { page?: number; itemsCount?: number } | undefined);
 	};
 
+	// Mirrors the real collection: the "manipulated" read paths (where/custom/unique) run
+	// the registered manipulateQuery hook (stand-in for the permissions query interceptor),
+	// while unManipulatedQuery/uniqueUnmanipulated bypass it.
+	const manipulatedQueryItems = (query: FirestoreQuery<DB_Object>): DB_Object[] =>
+		queryItems(manipulateQuery({...query, where: {...(query.where ?? {})}} as FirestoreQuery<DB_Object>));
+
 	const query = {
-		where: async (q: FirestoreQuery<DB_Object>) => queryItems(typeof q === 'object' && q && 'where' in q ? q : {where: q as Record<string, unknown>}),
-		unique: async (id: string) => store.get(id),
+		where: async (q: FirestoreQuery<DB_Object>) => manipulatedQueryItems(typeof q === 'object' && q && 'where' in q ? q : {where: q as Record<string, unknown>}),
+		unique: async (id: string) => manipulatedQueryItems({where: {_id: id} as Record<string, unknown>})[0],
+		uniqueUnmanipulated: async (id: string) => store.get(id),
 		unManipulatedQuery: async (q: FirestoreQuery<DB_Object>) => queryItems(q),
-		custom: async (q: FirestoreQuery<DB_Object>) => queryItems(q)
+		custom: async (q: FirestoreQuery<DB_Object>) => manipulatedQueryItems(q)
 	};
 
 	const set = {

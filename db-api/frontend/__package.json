@@ -32,6 +32,7 @@
     "@nu-art/firebase-frontend": "?",
     "@nu-art/firebase-shared": "?",
     "@nu-art/http-client": "?",
+    "@nu-art/thunder-core": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/ts-styles": "?",
     "firebase": "?",

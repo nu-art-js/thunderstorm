@@ -50,7 +50,7 @@ import {
 	SyncDbData,
 	SyncManagerAPI_SmartSync
 } from '@nu-art/sync-manager-shared';
-import {ThunderDispatcher} from '@nu-art/thunder-core';
+import {ThunderDispatcher, OnClearWebsiteData} from '@nu-art/thunder-core';
 import {EventType_Query} from '@nu-art/db-api-shared';
 import {DataStatus, ModuleFE_BaseApi, RuntimeFE_ModulesAPI} from '@nu-art/db-api-frontend';
 import {DataSnapshot} from 'firebase/database';
@@ -71,7 +71,7 @@ const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleMo
 
 export class ModuleFE_SyncManager_Class
 	extends Module
-	implements OnConnectivityChange {
+	implements OnConnectivityChange, OnClearWebsiteData {
 
 	async __onConnectivityChange() {
 		if (ModuleFE_ConnectivityModule.isConnected()) {
@@ -152,6 +152,11 @@ export class ModuleFE_SyncManager_Class
 		this.syncQueue.cancelAll();
 	};
 
+	__onClearWebsiteData() {
+		this.cancelSync();
+		this.stopListening();
+	}
+
 	// ######################### Smart Sync #########################
 
 	private getModulesToSync = () => RuntimeFE_ModulesAPI()
@@ -228,7 +233,11 @@ export class ModuleFE_SyncManager_Class
 	 * Perform no sync, delta sync and full sync on modules. Intention is to get all modules to DataStatus "ContainsData".
 	 */
 	public onSmartSyncCompleted = async (response: SyncManagerAPI_SmartSync['response']) => {
-		this.logInfo(`onSmartSyncCompleted (${response.modules.length})`, response);
+		this.logDebug(JSON.stringify({
+			event: 'sync.smart-sync/completed',
+			moduleCount: response.modules.length,
+			modules: response.modules.map(module => ({dbKey: module.dbKey, sync: module.sync})),
+		}));
 
 		this._smartSyncCompleted?.(this.currentSyncData);
 
@@ -269,8 +278,13 @@ export class ModuleFE_SyncManager_Class
 		if (!rtModule)
 			throw new MUSTNeverHappenException(`Trying perform NoSync without an existing rtModule: ${data.dbKey}`);
 
-		if (rtModule.getDataStatus() === DataStatus.ContainsData)
+		if (rtModule.getDataStatus() === DataStatus.ContainsData && rtModule.cache.all().length > 0) {
+			void rtModule.logCacheState('sync.no-sync/skipped-already-contains-data');
 			return;
+		}
+
+		if (rtModule.getDataStatus() === DataStatus.ContainsData)
+			rtModule.logWarning(`REJECTED: ContainsData with empty MemCache — reloading from IDB (${rtModule.config.dbKey})`);
 
 		this.currentlySyncingModules.push({module: rtModule, syncId: this.generateSyncRequestId()});
 
@@ -280,6 +294,7 @@ export class ModuleFE_SyncManager_Class
 		try {
 			rtModule.logVerbose(`Updating Cache: ${rtModule.config.dbKey}`);
 			await rtModule.loadCache();
+			await rtModule.logCacheState('sync.no-sync/mark-contains-data');
 			rtModule.logVerbose(`Firing event (DataStatus.ContainsData): ${rtModule.config.dbKey}`);
 			rtModule.setDataStatus(DataStatus.ContainsData);
 			dispatch_onSyncStatusChanged.dispatchUI(rtModule);
@@ -312,6 +327,10 @@ export class ModuleFE_SyncManager_Class
 
 			this.logDebug(`Delta Sync Completed: ${rtModule.config.dbKey}`);
 			await rtModule.loadCache();
+			await rtModule.logCacheState('sync.delta-sync/mark-contains-data', {
+				toUpdateCount: data.items.toUpdate.length,
+				toDeleteCount: data.items.toDelete.length,
+			});
 			rtModule.setDataStatus(DataStatus.ContainsData);
 			dispatch_onSyncStatusChanged.dispatchUI(rtModule);
 		} catch (e: any) {
@@ -331,12 +350,20 @@ export class ModuleFE_SyncManager_Class
 		const syncId = this.generateSyncRequestId();
 		this.currentlySyncingModules.push({module: rtModule, syncId: syncId});
 		try {
+			const dataStatusBeforeClear = rtModule.getDataStatus();
+			rtModule.logVerbose(`Firing event (DataStatus.UpdatingData): ${rtModule.config.dbKey}`);
+			rtModule.setDataStatus(DataStatus.UpdatingData);
+			dispatch_onSyncStatusChanged.dispatchUI(rtModule);
+
 			if (this.cleanIDBOnFullSync) {
 				rtModule.logVerbose(`Cleaning IDB: ${rtModule.config.dbKey}`);
 				await rtModule.IDB.clearAll();
 			}
 			rtModule.logVerbose(`Cleaning Cache: ${rtModule.config.dbKey}`);
 			rtModule.cache.clear();
+			void rtModule.logCacheState('sync.full-sync/cache-cleared', {
+				dataStatusBeforeClear: DataStatus[dataStatusBeforeClear],
+			});
 
 			rtModule.logVerbose(`Syncing: ${rtModule.config.dbKey}`);
 			let allItems;
@@ -368,6 +395,7 @@ export class ModuleFE_SyncManager_Class
 			}
 			await rtModule.IDB.syncIndexDb(allItems);
 			rtModule.IDB.setLastUpdated(data.lastUpdated);
+			await rtModule.logCacheState('sync.full-sync/idb-written', {apiItemCount: allItems.length});
 			rtModule.logVerbose(`Updating Cache: ${rtModule.config.dbKey}`);
 			rtModule.logVerbose(`allItems length ${allItems.length}`);
 			await rtModule.loadCache();

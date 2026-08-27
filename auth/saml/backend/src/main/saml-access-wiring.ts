@@ -9,6 +9,7 @@ const samlProviderAccessFields: DocumentAccessFields = {
 	__access: {
 		readers: [SamlReadGroupId],
 		writers: [SamlWriteGroupId],
+		creators: [],
 		deleters: [SamlDeleteGroupId],
 		owners: [],
 	}

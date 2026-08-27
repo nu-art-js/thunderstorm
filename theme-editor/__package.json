@@ -1,0 +1,53 @@
+{
+  "name": "@nu-art/thunder-theme-editor",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Thunderstorm design-language gallery and live theme/token editor (ComponentGallery)",
+  "keywords": [
+    "TacB0sS",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "theme",
+    "design-language",
+    "gallery"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/thunder-routing": "?",
+    "@nu-art/thunder-theme": "?",
+    "@nu-art/thunder-widgets": "?",
+    "@nu-art/ts-styles": "?",
+    "react": "?",
+    "react-dom": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?",
+    "@types/react-dom": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

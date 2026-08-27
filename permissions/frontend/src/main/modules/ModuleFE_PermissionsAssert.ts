@@ -31,14 +31,21 @@ export class ModuleFE_PermissionsAssert_Class
 	hasScopeAccess(scope: PermissionScope, requiredValue: string): boolean {
 		const scopeEntries = ModuleFE_UserPermissions.getScopeEntries();
 		const prefix = scope.key + ':';
-		const entry = scopeEntries.find(p => p.startsWith(prefix));
-		if (!entry)
+		const requiredIdx = scope.values.indexOf(requiredValue);
+		if (requiredIdx < 0)
 			return false;
 
-		const userValue = entry.substring(prefix.length);
-		const requiredIdx = scope.values.indexOf(requiredValue);
-		const userIdx = scope.values.indexOf(userValue);
-		return userIdx >= requiredIdx;
+		let highestIdx = -1;
+		for (const entry of scopeEntries) {
+			if (!entry.startsWith(prefix))
+				continue;
+
+			const userIdx = scope.values.indexOf(entry.substring(prefix.length));
+			if (userIdx > highestIdx)
+				highestIdx = userIdx;
+		}
+
+		return highestIdx >= requiredIdx;
 	}
 }
 

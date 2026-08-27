@@ -1,0 +1,31 @@
+.toasting-portal__bottom-up {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  overflow: hidden;
+
+  & > .toaster-item {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    translate: -50% calc(100% + 8px);
+
+    .toaster-item-body {
+      display: -webkit-box;
+      -webkit-line-clamp: var(--line-clamp);
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: unset;
+      white-space: normal;
+    }
+
+    transition: translate 200ms ease-out,
+    top 200ms ease-out;
+
+    &.visible {
+      translate: -50% 0;
+    }
+  }
+}

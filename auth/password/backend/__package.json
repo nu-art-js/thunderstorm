@@ -37,6 +37,7 @@
     "@nu-art/http-server": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/api-types": "?",
+    "@nu-art/permissions-backend": "?",
     "@nu-art/ts-email-backend": "?"
   },
   "devDependencies": {

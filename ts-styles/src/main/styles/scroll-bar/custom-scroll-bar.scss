@@ -1,77 +1,29 @@
-@use '../palette' as palette;
-
 @mixin customScrollbar($direction,$showOnlyOnHover: false) {
-  $trackBG: palette.gray(7);
-  $thumbBG: palette.dark-blue(1);
-  //Scrollbar
-  &::-webkit-scrollbar {
-    background-color: $trackBG;
-  }
+	// Colours, sizes, and idle→hover width live in thunder-widgets theme.scss.
+	// This mixin only sets overflow direction. $showOnlyOnHover is retained for
+	// call-site compat; theme *:hover rules own reveal/expand.
 
-  //Scrollbar Handle
-  &::-webkit-scrollbar-thumb {
-    background-color: $thumbBG;
-    border: 2px solid $trackBG;
-    border-radius: 4px;
-  }
+	@if $direction == 'horizontal' {
+		overflow-x: auto;
+		//noinspection ALL
+		@supports (overflow-x: overlay) {
+			overflow-x: overlay;
+		}
+	}
 
-  & {
+	@if $direction == 'vertical' {
+		overflow-y: auto;
+		//noinspection ALL
+		@supports (overflow-y: overlay) {
+			overflow-y: overlay;
+		}
+	}
 
-    //Direction Diff
-    @if $direction == 'horizontal' {
-      & {
-        overflow-x: auto;
-      }
-      //noinspection ALL
-      @supports (overflow-x: overlay) {
-        overflow-x: overlay;
-      }
-      &::-webkit-scrollbar {
-        height: 12px;
-      }
-    }
-
-    & {
-      @if $direction == 'vertical' {
-        & {
-          overflow-y: auto;
-        }
-        //noinspection ALL
-        @supports (overflow-y: overlay) {
-          overflow-y: overlay;
-        }
-        &::-webkit-scrollbar {
-          width: 9px;
-        }
-      }
-    }
-
-    @if $direction == 'both' {
-      & {
-        overflow: auto;
-      }
-      //noinspection ALL
-      @supports (overflow: overlay) {
-        overflow: overlay;
-      }
-      &::-webkit-scrollbar {
-        width: 9px;
-        height: 12px;
-      }
-    }
-
-    @if $showOnlyOnHover {
-      &::-webkit-scrollbar,
-      &::-webkit-scrollbar-thumb {
-        visibility: hidden;
-      }
-
-      &:hover {
-        &::-webkit-scrollbar,
-        &::-webkit-scrollbar-thumb {
-          visibility: visible;
-        }
-      }
-    }
-  }
+	@if $direction == 'both' {
+		overflow: auto;
+		//noinspection ALL
+		@supports (overflow: overlay) {
+			overflow: overlay;
+		}
+	}
 }

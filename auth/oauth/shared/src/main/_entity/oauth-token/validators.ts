@@ -13,6 +13,9 @@ export const OAuthToken_modifiablePropsValidator: DatabaseDef_OAuthToken['modifi
 	scopes: tsValidateArray(tsValidateString()),
 	revoked: tsValidateBoolean(),
 	tokenType: tsValidateValue(['access', 'refresh'] as const),
+	resource: tsValidateString(undefined, false),
+	sessionId: tsValidateString(undefined, false),
+	tokenKind: tsValidateValue(['oauth-jwt', 'session-jwt'] as const, true),
 };
 
 export const OAuthToken_generatedPropsValidator: DatabaseDef_OAuthToken['generatedPropsValidator'] = {

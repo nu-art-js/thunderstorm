@@ -8,6 +8,7 @@ import {ApiDef, GeneralApi, HttpMethod} from '../types/api-types.js';
 import type {ApiCallback, ApiCallContext, RawHttpResponse} from './types.js';
 import {ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {HttpClient} from '../core/HttpClient.js';
+import {HttpRequest} from '../core/HttpRequest.js';
 
 /**
  * Module callback factory - receives module instance and context.
@@ -19,6 +20,8 @@ export type ModuleCallback<Module, API extends GeneralApi> =
  * Configuration options for ApiCaller decorator.
  */
 export type ApiCallerOptions<Module, API extends GeneralApi> = {
+	/** Implementation-level hook to edit the request (headers, timeout, body) after it is built and before it is executed. */
+	onBeforeExecute?: (module: Module, request: HttpRequest<API>) => void | Promise<void>;
 	onComplete?: ModuleCallback<Module, API>;
 	httpClient?: ResolvableContent<HttpClient, [Module]>;
 };
@@ -51,6 +54,9 @@ export function ApiCaller<API extends GeneralApi, Module = any>(_apiDef: Resolva
 				request.setUrlParams(payload as API['P']);
 			else
 				request.setBodyAsJson(payload as API['B']);
+
+			if (options?.onBeforeExecute)
+				await options.onBeforeExecute(this, request);
 
 			const response = await request.execute();
 			const axiosResponse = request.getRawResponse();

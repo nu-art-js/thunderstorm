@@ -45,7 +45,7 @@ A **test-only** package exists only to run tests that require real runtime behav
   - `src/test/`: All real content — E2E/integration tests and test helpers (e.g. server factory, port cleanup).
 - **Package.json:** `"private": true`; omit or minimise `exports` (nothing imports the package); dependencies = packages under test + test deps (chai, testalot, etc.).
 - **When to use:** E2E tests that must run a real server and client (or similar) and should live in a dedicated package rather than inside one of the packages under test. Example: `@nu-art/http-e2e-tests` under `_thunderstorm/http/e2e/`.
-- **Run:** `bai -t -tt=pure -up=<package-name>` (or the relevant test-type for that package).
+- **Run:** `bai -t -nb -tt=pure -up=<package-name>` (or the relevant test-type for that package). Use `-nb` while a dev backend is running — test compile wipes lib `dist/` and breaks live `node --watch`.
 
 ## Library (Multi-Domain Capability)
 

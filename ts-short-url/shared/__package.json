@@ -43,9 +43,7 @@
     "react": "?"
   },
   "devDependencies": {
-    "@types/react": "?",
-    "@types/chai": "^4.3.4",
-    "@types/mocha": "^10.0.1"
+    "@types/react": "?"
   },
   "unitConfig": {
     "type": "typescript-lib"

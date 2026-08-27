@@ -1,0 +1,14 @@
+.ts-skeleton-header {
+	gap: 4px;
+
+	.ts-skeleton-header__title,
+	.ts-skeleton-header__subtitle {
+		position: relative;
+		overflow: hidden;
+		max-width: 100%;
+		height: 12px;
+		border-radius: var(--radius-sm);
+		background: var(--color-surface-input);
+		flex-shrink: 0;
+	}
+}

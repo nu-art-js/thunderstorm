@@ -22,13 +22,10 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "@nu-art/api-types": "?",
     "@nu-art/testalot": "?",
-    "chai": "?",
     "@nu-art/db-api-shared": "?",
     "@nu-art/firebase-backend": "?",
     "@nu-art/firebase-shared": "?",

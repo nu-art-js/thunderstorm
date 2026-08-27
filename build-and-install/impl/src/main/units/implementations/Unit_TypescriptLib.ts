@@ -177,6 +177,41 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	extends Unit_PackageJson<C>
 	implements UnitPhaseImplementor<[Phase_PreCompile, Phase_Compile, Phase_PrintDependencyTree, Phase_CheckCyclicImports, Phase_Lint, Phase_Test, Phase_Publish, Phase_ToESM, Phase_ExtractDynamicDeps, Phase_MapExports]> {
 
+	private firebaseTestMongoHost?: string;
+	private firebaseTestMongoContainer?: string;
+	private firebaseTestEmulatorPorts?: number[];
+
+	/**
+	 * Tears down resources owned by the firebase test harness for this unit.
+	 * Idempotent — safe from both runTests finally and SIGINT terminatable.
+	 *
+	 * Setup never kills ports already in use (scan-for-free instead). Cleanup
+	 * only releases the ports / container this setup allocated.
+	 */
+	private stopFirebaseTestResources = async () => {
+		const containerName = this.firebaseTestMongoContainer;
+		const ports = this.firebaseTestEmulatorPorts;
+		this.firebaseTestMongoContainer = undefined;
+		this.firebaseTestMongoHost = undefined;
+		this.firebaseTestEmulatorPorts = undefined;
+
+		if (containerName) {
+			this.logInfo(`Stopping MongoDB test container (container: ${containerName})`);
+			try {
+				const stopCommando = this.allocateCommando();
+				await this.executeAsyncCommando(stopCommando, `docker rm -f ${containerName}`, () => {
+				});
+			} catch (e: any) {
+				this.logWarning(`Failed to stop MongoDB test container: ${e.message}`);
+			}
+		}
+
+		// releasePorts skips com.docker* — safe for java emulator leftovers after
+		// emulators:exec / hard interrupt. Never call this on the mongo host port.
+		if (ports?.length)
+			await this.releasePorts(ports.map(String));
+	};
+
 	private TestTypeWorkspaceSetup: Record<TestType, (config: Unit_TypescriptLib_Config, runtimeContext: ProjectUnit_RuntimeContext) => Promise<void>> = {
 		pure: async (config, runtimeContext) => {
 		},
@@ -191,39 +226,43 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 
 			const pathToProjectRoot = runtimeContext.parentUnit.config.fullPath;
 			await FileSystemUtils.file.copy(resolve(pathToProjectRoot, pathToTestsFirebaseRC), resolve(config.fullPath, CONST_FirebaseRC));
-			const ports = [
-				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 1}`,
-				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 2}`,
-				`${(runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000) + 3}`
-			];
-
-			if (runtimeContext.runtimeParams.testDebugPort)
-				ports.push(`${runtimeContext.runtimeParams.testDebugPort}`);
-
+			const baseEmulationPort = runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000;
+			const [rtdbPort, firestorePort, websocketPort] = await this.resolveConsecutiveAvailableHostPorts(baseEmulationPort + 1, 3);
+			this.firebaseTestEmulatorPorts = [rtdbPort, firestorePort, websocketPort];
 
 			const firebaseConfigFiles = runtimeContext.baiConfig.files?.firebase;
 			if (!firebaseConfigFiles)
 				throw new ImplementationMissingException(`Missing firebase config files in ${CONST_BaiConfig}`);
 
 			await FileSystemUtils.file.template.copy(resolve(pathToProjectRoot, pathToTestsFirebaseJson), resolve(config.fullPath, CONST_FirebaseJSON), {
-				FIREBASE_RTDB_PORT: ports[0],
-				FIRESTORE_PORT: ports[1],
-				FIRESTORE_WEBSOCKET_PORT: ports[2],
+				FIREBASE_RTDB_PORT: `${rtdbPort}`,
+				FIRESTORE_PORT: `${firestorePort}`,
+				FIRESTORE_WEBSOCKET_PORT: `${websocketPort}`,
 				FIREBASE_DATABASE_RULES: resolve(pathToProjectRoot, firebaseConfigFiles.databaseRules!),
 				FIREBASE_FIRESTORE_RULES: resolve(pathToProjectRoot, firebaseConfigFiles.firestoreRules!),
 				FIREBASE_FIRESTORE_INDICES: resolve(pathToProjectRoot, firebaseConfigFiles.firestoreIndexesRules!),
 			}, DEFAULT_TEMPLATE_PATTERN);
 
-			await this.releasePorts(ports);
+			// Emulator ports are resolved above — never releasePorts on them during setup
+			// (would kill whatever currently owns them: leftover test java or concurrent runs).
+			if (runtimeContext.runtimeParams.testDebugPort)
+				await this.releasePorts([`${runtimeContext.runtimeParams.testDebugPort}`]);
 
-			const mongoPort = runtimeContext.baiConfig.files?.tests?.firebase?.mongoPort;
-			if (mongoPort) {
+			const baseMongoPort = runtimeContext.baiConfig.files?.tests?.firebase?.mongoPort;
+			if (baseMongoPort) {
+				const mongoPort = await this.resolveAvailableHostPort(baseMongoPort);
+				this.firebaseTestMongoHost = `localhost:${mongoPort}`;
 				const containerName = `mongo-test-${config.key.replace(/[^a-z0-9-]/gi, '-')}`;
+				this.firebaseTestMongoContainer = containerName;
 				this.logInfo(`Starting MongoDB test container on port ${mongoPort} (container: ${containerName})`);
+
+				// SIGINT mid-run: PhaseManager.break() → unit.kill() → this terminatable.
+				// Normal success/failure: runTests finally (terminatable alone never fires on exit).
+				this.unregisterTerminatable(this.stopFirebaseTestResources);
+				this.registerTerminatable(this.stopFirebaseTestResources);
 
 				const rmCommando = this.allocateCommando();
 				await this.executeAsyncCommando(rmCommando, `docker rm -f ${containerName} 2>/dev/null || true`, () => {});
-				await this.releasePorts([`${mongoPort}`]);
 				const commando = this.allocateCommando();
 				await this.executeAsyncCommando(commando, `docker run -d --name ${containerName} -p ${mongoPort}:${mongoPort} mongo:7 --replSet rs0 --port ${mongoPort}`, (stdout, stderr, exitCode) => {
 					if (exitCode !== 0)
@@ -237,16 +276,9 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				});
 
 				this.logInfo(`MongoDB test container started as replica set on port ${mongoPort}`);
-
-				this.registerTerminatable(async () => {
-					try {
-						const stopCommando = this.allocateCommando();
-						await this.executeAsyncCommando(stopCommando, `docker rm -f ${containerName}`, () => {
-						});
-					} catch (e: any) {
-						this.logWarning(`Failed to stop MongoDB test container: ${e.message}`);
-					}
-				});
+			} else {
+				this.unregisterTerminatable(this.stopFirebaseTestResources);
+				this.registerTerminatable(this.stopFirebaseTestResources);
 			}
 		},
 		ui: async () => {
@@ -334,16 +366,28 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				continue;
 			}
 
-			await this.TestTypeWorkspaceSetup[testType](this.config, this.runtimeContext);
-			const commando = this.allocateCommando(Commando_NVM)
-				.cd(this.config.fullPath);
+			try {
+				await this.TestTypeWorkspaceSetup[testType](this.config, this.runtimeContext);
+				const commando = this.allocateCommando(Commando_NVM)
+					.cd(this.config.fullPath);
 
-			const testCommand = await TestsCommandComposer[testType](this.config, this.runtimeContext);
+				if (testType === 'firebase' && this.firebaseTestMongoHost)
+					commando.custom(`export MONGODB_EMULATOR_HOST=${this.firebaseTestMongoHost}`);
 
-			await this.executeAsyncCommando(commando, testCommand, (stdout, stderr, exitCode) => {
-				if (exitCode !== 0)
-					throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
-			});
+				const testCommand = await TestsCommandComposer[testType](this.config, this.runtimeContext);
+
+				await this.executeAsyncCommando(commando, testCommand, (stdout, stderr, exitCode) => {
+					if (exitCode !== 0)
+						throw new CommandoException(`Error running tests`, stdout, stderr, exitCode);
+				});
+			} finally {
+				if (testType === 'firebase') {
+					// Terminatables only run on SIGINT via PhaseManager.break() — always
+					// reclaim our mongo container + emulator ports on normal exit too.
+					this.unregisterTerminatable(this.stopFirebaseTestResources);
+					await this.stopFirebaseTestResources();
+				}
+			}
 		}
 	}
 

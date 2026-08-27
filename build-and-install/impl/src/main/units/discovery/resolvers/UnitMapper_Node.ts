@@ -9,7 +9,7 @@ import {
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {BaseUnit} from '../../base/BaseUnit.js';
-import {FilesCache} from '../../../core/FilesCache.js';
+import {loadJsonWithTemplateParams} from '../../../core/template-params.js';
 import {BaseUnitConfig, UnitConfigJSON_Base, UnitMapper_Base} from './UnitMapper_Base.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_PackageJson} from '../../implementations/Unit_PackageJson.js';
@@ -58,7 +58,7 @@ export abstract class UnitMapper_Node<
 
 		let packageJson: TS_PackageJSON<ConfigJSON>;
 		try {
-			packageJson = await FilesCache.load.json<TS_PackageJSON<ConfigJSON>>(pathToFile);
+			packageJson = await loadJsonWithTemplateParams<TS_PackageJSON<ConfigJSON>>(pathToFile, this.templateParams);
 
 			if (!packageJson)
 				return;

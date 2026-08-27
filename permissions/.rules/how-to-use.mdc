@@ -39,6 +39,7 @@ Three packages — shared is always required; backend and frontend are independe
 ### Grouping
 
 - **AccessGroup** — the central grouping entity. Types: `user` (personal, one per account), `service-account` (one per SA), `entity` (document-level access groups for a specific entity or entity class), `custom` (app-defined groups like "Default" or "Permissions Admin").
+- **`user` / `service-account` groups are leaf-only** — they can never have `members` (enforced at write time by `preWriteProcessing`, which rejects the write with `${type} access groups cannot have members`). They participate in the graph **only as members of** `entity`/`custom` groups. A `service-account` group therefore cannot be used as a container holding other group IDs.
 - **Group graph** — groups have `members` (child group IDs), forming a DAG. The system walks upward from a user's personal group to find all reachable ancestor groups and their scope entries.
 - **AccessGroupDefinition** — code-defined group templates declared via `defineAccessGroup` in shared packages. Bootstrap creates/upserts the actual `DB_AccessGroup` entities from these definitions, preserving existing members.
 
@@ -217,9 +218,9 @@ If a package defines scopes but skips steps 2–8, the result is:
 
 Service accounts (SAs) are **not exempt from permissions**. They participate in the permission system like any other actor:
 
-- An SA has its own personal access group ID (derived from its SA ID).
+- An SA has its own access group ID, derived from its SA ID via `hashToUniqueId(saId)`.
 - `runAsServiceAccount` sets the SA's scope permissions and access IDs on the request-scoped `MemStorage`, exactly as the user middleware does for human users.
-- SA must be included in the relevant `__access` lists of documents it needs to interact with — the document access guards apply to SAs just as they apply to users.
+- An SA gains document access **the same way a user does — through group membership**: its group ID is a **member** of a group (role/`entity`/bucket group) that appears in the document's `__access` (readers/writers/…), and the upward graph walk from the SA's group ID (`walkGroupGraphUp`) transitively reaches that group. **Prefer this over stamping the SA ID directly into each document's `__access`** — membership mirrors how a human gets access (their personal group is a member of role groups) and is the mechanism used by bootstrap → permissions-admin → infra groups. Both technically work; membership is canonical.
 - The only exception is **document creation** — during creation, `__access` is being stamped (not checked), so the SA can create documents and define their access actors.
 
 ```typescript

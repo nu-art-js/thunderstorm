@@ -1,26 +1,23 @@
-$barWidth: 400px;
-$color: rgb(29, 176, 255);
-
-
+// .ts-progress-bar — tokenized component styling; every design value is a
+// var(--ts-progress-bar--*) (defaults in theme.scss).
 .ts-progress-bar {
+  width: 100%;
 
   .ts-progress-bar__linear-bar {
-    width: $barWidth;
-    height: 24px;
-    border: 2px solid $color;
-    border-radius: 12px;
+    width: var(--ts-progress-bar--linear-width);
+    height: var(--ts-progress-bar--linear-height);
+    border: var(--ts-progress-bar--border-width) solid var(--ts-progress-bar--border-color);
+    border-radius: var(--ts-progress-bar--radius);
     position: relative;
-    background: white;
+    background: var(--ts-progress-bar--track-bg);
     overflow: hidden;
 
     .ts-progress-bar__linear-bar__text {
-      width: $barWidth;
+      width: var(--ts-progress-bar--linear-width);
       height: 100%;
-      color: $color;
-      font: {
-        size: 16px;
-        weight: bold;
-      }
+      color: var(--ts-progress-bar--text-color);
+      font-size: var(--ts-progress-bar--font-size);
+      font-weight: var(--ts-progress-bar--font-weight);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -30,14 +27,16 @@ $color: rgb(29, 176, 255);
 
     .ts-progress-bar__linear-bar__bar {
       height: 100%;
-      background: $color;
-      transition: width 200ms ease-out;
+      background: var(--ts-progress-bar--fill);
+      transition: width var(--ts-progress-bar--transition);
       overflow: hidden;
       position: absolute;
-      inset: 0;
+      left: 0;
+      top: 0;
+      bottom: 0;
 
       .ts-progress-bar__linear-bar__text {
-        color: white;
+        color: var(--ts-progress-bar--text-on-fill);
       }
     }
   }
@@ -46,16 +45,14 @@ $color: rgb(29, 176, 255);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 200px;
-    height: 200px;
+    width: var(--ts-progress-bar--radial-size);
+    height: var(--ts-progress-bar--radial-size);
     position: relative;
 
     .ts-progress-bar__radial-bar__text {
-      font: {
-        size: 24px;
-        weight: bold;
-      }
-      color: $color;
+      font-size: var(--ts-progress-bar--radial-font-size);
+      font-weight: var(--ts-progress-bar--font-weight);
+      color: var(--ts-progress-bar--text-color);
     }
 
     .ts-progress-bar__radial-bar__bar {
@@ -66,9 +63,9 @@ $color: rgb(29, 176, 255);
 
       circle {
         fill: none;
-        stroke-width: 6;
-        stroke: $color;
-        transition: stroke-dashoffset 200ms ease-out;
+        stroke-width: var(--ts-progress-bar--stroke-width);
+        stroke: var(--ts-progress-bar--fill);
+        transition: stroke-dashoffset var(--ts-progress-bar--transition);
       }
 
       .ts-progress-bar__radial-bar__bar__background {

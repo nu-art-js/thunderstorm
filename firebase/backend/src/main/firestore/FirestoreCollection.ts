@@ -174,6 +174,11 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		query: async (query: FirestoreQuery<Proto['dbType']>) => {
 			return (await this._customQuery(query, true)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
 		},
+		/**
+		 * Bypasses query interceptors (including document __access enforcement).
+		 * NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		 * Prefer a service-account permission context with normal query APIs so access rules still apply.
+		 */
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>) => {
 			return (await this._customQuery(query, false)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
 		},
@@ -200,7 +205,17 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 	};
 
 	query = Object.freeze({
-		unique: async (_id: Proto['uniqueParam']) => await this.doc.unique(_id).get(),
+		unique: async (_id: Proto['uniqueParam']): Promise<Proto['dbType'] | undefined> => {
+			const idStr = (typeof _id !== 'string' ? assertUniqueId<Proto>(_id, this.uniqueKeys) : _id) as Proto['dbType']['_id'];
+			const results = await this._customQuery({where: {_id: idStr} as Clause_Where<Proto['dbType']>}, true);
+			return results[0]?.data();
+		},
+		/**
+		 * Read-by-id that bypasses the query interceptors (no __access enforcement).
+		 * Sanctioned internal use only: original-loads/self-loads that cannot pass through
+		 * an access filter. Mirrors MongoCollection for type parity.
+		 */
+		uniqueUnmanipulated: async (_id: Proto['uniqueParam']): Promise<Proto['dbType'] | undefined> => await this.doc.unique(_id).get(),
 		uniqueAssert: async (_id: Proto['uniqueParam']): Promise<Proto['dbType']> => {
 			const resultItem = await this.query.unique(_id);
 			if (!resultItem)
@@ -226,6 +241,7 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		where: async (where: Clause_Where<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return this.query.custom({where});
 		},
+		/** NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT. Engine data-query twin of doc.unManipulatedQuery. */
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			return (await this._customQuery(query, false)).map(snapshot => snapshot.data());
 		},
@@ -338,6 +354,8 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: delete must collect every matching doc, not only ones the caller can read.
 		const docsToBeDeleted = await this.doc.unManipulatedQuery(query);
 		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!);
 		await this._deleteAll(docsToBeDeleted, multiWriteType);
@@ -405,6 +423,8 @@ export class FirestoreCollection<Proto extends DB_Prototype>
 
 			return await this._deleteQuery(query);
 		},
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: delete must collect every matching doc, not only ones the caller can read.
 		unManipulatedQuery: async (query: FirestoreQuery<Proto['dbType']>): Promise<Proto['dbType'][]> => {
 			if (!getActiveTransaction()) {
 				if (!exists(query) || compare(query, _EmptyQuery))

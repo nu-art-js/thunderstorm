@@ -14,9 +14,14 @@ import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, Default_Files
 import {Commando_NVM, CommandoException} from '@nu-art/commando';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/consts.js';
 import {resolve} from 'path';
+import {existsSync} from 'fs';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
+import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval} from './mongo-emulator.js';
+
+/** Exit code BaseStorm uses when RTDB config changes and the node server must restart. */
+const StormConfigChangeExitCode = 2;
 
 export const firebaseFunctionEmulator_ErrorStrings: string[] = [
 	'functions: Failed',
@@ -50,6 +55,7 @@ export type FunctionConfig = {
 export type MongoEmulatorConfig = {
 	port?: number;    // Defaults to basePort + 11
 	dbName?: string;  // Defaults to 'default'
+	dataDir?: string; // Folder name under unit .trash; defaults to 'mongo-data'
 };
 
 export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
@@ -223,9 +229,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	async releaseEmulatorPorts() {
 		const allPorts = Array.from({length: 11}, (_, i) => `${this.config.basePort + i}`);
-		if (this.config.mongo)
-			allPorts.push(`${this.resolveMongoPort()}`);
-
+		// Mongo is docker-managed (mongo-emu--*); startMongoEmulator/stopMongoEmulator use
+		// docker rm — never releasePorts on the mongo port (kills com.docker on macOS).
 		return this.releasePorts(allPorts);
 	}
 
@@ -236,11 +241,15 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	private resolveMongoContainerName(): string {
-		return `mongo-emu-${this.config.key.replace(/[^a-z0-9-]/gi, '-')}`;
+		return mongoEmuContainerName(this.config.key, this.resolveMongoPort());
 	}
 
 	private resolveMongoDataPath(): string {
-		return resolve(this.config.fullPath, CONST_TrashDir, 'mongo-data');
+		const dir = this.config.mongo?.dataDir ?? 'mongo-data';
+		if (dir.startsWith('/') || dir.includes('..'))
+			throw new ImplementationMissingException(`Invalid mongo.dataDir "${dir}": must be a folder name under unit .trash (no absolute paths or .. segments)`);
+
+		return resolve(this.config.fullPath, CONST_TrashDir, dir);
 	}
 
 	private async startMongoEmulator() {
@@ -256,13 +265,15 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		this.registerTerminatable(stopAction);
 
 		const commando = this.allocateCommando();
-		await this.executeAsyncCommando(commando, `docker rm -f ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:${port} -v ${mongoDataPath}:/data/db mongo:7 --replSet rs0 --port ${port}`, (stdout, stderr, exitCode) => {
+		const legacyName = mongoEmuContainerBaseName(this.config.key);
+		await this.executeAsyncCommando(commando, `docker rm -f ${legacyName} ${containerName} 2>/dev/null; docker run -d --name ${containerName} -p ${port}:${port} -v ${mongoDataPath}:/data/db mongo:7 --replSet rs0 --port ${port}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to start MongoDB emulator container`, stdout, stderr, exitCode);
 		});
 
 		const initCommando = this.allocateCommando();
-		await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${port} --quiet --eval "try{rs.status()}catch(e){rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:${port}'}]})} while(!rs.status().members.some(m=>m.stateStr==='PRIMARY')){sleep(200)} print('PRIMARY ready')"`, (stdout, stderr, exitCode) => {
+		const ensureEval = JSON.stringify(mongoReplicaSetEnsureEval(port));
+		await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${port} --quiet --eval ${ensureEval}`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Failed to initiate MongoDB replica set`, stdout, stderr, exitCode);
 		});
@@ -272,11 +283,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 	private async stopMongoEmulator() {
 		const containerName = this.resolveMongoContainerName();
+		const legacyName = mongoEmuContainerBaseName(this.config.key);
 		this.logInfo(`Stopping MongoDB emulator (container: ${containerName})`);
 
 		try {
 			const commando = this.allocateCommando();
-			await this.executeAsyncCommando(commando, `docker rm -f ${containerName}`, () => {});
+			await this.executeAsyncCommando(commando, `docker rm -f ${legacyName} ${containerName}`, () => {});
 		} catch (e: any) {
 			this.logWarning(`Failed to stop MongoDB emulator container: ${e.message}`);
 		}
@@ -1178,7 +1190,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const projectId = this.config.envConfig.projectId;
 		const port = this.config.basePort;
 
-		await this.startEmulatorsAndWait();
+		const {ready, terminated: emulatorTerminated} = this.startEmulators();
+		await ready;
 
 		const commando = this.allocateCommando(Commando_NVM).applyNVM()
 			.setUID(this.config.key)
@@ -1194,6 +1207,12 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		if (this.config.mongo)
 			commando.custom(`export MONGODB_EMULATOR_HOST=localhost:${this.resolveMongoPort()}`);
+
+		// Storm HttpServer reads BACKEND_PORT (not BAI's unitConfig basePort).
+		commando.custom(`export BACKEND_PORT=${port}`);
+		commando.custom(`export PORT_BACKEND_APEX=${port}`);
+		const mcpBridgePort = process.env.PORT_MCP_BRIDGE || (port === 8352 ? '9999' : '10999');
+		commando.custom(`export PORT_MCP_BRIDGE=${mcpBridgePort}`);
 
 		commando.custom(`export GCLOUD_PROJECT=${projectId}`);
 		commando.custom(`export GOOGLE_CLOUD_PROJECT=${projectId}`);
@@ -1214,30 +1233,98 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const inspectFlag = this.runtimeContext.runtimeParams.debugBackend
 			? `--inspect=0.0.0.0:${this.config.debugPort}` : '';
 
-		await this.executeAsyncCommando(commando, `trap 'exit 0' SIGINT SIGTERM; while true; do while [ ! -f ${this.config.output}/index.js ]; do echo "Waiting for ${this.config.output}/index.js..."; sleep 2; done; node --watch ${inspectFlag} ${this.config.output}/index.js; code=$?; if [ $code -eq 0 ] || [ $code -eq 130 ] || [ $code -eq 143 ]; then break; fi; echo "Process exited ($code), restarting..."; sleep 1; done`);
+		const entryPoint = `${this.config.output}/index.js`;
+		const nodeCommand = `node --watch ${inspectFlag} ${entryPoint}`;
+
+		// BaseStorm calls process.exit(StormConfigChangeExitCode) on RTDB config change.
+		// node --watch should exit with that code, but can stay alive with a dead child;
+		// force-kill the captured pid when we see the log so the restart loop unblocks.
+		let nodePid: number | undefined;
+		commando.onLog(/CONFIGURATION HAS CHANGED.*KILLING PROCESS/, () => {
+			if (nodePid === undefined)
+				return;
+
+			this.logInfo('RTDB config changed — stopping node for restart...');
+			void commando.killSubprocess(nodePid);
+		});
+
+		while (!existsSync(entryPoint)) {
+			if (this.shouldStop())
+				return this.terminateNode(emulatorTerminated);
+
+			this.logInfo(`Waiting for ${entryPoint}...`);
+			await this.interruptibleSleep(2 * Second);
+		}
+
+		while (!this.shouldStop()) {
+			let exitCode = -1;
+			nodePid = undefined;
+			await this.executeAsyncCommando(commando, nodeCommand, (stdout, stderr, code) => exitCode = code, _pid => nodePid = _pid);
+
+			// SIGINT (130) or SIGTERM (143) → intentional shutdown, stop.
+			if (this.shouldStop() || exitCode === 130 || exitCode === 143)
+				break;
+
+			// Exit 0 without kill() in progress is not launch teardown — restart.
+			// (BaseStorm uses exit 2 for RTDB config change; a spurious 0 must not
+			// reach terminateNode while the emulator is still running.)
+			if (exitCode === 0) {
+				this.logWarning('Process exited (0) unexpectedly — restarting...');
+				await this.interruptibleSleep(Second);
+				continue;
+			}
+
+			if (exitCode === StormConfigChangeExitCode)
+				this.logInfo('RTDB config changed — restarting node server...');
+			else
+				this.logWarning(`Process exited (${exitCode}), restarting...`);
+
+			await this.interruptibleSleep(Second);
+		}
+
+		return this.terminateNode(emulatorTerminated);
+	}
+
+	/**
+	 * The node loop ending is NOT the end of teardown: the firebase emulator runs
+	 * as a sibling child that must finish its clean shutdown (export-on-exit) too.
+	 * Awaiting its termination here keeps `launch()` open until the emulator is
+	 * actually down — otherwise the outer run completes and `process.exit(0)` races
+	 * the emulator's shutdown, orphaning firestore/pubsub.
+	 */
+	private async terminateNode(emulatorTerminated: Promise<void>) {
+		await emulatorTerminated;
 		this.logWarning('NODE SERVER TERMINATED');
 	}
 
-	private async startEmulatorsAndWait() {
-		return new Promise<void>((resolve) => {
-			const commando = this.allocateCommando(Commando_NVM).applyNVM()
-				.setUID(`${this.config.key}-emulators`)
-				.cd(this.config.fullPath)
-				.setLogLevelFilter((log, type) => {
-					if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
-						return LogLevel.Error;
+	/**
+	 * Starts the firebase emulators and exposes two lifecycle handles:
+	 * - `ready`: resolves once all emulators are up (the node server may start)
+	 * - `terminated`: resolves once the emulator CLI has fully shut down
+	 */
+	private startEmulators(): { ready: Promise<void>; terminated: Promise<void> } {
+		let resolveReady!: () => void;
+		const ready = new Promise<void>(resolve => resolveReady = resolve);
 
-					if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
-						return LogLevel.Warning;
-				})
-				.onLog(/.*All emulators ready.*/, () => {
-					this.logInfo('Firebase emulators ready — starting Node server');
-					resolve();
-				});
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.setUID(`${this.config.key}-emulators`)
+			.cd(this.config.fullPath)
+			.setLogLevelFilter((log, type) => {
+				if (this.emulatorLogStrings.error.some(errStr => log.includes(errStr)))
+					return LogLevel.Error;
 
-			this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --only database,auth,storage,firestore,pubsub --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData}`)
-				.then(() => this.logWarning('EMULATORS TERMINATED'));
-		});
+				if (this.emulatorLogStrings.warning.some(warnStr => log.includes(warnStr)))
+					return LogLevel.Warning;
+			})
+			.onLog(/.*All emulators ready.*/, () => {
+				this.logInfo('Firebase emulators ready — starting Node server');
+				resolveReady();
+			});
+
+		const terminated = this.executeAsyncCommando(commando, `${this.npmCommand('firebase')} emulators:start --only database,auth,storage,firestore,pubsub --project ${this.config.envConfig.projectId} --export-on-exit --import=${this.config.pathToEmulatorData}`)
+			.then(() => this.logWarning('EMULATORS TERMINATED'));
+
+		return {ready, terminated};
 	}
 
 	private async runEmulator() {

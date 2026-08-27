@@ -1,0 +1,41 @@
+.ts-breadcrumb {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	align-items: center;
+	width: fit-content;
+	min-width: 0;
+	font-size: var(--font-size-control);
+
+	.ts-breadcrumb__link {
+		padding: 0;
+		border: none;
+		background: none;
+		color: var(--color-action-primary-bg);
+		font: inherit;
+		cursor: pointer;
+		text-decoration: none;
+		width: fit-content;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	.ts-breadcrumb__sep {
+		color: var(--color-text-muted);
+		user-select: none;
+		width: fit-content;
+	}
+
+	.ts-breadcrumb__current {
+		color: var(--color-text-primary);
+		font-weight: var(--font-weight-medium);
+		width: fit-content;
+	}
+
+	.ts-breadcrumb__inert {
+		color: var(--color-text-muted);
+		width: fit-content;
+	}
+}

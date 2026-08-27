@@ -42,6 +42,7 @@ export abstract class UnitMapper_Base<
 	protected validator: TypeValidator<ConfigJSON>;
 	protected baiConfig!: BAI_Config;
 	protected runtimeParams!: BaiParams;
+	protected templateParams: StringMap = {};
 
 	protected constructor(validator: TypeValidator<ConfigJSON>) {
 		super();
@@ -64,6 +65,10 @@ export abstract class UnitMapper_Base<
 	 */
 	setConfig(config: BAI_Config) {
 		this.baiConfig = config;
+	}
+
+	setTemplateParams(templateParams: StringMap) {
+		this.templateParams = templateParams;
 	}
 
 	/**

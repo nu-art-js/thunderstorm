@@ -17,6 +17,7 @@
  */
 
 import {FirestoreQuery, QueryComparator} from '@nu-art/firebase-shared';
+import type {CrudJoinHopCompiled} from '@nu-art/db-api-shared';
 import {__stringify, BadImplementationException, ImplementationMissingException, StaticLogger, TS_Object} from '@nu-art/ts-common';
 import type {Document, Filter, Sort} from 'mongodb';
 
@@ -29,7 +30,7 @@ export type MqlCompiledQuery<T extends TS_Object = TS_Object> = {
 	limit?: number;
 };
 
-const MqlComparatorMap: { [k in keyof QueryComparator<any>]: string } = {
+const MqlComparatorMap: Record<string, string> = {
 	$nin: '$nin',
 	$in: '$in',
 	$ac: '$elemMatch',
@@ -68,6 +69,78 @@ export class MongoInterface {
 		}
 	}
 
+	static compileWhereClause(where?: Record<string, unknown>): Filter<any> | undefined {
+		if (!where)
+			return undefined;
+
+		const compiled = this.buildQuery({where: where as FirestoreQuery<any>['where']} as FirestoreQuery<any>);
+		if (!compiled.filter || !Object.keys(compiled.filter).length)
+			return undefined;
+
+		return compiled.filter;
+	}
+
+	static buildJoinPipeline(
+		localWhere: Filter<any> | undefined,
+		hops: CrudJoinHopCompiled[],
+		whereAfter?: Filter<any>,
+		orderBy?: FirestoreQuery<any>['orderBy'],
+		limit?: FirestoreQuery<any>['limit'],
+	): Document[] {
+		const pipeline: Document[] = [];
+
+		if (localWhere && Object.keys(localWhere).length)
+			pipeline.push({$match: localWhere});
+
+		for (const hop of hops) {
+			const foreignMatch = this.compileWhereClause(hop.where as Record<string, unknown> | undefined);
+			if (foreignMatch) {
+				pipeline.push({
+					$lookup: {
+						from: hop.from,
+						let: {joinLocal: `$${hop.localField}`},
+						pipeline: [
+							{$match: {$expr: {$eq: [`$${hop.foreignField}`, '$$joinLocal']}}},
+							{$match: foreignMatch},
+						],
+						as: hop.as,
+					},
+				});
+			} else {
+				pipeline.push({
+					$lookup: {
+						from: hop.from,
+						localField: hop.localField,
+						foreignField: hop.foreignField,
+						as: hop.as,
+					},
+				});
+			}
+
+			pipeline.push({$unwind: {path: `$${hop.as}`, preserveNullAndEmptyArrays: false}});
+		}
+
+		if (whereAfter && Object.keys(whereAfter).length)
+			pipeline.push({$match: whereAfter});
+
+		const tailQuery = {} as FirestoreQuery<any>;
+		if (orderBy)
+			tailQuery.orderBy = orderBy;
+		if (limit !== undefined)
+			tailQuery.limit = limit;
+		const tail = this.buildQuery(Object.keys(tailQuery).length ? tailQuery : undefined);
+		if (tail.sort)
+			pipeline.push({$sort: tail.sort});
+
+		if (tail.skip !== undefined)
+			pipeline.push({$skip: tail.skip});
+
+		if (tail.limit !== undefined)
+			pipeline.push({$limit: tail.limit});
+
+		return pipeline;
+	}
+
 	private static buildFilter(where: Record<string, any>, prefix?: string): Document {
 		const filter: Document = {};
 
@@ -75,6 +148,14 @@ export class MongoInterface {
 			const value = where[field];
 			if (value === undefined || value === null)
 				continue;
+
+			if (field === '$or') {
+				if (!Array.isArray(value) || value.length === 0)
+					throw new BadImplementationException(`$or requires a non-empty array in filter: ${__stringify(where)}`);
+
+				filter.$or = value.map((clause: Record<string, any>) => this.buildFilter(clause, prefix));
+				continue;
+			}
 
 			const key = prefix ? `${prefix}.${field}` : field;
 
@@ -92,19 +173,36 @@ export class MongoInterface {
 
 			if (this.isQueryComparator(value)) {
 				const comparatorKey = Object.keys(value)[0] as keyof QueryComparator<any>;
-				const mqlOp = MqlComparatorMap[comparatorKey];
-				if (!mqlOp)
-					throw new ImplementationMissingException(`No MQL comparator for: ${comparatorKey} in filter: ${__stringify(where)}`);
-
 				const operand = value[comparatorKey];
 				if (operand === undefined)
 					throw new ImplementationMissingException(`No value for comparator ${comparatorKey} in filter: ${__stringify(where)}`);
+
+				if (comparatorKey === '$regex') {
+					if (!(operand instanceof RegExp))
+						throw new BadImplementationException(`$regex requires a RegExp instance for field '${key}' in filter: ${__stringify(where)}`);
+
+					const regexFilter: Document = {$regex: operand.source};
+					if (operand.flags)
+						regexFilter.$options = operand.flags;
+
+					filter[key] = regexFilter;
+					continue;
+				}
+
+				const mqlOp = MqlComparatorMap[comparatorKey as string];
+				if (!mqlOp)
+					throw new ImplementationMissingException(`No MQL comparator for: ${comparatorKey} in filter: ${__stringify(where)}`);
 
 				if (comparatorKey === '$ac') {
 					filter[key] = operand;
 				} else {
 					filter[key] = {[mqlOp]: operand};
 				}
+				continue;
+			}
+
+			if (this.isCompoundQueryComparator(value)) {
+				filter[key] = this.compileCompoundFieldComparators(key, value, where);
 				continue;
 			}
 
@@ -125,22 +223,50 @@ export class MongoInterface {
 		return filter;
 	}
 
+	private static readonly ComparatorKeys = new Set([
+		'$ac', '$aca', '$in', '$nin', '$gt', '$gte', '$lt', '$lte', '$eq', '$neq', '$regex',
+	]);
+
 	private static isQueryComparator(value: any): boolean {
 		if (typeof value !== 'object' || Array.isArray(value))
 			return false;
 
 		const keys = Object.keys(value);
-		return keys.length === 1 && (
-			value['$ac'] !== undefined ||
-			value['$aca'] !== undefined ||
-			value['$in'] !== undefined ||
-			value['$nin'] !== undefined ||
-			value['$gt'] !== undefined ||
-			value['$gte'] !== undefined ||
-			value['$lt'] !== undefined ||
-			value['$lte'] !== undefined ||
-			value['$neq'] !== undefined ||
-			value['$eq'] !== undefined);
+		return keys.length === 1 && this.ComparatorKeys.has(keys[0]!);
+	}
+
+	/** Multiple comparator keys on one field — e.g. `{ $gte, $lt }` for a closed time window. */
+	private static isCompoundQueryComparator(value: any): boolean {
+		if (typeof value !== 'object' || Array.isArray(value))
+			return false;
+
+		const keys = Object.keys(value);
+		return keys.length > 1 && keys.every(k => this.ComparatorKeys.has(k));
+	}
+
+	private static compileCompoundFieldComparators(
+		fieldKey: string,
+		value: Record<string, unknown>,
+		where: Record<string, any>,
+	): Document {
+		const compiled: Document = {};
+		for (const comparatorKey of Object.keys(value)) {
+			const operand = value[comparatorKey];
+			if (operand === undefined)
+				throw new ImplementationMissingException(`No value for comparator ${comparatorKey} in filter: ${__stringify(where)}`);
+
+			if (comparatorKey === '$regex' || comparatorKey === '$ac' || comparatorKey === '$aca')
+				throw new BadImplementationException(
+					`Comparator ${comparatorKey} cannot be combined with others on field '${fieldKey}' in filter: ${__stringify(where)}`,
+				);
+
+			const mqlOp = MqlComparatorMap[comparatorKey];
+			if (!mqlOp)
+				throw new ImplementationMissingException(`No MQL comparator for: ${comparatorKey} in filter: ${__stringify(where)}`);
+
+			compiled[mqlOp] = operand;
+		}
+		return compiled;
 	}
 
 	private static buildProjection(select: string[]): Document {

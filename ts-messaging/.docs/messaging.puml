@@ -6,7 +6,7 @@ rectangle "App Layer" {
 		_id: UniqueId
 		dbKey: string
 	}
-	note bottom of anchor: Any DB entity that\nneeds a conversation\n(task, chat-room, etc.)
+	note bottom of anchor: Any DB entity that\nneeds a conversation\n(knowledge node, task, …)
 }
 
 rectangle "ts-messaging" {
@@ -17,7 +17,8 @@ rectangle "ts-messaging" {
 	}
 	note right of topic
 		Unique: [anchor.dbKey, anchor.id]
-		One topic per anchor entity
+		One topic per anchor
+		__access = per-topic entity groups
 	end note
 
 	entity "DB_Message" as msg {
@@ -26,13 +27,14 @@ rectangle "ts-messaging" {
 		parentMessageId?: UniqueId
 		text?: string
 		attachments?: AssetRef[]
+		mention?: Account['_id'][]
 		_auditorId: string
 		__access: DocumentAccess
 	}
 	note right of msg
-		Must have text or attachments (or both)
-		_auditorId auto-set from session
-		parentMessageId enables threading
+		mention optional
+		__access copied from Topic at create
+		create gated by Topic.writers
 	end note
 }
 
@@ -46,12 +48,26 @@ rectangle "file-upload" {
 }
 
 rectangle "Permissions" {
-	entity "AccessGroup" as ag {
-		Read / Write / Delete / Admin
+	entity "Topic entity groups" as ag {
+		readers / writers / deleters / owners
 	}
 	note bottom of ag
-		Static groups now
-		Dynamic per-topic groups later
+		Minted per Topic._id
+		Members added at Topic create
+		Messages copy Topic.__access
+	end note
+}
+
+rectangle "Callback" {
+	entity "OnMessageMentioned" as cb {
+		topic
+		message
+		mentionedAccountIds
+	}
+	note bottom of cb
+		Dispatcher after create
+		App registers listener
+		No Persona/LLM in this lib
 	end note
 }
 
@@ -59,6 +75,7 @@ anchor ||--|| topic : "anchors (1:1)"
 topic ||--o{ msg : "contains"
 msg ||--o{ msg : "thread replies\n(parentMessageId)"
 msg }o--o{ asset : "attachments\n(AssetRef.assetId)"
-ag ..> topic : "gates access"
-ag ..> msg : "inherits from topic"
+ag ..> topic : "Topic.__access"
+ag ..> msg : "copy at create"
+msg ..> cb : "mention.length > 0"
 @enduml

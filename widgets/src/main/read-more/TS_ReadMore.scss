@@ -1,32 +1,29 @@
-@use '@nu-art/ts-styles' as styles;
-
+// .ts-read-more — tokenized component styling; every design value is a var(--ts-read-more--*)
+// (defaults in theme.scss). --collapsed-height is set inline by the component.
 .ts-read-more {
   width: 100%;
   height: var(--collapsed-height);
   white-space: break-spaces;
   margin: 0;
-  line-height: 20px;
-  font: {
-    size: 14px;
-    weight: normal;
-  }
+  line-height: var(--ts-read-more--line-height);
+  font-size: var(--ts-read-more--font-size);
+  font-weight: normal;
 
   .ts-read-more__text {
     white-space: break-spaces;
-    font: {
-      size: inherit;
-      weight: inherit;
-    }
+    font-size: inherit;
+    font-weight: inherit;
   }
 
   .ts-read-more__button {
-    color: #0067FF;
-    font: {
-      size: inherit;
-      weight: inherit;
-    }
+    color: var(--ts-read-more--button-color);
+    font-size: inherit;
+    font-weight: inherit;
     text-decoration: underline;
     cursor: pointer;
+
+    &:hover,
+    &.pseudo-hover { color: var(--ts-read-more--button-color-hover); }
   }
 
   &.expand {

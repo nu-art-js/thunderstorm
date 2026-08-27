@@ -21,6 +21,7 @@ export type BAI_Config = {
 	appVersion: string
 	templateParams?: {
 		packageJson?: TypedMap<string>
+		params?: TypedMap<string | number>
 	}
 	files?: {
 		docker?: {

@@ -42,8 +42,8 @@ export function getDotNotatedValue<T extends object>(key: DotNotation<T>, dotNot
  * Creates a deep clone of an object, recursively cloning all nested objects and arrays.
  *
  * Primitive values (string, number, boolean, null, undefined) are returned as-is.
- * Arrays and objects are recursively cloned. Functions and other non-POJO types are
- * not properly cloned (they are copied by reference).
+ * Arrays and objects are recursively cloned. `RegExp` is cloned via source+flags.
+ * Functions and other non-POJO types are not properly cloned (they are copied by reference).
  *
  * **Note**: This does not handle circular references and will cause a stack overflow
  * if the object contains cycles.
@@ -54,6 +54,9 @@ export function getDotNotatedValue<T extends object>(key: DotNotation<T>, dotNot
 export function deepClone<T>(obj: T | Readonly<T>): T {
 	if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'undefined' || obj === null)
 		return obj;
+
+	if (obj instanceof RegExp)
+		return new RegExp(obj.source, obj.flags) as T;
 
 	if (Array.isArray(obj))
 		return cloneArr(obj as unknown as any[]) as unknown as T;

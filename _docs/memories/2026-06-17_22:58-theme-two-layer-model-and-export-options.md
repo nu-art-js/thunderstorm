@@ -1,0 +1,8 @@
+# 2026-06-17 22:58 — Theming is a two-layer model with generic theme registration; editor exports are layer-selective + delta-capable
+
+- **Context:** I framed the per-product theming layer as a singular `app-theme` package and treated `dark`/`light` as built-in infra defaults inside `ModuleFE_Theme`. The user corrected both: there is no `app-theme` package, and `dark`/`light` are not special — they are ordinary registered themes (a private case of the general case). The user also defined the token model and the editor's export requirements.
+- **Principle:**
+  - **Two layers, both defaulted by the widget/infra layer.** Layer 1 = component token → theme token wiring (`--ts-button--bg: var(--color-action-primary-bg)`). Layer 2 = theme token → value (`--color-action-primary-bg: <value>` in `:root`). `thunder-widgets` ships defaults for **both**.
+  - **A theme is a named override set registered into the managing module.** The name is wired **at registration time** — never hardcoded in the infra module. The module manages whatever is registered; it presumes no specific theme names.
+  - **Themes normally override only Layer 2** (re-point semantic tokens to their own values). An app **may** override Layer 1 (re-wire component↔theme tokens), but that is the app's responsibility and risk — not infra default behaviour. Infra default mapping is always the widget-layer one.
+  - **The editor is a two-layer editor with selective export.** It must offer a *set* of export options, not one dump: full Layer 1 (for infra dev), full Layer 2 (for theme design), and **deltas only** (only what changed vs baseline) — so an agent consuming the export is not overloaded with redundant context.

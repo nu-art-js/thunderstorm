@@ -20,6 +20,7 @@ import {
 import {DB_Account} from '@nu-art/user-account-shared';
 import {ModuleBE_AccountDB, ModuleBE_AuthGate, CollectAuthMethodStatus} from '@nu-art/user-account-backend';
 import {BaseSessionClaims, CollectSessionData, MemKey_AccountEmail, MemKey_AccountId, MemKey_DB_Session, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '@nu-art/permissions-backend';
 import {ModuleBE_FailedLoginAttemptDB} from './_entity/failed-login-attempt/ModuleBE_FailedLoginAttemptDB.js';
 import {ModuleBE_PasswordCredentialDB} from './_entity/password-credentials/ModuleBE_PasswordCredentialDB.js';
 import {ModuleBE_PasswordResetTokenDB} from './_entity/password-reset-token/ModuleBE_PasswordResetTokenDB.js';
@@ -69,6 +70,18 @@ export class ModuleBE_PasswordAuth_Class
 		};
 	}
 
+	assertRegistrationPassword(accountToAssert: AccountToAssertPassword): void {
+		this.password.assertPasswordCheck(accountToAssert);
+	}
+
+	async createRegisteredAccount(body: { email: string; password: string }): Promise<DB_Account> {
+		const dbAccount = await ModuleBE_AccountDB.impl.create({email: body.email, type: 'user'});
+		await this.credentials.create(dbAccount, body.password);
+		await ModuleBE_AccountDB.impl.setAccountMemKeys(dbAccount);
+		await ModuleBE_AccountDB.impl.onAccountCreated(dbAccount);
+		return dbAccount;
+	}
+
 	@ApiHandler(ApiDef_PasswordAuth.registerAccount)
 	async registerAccount(body: API_PasswordAuth['registerAccount']['Body']): Promise<API_PasswordAuth['registerAccount']['Response']> {
 		if (!this.config.enabled)
@@ -80,15 +93,21 @@ export class ModuleBE_PasswordAuth_Class
 		ModuleBE_AuthGate.assertRegistrationAllowed();
 
 		ModuleBE_AccountDB.impl.fixEmail(body);
-		this.password.assertPasswordCheck({email: body.email, password: body.password, passwordCheck: body.passwordCheck});
+		this.assertRegistrationPassword(body);
 
-		const dbAccount = await ModuleBE_AccountDB.runTransaction(async () => {
-			const dbAccount = await ModuleBE_AccountDB.impl.create({email: body.email, type: 'user'});
-			await this.credentials.create(dbAccount, body.password);
-			await ModuleBE_AccountDB.impl.setAccountMemKeys(dbAccount);
-			await ModuleBE_AccountDB.impl.onAccountCreated(dbAccount);
-			return dbAccount;
-		});
+		// Account __access is stamped only when MemKey_UserAccessIds is set (preWrite interceptor).
+		// Login creates the session as bootstrap SA, which filters Account reads by __access —
+		// so registration must create under the same SA context.
+		const dbAccount = await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () =>
+			ModuleBE_AccountDB.runTransaction(() =>
+				this.createRegisteredAccount({email: body.email, password: body.password})));
+
+		this.logInfo(JSON.stringify({
+			event: 'user.registered',
+			accountId: dbAccount._id,
+			email: dbAccount.email,
+			type: dbAccount.type,
+		}));
 
 		await this.account.login({email: body.email, deviceId: body.deviceId, password: body.password});
 		return dbAccount;
@@ -213,26 +232,50 @@ export class ModuleBE_PasswordAuth_Class
 		}
 	};
 
+	/**
+	 * Validates email/password and runs account login hooks without minting a session or
+	 * writing `X-Auth-Token`. Used by org-package apex login where the session must not
+	 * persist on the org-less launcher host.
+	 */
+	async verifyLoginCredentials(loginCredentials: API_PasswordAuth['login']['Body']): Promise<DB_Account> {
+		if (!this.config.enabled)
+			throw HttpCodes._4XX.FORBIDDEN('Password authentication is disabled');
+
+		return this.account.verifyLoginCredentials(loginCredentials);
+	}
+
 	private account = {
-		login: async (loginCredentials: API_PasswordAuth['login']['Body']): Promise<API_PasswordAuth['login']['Response']> => {
-			this.logDebug(`login: attempting for email='${loginCredentials.email}' deviceId='${loginCredentials.deviceId}'`);
+		verifyLoginCredentials: async (loginCredentials: API_PasswordAuth['login']['Body']): Promise<DB_Account> => {
+			this.logDebug(`verifyLoginCredentials: attempting for email='${loginCredentials.email}' deviceId='${loginCredentials.deviceId}'`);
 			ModuleBE_AccountDB.impl.fixEmail(loginCredentials);
 
 			const dbAccount = await ModuleBE_AccountDB.impl.queryAccountByEmail({email: loginCredentials.email});
 			if (dbAccount.type === 'service')
 				throw HttpCodes._4XX.FORBIDDEN('Cannot use password authentication for service accounts');
 
-			this.logDebug(`login: account found _id='${dbAccount._id}' type='${dbAccount.type}'`);
+			this.logDebug(`verifyLoginCredentials: account found _id='${dbAccount._id}' type='${dbAccount.type}'`);
 
 			const credentials = await this.credentials.queryByAccountId(dbAccount._id);
 			if (!credentials)
 				throw HttpCodes._4XX.UNAUTHORIZED('Account was never logged in using username and password, probably logged using SAML');
 
 			await this.password.assertPasswordMatch(credentials, loginCredentials.password);
-			this.logDebug(`login: password match OK`);
+			this.logDebug(`verifyLoginCredentials: password match OK`);
 
 			MemKey_AccountId.set(dbAccount._id);
 			await ModuleBE_AccountDB.impl.onAccountLogin(dbAccount);
+
+			this.logInfo(JSON.stringify({
+				event: 'auth.login.verified',
+				accountId: dbAccount._id,
+				email: dbAccount.email,
+				transport: 'no-session',
+			}));
+
+			return dbAccount;
+		},
+		login: async (loginCredentials: API_PasswordAuth['login']['Body']): Promise<API_PasswordAuth['login']['Response']> => {
+			const dbAccount = await this.account.verifyLoginCredentials(loginCredentials);
 
 			const initialClaims = {
 				accountId: dbAccount._id,
@@ -240,7 +283,14 @@ export class ModuleBE_PasswordAuth_Class
 				label: 'password-login'
 			};
 
-			await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
+			await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () =>
+				ModuleBE_SessionDB._session.create.andReturn({initialClaims}),
+			);
+			this.logInfo(JSON.stringify({
+				event: 'auth.login.success',
+				accountId: dbAccount._id,
+				email: dbAccount.email,
+			}));
 			this.logDebug(`login: session created for _id='${dbAccount._id}'`);
 			return dbAccount;
 		},

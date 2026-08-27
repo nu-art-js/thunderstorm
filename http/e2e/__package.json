@@ -5,8 +5,14 @@
 	"description": "E2E tests for HTTP client and server (real server + real client over HTTP)",
 	"license": "Apache-2.0",
 	"author": "TacB0sS",
-	"repository": {"type": "git", "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git", "directory": "_thunderstorm/http"},
-	"scripts": {"build": "tsc"},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+		"directory": "_thunderstorm/http"
+	},
+	"scripts": {
+		"build": "tsc"
+	},
 	"dependencies": {
 		"@nu-art/api-types": "?",
 		"@nu-art/http-client": "?",
@@ -14,11 +20,14 @@
 		"@nu-art/ts-common": "?"
 	},
 	"devDependencies": {
-		"@nu-art/testalot": "?",
-		"@types/chai": "^4.3.4",
-		"chai": "?"
+		"@nu-art/testalot": "?"
 	},
-	"unitConfig": {"type": "typescript-lib"},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
 	"type": "module",
-	"publishConfig": {"directory": "dist", "linkDirectory": true}
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	}
 }

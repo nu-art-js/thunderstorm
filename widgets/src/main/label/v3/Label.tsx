@@ -2,8 +2,6 @@ import * as React from 'react';
 import {useEffect, useRef} from 'react';
 import {_className} from '@nu-art/thunder-core';
 import {addWindowResizeListener, removeWindowResizeListener} from '@nu-art/thunder-core';
-import '../Label.scss';
-
 type Props = React.PropsWithChildren<{
 	tooltip?: React.ReactNode;
 	className?: string;
@@ -18,7 +16,9 @@ const invertTooltipClass = 'invert-tooltip';
 function checkOverflow(el: HTMLDivElement | null, tooltip: React.ReactNode) {
 	if (!el)
 		return;
-	const overflowing = el.scrollWidth > el.clientWidth;
+	const content = el.querySelector('.ts-label__content');
+	const measureEl = content instanceof HTMLElement ? content : el;
+	const overflowing = measureEl.scrollWidth > measureEl.clientWidth;
 	if (!overflowing) {
 		el.classList.remove(activeTruncationClass);
 		el.classList.remove(activeTooltipClass);

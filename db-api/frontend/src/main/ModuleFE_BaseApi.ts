@@ -265,3 +265,8 @@ export abstract class ModuleFE_BaseApi<Proto extends DB_Prototype<any>>
 export const RuntimeFE_ModulesAPI = () => RuntimeModules().all
 	.filter((m) => m.isInstanceOf(ModuleFE_BaseApi))
 	.map(m => m as unknown as ModuleFE_BaseApi<any>);
+
+/** Clears IDB + MemCache for every registered FE API module — use for IDB-only cleanup, not full website clear. */
+export const clearAllRegisteredModuleDbData = async () => {
+	await Promise.all(RuntimeFE_ModulesAPI().map(module => module.clearData()));
+};

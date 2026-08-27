@@ -1,0 +1,15 @@
+.ts-skeleton-text {
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--radius-sm);
+	background: var(--color-surface-input);
+	flex-shrink: 0;
+
+	&.bold {
+		background: var(--color-action-secondary);
+	}
+
+	&.light {
+		background: var(--color-surface-raised);
+	}
+}

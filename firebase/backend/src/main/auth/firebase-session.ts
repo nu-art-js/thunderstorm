@@ -119,19 +119,31 @@ export abstract class FirebaseSession<Config>
 		this.mongoClient = client;
 	}
 
+	/**
+	 * Closes the session MongoClient and drops wrapper caches.
+	 * Required for test teardown — an open client keeps the Node event loop alive,
+	 * so mocha never exits and `firebase emulators:exec` hangs after the suite.
+	 */
+	public async closeMongo(): Promise<void> {
+		if (!this.mongoClient)
+			return;
+
+		try {
+			await this.mongoClient.close();
+		} catch (e) {
+			this.logWarning(`Error closing MongoDB client: ${e}`);
+		}
+		this.mongoClient = undefined;
+		for (const key of Object.keys(this.mongos))
+			delete this.mongos[key];
+	}
+
 	public async reconnectMongo(): Promise<void> {
 		if (!this.mongoClient)
 			return;
 
 		this.logWarning('Reconnecting MongoDB — closing existing client');
-		try {
-			await this.mongoClient.close();
-		} catch (e) {
-			this.logWarning(`Error closing MongoDB client during reconnect: ${e}`);
-		}
-		this.mongoClient = undefined;
-		for (const key of Object.keys(this.mongos))
-			delete this.mongos[key];
+		await this.closeMongo();
 	}
 
 	public getMongo(dbName: string): MongoWrapperBE {

@@ -1,5 +1,7 @@
+import {useEffect} from 'react';
 import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types.js';
+import {TS_RoutePage} from './TS_RoutePage.js';
 import {UrlQueryParams} from '@nu-art/api-types';
 import {
 	_keys,
@@ -48,24 +50,69 @@ class ModuleFE_Routing_Class
 
 	goToRoute<P extends RouteParams>(route: TS_Route<P>, params?: Partial<P>, hash?: string) {
 		const fullPath = this.getFullPath(route.key);
+		this.logDebug(`[routing] goToRoute: key='${route.key}' resolved fullPath='${fullPath}'`);
 		try {
 			const queryString = composeQueryParams(params);
 			const search = queryString.length > 0 ? `?${queryString}` : '';
 			const url = composeUrl(fullPath, params, hash);
 
-			if (url === window.location.href)
+			if (!this.navigateIfChanged(url, 'push'))
 				return this.logWarning(`attempting to set same route: ${fullPath}${search}`);
-
-			// Also update window.location to trigger BrowserRouter's popstate listener
-			// This ensures React Router detects the navigation change
-			window.history.pushState({}, '', url);
-
-			// Manually dispatch popstate event to trigger BrowserRouter update
-			window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
 		} catch (e: any) {
 			this.logError(`cannot resolve route for route: `, route, e);
 			throw e;
 		}
+	}
+
+	goToRouteByKey(routeKey: string, params?: Partial<RouteParams>, hash?: string) {
+		const route = this.getRouteByKey(routeKey);
+		if (!route)
+			throw new BadImplementationException(`Cannot find route for key: ${routeKey}`);
+
+		this.goToRoute(route, params, hash);
+	}
+
+	getRouteByPath(pathname: string): TS_Route | undefined {
+		return this.routesMapByPath[pathname];
+	}
+
+	navigateToUrl(url: string) {
+		if (!url.startsWith('http://') && !url.startsWith('https://')) {
+			this.navigateToPath(url);
+			return;
+		}
+
+		const target = new URL(url);
+		if (target.origin !== window.location.origin) {
+			window.location.href = url;
+			return;
+		}
+
+		this.navigateToPath(`${target.pathname}${target.search}${target.hash}`);
+	}
+
+	private navigateToPath(pathWithQuery: string) {
+		const hashIndex = pathWithQuery.indexOf('#');
+		const withoutHash = hashIndex >= 0 ? pathWithQuery.substring(0, hashIndex) : pathWithQuery;
+		const hash = hashIndex >= 0 ? pathWithQuery.substring(hashIndex + 1) : undefined;
+		const queryIndex = withoutHash.indexOf('?');
+		const pathname = queryIndex >= 0 ? withoutHash.substring(0, queryIndex) : withoutHash;
+		const search = queryIndex >= 0 ? withoutHash.substring(queryIndex) : '';
+
+		const route = this.getRouteByPath(pathname);
+		if (route) {
+			const params: RouteParams = {};
+			if (search.length > 0) {
+				const searchParams = new URLSearchParams(search.startsWith('?') ? search.substring(1) : search);
+				searchParams.forEach((value, key) => {
+					params[key] = value;
+				});
+			}
+			this.goToRoute(route, params, hash);
+			return;
+		}
+
+		this.push({pathname, search: search || undefined, hash: hash ? `#${hash}` : undefined});
 	}
 
 	redirect<P extends RouteParams>(route: TS_Route<P>, params?: P) {
@@ -87,10 +134,13 @@ class ModuleFE_Routing_Class
 	}
 
 	buildRouteMap(route: TS_Route, _path: string = '') {
-		const path = `${_path}/`;
 		this.routesMapByKey[route.key] = {route, fullPath: _path};
 		this.routesMapByPath[_path] = route;
-		route.children?.map(route => this.buildRouteMap(route, `${path}${route.path}`));
+		// Collapse duplicate slashes when composing child paths: a nested empty-path
+		// layout route (e.g. Landing resolves to '/') would otherwise yield '//child',
+		// which the browser treats as a protocol-relative URL — '//org-details' becomes
+		// 'https://org-details/' and throws a cross-origin SecurityError on pushState.
+		route.children?.forEach(child => this.buildRouteMap(child, `${_path}/${child.path}`.replace(/\/{2,}/g, '/')));
 	}
 
 	private routeBuilder = (route: TS_Route<any>) => {
@@ -106,35 +156,53 @@ class ModuleFE_Routing_Class
 
 		let _indexRoute;
 		if (indexRoute) {
-			const Component = this.resolveRouteComponent(indexRoute);
+			const element = this.resolveRouteElement(indexRoute);
 			if (indexRoute.path) {
 				this.logDebug(`index route redirect to path: ${path}/${indexRoute.path}`);
 				_indexRoute = <Route index element={<Navigate to={`${path}/${indexRoute.path}`}/>}/>;
 			} else {
 				this.logDebug(`index route render component: ${path}/${indexRoute.path}`);
-				_indexRoute = <Route index Component={Component} element={indexRoute.element}/>;
+				_indexRoute = <Route index element={element}/>;
 			}
 		}
 
 		if (route.fallback)
 			this.logDebug(`fallback: ${path}`);
 
-		const children = route.children?.filter(route => {
-			if (route.index && !route.path)
+		const children = route.children?.filter(child => {
+			if (child.index && !child.path)
 				return false;
 
-			return route.enabled?.() ?? true;
+			const isEnabled = child.enabled?.() ?? true;
+			if (!isEnabled) {
+				// Routine while permissions/feature flags are unresolved — info, not
+				// warning. The actual "stuck" anomaly is the fallback firing (below).
+				const childFullPath = this.routesMapByKey[child.key]?.fullPath;
+				this.logInfo(`[routing] route EXCLUDED (enabled()===false): key='${child.key}' fullPath='${childFullPath}'`);
+			} else {
+				this.logDebug(`[routing] route included: key='${child.key}' fullPath='${this.routesMapByKey[child.key]?.fullPath}'`);
+			}
+			return isEnabled;
 		}) ?? [];
-		const Component = this.resolveRouteComponent(route);
-		return <Route key={route.key} path={route.path} Component={Component} element={route.element}>
+		const element = this.resolveRouteElement(route);
+		return <Route key={route.key} path={route.path} element={element}>
 			{_indexRoute}
 			{children.map(route => this.routeBuilder(route))}
-			{route.fallback && <Route path="*" element={<Navigate to={path || '/'}/>}/>}
+			{route.fallback && <Route path="*" element={<RoutingFallbackRedirect to={path || '/'}/>}/>}
 		</Route>;
 	};
 
-	private resolveRouteComponent = (route: TS_Route) => {
-		return route.Component;
+	private resolveRouteElement = (route: TS_Route): React.ReactNode | undefined => {
+		if (route.element)
+			return route.element;
+
+		if (!route.Component)
+			return undefined;
+
+		if (route.paramKeys?.length)
+			return <TS_RoutePage route={route}/>;
+
+		return <route.Component/>;
 	};
 
 	getRouteByKey(routeKey: string): TS_Route | undefined {
@@ -269,8 +337,7 @@ class ModuleFE_Routing_Class
 	 */
 	push(location: { pathname: string; search?: string; hash?: string }) {
 		const url = this.locationToUrl(location);
-		window.history.pushState({}, '', url);
-		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
+		this.navigateIfChanged(url, 'push');
 	}
 
 	/**
@@ -279,8 +346,7 @@ class ModuleFE_Routing_Class
 	 */
 	replace(location: { pathname: string; search?: string; hash?: string }) {
 		const url = this.locationToUrl(location);
-		window.history.replaceState({}, '', url);
-		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
+		this.navigateIfChanged(url, 'replace');
 	}
 
 	// ######################## Private Helper Methods ########################
@@ -334,11 +400,30 @@ class ModuleFE_Routing_Class
 
 	private updateQueryParams(encodedQueryParams: UrlQueryParams) {
 		const search = this.composeQuery(encodedQueryParams);
-		const url = `${window.location.pathname}${search ? `?${search}` : ''}`;
-		window.history.replaceState({}, '', url);
+		const url = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
+		this.navigateIfChanged(url, 'replace');
+	}
 
-		// Manually dispatch popstate event to trigger BrowserRouter update
+	private getCurrentLocationUrl(): string {
+		return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+	}
+
+	private resolveLocationUrl(url: string): string {
+		const resolved = new URL(url, window.location.origin);
+		return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+	}
+
+	private navigateIfChanged(url: string, mode: 'push' | 'replace'): boolean {
+		if (this.resolveLocationUrl(url) === this.getCurrentLocationUrl())
+			return false;
+
+		if (mode === 'push')
+			window.history.pushState({}, '', url);
+		else
+			window.history.replaceState({}, '', url);
+
 		window.dispatchEvent(new PopStateEvent('popstate', {state: {}}));
+		return true;
 	}
 
 }
@@ -365,6 +450,20 @@ export const TS_NavLink = (props: {
 			middle: () => window.open(fullPath, '_blank'),
 		})}
 	>{children}</NavLink>;
+};
+
+/**
+ * Catch-all fallback redirect. Behaves identically to the previous inline
+ * `<Navigate to={...}/>` but logs (once, on mount) the attempted path and the
+ * redirect target — this is the single most useful signal for the
+ * "stuck on root / cannot navigate" condition (a fallback firing because the
+ * intended route was excluded from the tree).
+ */
+const RoutingFallbackRedirect = (props: { to: string }) => {
+	useEffect(() => {
+		ModuleFE_Routing.logWarning(`[routing] fallback fired: attempted='${window.location.pathname}', redirectingTo='${props.to}'`);
+	}, []);
+	return <Navigate to={props.to}/>;
 };
 
 export const ModuleFE_Routing = new ModuleFE_Routing_Class();

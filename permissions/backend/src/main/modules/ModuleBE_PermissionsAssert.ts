@@ -41,7 +41,10 @@ export class ModuleBE_PermissionsAssert_Class
 		const account = SessionKey_Account_BE.get();
 
 		const permissionsId = stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(account._id);
-		const entity = await ModuleBE_UserPermissionsDB.query.unique(permissionsId);
+		// Consented unmanipulated read: a caller must load their own permissions to establish
+		// the access context (MemKey_UserAccessIds, set below) — the access filter that
+		// query.unique would apply depends on exactly that context, so it cannot gate this load.
+		const entity = await ModuleBE_UserPermissionsDB.query.uniqueUnmanipulated(permissionsId);
 		MemKey_UserScopePermissions.set(entity?.scopeEntries ?? []);
 
 		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);

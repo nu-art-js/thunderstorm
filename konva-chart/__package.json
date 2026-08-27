@@ -19,10 +19,7 @@
 		"react-konva": "?"
 	},
 	"devDependencies": {
-		"@types/react": "?",
-		"@types/chai": "?",
-		"@types/mocha": "?",
-		"chai": "?"
+		"@types/react": "?"
 	},
 	"unitConfig": {
 		"type": "typescript-lib"

@@ -44,7 +44,7 @@ export class StorageModule_Class
 		window.addEventListener('storage', this.handleStorageEvent);
 	}
 
-	async __onClearWebsiteData() {
+	async clearPersistedStorage() {
 		const items = this.withstandDeletionKeys.map(key => key.get());
 		localStorage.clear();
 		sessionStorage.clear();
@@ -53,6 +53,10 @@ export class StorageModule_Class
 			if (items[index])
 				key.set(items[index]!);
 		});
+	}
+
+	async __onClearWebsiteData() {
+		await this.clearPersistedStorage();
 	}
 
 	private handleStorageEvent = async (e: StorageEvent) => {

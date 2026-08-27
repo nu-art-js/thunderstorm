@@ -1,7 +1,6 @@
 import * as React from 'react';
-import {TS_Toggle as TS_ToggleV1} from '../v1/TS_Toggle.js';
-
-type Props = {
+import {_className} from '@nu-art/thunder-core';
+export type Props_TS_Toggle = {
 	id?: string;
 	checked: boolean;
 	onCheck: (status: boolean) => void;
@@ -10,6 +9,23 @@ type Props = {
 	sliderClassName?: string;
 };
 
-export function TS_Toggle(props: Props): React.ReactElement {
-	return <TS_ToggleV1 {...props}/>;
+export function TS_Toggle(props: Props_TS_Toggle): React.ReactElement {
+	const generatedId = React.useId();
+	const id = props.id ?? generatedId;
+	const containerClassName = _className('ts-toggle', props.disabled && 'disabled', props.containerClassName);
+	const sliderClassName = _className('ts-toggle__slider', props.disabled && 'disabled', props.sliderClassName);
+
+	return (
+		<label className={containerClassName}>
+			<input
+				id={id}
+				type="checkbox"
+				className="ts-toggle__checkbox"
+				checked={props.checked}
+				disabled={props.disabled}
+				onChange={e => props.onCheck(e.target.checked)}
+			/>
+			<span className={sliderClassName} aria-hidden="true"/>
+		</label>
+	);
 }

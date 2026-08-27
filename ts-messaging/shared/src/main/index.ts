@@ -1,5 +1,6 @@
 export * from './message/types.js';
 export * from './message/db-def.js';
+export * from './message-mention.js';
 export * from './topic/types.js';
 export * from './topic/db-def.js';
 export * from './api-def.js';

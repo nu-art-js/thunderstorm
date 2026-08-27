@@ -18,7 +18,7 @@
 
 import {createHmac} from 'crypto';
 import {RecursiveObjectOfPrimitives} from './types.js';
-import {decodeJwt, jwtVerify, SignJWT} from 'jose';
+import {compactVerify, decodeJwt, jwtVerify, SignJWT} from 'jose';
 import {exists} from './tools.js';
 import {currentTimeMillis} from './date-time-tools.js';
 
@@ -130,6 +130,14 @@ export const JwtTools = {
 		return (await jwtVerify(token, hmacKey(secret))).payload as T & JWT_BaseClaims;
 	},
 
+	/**
+	 * Verify the JWT signature and return claims without enforcing `exp`.
+	 * Use only when a separate credential (e.g. refresh token) already authorized renewal.
+	 */
+	verifySignatureAllowExpired: async <T extends RecursiveObjectOfPrimitives>(token: string, secret: string): Promise<T & JWT_BaseClaims> => {
+		await compactVerify(token, hmacKey(secret));
+		return decodeJwt(token) as T & JWT_BaseClaims;
+	},
 
 	/**
 	 * Extract the `iat` (Issued‑At) claim from a token without verifying.

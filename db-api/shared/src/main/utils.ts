@@ -8,7 +8,7 @@
 
 
 import {getDotNotatedValue, md5} from '@nu-art/ts-common';
-import {DB_Object, DB_UniqueId} from './db-object.js';
+import {DB_Object, DB_UniqueId, DBPointerOf} from './db-object.js';
 
 /**
  * Compose a unique ID from an object's unique key fields.
@@ -39,3 +39,16 @@ export const KeysOfDB_Object: (keyof DB_Object)[] = ['_id', '__created', '__upda
 export const stringToUniqueId = <DBKey extends string>(id: string) => id as DB_UniqueId<DBKey>;
 export const hashToUniqueId = <DBKey extends string>(id: string) => stringToUniqueId<DBKey>(md5(id));
 export const asBrandedId = stringToUniqueId;
+
+/**
+ * Build a correlated branded pointer. Returns {@link DBPointerOf} (non-distributive)
+ * so construction type-checks when `Key` is a closed union; assign into a
+ * distributive {@link DBPointer} field with `as DBPointer<Keys>` when needed.
+ */
+export const asDBPointer = <Key extends string>(
+	dbKey: Key,
+	id: string | DB_UniqueId<Key>,
+): DBPointerOf<Key> => ({
+	dbKey,
+	id: typeof id === 'string' ? stringToUniqueId<Key>(id) : id,
+});

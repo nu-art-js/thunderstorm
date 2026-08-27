@@ -5,11 +5,20 @@
  */
 
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
+import type {TS_Object} from '@nu-art/ts-common';
+import type {OAuthCompleteAuthorizationResponse, OAuthConsentContext} from './oauth-consent-types.js';
 import type {OAuthServerMetadata} from './token-claims.js';
 
 export type API_OAuth = {
 	getServerMetadata: QueryApi<OAuthServerMetadata>;
 	authorize: QueryApi<void>;
+	consentContext: QueryApi<OAuthConsentContext, { authReqId: string }>;
+	completeAuthorization: BodyApi<OAuthCompleteAuthorizationResponse, {
+		authReqId: string;
+		// Opaque JWT claim bag (infra + app peers). The auth server forwards it to the binder and
+		// persists it on the grant/token; it never inspects the shape.
+		claims?: TS_Object;
+	}>;
 	token: BodyApi<void, {
 		grant_type: 'authorization_code' | 'refresh_token';
 		code?: string;
@@ -36,6 +45,8 @@ export type API_OAuth = {
 export const ApiDef_OAuth: ApiDefResolver<API_OAuth> = {
 	getServerMetadata: {method: HttpMethod.GET, path: '/.well-known/oauth-authorization-server'},
 	authorize: {method: HttpMethod.GET, path: '/oauth/authorize'},
+	consentContext: {method: HttpMethod.GET, path: '/oauth/consent-context'},
+	completeAuthorization: {method: HttpMethod.POST, path: '/oauth/authorize/complete'},
 	token: {method: HttpMethod.POST, path: '/oauth/token'},
 	register: {method: HttpMethod.POST, path: '/oauth/register'},
 	revoke: {method: HttpMethod.POST, path: '/oauth/revoke'},

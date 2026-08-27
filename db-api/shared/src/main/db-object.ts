@@ -40,14 +40,33 @@ export type DB_Object<Key extends string = string> = DB_BaseObject<Key> & {
 	_v: string
 }
 
+type IsGeneralString<Key> = [Key] extends [string]
+	? [string] extends [Key]
+		? true
+		: false
+	: false;
+
 /**
- * Database pointer (reference to another database object).
+ * Correlated branded pointer pair (non-distributive). Used when constructing pointers.
+ * For polymorphic fields that need `dbKey` narrowing, use {@link DBPointer}.
+ */
+export type DBPointerOf<Key extends string> = { dbKey: Key; id: DB_UniqueId<Key> };
+
+/**
+ * Branded database pointer (`dbKey` + correlated `DB_UniqueId`).
  *
- * Contains the database key (collection name) and object ID.
+ * Distributes over key unions so narrowing `dbKey` also narrows `id`:
+ * `DBPointer<'docs' | 'tasks'>` ≡ `DBPointerOf<'docs'> | DBPointerOf<'tasks'>`.
+ *
+ * `DBPointer<string>` is rejected (`never`) — use a concrete key or a closed key union.
  *
  * @template Key - The database key (collection name)
  */
-export type DBPointer<Key extends string> = { dbKey: DB_Key<Key>['key']; id: DB_Key<Key>['id'] };
+export type DBPointer<Key extends string> = IsGeneralString<Key> extends true
+	? never
+	: Key extends infer K extends string
+		? DBPointerOf<K>
+		: never;
 
 
 /** @deprecated Unique identifier type (string) - should be replaced by a branded DB_Key<Key>['id'] and the generic version of it is DB_Key['id']*/

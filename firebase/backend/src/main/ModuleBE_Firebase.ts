@@ -63,6 +63,16 @@ export class ModuleBE_Firebase_Class
 	async __resetForTests() {
 		this.logWarning('__resetForTests');
 
+		// Close MongoClients before dropping session refs — otherwise open sockets
+		// keep the event loop alive and mocha/`emulators:exec` hang after the suite.
+		await Promise.all(Object.values(this.adminSessions).map(async session => {
+			try {
+				await session.closeMongo();
+			} catch (e) {
+				this.logWarning(`Error closing mongo during reset: ${e}`);
+			}
+		}));
+
 		for (const key in this.adminSessions)
 			delete this.adminSessions[key];
 		await Promise.all(getApps().map(app => deleteApp(app)));
@@ -91,6 +101,10 @@ export class ModuleBE_Firebase_Class
 	}
 
 	public resolveMongoUrl(authKey?: string): string {
+		const emulatorHost = process.env.MONGODB_EMULATOR_HOST;
+		if (emulatorHost)
+			return emulatorHost.includes('://') ? emulatorHost : `mongodb://${emulatorHost}/?directConnection=true`;
+
 		const mongoConfig = this.resolveMongoConfig(authKey);
 
 		if (mongoConfig?.mongoUrl)

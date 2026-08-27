@@ -13,7 +13,7 @@ All validators live under `@nu-art/ts-common` — imported from `validator/valid
 A `Validator<T>` is a single validation function or an array of functions. Each function receives the value and returns `undefined` (valid) or a string/object describing the error.
 
 ```typescript
-type ValidatorImpl<P> = (p?: P, parentObj?: any) => InvalidResult<P> | undefined;
+type ValidatorImpl<P> = (p?: P, parentObj?: any, strict?: boolean) => InvalidResult<P> | undefined;
 type Validator<P> = ValidatorImpl<P> | ValidatorImpl<P>[];
 ```
 
@@ -274,7 +274,9 @@ tsValidate(value, validator, false);   // returns result, does not throw
 
 ### Strict mode and unexpected keys
 
-When validating objects in strict mode (default), keys present in the instance but **not** in the `TypeValidator` are reported as errors. To allow extra keys, add `tsValidateOptional` for those keys in the validator, or pass `strict = false`.
+When validating objects in strict mode (default), keys present in the instance but **not** in the `TypeValidator` are reported as errors. To allow extra keys, add `tsValidateOptional` for those keys in the validator, or pass `strict = false` to `tsValidateResult`.
+
+`strict = false` is recursive: nested `TypeValidator` objects **and** helper wrappers (`tsValidateOptionalObject`, `tsValidateArray`, unions, dynamic objects) keep the same unexpected-key mode. A custom validator that re-enters `tsValidateResult` must forward the third `strict` argument.
 
 ---
 

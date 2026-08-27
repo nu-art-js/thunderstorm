@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {TS_ToastOverlay} from '../../main/toaster/TS_ToastOverlay.js';
-import {ModuleFE_Toaster} from '../../main/toaster/ModuleFE_Toaster.js';
+import {TS_ToastOverlay} from '../../main/toaster/global/TS_ToastOverlay.js';
+import {ModuleFE_Toaster} from '../../main/toaster/global/ModuleFE_Toaster.js';
 
 export default function EntryToasterV1() {
 	return (

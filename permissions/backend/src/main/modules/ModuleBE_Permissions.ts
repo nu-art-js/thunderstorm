@@ -1,4 +1,4 @@
-import {_keys, ApiException, batchActionParallel, CacheKey, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, BadImplementationException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
@@ -15,22 +15,45 @@ import type {
 	DocumentAccessInner,
 	ScopedAccessIds
 } from '@nu-art/permissions-shared';
-import {AccessScope_Self, AllDocumentAccessKeys, getAllRegisteredScopes, getRegisteredGroupDefinitions, permissionScopeId} from '@nu-art/permissions-shared';
+import {
+	AccessScope_Self,
+	AllDocumentAccessKeys,
+	getAllRegisteredScopes,
+	getPermissionScopeValues,
+	getRegisteredGroupDefinitions,
+	PermissionScope_ServiceAccount,
+	permissionScopeId,
+	type PermissionScope,
+} from '@nu-art/permissions-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
-import {getPermissionScopeValues} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {ModuleBE_AccessGroupDB} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
-import {FirebaseRef, ModuleBE_Firebase, MongoCollection} from '@nu-art/firebase-backend';
+import {
+	FirebaseRef,
+	MemKey_FirestoreTransaction,
+	ModuleBE_Firebase,
+	MongoCollection,
+	registerTransactionPreClose,
+	type TransactionWrapper,
+} from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
-import {ModuleBE_AccountDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
-import {DB_Account} from '@nu-art/user-account-shared';
+import {ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
+import {DB_Account, DatabaseDef_Account, DatabaseDef_Session} from '@nu-art/user-account-shared';
 import {HttpCodes} from '@nu-art/api-types';
 
 export type ShareAccessContext = Partial<DocumentAccessInner>;
 
+export type DefaultScopeGrant = {
+	readonly scope: PermissionScope;
+	readonly value: string;
+};
+
+export interface CollectDefaultScopeValues {
+	__collectDefaultScopeValues(): DefaultScopeGrant[];
+}
 
 // --- Dispatcher for additional group memberships on registration/login ---
 
@@ -40,10 +63,25 @@ export interface ResolveAdditionalGroupMemberships {
 
 // --- Service account config ---
 
+/**
+ * Per-SA access-ID cache directive. A single source of truth for the caching
+ * behavior of one service account — the two modes are mutually exclusive by
+ * construction, so the knobs can never conflict:
+ *  - `{immutable: true}` — the SA's group membership is immutable by system
+ *    design; the materialized access-IDs never expire by time and are
+ *    invalidated ONLY by `__onAccessGroupChanged`.
+ *  - `{ttlMs}` — a per-SA time-to-live override (for SAs whose membership may
+ *    change). When omitted entirely, the global default TTL applies.
+ */
+export type SAAccessIdCacheDirective =
+	| { immutable: true }
+	| { ttlMs: number };
+
 export type ServiceAccountConfig = {
 	readonly scopes: string[];
 	readonly enabled: boolean;
 	readonly systemOnly: boolean;
+	readonly accessIdCache?: SAAccessIdCacheDirective;
 };
 
 export const ServiceAccountId_Bootstrap = 'bootstrap-admin';
@@ -53,11 +91,16 @@ type Config = {
 	saAccessIdCacheTtlMs?: number;
 };
 
+type SAAccessIdCacheEntry = { value: ScopedAccessIds; expiresAt: number };
+
+// Global default SA access-id cache TTL (used when a SA declares no directive).
+const DefaultSAAccessIdCacheTtlMs = 60_000;
+
 // --- Well-known group IDs ---
 
 export const GroupId_AppDefault = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/default');
 export const GroupId_PermissionsAdmin = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/permissions-admin');
-const BootstrapSAGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(ServiceAccountId_Bootstrap);
+export const GroupId_BootstrapServiceAccount = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(ServiceAccountId_Bootstrap);
 
 export const PermissionsInfraGroupIds: Record<keyof DocumentAccessInner, DatabaseDef_AccessGroup['id']> = AllDocumentAccessKeys.reduce((ids, key) => {
 	ids[key] = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`permissions-infra:${key}`);
@@ -67,8 +110,16 @@ export const PermissionsInfraGroupIds: Record<keyof DocumentAccessInner, Databas
 // --- Module ---
 
 const dispatcher_resolveAdditionalGroupMemberships = new Dispatcher<ResolveAdditionalGroupMemberships, '__resolveAdditionalGroupMemberships'>('__resolveAdditionalGroupMemberships');
+const dispatcher_collectDefaultScopeValues = new Dispatcher<CollectDefaultScopeValues, '__collectDefaultScopeValues'>('__collectDefaultScopeValues');
 
 export const SetupTaskKey_PermissionsGroups = asSetupTaskKey('permissions-groups');
+
+const PreCloseKey_PermissionsRematerialize = 'permissions.rematerialize';
+
+type PermissionsTxDirty = {
+	groups: Set<UniqueId>;
+	accounts: Set<UniqueId>;
+};
 
 class ModuleBE_Permissions_Class
 	extends Module<Config>
@@ -77,14 +128,20 @@ class ModuleBE_Permissions_Class
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
 	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
 	private readonly moduleScopeKeys = new Map<string, string[]>();
-	private saAccessIdCache!: CacheKey<ScopedAccessIds>;
+	// Per-entry expiry cache (keyed by SA personal group id). Each entry carries
+	// its own `expiresAt` so different SAs can have different TTLs — or no time
+	// expiry at all (immutable SAs use Number.POSITIVE_INFINITY). Invalidated
+	// wholesale by __onAccessGroupChanged.
+	private readonly saAccessIdCache = new Map<UniqueId, SAAccessIdCacheEntry>();
+	/** Dirty rematerialize state scoped to an open TX wrapper — never module-global. */
+	private readonly dirtyByTx = new WeakMap<TransactionWrapper, PermissionsTxDirty>();
 
 	constructor() {
 		super();
 		this.setDefaultConfig({
 			serviceAccounts: {
 				[ServiceAccountId_Bootstrap]: {
-					scopes: ['permissions-ui:view', 'access-group:create'],
+					scopes: ['permissions-ui:view', 'access-group:create', 'service-account:run'],
 					enabled: true,
 					systemOnly: true,
 				}
@@ -93,11 +150,12 @@ class ModuleBE_Permissions_Class
 	}
 
 	private readonly permissionsAccessResolver = (item: any): DocumentAccessFields => {
-		if (item._id === BootstrapSAGroupId)
+		if (item._id === GroupId_BootstrapServiceAccount)
 			return {
 				__access: {
-					readers: [BootstrapSAGroupId],
-					writers: [BootstrapSAGroupId],
+					readers: [GroupId_BootstrapServiceAccount],
+					writers: [GroupId_BootstrapServiceAccount],
+					creators: [],
 					deleters: [],
 					owners: [],
 				}
@@ -107,19 +165,49 @@ class ModuleBE_Permissions_Class
 			__access: {
 				readers: [GroupId_PermissionsAdmin, item._id],
 				writers: [GroupId_PermissionsAdmin],
+				creators: [],
 				deleters: [],
 				owners: [],
 			}
 		};
 	};
 
+	/** Self-own + bootstrap SA — stamped at account create under auth SA context. */
+	private readonly accountAccessResolver = (item: DatabaseDef_Account['uiType']): DocumentAccessFields => {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(item._id!);
+		return {
+			__access: {
+				owners: [personalGroupId],
+				readers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				writers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				creators: [],
+				deleters: [GroupId_BootstrapServiceAccount],
+			}
+		};
+	};
+
+	/** Scoped to accountId — owner must delete superseded rows on session reissue/rotate. */
+	private readonly sessionAccessResolver = (item: DatabaseDef_Session['uiType']): DocumentAccessFields => {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(item.accountId!);
+		return {
+			__access: {
+				owners: [personalGroupId],
+				readers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				writers: [personalGroupId, GroupId_BootstrapServiceAccount],
+				creators: [],
+				deleters: [personalGroupId, GroupId_BootstrapServiceAccount],
+			}
+		};
+	};
+
 	protected init() {
 		super.init();
-		this.saAccessIdCache = new CacheKey<ScopedAccessIds>('sa-access-ids', this.config.saAccessIdCacheTtlMs ?? 60_000);
 		this.adminGrantFlagRef = ModuleBE_Firebase.createModuleStateFirebaseRef<boolean>(this, 'grantAdminOnLogin');
 		this.setAccessContextResolver(ModuleBE_AccessGroupDB, this.permissionsAccessResolver);
 		this.setAccessContextResolver(ModuleBE_PermissionScopeDB, this.permissionsAccessResolver);
 		this.setAccessContextResolver(ModuleBE_UserPermissionsDB, this.permissionsAccessResolver);
+		this.setAccessContextResolver(ModuleBE_AccountDB, this.accountAccessResolver);
+		this.setAccessContextResolver(ModuleBE_SessionDB, this.sessionAccessResolver);
 		this.wireDocumentAccessToAllModules();
 	}
 
@@ -139,7 +227,10 @@ class ModuleBE_Permissions_Class
 		const dbModule = this.resolveDbModule(dbKey);
 		const mongoCol = this.assertMongoCollection(dbModule);
 
-		const entity = await this.loadEntityUnmanipulated(mongoCol, entityId, dbKey);
+		const entity = await dbModule.query.unique(entityId);
+		if (!entity)
+			throw HttpCodes._4XX.NOT_FOUND(`Entity not found: ${dbKey}/${entityId}`);
+
 		this.assertShareAccess(entity);
 
 		const addToSet = this.buildAddToSetUpdate(accessContext);
@@ -168,14 +259,6 @@ class ModuleBE_Permissions_Class
 			throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Share API requires MongoDB backend');
 
 		return dbModule.collection;
-	}
-
-	private async loadEntityUnmanipulated(mongoCol: MongoCollection<any>, entityId: UniqueId, dbKey: string): Promise<Record<string, any>> {
-		const results = await mongoCol.query.unManipulatedQuery({where: {_id: entityId} as any, limit: 1});
-		if (!results.length)
-			throw HttpCodes._4XX.NOT_FOUND(`Entity not found: ${dbKey}/${entityId}`);
-
-		return results[0];
 	}
 
 	private assertShareAccess(entity: Record<string, any>): void {
@@ -253,6 +336,13 @@ class ModuleBE_Permissions_Class
 
 	// --- Account lifecycle hooks ---
 
+	async ensureAccountPermissionIdentity(account: DB_Account): Promise<void> {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			await this.ensurePersonalAccessGroup(account);
+			await this.addToDefaultGroup(account);
+		});
+	}
+
 	async __onUserLogin(account: DB_Account) {
 		this.logDebug(`__onUserLogin: processing permissions for _id='${account._id}' email='${account.email}'`);
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
@@ -266,8 +356,8 @@ class ModuleBE_Permissions_Class
 			this.logDebug(`__onUserLogin: checkAdminGrantFlag done`);
 			await this.resolveAdditionalGroupMemberships(account, 'login');
 			this.logDebug(`__onUserLogin: resolveAdditionalGroupMemberships done`);
-			await this.recomputePermissionsForUsers([account._id]);
-			this.logDebug(`__onUserLogin: recomputePermissionsForUsers done`);
+			await this.scheduleAccountPermissionsRefresh(account._id);
+			this.logDebug(`__onUserLogin: scheduleAccountPermissionsRefresh done`);
 		});
 	}
 
@@ -333,7 +423,7 @@ class ModuleBE_Permissions_Class
 			return;
 		}
 
-		const hasRealMembers = adminGroup.members.some(m => m !== BootstrapSAGroupId);
+		const hasRealMembers = adminGroup.members.some(m => m !== GroupId_BootstrapServiceAccount);
 		if (hasRealMembers) {
 			this.logDebug(`[FIRST_USER] promoteIfNoAdmin: admin already has non-SA members — returning`);
 			return;
@@ -345,6 +435,12 @@ class ModuleBE_Permissions_Class
 
 		adminGroup.members.push(personalGroupId);
 		await ModuleBE_AccessGroupDB.set.item(adminGroup);
+		this.logInfo(JSON.stringify({
+			event: 'bootstrap/role assigned',
+			accountId: account._id,
+			personalGroupId,
+			adminGroupId: GroupId_PermissionsAdmin,
+		}));
 		this.logDebug(`[FIRST_USER] promoteIfNoAdmin: promoted ${personalGroupId} to admin`);
 	}
 
@@ -390,10 +486,20 @@ class ModuleBE_Permissions_Class
 
 	// --- Permission recomputation (materialized DB_UserPermissions) ---
 
+	/**
+	 * UserPermissions docs are PermissionsAdmin-writer-only. Always rematerialize under a
+	 * fresh bootstrap SA MemStorage so a polluted outer MemKey_UserAccessIds (e.g. apex
+	 * registration stamping the new account's access ids into an enclosing SA context)
+	 * cannot 403 the write — including deferred TX preClose rematerialize.
+	 */
 	async recomputePermissionsForUsers(accountIds: UniqueId[]): Promise<void> {
 		if (!accountIds.length)
 			return;
 
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.recomputePermissionsForUsersUnderBootstrap(accountIds));
+	}
+
+	private async recomputePermissionsForUsersUnderBootstrap(accountIds: UniqueId[]): Promise<void> {
 		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 		this.logDebug(`[FIRST_USER] recomputePermissionsForUsers: accountIds=${JSON.stringify(accountIds)}, allGroups=${allGroups.length}`);
 
@@ -413,6 +519,10 @@ class ModuleBE_Permissions_Class
 	}
 
 	async recomputePermissionsForAllUsers(): Promise<void> {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.recomputePermissionsForAllUsersUnderBootstrap());
+	}
+
+	private async recomputePermissionsForAllUsersUnderBootstrap(): Promise<void> {
 		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 		const userGroups = allGroups.filter(g => g.type === 'user');
 		if (!userGroups.length)
@@ -468,14 +578,26 @@ class ModuleBE_Permissions_Class
 	// --- Access group change handler ---
 
 	async __onAccessGroupChanged(changedGroupIds: UniqueId[]): Promise<void> {
-		this.saAccessIdCache.invalidate();
-		await this.rematerializeForGroups(changedGroupIds);
+		// Single correctness mechanism for immutable SAs: clearing the cache here
+		// forces every SA (including immutable ones with no time expiry) to
+		// re-materialize its access-ids on the next resolve.
+		this.logDebug(`__onAccessGroupChanged: clearing SA access-id cache (${this.saAccessIdCache.size} entries) for ${changedGroupIds.length} changed groups`);
+		this.saAccessIdCache.clear();
+		await this.scheduleGroupPermissionsRefresh(changedGroupIds);
 	}
 
 	async rematerializeForGroups(changedGroupIds: UniqueId[]): Promise<void> {
+		const affectedAccountIds = await this.resolveAffectedAccountIds(changedGroupIds);
+		if (affectedAccountIds.length > 0)
+			await this.recomputePermissionsForUsers(affectedAccountIds);
+	}
+
+	private async resolveAffectedAccountIds(changedGroupIds: UniqueId[]): Promise<UniqueId[]> {
+		if (!changedGroupIds.length)
+			return [];
+
 		const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 		const userGroups = allGroups.filter(g => g.type === 'user');
-
 		const affectedAccountIds: UniqueId[] = [];
 		for (const personalGroup of userGroups) {
 			const reachable = this.walkGroupGraphUp(personalGroup._id, allGroups);
@@ -483,9 +605,54 @@ class ModuleBE_Permissions_Class
 			if (isAffected)
 				affectedAccountIds.push(personalGroup._id);
 		}
+		return affectedAccountIds;
+	}
 
-		if (affectedAccountIds.length > 0)
-			await this.recomputePermissionsForUsers(affectedAccountIds);
+	private async scheduleGroupPermissionsRefresh(changedGroupIds: UniqueId[]): Promise<void> {
+		const wrapper = MemStorage.getStore() ? MemKey_FirestoreTransaction.peak() : undefined;
+		if (!wrapper?.active) {
+			await this.rematerializeForGroups(changedGroupIds);
+			return;
+		}
+
+		const dirty = this.getOrCreateTxDirty(wrapper);
+		changedGroupIds.forEach(id => dirty.groups.add(id));
+		await registerTransactionPreClose(PreCloseKey_PermissionsRematerialize, () => this.flushDirtyRematerialize(wrapper));
+	}
+
+	private async scheduleAccountPermissionsRefresh(accountId: UniqueId): Promise<void> {
+		const wrapper = MemStorage.getStore() ? MemKey_FirestoreTransaction.peak() : undefined;
+		if (!wrapper?.active) {
+			await this.recomputePermissionsForUsers([accountId]);
+			return;
+		}
+
+		const dirty = this.getOrCreateTxDirty(wrapper);
+		dirty.accounts.add(accountId);
+		await registerTransactionPreClose(PreCloseKey_PermissionsRematerialize, () => this.flushDirtyRematerialize(wrapper));
+	}
+
+	private getOrCreateTxDirty(wrapper: TransactionWrapper): PermissionsTxDirty {
+		let dirty = this.dirtyByTx.get(wrapper);
+		if (!dirty) {
+			dirty = {groups: new Set(), accounts: new Set()};
+			this.dirtyByTx.set(wrapper, dirty);
+		}
+		return dirty;
+	}
+
+	private async flushDirtyRematerialize(wrapper: TransactionWrapper): Promise<void> {
+		const dirty = this.dirtyByTx.get(wrapper);
+		this.dirtyByTx.delete(wrapper);
+		if (!dirty)
+			return;
+
+		const accountIds = new Set(dirty.accounts);
+		if (dirty.groups.size)
+			(await this.resolveAffectedAccountIds([...dirty.groups])).forEach(id => accountIds.add(id));
+
+		if (accountIds.size)
+			await this.recomputePermissionsForUsers([...accountIds]);
 	}
 
 	private walkGroupGraphUp(startGroupId: UniqueId, allGroups: DB_AccessGroup[]): DB_AccessGroup[] {
@@ -518,30 +685,54 @@ class ModuleBE_Permissions_Class
 
 	private deduplicateScopeEntries(scopeEntities: DB_PermissionScope[]): string[] {
 		const scopeMaxIdx: Record<string, { value: string; idx: number }> = {};
+		const unregistered: string[] = [];
 		for (const entity of scopeEntities) {
 			const scopeValues = getPermissionScopeValues(entity.key);
-			const valueIdx = scopeValues ? scopeValues.indexOf(entity.value) : -1;
+			// Dynamic per-instance scopes (e.g. organization/{id}) are not in the
+			// global registry — collapsing them by idx=-1 keeps the first value
+			// (often can-invite) and drops admin. Keep every distinct key:value.
+			if (!scopeValues) {
+				unregistered.push(`${entity.key}:${entity.value}`);
+				continue;
+			}
 
+			const valueIdx = scopeValues.indexOf(entity.value);
 			const current = scopeMaxIdx[entity.key];
 			if (!current || valueIdx > current.idx)
 				scopeMaxIdx[entity.key] = {value: entity.value, idx: valueIdx};
 		}
 
-		return _keys(scopeMaxIdx).map(k => `${k}:${scopeMaxIdx[k].value}`);
+		return [
+			..._keys(scopeMaxIdx).map(k => `${k}:${scopeMaxIdx[k].value}`),
+			...filterDuplicates(unregistered),
+		];
 	}
 
 	// --- Service account elevation ---
+
+	async runAsSystemContext<R>(extraSelfAccessIds: UniqueId[], action: () => Promise<R>): Promise<R> {
+		const baseAccessIds = await this.materializeBootstrapAccessIds();
+		const accessIds: ScopedAccessIds = {
+			...baseAccessIds,
+			[AccessScope_Self]: filterDuplicates([...(baseAccessIds[AccessScope_Self] ?? []), ...extraSelfAccessIds]),
+		};
+
+		const memStorage = new MemStorage();
+		return memStorage.init(async () => {
+			MemKey_ServiceAccountId.set(ServiceAccountId_Bootstrap);
+			MemKey_UserScopePermissions.set(this.resolveBootstrapScopes());
+			MemKey_UserAccessIds.set(accessIds);
+			return action();
+		});
+	}
 
 	async runAsServiceAccount<R>(saId: string, action: () => Promise<R>): Promise<R> {
 		const saConfig = this.config.serviceAccounts[saId];
 		if (!saConfig || !saConfig.enabled)
 			throw new ApiException(403, `Service account '${saId}' is not enabled`);
 
-		if (saConfig.systemOnly) {
-			const store = MemStorage.getStore();
-			if (store && MemKey_ServiceAccountId.peak() === undefined && MemKey_UserScopePermissions.peak() !== undefined)
-				throw new ApiException(403, `System-only service account '${saId}' cannot be used within a user context`);
-		}
+		if (saConfig.systemOnly)
+			this.assertSystemOnlyElevationAllowed(saId);
 
 		const scopes = saId === ServiceAccountId_Bootstrap
 			? this.resolveBootstrapScopes()
@@ -549,8 +740,8 @@ class ModuleBE_Permissions_Class
 
 		const personalGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(saId);
 		const accessIds = saId === ServiceAccountId_Bootstrap
-			? this.resolveBootstrapAccessIds()
-			: await this.resolveSAAccessIds(personalGroupId);
+			? await this.materializeBootstrapAccessIds()
+			: await this.resolveSAAccessIds(personalGroupId, saConfig.accessIdCache);
 
 		const memStorage = new MemStorage();
 		return memStorage.init(async () => {
@@ -561,22 +752,70 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
-	private async resolveSAAccessIds(personalGroupId: UniqueId): Promise<ScopedAccessIds> {
-		const cached = this.saAccessIdCache.get(personalGroupId);
-		if (cached)
+	private async resolveSAAccessIds(personalGroupId: UniqueId, directive?: SAAccessIdCacheDirective): Promise<ScopedAccessIds> {
+		const cached = this.getCachedSAAccessIds(personalGroupId);
+		if (cached) {
+			this.logDebug(`resolveSAAccessIds: cache hit for SA group ${personalGroupId}`);
 			return cached;
+		}
 
+		this.logDebug(`resolveSAAccessIds: cache miss for SA group ${personalGroupId} — materializing`);
 		return this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			const allGroups = await ModuleBE_AccessGroupDB.query.where({});
 			const {accessIds} = await this.materializeFromGroups(personalGroupId, allGroups);
-			return this.saAccessIdCache.set(personalGroupId, accessIds);
+			return this.setCachedSAAccessIds(personalGroupId, accessIds, directive);
 		});
 	}
 
-	private resolveBootstrapAccessIds(): ScopedAccessIds {
+	/**
+	 * Read a cached SA access-id entry, honoring its per-entry expiry. Immutable
+	 * entries (expiresAt === Infinity) never expire by time. Expired entries are
+	 * evicted on access.
+	 */
+	private getCachedSAAccessIds(personalGroupId: UniqueId): ScopedAccessIds | undefined {
+		const entry = this.saAccessIdCache.get(personalGroupId);
+		if (!entry)
+			return undefined;
+
+		if (Date.now() > entry.expiresAt) {
+			this.saAccessIdCache.delete(personalGroupId);
+			return undefined;
+		}
+
+		return entry.value;
+	}
+
+	private setCachedSAAccessIds(personalGroupId: UniqueId, value: ScopedAccessIds, directive?: SAAccessIdCacheDirective): ScopedAccessIds {
+		this.saAccessIdCache.set(personalGroupId, {value, expiresAt: this.computeCacheExpiry(directive)});
+		return value;
+	}
+
+	/**
+	 * Effective expiry timestamp for a cache entry. Precedence (SSOT):
+	 *  1. `{immutable: true}`  -> never expires by time (only on group change).
+	 *  2. `{ttlMs}`            -> per-SA TTL override.
+	 *  3. no directive         -> global default (`saAccessIdCacheTtlMs`, else
+	 *     DefaultSAAccessIdCacheTtlMs).
+	 */
+	private computeCacheExpiry(directive?: SAAccessIdCacheDirective): number {
+		if (directive && 'immutable' in directive)
+			return Number.POSITIVE_INFINITY;
+
+		const ttlMs = directive && 'ttlMs' in directive
+			? directive.ttlMs
+			: (this.config.saAccessIdCacheTtlMs ?? DefaultSAAccessIdCacheTtlMs);
+
+		return Date.now() + ttlMs;
+	}
+
+	private async materializeBootstrapAccessIds(): Promise<ScopedAccessIds> {
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: outer MemKey_UserAccessIds can be a dirty user context. Bootstrap elevation must see the full group graph to rebuild its own access ids.
+		const allGroups = await ModuleBE_AccessGroupDB.query.unManipulatedQuery({where: {}});
+		const {accessIds} = await this.materializeFromGroups(GroupId_BootstrapServiceAccount, allGroups);
 		return {
-			[AccessScope_Self]: [BootstrapSAGroupId],
-			'permissions-admin': [GroupId_PermissionsAdmin],
+			...accessIds,
+			'permissions-admin': filterDuplicates([...(accessIds['permissions-admin'] ?? []), GroupId_PermissionsAdmin]),
 		};
 	}
 
@@ -584,18 +823,42 @@ class ModuleBE_Permissions_Class
 		return [
 			'permissions-ui:view',
 			'access-group:create',
+			`${PermissionScope_ServiceAccount.key}:run`,
 		];
+	}
+
+	/**
+	 * System-only SAs may run outside a user request, when already elevated as an SA,
+	 * or when the caller holds `service-account:run` (seeded on permissions-admin).
+	 */
+	private assertSystemOnlyElevationAllowed(saId: string): void {
+		const store = MemStorage.getStore();
+		if (!store)
+			return;
+
+		if (MemKey_ServiceAccountId.peak() !== undefined)
+			return;
+
+		const userScopes = MemKey_UserScopePermissions.peak();
+		if (userScopes === undefined)
+			return;
+
+		const elevationScope = `${PermissionScope_ServiceAccount.key}:run`;
+		if (userScopes.includes(elevationScope))
+			return;
+
+		throw new ApiException(403, `System-only service account '${saId}' cannot be used within a user context without '${elevationScope}'`);
 	}
 
 	// --- Bootstrap: ensure service account access group ---
 
 	private async ensureBootstrapSAAccessGroup() {
-		const existing = await ModuleBE_AccessGroupDB.query.unique(BootstrapSAGroupId);
+		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_BootstrapServiceAccount);
 		if (existing)
 			return;
 
 		await ModuleBE_AccessGroupDB.create.item({
-			_id: BootstrapSAGroupId,
+			_id: GroupId_BootstrapServiceAccount,
 			type: 'service-account',
 			key: ServiceAccountId_Bootstrap,
 			label: 'Bootstrap Admin (SA)',
@@ -686,16 +949,23 @@ class ModuleBE_Permissions_Class
 
 	private async ensureDefaultGroup() {
 		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_AppDefault);
+		const grants = dispatcher_collectDefaultScopeValues.dispatchModule().flat();
+		const scopeEntries = filterDuplicates(grants.map(grant => {
+			if (!grant.scope.values.includes(grant.value))
+				throw new BadImplementationException(`Invalid default scope value '${grant.value}' for scope '${grant.scope.key}'`);
+			return permissionScopeId(grant.scope.key, grant.value);
+		}));
+
 		await ModuleBE_AccessGroupDB.set.all([{
 			_id: GroupId_AppDefault,
 			type: 'custom' as const,
 			key: 'default',
 			label: 'Default',
 			members: existing?.members ?? [],
-			scopeEntries: [],
+			scopeEntries,
 		}]);
 
-		this.logInfoBold('Default group ensured');
+		this.logInfoBold(`Default group ensured with ${scopeEntries.length} scope entries`);
 	}
 
 	// --- Bootstrap: permissions admin group ---
@@ -704,10 +974,11 @@ class ModuleBE_Permissions_Class
 		const scopeEntries = [
 			permissionScopeId('permissions-ui', 'view'),
 			permissionScopeId('access-group', 'create'),
+			permissionScopeId(PermissionScope_ServiceAccount.key, 'run'),
 		];
 
 		const existingAdmin = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
-		const adminMembers = filterDuplicates([BootstrapSAGroupId, ...(existingAdmin?.members ?? [])]);
+		const adminMembers = filterDuplicates([GroupId_BootstrapServiceAccount, ...(existingAdmin?.members ?? [])]);
 		this.logDebug(`[FIRST_USER] ensurePermissionsAdminGroup: id=${GroupId_PermissionsAdmin}, existing=${!!existingAdmin}, members=${JSON.stringify(adminMembers)}, scopes=${scopeEntries.length}`);
 		await ModuleBE_AccessGroupDB.set.all([{
 			_id: GroupId_PermissionsAdmin,

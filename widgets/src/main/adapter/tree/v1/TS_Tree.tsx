@@ -22,7 +22,6 @@ import * as React from 'react';
 import {CSSProperties, Fragment} from 'react';
 import {Adapter, TreeNode} from '../../Adapter.js';
 import {_BaseNodeRenderer} from '../../BaseRenderer.js';
-import '../TS_Tree.scss';
 import {TreeNodeExpandState} from './types.js';
 import {_keys, exists} from '@nu-art/ts-common';
 import {ComponentSync} from '../../../_core/ComponentSync.js';
@@ -256,7 +255,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	}
 
 	render() {
-		return <div className={_className('ts-tree', this.props.className)} style={this.props.treeContainerStyle}>
+		return <div
+			id={this.props.id}
+			className={_className('ts-tree', this.props.className)}
+			style={this.props.treeContainerStyle}>
 			{this.renderNode(this.state.adapter.data, '', '', (this.state.adapter.hideRoot ? -1 : 0))}
 		</div>;
 	}

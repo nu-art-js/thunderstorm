@@ -31,7 +31,12 @@ export class ModuleFE_Message_Class
 	}
 
 	async createMessage(topicId: UniqueId, text?: string, attachments?: AssetRef[], parentMessageId?: UniqueId) {
-		const newMessage: DatabaseDef_Message['uiType'] = {topicId, text, attachments, parentMessageId} as DatabaseDef_Message['uiType'];
+		const newMessage: DatabaseDef_Message['uiType'] = {
+			topicId,
+			text,
+			attachments,
+			parentMessageId,
+		} as DatabaseDef_Message['uiType'];
 		return this.upsert(newMessage);
 	}
 

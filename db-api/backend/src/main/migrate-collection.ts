@@ -39,6 +39,8 @@ export async function migrateCollection(
 	let totalMigrated = 0;
 
 	while (true) {
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: migrate copies the whole collection. A filtered page would drop rows and look like a successful migrate.
 		const items = await sourceCollection.query.unManipulatedQuery({
 			limit: {page, itemsCount: chunkSize}
 		});

@@ -25,7 +25,9 @@ class ModuleBE_UserPermissionsAPI_Class
 	async getMyPermissions(_params: QueryParams): Promise<Response_MyPermissions> {
 		const account = SessionKey_Account_BE.get();
 		const permissionsId = stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(account._id);
-		const entity = await ModuleBE_UserPermissionsDB.query.unique(permissionsId);
+		// Consented unmanipulated read: a caller reading their own permissions must not be
+		// gated by the very access those permissions define.
+		const entity = await ModuleBE_UserPermissionsDB.query.uniqueUnmanipulated(permissionsId);
 		return {scopeEntries: entity?.scopeEntries ?? []};
 	}
 }

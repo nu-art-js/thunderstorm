@@ -98,10 +98,11 @@ describe('share API', () => {
 			});
 		});
 
-		it('builds $addToSet for all four access keys', () => {
+		it('builds $addToSet for all five access keys', () => {
 			const ctx: ShareAccessContext = {
 				readers: ['r1'],
 				writers: ['w1'],
+				creators: ['c1'],
 				deleters: ['d1'],
 				owners: ['o1'],
 			};
@@ -110,6 +111,7 @@ describe('share API', () => {
 			expect(result).to.deep.equal({
 				'__access.readers': {$each: ['r1']},
 				'__access.writers': {$each: ['w1']},
+				'__access.creators': {$each: ['c1']},
 				'__access.deleters': {$each: ['d1']},
 				'__access.owners': {$each: ['o1']},
 			});

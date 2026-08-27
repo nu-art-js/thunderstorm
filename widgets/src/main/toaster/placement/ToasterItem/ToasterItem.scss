@@ -1,0 +1,65 @@
+@use '@nu-art/ts-styles' as S;
+
+.toaster-item {
+  --primary-color: #{S.black(2)};
+  --primary-color-fade: #{S.black(7)};
+  overflow: hidden;
+  pointer-events: all;
+  width: 400px;
+  background: #fff;
+  border-radius: 10px;
+  border: 2px solid var(--primary-color);
+  transition: translate 200ms ease-out;
+
+  .toaster-item-header {
+    width: 100%;
+    justify-content: space-between;
+    height: 32px;
+    padding: 0 8px;
+  }
+
+  .toaster-item-body {
+    width: 100%;
+    margin: 0;
+    padding: 8px 8px 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .toaster-item-timer {
+    width: 100%;
+    height: 4px;
+    margin-top: 8px;
+    background: var(--primary-color-fade);
+
+    &::after {
+      content: '';
+      height: 100%;
+      width: 100%;
+      display: block;
+      background: var(--primary-color);
+      transition: width linear var(--timer-duration);
+    }
+  }
+
+  &:not(.loaded) {
+    .toaster-item-timer::after {
+      width: 0;
+    }
+  }
+
+  &[data-variant='info'] {
+    --primary-color: #{S.dark-blue(2)};
+    --primary-color-fade: #{S.dark-blue(7)};
+  }
+
+  &[data-variant='error'] {
+    --primary-color: #{S.red(1)};
+    --primary-color-fade: #{S.red(7)};
+  }
+
+  &[data-variant='success'] {
+    --primary-color: #{S.green(1)};
+    --primary-color-fade: #{S.green(7)};
+  }
+}

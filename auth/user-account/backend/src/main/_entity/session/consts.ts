@@ -12,7 +12,14 @@ export const MemKey_DB_Session = new MemKey<DB_Session>('db-session-object', fal
 export const MemKey_SessionData = new MemKey<RecursiveObjectOfPrimitives>('jwt-claims', false);
 export const MemKey_Jwt = new MemKey<string>('jwt-token', false);
 
-export const Header_Authorization = new HeaderKey(HeaderKey_Authorization, 403)
+// Legacy: missing/invalid auth throws 403. Kept for the browser auth chain, whose consumers
+// (and the FE session-timeout handling) rely on the 403 status. Do not use for new planes.
+export const Header_AuthorizationDeprecated403 = new HeaderKey(HeaderKey_Authorization, 403)
+	.setProcessor((v: string) => (v ?? '').trim().replace(/^bearer\s+/i, ''));
+
+// Correct semantics: a missing auth header is 401 Unauthorized. Required by machine planes
+// (e.g. MCP) whose clients only begin the OAuth flow on a 401 challenge, never on a 403.
+export const Header_Authorization = new HeaderKey(HeaderKey_Authorization, 401)
 	.setProcessor((v: string) => (v ?? '').trim().replace(/^bearer\s+/i, ''));
 export const Header_Origin = new HeaderKey(HeaderKey_Origin, 403);
 export const Header_TabId = new HeaderKey(HeaderKey_TabId);

@@ -1,0 +1,9 @@
+.ts-global-toast-portal {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 420px;
+  height: calc(100vh - 32px);
+  z-index: 400;
+  pointer-events: none;
+}

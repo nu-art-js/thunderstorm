@@ -1,9 +1,11 @@
+// .ts-radio — tokenized component styling; every design value is a var(--ts-radio--*)
+// (defaults in theme.scss).
 .ts-radio {
   display: flex;
   height: 40px;
   justify-content: flex-start;
   align-items: center;
-  gap: 10px;
+  gap: var(--ts-radio--gap);
 
   .ts-radio__container {
     display: flex;
@@ -17,43 +19,36 @@
     }
 
     .ts-radio__button {
-      width: 20px;
-      height: 20px;
+      width: var(--ts-radio--button-size);
+      height: var(--ts-radio--button-size);
       border-radius: 50%;
-      background: #f0f0f0;
+      background: var(--ts-radio--button-bg);
+      border: 1px solid var(--ts-radio--button-border);
+      box-sizing: border-box;
     }
 
     .ts-radio__label {
       margin-left: 5px;
       display: flex;
       align-items: center;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
+      color: var(--ts-radio--label-color);
       user-select: none;
     }
 
     &:hover {
-      .ts-radio__button {
-        background: #e0e0e0;
-      }
+      .ts-radio__button { background: var(--ts-radio--button-bg-hover); }
     }
 
     &.checked {
       .ts-radio__button {
-        background: white;
-        border: 7px solid var(--color__dialog-header-background);
+        background: var(--ts-radio--checked-center);
+        border: 7px solid var(--ts-radio--checked-ring);
       }
     }
   }
 
   &.disabled {
-    .ts-radio__button {
-      background: #DBDBDB;
-    }
-
-    .ts-radio__label {
-      color: #DBDBDB;
-    }
+    .ts-radio__button { background: var(--ts-radio--disabled-button-bg); }
+    .ts-radio__label { color: var(--ts-radio--disabled-label-color); }
   }
 }

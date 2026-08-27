@@ -57,6 +57,8 @@ export * from './validator/validator-core.js';
 export * from './validator/validators.js';
 export * from './validator/type-validators.js';
 
+export * from './json-schema/json-schema.js';
+
 export * from './consts/consts.js';
 
 export * from './mem-cache/MemCache.js';

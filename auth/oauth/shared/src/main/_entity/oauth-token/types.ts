@@ -23,6 +23,10 @@ export type DB_OAuthToken = DB_Object<DBKey> & {
 	issuedAt: number;
 	revoked: boolean;
 	tokenType: 'access' | 'refresh';
+	resource?: string;
+	// Pointer to the session this credential renews. The session module owns the JWT and its claims.
+	sessionId?: string;
+	tokenKind?: 'oauth-jwt' | 'session-jwt';
 };
 
 export type DatabaseDef_OAuthToken = DB_Prototype<DB_ProtoSeed<DB_OAuthToken, DBKey, GeneratedProps, Versions, UniqueKeys, Dependencies>>;

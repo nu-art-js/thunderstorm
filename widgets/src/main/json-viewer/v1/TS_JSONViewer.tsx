@@ -6,7 +6,6 @@ import {AdapterBuilder} from '../../adapter/Adapter.js';
 import {NodeRendererProps} from '../../adapter/BaseRenderer.js';
 import {_className} from '@nu-art/thunder-core';
 import {LL_H_C} from '../../layouts/v1/Layouts.js';
-import './TS_JSONViewer.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 type Props = {

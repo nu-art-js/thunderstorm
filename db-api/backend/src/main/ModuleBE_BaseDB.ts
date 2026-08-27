@@ -30,13 +30,14 @@ import {
 	DotNotation,
 	filterDuplicates,
 	filterInstances,
+	filterKeys,
 	getDotNotatedValue,
 	merge,
 	Module, RuntimeModules, TS_Object,
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {CollectionActionType, FirestoreCollection, getActiveTransaction, MemKey_DeletedDocs, MongoCollection} from '@nu-art/firebase-backend';
+import {CollectionActionType, FirestoreCollection, getActiveTransaction, MemKey_DeletedDocs, MongoCollection, MongoInterface} from '@nu-art/firebase-backend';
 import {DocWrapper} from '@nu-art/firebase-backend/firestore/DocWrapper';
 import {
 	DBApiBEConfig,
@@ -48,6 +49,7 @@ import {
 } from './storm-stubs.js';
 import {CrudClause_Where, Database as Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {BaseDBDefBE, PostWriteInterceptor, PostWriteProcessingDataShape, PreDeleteInterceptor, PreWriteInterceptor, QueryInterceptor} from './backend-types.js';
+import type {CrudJoinQuerySpec, CrudJoinRow} from './join-query-types.js';
 
 export type BackendType = 'firestore' | 'mongo';
 
@@ -98,7 +100,9 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	protected backendType?: BackendType;
 	public collection!: FirestoreCollection<DatabaseProto> | MongoCollection<DatabaseProto>;
 	public readonly dbDef: BaseDBDefBE;
-	public query!: FirestoreCollection<DatabaseProto>['query'];
+	public query!: FirestoreCollection<DatabaseProto>['query'] & {
+		join: (spec: CrudJoinQuerySpec<DatabaseProto['dbType']>) => Promise<CrudJoinRow[]>;
+	};
 	public create!: FirestoreCollection<DatabaseProto>['create'];
 	public set!: FirestoreCollection<DatabaseProto>['set'];
 	public delete!: FirestoreCollection<DatabaseProto>['delete'];
@@ -164,6 +168,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 					throw new BadImplementationException(`Dependency fieldType is not 'string'/'string[]'. Cannot check for EntityDependency for collection '${this.dbDef.dbKey}'.`);
 			}
 
+			// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+			// Why: delete-safety — "is anything still pointing at these ids?" must see references the caller cannot read.
 			acc.push(batchActionParallel(itemIds, 10, async ids => this.query.unManipulatedQuery({where: whereClause(ids)})));
 			return acc;
 		}, [] as Promise<DatabaseProto['dbType'][]>[]);
@@ -210,6 +216,13 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 		return this.collection as FirestoreCollection<DatabaseProto>;
 	}
 
+	public asMongoCollection(): MongoCollection<DatabaseProto> {
+		if (!(this.collection instanceof MongoCollection))
+			throw new BadImplementationException(`${this.getName()} requires MongoCollection but is configured with ${ModuleBE_BaseDB.defaultBackend}`);
+
+		return this.collection;
+	}
+
 	/**
 	 * Executed during the initialization of the module.
 	 * The collection reference is set in this method.
@@ -248,12 +261,16 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 			return acc;
 		}, {} as T);
 
-		this.query = wrapInTryCatch(this.collection.query, 'query');
+		this.query = wrapInTryCatch(this.collection.query, 'query') as ModuleBE_BaseDB<DatabaseProto>['query'];
+		this.query.join = (spec) => this.executeJoinQuery(spec);
 		this.create = wrapInTryCatch(this.collection.create, 'create');
 		this.set = wrapInTryCatch(this.collection.set, 'set');
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
 		if ('doc' in this.collection)
 			this.doc = wrapInTryCatch(this.collection.doc, 'doc');
+
+		if (this.collection instanceof MongoCollection)
+			void this.collection.ensureIndices().catch((e: unknown) => this.logError(`ensureIndices failed: ${e}`));
 	}
 
 	protected resolveCollection() {
@@ -280,6 +297,9 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	}
 
 	private _preWriteProcessing = async (dbItem: DatabaseProto['uiType'], originalDbInstance: DatabaseProto['dbType']) => {
+		// Mongo / spreads often leave optional fields as null — validators expect absent/undefined.
+		filterKeys(dbItem as TS_Object);
+
 		for (const interceptor of this.preWriteInterceptors)
 			await interceptor(dbItem, originalDbInstance);
 
@@ -319,6 +339,49 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	manipulateQuery(query: FirestoreQuery<any>): FirestoreQuery<any> {
 		return query;
 	}
+
+	compileQueryWhere(where?: CrudClause_Where<DatabaseProto['dbType']>): CrudClause_Where<DatabaseProto['dbType']> | undefined {
+		if (!where)
+			return undefined;
+
+		return this._manipulateQuery({where}).where;
+	}
+
+	private executeJoinQuery = async (spec: CrudJoinQuerySpec<DatabaseProto['dbType']>): Promise<CrudJoinRow[]> => {
+		if (!(this.collection instanceof MongoCollection))
+			throw new BadImplementationException('query.join requires mongo backend');
+
+		const localWhere = MongoInterface.compileWhereClause(
+			this.compileQueryWhere(spec.where) as Record<string, unknown> | undefined,
+		);
+
+		const hops = spec.joins.map(hop => {
+			const foreignCollection = hop.module.collection;
+			if (!(foreignCollection instanceof MongoCollection))
+				throw new BadImplementationException(
+					`query.join foreign module ${hop.module.dbDef.dbKey} requires mongo backend`,
+				);
+
+			return {
+				from: foreignCollection.dbDef.backend.name,
+				localField: hop.localField,
+				foreignField: hop.foreignField,
+				as: hop.as,
+				where: hop.module.compileQueryWhere(hop.where),
+			};
+		});
+
+		const whereAfter = MongoInterface.compileWhereClause(spec.whereAfter as Record<string, unknown> | undefined);
+		const pipeline = MongoInterface.buildJoinPipeline(
+			localWhere,
+			hops,
+			whereAfter,
+			spec.orderBy,
+			spec.limit,
+		);
+
+		return this.collection.query.join(pipeline) as Promise<CrudJoinRow[]>;
+	};
 
 	preUpsertProcessing!: never;
 
@@ -363,6 +426,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	 * Check if the collection has at least one item without the latest version. Version[0] is the latest version.
 	 */
 	public isCollectionUpToDate = async () => {
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: version check must see stale rows the caller cannot read, or upgrade never runs.
 		return (await this.query.unManipulatedQuery({
 			limit: 1,
 			where: {_v: {$neq: this.dbDef.versions[0]}}
@@ -384,6 +449,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 			const query = {limit: {page: 0, itemsCount}};
 			let instances: DatabaseProto['dbType'][];
 
+			// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+			// Why: upgrade walks every page of the collection. Filtered pages skip rows and leave them on the old version.
 			while ((instances = await this.collection.query.unManipulatedQuery(query)).length > 0) {
 				(this as any).logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
 				await processInstances(instances);
@@ -400,6 +467,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 			limit: {page: 0, itemsCount},
 		};
 
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: Firestore upgrade walk — same as the Mongo page walk: every row, not every visible row.
 		while ((docs = await fsCollection.doc.unManipulatedQuery(query)).length > 0) {
 			const toDelete = docs.filter(doc => {
 				return doc.ref.id !== doc.data!._id;

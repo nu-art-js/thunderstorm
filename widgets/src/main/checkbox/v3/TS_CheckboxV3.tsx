@@ -8,7 +8,6 @@ import * as React from 'react';
 import {useCallback, useId, useMemo} from 'react';
 import {exists, resolveContent} from '@nu-art/ts-common';
 import {_className} from '@nu-art/thunder-core';
-import '../v2/TS_CheckboxV2.scss';
 import {TS_Icons} from '@nu-art/ts-styles';
 import type {IconSpec_TS_CheckboxV2, Props_TS_CheckboxV2} from '../v2/TS_CheckboxV2.js';
 

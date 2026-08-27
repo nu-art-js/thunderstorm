@@ -24,7 +24,7 @@ type AuthModuleConfig = {
 		[k: string]: JWT_Input | string | AuthEntryConfig
 	}
 }
-export type JWT_Input = JWTInput
+export type JWT_Input = JWTInput & { [key: string]: any }
 
 export class ModuleBE_Auth_Class
 	extends Module<AuthModuleConfig> {

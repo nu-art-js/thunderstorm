@@ -20,18 +20,35 @@
 
 import {DB_Object} from './db-object.js';
 
-/** Query comparator operators (same shape as Firestore for wire compatibility). */
+/** Lower bound — exactly one of $gt / $gte. */
+type CrudNumberLower =
+	| { $gt: number; $gte?: never }
+	| { $gte: number; $gt?: never };
+
+/** Upper bound — exactly one of $lt / $lte. */
+type CrudNumberUpper =
+	| { $lt: number; $lte?: never }
+	| { $lte: number; $lt?: never };
+
+/**
+ * Number field comparator — at least one bound; lower/upper each pick at most one op; $eq alone.
+ * Allows closed ranges e.g. `{ $gte: 1000, $lt: 2000 }`; rejects `{ $gt, $gte }` and `{}`.
+ */
+export type CrudNumberComparator =
+	| ({ $eq: number } & { $gt?: never; $gte?: never; $lt?: never; $lte?: never })
+	| (CrudNumberLower & { $eq?: never; $lt?: never; $lte?: never })
+	| (CrudNumberUpper & { $eq?: never; $gt?: never; $gte?: never })
+	| (CrudNumberLower & CrudNumberUpper & { $eq?: never });
+
+/** Query comparator operators (Firestore-parity plus Mongo-capable `$regex`). */
 export type CrudQueryComparator<T> =
 	| { $ac: T extends (infer I)[] ? I : never }
 	| { $aca: T extends (infer I)[] ? I[] : never }
 	| { $nin: T extends (any)[] ? never : T[] }
 	| { $in: T extends (any)[] ? never : T[] }
-	| { $gt: number }
-	| { $gte: number }
-	| { $lt: number }
-	| { $lte: number }
-	| { $eq: number }
-	| { $neq: T };
+	| CrudNumberComparator
+	| { $neq: T }
+	| { $regex: RegExp };
 
 export type CrudOrderByDirection = 'desc' | 'asc';
 
@@ -39,9 +56,13 @@ export type CrudWhereValue<Value> =
 	| CrudQueryComparator<Value>
 	| (Value extends DB_Object ? CrudClause_Where<Value> : Value | [Value]);
 
-export type CrudClause_Where<T extends DB_Object> = { [P in keyof T]?: CrudWhereValue<T[P]> };
+export type CrudClause_Where<T extends DB_Object> = {
+	[P in keyof T]?: CrudWhereValue<T[P]>
+} & {
+	$or?: CrudClause_Where<T>[]
+};
 
-export type CrudClause_OrderBy<T extends DB_Object> = [{ key: keyof T; order: CrudOrderByDirection }];
+export type CrudClause_OrderBy<T extends DB_Object> = { key: keyof T; order: CrudOrderByDirection }[];
 
 export type CrudClause_Select<T extends DB_Object, K extends keyof T = keyof T> = K[];
 
@@ -53,6 +74,23 @@ export type CrudQuery<T extends DB_Object> = {
 	limit?: number | { page?: number; itemsCount: number };
 };
 
+/** One hop in a compiled Mongo join pipeline (collection name resolved). */
+export type CrudJoinHopCompiled = {
+	from: string;
+	localField: string;
+	foreignField: string;
+	as: string;
+	where?: CrudClause_Where<any>;
+};
+
+/** Join query input after foreign modules are resolved to collection names. */
+export type CrudJoinQueryCompiled<TLocal extends DB_Object = DB_Object> = {
+	where?: CrudClause_Where<TLocal>;
+	joins: CrudJoinHopCompiled[];
+	whereAfter?: CrudClause_Where<any>;
+	orderBy?: CrudClause_OrderBy<TLocal>;
+	limit?: CrudQuery<TLocal>['limit'];
+};
 
 /** Empty query constant (same shape as Firestore _EmptyQuery for wire compatibility). */
 export const CrudEmptyQuery = Object.freeze({where: {}}) as CrudQuery<DB_Object>;

@@ -1,0 +1,63 @@
+// Titled section card — owns its own appearance; layout (placement in a grid) is the parent's.
+.dl-section {
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-x: clip;
+
+  &.dl-section--wide {
+    grid-column: 1 / -1;
+  }
+
+  &.dl-section--fit {
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  &.dl-section--selected {
+    border-color: var(--color-action-primary-bg);
+  }
+
+  .dl-section__head {
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dl-section__title {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+    font-size: var(--font-size-control);
+  }
+
+  .dl-section__title--link {
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    text-align: inherit;
+    color: var(--color-action-primary-bg);
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .dl-section__actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+  }
+}

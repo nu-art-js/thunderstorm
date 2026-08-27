@@ -1,9 +1,8 @@
 import {DBDef_Message} from '../../main/message/db-def.js';
-import type {DB_Message} from '../../main/message/types.js';
 
 // Cast the validator to accept any input for edge-case testing (empty, missing fields, etc.)
-const validateModifiable = (input: Partial<DB_Message> | undefined): boolean => {
-	const validator = DBDef_Message.modifiablePropsValidator as (instance?: Partial<DB_Message>) => string | undefined;
+const validateModifiable = (input?: Record<string, unknown>): boolean => {
+	const validator = DBDef_Message.modifiablePropsValidator as (instance?: Record<string, unknown>) => string | undefined;
 	const result = validator(input);
 	return !result;
 };
@@ -55,6 +54,34 @@ describe('DBDef_Message — modifiable props validator', () => {
 		const valid = validateModifiable(undefined);
 		if (valid)
 			throw new Error('Expected undefined input to fail');
+	});
+
+	it('Accepts message that omits mention', () => {
+		const valid = validateModifiable({topicId: 'topic-123', text: 'Hello world'});
+		if (!valid)
+			throw new Error('Expected message without mention to pass');
+	});
+
+	it('Accepts message with empty mention array', () => {
+		const valid = validateModifiable({topicId: 'topic-123', text: 'Hello world', mention: []});
+		if (!valid)
+			throw new Error('Expected message with empty mention to pass');
+	});
+
+	it('Accepts message with valid mention ids', () => {
+		const valid = validateModifiable({
+			topicId: 'topic-123',
+			text: 'Hello world',
+			mention: ['0123456789abcdef0123456789abcdef'],
+		});
+		if (!valid)
+			throw new Error('Expected message with valid mention ids to pass');
+	});
+
+	it('Rejects message with invalid mention ids', () => {
+		const valid = validateModifiable({topicId: 'topic-123', text: 'Hello world', mention: ['nope']});
+		if (valid)
+			throw new Error('Expected message with invalid mention ids to fail');
 	});
 });
 

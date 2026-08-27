@@ -8,7 +8,6 @@ import {
 	_keys,
 	deleteKeysObject,
 	exists,
-	filterDuplicates,
 	InvalidResult,
 	lastElement,
 	MemCache,
@@ -17,6 +16,7 @@ import {
 	ValidationException
 } from '@nu-art/ts-common';
 import {getDatabase, IDB_Store} from '@nu-art/idb-frontend';
+import {OnClearWebsiteData} from '@nu-art/thunder-core';
 import {
 	ApiCallerEventType,
 	composeDbObjectUniqueId,
@@ -78,7 +78,8 @@ export type DBConfig_ModuleFE<Types extends DB_Prototype> = {
  * @template Types - DB_Prototype that define the entity types (decoupled from Proto)
  */
 export class ModuleFE_BaseDB<Database extends DB_Prototype>
-	extends Module {
+	extends Module
+	implements OnClearWebsiteData {
 
 	readonly validator: Database['modifiablePropsValidator'];
 	readonly cache: MemCache<Database['dbType']>;
@@ -158,9 +159,29 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 		if (!exists(after) || after === before)
 			return;
 
+		this.logVerbose(JSON.stringify({
+			event: 'sync.idb-last-updated/changed',
+			dbKey: this.config.dbKey,
+			before,
+			after,
+		}));
 		await this.loadCache();
 
 		this.dispatcher('update', {} as Database['dbType']);
+	};
+
+	/** Structured IDB vs MemCache snapshot for sync troubleshooting (MCP filter: `sync\\.`). */
+	logCacheState = async (event: string, extra?: Record<string, unknown>) => {
+		const idbItems = await this.IDB.getAll();
+		this.logDebug(JSON.stringify({
+			event,
+			dbKey: this.config.dbKey,
+			idbCount: idbItems.length,
+			cacheCount: this.cache.all().length,
+			dataStatus: DataStatus[this.getDataStatus()],
+			idbLastSync: this.IDB.getLastSync(),
+			...extra,
+		}));
 	};
 
 	async openIDB() {
@@ -187,6 +208,7 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 
 		this.cache.load(allItems);
 		this.logDebug(`Cache finished loading, count: ${this.cache.all().length}`);
+		await this.logCacheState('sync.load-cache/completed', {loadedFromIdbCount: allItems.length});
 	}
 
 
@@ -203,7 +225,11 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 		this.versionUpgrades[version] = processor;
 	}
 
-	async upgradeInstances(instances: Database['dbType'][], force = false): Promise<Database['dbType'][]> {
+	/**
+	 * Run version upgrade processors in place. Always returns the same input array
+	 * (mutated). Missing processor for a version = skip that step; item stays valid.
+	 */
+	async upgradeInstances(instances: Database['dbType'][]): Promise<Database['dbType'][]> {
 		if (!_keys(this.versionUpgrades).length) {
 			this.logVerbose(`No registered upgrade processors for module ${this.config.dbKey}`);
 			return instances;
@@ -217,8 +243,6 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 					instance._v = latestVersion;
 			});
 		}
-
-		let instancesToSave: Database['dbType'][] = [];
 
 		for (let i = this.config.versions.length - 1; i >= 0; i--) {
 			const version = this.config.versions[i];
@@ -237,14 +261,12 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 			} else {
 				this.logVerbose(`Upgrade instances(${instancesToUpgrade.length}): ${versionTransition}`);
 				await upgradeProcessor(instancesToUpgrade);
-				instancesToSave.push(...instancesToUpgrade);
 			}
 
-			instancesToSave = filterDuplicates(instancesToSave);
 			instancesToUpgrade.forEach(instance => (instance._v = nextVersion));
 		}
 
-		return force ? instances : instancesToSave;
+		return instances;
 	}
 
 
@@ -368,6 +390,10 @@ export class ModuleFE_BaseDB<Database extends DB_Prototype>
 		await this.IDB.clearAll();
 		this.cache.clear();
 		this.setDataStatus(DataStatus.NoData);
+	}
+
+	async __onClearWebsiteData() {
+		await this.clearData();
 	}
 
 	/**
