@@ -30,7 +30,11 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@nu-art/testalot": "?"
+		"@nu-art/testalot": "?",
+		"chai": "?",
+		"@types/chai": "?",
+		"@types/mocha": "?",
+		"@types/node": "?"
 	},
 	"unitConfig": {
 		"type": "typescript-lib"

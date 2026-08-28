@@ -1,0 +1,55 @@
+---
+description: Product E2E stacks — one harness, one boot per runner process
+alwaysApply: false
+---
+
+# Product E2E tests
+
+**Use when:** Testing a full product stack (Storm backend + mongo + firebase emulators + HTTP or Playwright), not a single module.
+
+## What you must know
+
+- Abstract bootstrap is `@nu-art/e2e-harness` (`E2EHarness.ensure` / `teardown`). How to consume: [_thunderstorm/e2e-harness/.rules/how-to-use.mdc](../../../e2e-harness/.rules/how-to-use.mdc).
+- Journeys live in the product (`@app/e2e`). The harness package has **no** journey specs.
+- In-package HTTP e2e (`_thunderstorm/http/e2e` `withServer`) is a different pattern — in-process server, not a product stack.
+
+## Done-when — e2e must hit the leaf's surface
+
+A leaf is **not done** until product e2e exercises the same surface the user uses.
+
+| Leaf surface | Required e2e | Does not close it |
+|---|---|---|
+| HTTP API | Mocha HTTP in `@app/e2e` (`-tt=pure`) | Unit tests, compile |
+| UI / route / form / redirect | Playwright product e2e (`-tt=playwright`) | HTTP mocha for the same APIs, compile, "composed existing widgets" |
+
+Missing a Playwright package is a **gap** (create it, or leave the leaf open). It is not permission to mark done. Do not mark done and narrate the hole.
+
+## One stack per runner process
+
+Do **not** start/stop the stack in each test file. A second firebase boot races the first teardown (Firestore exits code 1).
+
+| Runner | Ensure once | Teardown once |
+|--------|-------------|---------------|
+| Playwright | `globalSetup` → `ensure*E2EStack()` | `globalTeardown` → `teardown*E2EStack()` |
+| Mocha (`-tt=pure`) | First file `before(ensure)` is enough — `E2EHarness.ensure` reuses `active` + health | Last-sorting `*.test.ts` `after(teardown)`. Mocha ESM does **not** load `mochaHooks` from test files. |
+
+After mocha teardown, **wait for firebase/backend children to exit**. Playwright globalTeardown is a separate process; mocha is the same process that spawned the children — fire-and-forget `SIGTERM` leaves the event loop open and `bai` hangs.
+
+## Zone and env
+
+- Dedicated e2e ports. Do not collide with human `bai -l` (product backend default).
+- `BACKEND_PORT` only — never `PORT` (SSL is dropped when `PORT` is set).
+- `GCP_PROJECT_ID` = a real Secret Manager project (or `gcloud config get-value project`). `GCLOUD_PROJECT` = emulator id. Do not point `SecretKey` at the emulator project.
+- Delete `FIREBASE_CONFIG` / `FUNCTIONS_EMULATOR` from the **firebase CLI** env. Keep them on the backend child.
+- Docker must be up (`docker info`). If not: infra blocker, not a harness bug.
+- Lock file under the backend `.trash/` so two harnesses cannot share the zone.
+
+## Run
+
+```bash
+bai -t -nb -tt=pure -up=@nu-art/e2e-harness$
+bai -t -nb -tt=pure -up=@app/e2e$
+bai -t -nb -tt=playwright -up=e2e-admin-portal
+```
+
+Use `$` on `@app/e2e` so BAI does not also select other `e2e*` packages. Use `-nb` while a human backend is running — test compile wipes `dist/`.

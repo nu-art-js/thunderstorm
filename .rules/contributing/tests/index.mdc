@@ -48,3 +48,7 @@ Uses Vite dev server for ESM module resolution and Playwright for browser automa
 **Use When**: Testing rendered React components that depend on the Thunder module lifecycle, IDB-backed data, or Thunderstorm UI primitives.
 The component under test remains exactly as it is used in the app — real modules, real IDB, real dispatchers. Data is seeded via `onEntriesUpdated` instead of backend sync.
 Uses the same Playwright infrastructure as browser tests but with a component-rendering test entry.
+
+### 6. [Product E2E tests](./e2e-tests.mdc)
+**Use When**: Testing a full product stack (Storm + mongo + firebase emulators + HTTP or Playwright).
+Use `@nu-art/e2e-harness` — one boot per mocha/Playwright process. Do not copy the harness into the product.

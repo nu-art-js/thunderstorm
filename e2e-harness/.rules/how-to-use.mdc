@@ -1,0 +1,41 @@
+---
+description: How to consume @nu-art/e2e-harness for product-stack E2E
+alwaysApply: false
+---
+
+# Use @nu-art/e2e-harness
+
+**When:** A product needs mocha or Playwright journeys against a real Storm backend + mongo/firebase emulators.
+
+## Do
+
+1. Depend on `@nu-art/e2e-harness`. Do **not** copy this package into the product (`app/e2e-harness` is forbidden).
+2. Put journeys in a **test-only** product package (`@app/e2e`). See [package-and-libraries.mdc](../../.rules/operational/package-and-libraries.mdc) Test-only subsection.
+3. Implement `startup.startStack` in the product (mongo, firebase emulators, `node dist/index.js`). This package only `ensure`s, health-polls, and tears down.
+4. Run via a single `bai -t -nb` — no manual `bai -l` pre-launch.
+
+```ts
+import {E2EHarness, type E2EHarnessConfig} from '@nu-art/e2e-harness';
+
+const handle = await E2EHarness.ensure({
+	backendPackage: '@app/backend',
+	healthUrl: 'https://localhost:8802/',
+	reuseExistingStack: false,
+	startup: {
+		applyEnv: () => {
+			process.env.NODE_TLS_REJECT_UNAUTHORIZED ??= '0';
+			process.env.BACKEND_PORT ??= '8802';
+		},
+		startStack: startProductE2EStack,
+	},
+});
+await handle.teardown();
+```
+
+## Forbidden
+
+- Inventing a second harness API in the product.
+- Setting `PORT` on the backend child (host drops SSL when `PORT` is set). Use `BACKEND_PORT` only.
+- Passing BAI's `NODE_OPTIONS` (ts-node/esm) into `firebase` CLI or `node dist/index.js` — delete `NODE_OPTIONS` on those children.
+- Killing listeners by port. If the e2e zone is busy, print `lsof` and fail.
+- `bai -i -up=<subset>` after adding packages (breaks `pnpm-workspace.yaml`). Use `bai -i -nb`.
