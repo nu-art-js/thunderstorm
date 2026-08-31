@@ -1,0 +1,28 @@
+---
+description: How to use ws-api — typed WebSocket on HttpServer (shared envelope + backend module)
+alwaysApply: false
+---
+
+# How to use ws-api
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/ws-api-shared` | `WsEnvelope`, builtins, encode/parse |
+| `@nu-art/ws-api-backend` | `ModuleBE_WsApi` — attach to `HttpServer`, auth, handlers |
+
+## When
+
+Realtime / play after HTTP auth. HTTP stays for auth, signed URLs, bootstrap.
+
+## Do
+
+1. `setAuthenticator` with app session/JWT logic (reject → `false`).
+2. `registerHandler(type, handler)` before or after attach.
+3. `attach(httpServer)` then `startServer()` (upgrade path default `/ws`).
+4. Send/receive JSON envelopes `{ type, id?, payload? }`.
+
+## Don't
+
+- Don't invent a permanent app-only WS stack when this lib exists.
+- Don't put rooms/presence in v0 — not implemented yet.
+- Don't use socket.io for this Thunderstorm path.

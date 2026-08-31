@@ -1,0 +1,43 @@
+{
+  "name": "@nu-art/ws-api-shared",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Shared WebSocket envelope types and helpers for Thunderstorm typed WS (parallel to api-types / db-api-shared)",
+  "keywords": [
+    "TacB0sS",
+    "websocket",
+    "ws",
+    "infra",
+    "nu-art",
+    "ws-api",
+    "thunderstorm",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/ws-api/shared"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {},
+  "dependencies": {
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

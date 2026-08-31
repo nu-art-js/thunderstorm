@@ -60,6 +60,7 @@ Paths are relative to the project root (monorepo root).
 | Use permissions (scopes, assertions, service accounts) | [_thunderstorm/permissions/.rules/how-to-use.mdc](_thunderstorm/permissions/.rules/how-to-use.mdc) |
 | Use http (client and/or server) | [_thunderstorm/http/.rules/how-to-use.mdc](_thunderstorm/http/.rules/how-to-use.mdc) |
 | Product E2E stack bootstrap (`@nu-art/e2e-harness`) | [_thunderstorm/e2e-harness/.rules/how-to-use.mdc](_thunderstorm/e2e-harness/.rules/how-to-use.mdc) |
+| Use ws-api (typed WebSocket on HttpServer) | [_thunderstorm/ws-api/.rules/how-to-use.mdc](_thunderstorm/ws-api/.rules/how-to-use.mdc) |
 | Use file-upload (signed-URL upload/download, validation, progress, transfer bubble) | [_thunderstorm/file-upload/.rules/how-to-use.mdc](_thunderstorm/file-upload/.rules/how-to-use.mdc) |
 | Use ts-messaging (entity-anchored conversations, threading, attachments, chat UI) | [_thunderstorm/ts-messaging/.rules/how-to-use.mdc](_thunderstorm/ts-messaging/.rules/how-to-use.mdc) |
 | Use sync-manager (smart-sync, RTDB timestamps) | [_thunderstorm/to-review/sync-manager/.rules/how-to-use.mdc](_thunderstorm/to-review/sync-manager/.rules/how-to-use.mdc) |

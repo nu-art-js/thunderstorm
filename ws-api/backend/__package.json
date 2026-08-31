@@ -1,0 +1,49 @@
+{
+  "name": "@nu-art/ws-api-backend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "WebSocket server module for Thunderstorm — attaches to HttpServer, typed message router, injectable auth",
+  "keywords": [
+    "TacB0sS",
+    "websocket",
+    "ws",
+    "express",
+    "infra",
+    "nu-art",
+    "ws-api",
+    "thunderstorm",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/ws-api/backend"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "scripts": {},
+  "dependencies": {
+    "@nu-art/ws-api-shared": "?",
+    "@nu-art/http-server": "?",
+    "@nu-art/logger": "?",
+    "@nu-art/ts-common": "?",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?",
+    "@types/ws": "^8.5.13"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    }
+  }
+}

@@ -270,9 +270,19 @@ export class HttpServer
 		return createHttpsServer({key, cert, rejectUnauthorized: false, requestCert: false}, this.getExpress());
 	}
 
+	/**
+	 * Underlying Node HTTP(S) server used for listen / upgrade (e.g. WebSocket).
+	 * Creates the server if needed so upgrade handlers can attach before listen.
+	 */
+	public getServer(): Server {
+		if (!this.server)
+			this.server = this.createServer();
+		return this.server;
+	}
+
 	public async startServer(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			this.server = this.createServer();
+			this.server = this.getServer();
 			this.server.listen(this.config.port);
 			this.server.on('connection', (socket: Socket) => {
 				this.logInfo(`New connection (${this.socketId++}): ${socket}`);
