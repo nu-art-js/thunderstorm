@@ -8,7 +8,7 @@ import {expect} from 'chai';
 import {WebSocket, type RawData} from 'ws';
 import {BeLogged, LogClient_Terminal} from '@nu-art/ts-common';
 import {encodeWsEnvelope, parseWsEnvelope, type WsEnvelope} from '@nu-art/ws-api-shared';
-import {WsServer} from '../main/index.js';
+import {WsServer} from '../../dist/index.js';
 import {createWsTestHttpServer, killProcessOnPort, WsTestPort} from './test-server.js';
 
 declare global {
@@ -91,7 +91,7 @@ describe('ws-api-backend connect → auth → ping/echo', () => {
 	it('connect → auth → ping → pong → echo → ack', async function () {
 		this.timeout(15000);
 		const http = createWsTestHttpServer().init();
-		const wsServer = new WsServer().setAuthenticator(async ({url}) => {
+		const wsServer = new WsServer().setAuthenticator(async ({url}: { url: URL }) => {
 			const token = url.searchParams.get('token');
 			if (token !== 'ok')
 				return false;

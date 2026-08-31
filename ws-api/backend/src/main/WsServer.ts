@@ -10,23 +10,42 @@ import type {Duplex} from 'stream';
 import {WebSocketServer, WebSocket, type RawData} from 'ws';
 import {Logger} from '@nu-art/logger';
 import {LogLevel} from '@nu-art/ts-common';
-import type {HttpServer} from '@nu-art/http-server';
 import {
 	encodeWsEnvelope,
 	parseWsEnvelope,
 	wsAck,
 	wsError,
 	WsBuiltinType,
+	type WsEnvelope,
 } from '@nu-art/ws-api-shared';
 import type {
 	WsApiConfig,
 	WsAuthenticator,
 	WsConnectionAuth,
 	WsHandlerContext,
+	WsHeartbeatConfig,
+	WsHttpAttachTarget,
+	WsIdleResyncHandler,
 	WsMessageHandler,
 } from './types.js';
+import {WsCloseCode_HeartbeatTimeout} from './types.js';
 
 const DefaultPath = '/ws';
+const HeartbeatBuiltinTypes = new Set<string>([WsBuiltinType.ping, WsBuiltinType.pong]);
+
+type ConnectionTimers = {
+	heartbeatInterval?: ReturnType<typeof setInterval>;
+	idleTimeout?: ReturnType<typeof setTimeout>;
+};
+
+type ConnectionState = {
+	socket: WebSocket;
+	ctx: WsHandlerContext;
+	lastLivenessAt: number;
+	lastAppActivityAt: number;
+	idlePending: boolean;
+	timers: ConnectionTimers;
+};
 
 /**
  * Attaches a path-scoped WebSocketServer to an existing Node HTTP(S) server
@@ -38,14 +57,26 @@ export class WsServer
 	private readonly handlers = new Map<string, WsMessageHandler>();
 	private authenticator?: WsAuthenticator;
 	private wss?: WebSocketServer;
-	private path: string;
+	private path: string = DefaultPath;
 	private attached = false;
+	private heartbeat?: WsHeartbeatConfig;
+	private idleMs?: number;
+	private onIdleResync?: WsIdleResyncHandler;
+	private readonly connections = new Set<ConnectionState>();
 
 	constructor(config?: WsApiConfig) {
 		super('ws-api');
 		this.setMinLevel(LogLevel.Debug);
-		this.path = config?.path ?? DefaultPath;
+		this.applyConfig(config);
 		this.registerBuiltinHandlers();
+	}
+
+	applyConfig(config?: WsApiConfig): this {
+		this.path = config?.path ?? DefaultPath;
+		this.heartbeat = config?.heartbeat;
+		this.idleMs = config?.idleMs;
+		this.onIdleResync = config?.onIdleResync;
+		return this;
 	}
 
 	setPath(path: string): this {
@@ -60,6 +91,11 @@ export class WsServer
 		return this;
 	}
 
+	setOnIdleResync(handler: WsIdleResyncHandler | undefined): this {
+		this.onIdleResync = handler;
+		return this;
+	}
+
 	registerHandler(type: string, handler: WsMessageHandler): this {
 		if (this.handlers.has(type) && type !== WsBuiltinType.ping && type !== WsBuiltinType.echo)
 			this.logWarning(`Overwriting WS handler for type '${type}'`);
@@ -68,7 +104,7 @@ export class WsServer
 	}
 
 	/** Attach to HttpServer's Node server (creates it via getServer if needed). */
-	attach(httpServer: HttpServer): this {
+	attach(httpServer: WsHttpAttachTarget): this {
 		return this.attachToNodeServer(httpServer.getServer());
 	}
 
@@ -91,6 +127,8 @@ export class WsServer
 	}
 
 	async close(): Promise<void> {
+		for (const state of [...this.connections])
+			this.teardownConnection(state);
 		const wss = this.wss;
 		this.wss = undefined;
 		this.attached = false;
@@ -167,32 +205,150 @@ export class WsServer
 			close: (code, reason) => socket.close(code, reason),
 		};
 
+		const now = Date.now();
+		const state: ConnectionState = {
+			socket,
+			ctx,
+			lastLivenessAt: now,
+			lastAppActivityAt: now,
+			idlePending: false,
+			timers: {},
+		};
+		this.connections.add(state);
+
 		socket.on('message', (data: RawData) => {
-			void this.onMessage(data, ctx);
+			void this.onMessage(data, state);
 		});
 
+		socket.on('close', () => this.teardownConnection(state));
 		socket.on('error', (err: Error) => this.logError('WS socket error', err));
+
+		this.startConnectionTimers(state);
 	}
 
-	private async onMessage(data: RawData, ctx: WsHandlerContext): Promise<void> {
-		const raw = typeof data === 'string' ? data : Buffer.isBuffer(data) ? data.toString('utf8') : Buffer.from(data as ArrayBuffer).toString('utf8');
-		const msg = parseWsEnvelope(raw);
-		if (!msg) {
-			ctx.send(wsError('invalid envelope'));
+	private startConnectionTimers(state: ConnectionState): void {
+		const hb = this.heartbeat;
+		const pingIntervalMs = hb?.pingIntervalMs ?? 0;
+		const pongTimeoutMs = this.resolvePongTimeoutMs(hb);
+		const heartbeatEnabled = pingIntervalMs > 0 || pongTimeoutMs > 0;
+
+		if (heartbeatEnabled) {
+			const tickMs = pingIntervalMs > 0 ? pingIntervalMs : Math.max(250, Math.floor(pongTimeoutMs / 2));
+			state.timers.heartbeatInterval = setInterval(() => this.onHeartbeatTick(state), tickMs);
+		}
+
+		if (this.idleMs && this.idleMs > 0 && this.onIdleResync)
+			this.scheduleIdleCheck(state);
+	}
+
+	private resolvePongTimeoutMs(hb?: WsHeartbeatConfig): number {
+		if (hb?.pongTimeoutMs && hb.pongTimeoutMs > 0)
+			return hb.pongTimeoutMs;
+		if (hb?.pingIntervalMs && hb.pingIntervalMs > 0)
+			return hb.pingIntervalMs * 2;
+		return 0;
+	}
+
+	private onHeartbeatTick(state: ConnectionState): void {
+		if (state.socket.readyState !== WebSocket.OPEN)
+			return;
+
+		const hb = this.heartbeat;
+		const pongTimeoutMs = this.resolvePongTimeoutMs(hb);
+		if (pongTimeoutMs > 0 && Date.now() - state.lastLivenessAt > pongTimeoutMs) {
+			this.logDebug(`WS heartbeat timeout accountId=${state.ctx.auth.accountId ?? '-'}`);
+			state.ctx.close(WsCloseCode_HeartbeatTimeout, 'heartbeat timeout');
 			return;
 		}
 
+		const pingIntervalMs = hb?.pingIntervalMs ?? 0;
+		if (pingIntervalMs > 0)
+			state.ctx.send({type: WsBuiltinType.ping, payload: {t: Date.now()}});
+	}
+
+	private scheduleIdleCheck(state: ConnectionState): void {
+		const idleMs = this.idleMs;
+		if (!idleMs || idleMs <= 0 || !this.onIdleResync)
+			return;
+
+		if (state.timers.idleTimeout)
+			clearTimeout(state.timers.idleTimeout);
+
+		state.timers.idleTimeout = setTimeout(() => {
+			void this.onIdleTimeout(state);
+		}, idleMs);
+	}
+
+	private async onIdleTimeout(state: ConnectionState): Promise<void> {
+		if (state.socket.readyState !== WebSocket.OPEN)
+			return;
+
+		const idleMs = this.idleMs;
+		if (!idleMs || !this.onIdleResync)
+			return;
+
+		const silentForMs = Date.now() - state.lastAppActivityAt;
+		if (silentForMs < idleMs) {
+			this.scheduleIdleCheck(state);
+			return;
+		}
+
+		if (state.idlePending)
+			return;
+
+		state.idlePending = true;
+		try {
+			await this.onIdleResync(state.ctx);
+		} catch (e) {
+			this.logError('WS onIdleResync failed', e instanceof Error ? e : `${e}`);
+		} finally {
+			state.idlePending = false;
+			this.scheduleIdleCheck(state);
+		}
+	}
+
+	private touchLiveness(state: ConnectionState, msg: WsEnvelope): void {
+		const acceptClientPing = this.heartbeat?.acceptClientPing !== false;
+		const isBuiltinHeartbeat = HeartbeatBuiltinTypes.has(msg.type);
+		if (!isBuiltinHeartbeat || acceptClientPing)
+			state.lastLivenessAt = Date.now();
+
+		if (!isBuiltinHeartbeat)
+			state.lastAppActivityAt = Date.now();
+	}
+
+	private teardownConnection(state: ConnectionState): void {
+		this.connections.delete(state);
+		if (state.timers.heartbeatInterval)
+			clearInterval(state.timers.heartbeatInterval);
+		if (state.timers.idleTimeout)
+			clearTimeout(state.timers.idleTimeout);
+		state.timers = {};
+	}
+
+	private async onMessage(data: RawData, state: ConnectionState): Promise<void> {
+		const raw = typeof data === 'string' ? data : Buffer.isBuffer(data) ? data.toString('utf8') : Buffer.from(data as ArrayBuffer).toString('utf8');
+		const msg = parseWsEnvelope(raw);
+		if (!msg) {
+			state.ctx.send(wsError('invalid envelope'));
+			return;
+		}
+
+		this.touchLiveness(state, msg);
+		if (!HeartbeatBuiltinTypes.has(msg.type))
+			this.scheduleIdleCheck(state);
+
 		const handler = this.handlers.get(msg.type);
 		if (!handler) {
-			ctx.send(wsError(`unknown type: ${msg.type}`, msg));
+			state.ctx.send(wsError(`unknown type: ${msg.type}`, msg));
 			return;
 		}
 
 		try {
-			await handler(msg, ctx);
+			await handler(msg, state.ctx);
 		} catch (e) {
 			this.logError(`WS handler '${msg.type}' failed`, e instanceof Error ? e : `${e}`);
-			ctx.send(wsError(e instanceof Error ? e.message : 'handler failed', msg));
+			state.ctx.send(wsError(e instanceof Error ? e.message : 'handler failed', msg));
 		}
 	}
 }

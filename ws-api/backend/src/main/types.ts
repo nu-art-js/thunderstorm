@@ -34,7 +34,34 @@ export type WsHandlerContext = {
 
 export type WsMessageHandler = (msg: WsEnvelope, ctx: WsHandlerContext) => void | Promise<void>;
 
+/** Infra heartbeat — detects dead connections; not app gameplay traffic. */
+export type WsHeartbeatConfig = {
+	/** How often the server sends `ping` envelopes. 0 / unset = server does not ping (client ping still accepted). */
+	pingIntervalMs?: number;
+	/** Close when no inbound liveness within this window. Defaults to `pingIntervalMs * 2` when server pings. */
+	pongTimeoutMs?: number;
+	/** Treat inbound client `ping` / `pong` as liveness. Default true. */
+	acceptClientPing?: boolean;
+};
+
+/** App hook: connection had no app-level traffic for {@link WsApiConfig.idleMs}. */
+export type WsIdleResyncHandler = (ctx: WsHandlerContext) => void | Promise<void>;
+
+/** Minimal HttpServer surface for WS upgrade attach. */
+export type WsHttpAttachTarget = {
+	getServer(): import('http').Server;
+};
+
 export type WsApiConfig = {
 	/** Upgrade path on the shared HttpServer. Default `/ws`. */
 	path?: string;
+	/** Infra heartbeat options. Omit to disable server-side heartbeat monitoring. */
+	heartbeat?: WsHeartbeatConfig;
+	/** Fire {@link onIdleResync} after this many ms without app messages (builtins excluded). */
+	idleMs?: number;
+	/** Called once per idle period so the app can push a full-state snapshot. */
+	onIdleResync?: WsIdleResyncHandler;
 };
+
+/** WebSocket close code when heartbeat times out. */
+export const WsCloseCode_HeartbeatTimeout = 4001;

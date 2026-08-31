@@ -5,7 +5,7 @@
  */
 
 import {expect} from 'chai';
-import {encodeWsEnvelope, isWsEnvelope, parseWsEnvelope, wsAck, wsError, WsBuiltinType} from '../main/index.js';
+import {encodeWsEnvelope, isWsEnvelope, parseWsEnvelope, wsAck, wsError, WsBuiltinType} from '../../dist/index.js';
 
 describe('ws-api-shared envelope', () => {
 	it('parseWsEnvelope accepts valid envelope', () => {

@@ -79,6 +79,41 @@ await http.startServer();
 
 Client: `new WebSocket('ws://localhost:8080/ws?token=…')` then send JSON envelopes.
 
+## Heartbeat (infra)
+
+Detects dead connections. Pass on `WsApiConfig` (storm module config or `new WsServer(config)`):
+
+```ts
+new WsServer({
+  heartbeat: {
+    pingIntervalMs: 30_000,   // server sends ping envelopes (0 = server silent)
+    pongTimeoutMs: 60_000,    // close if no liveness within window (default 2× interval)
+    acceptClientPing: true,   // client ping/pong counts (default true)
+  },
+});
+```
+
+- Server sends builtin `ping` envelopes on interval.
+- Inbound `ping` / `pong` (and any message when `acceptClientPing`) resets the liveness clock.
+- Timeout → close with code `4001` (`WsCloseCode_HeartbeatTimeout`).
+
+## Idle full-state hook (app-owned)
+
+Infra timer only — **does not** push snapshots. Fire when no **app** traffic (builtins `ping`/`pong` excluded):
+
+```ts
+new WsServer({
+  idleMs: 120_000,
+  onIdleResync: async (ctx) => {
+    // app pushes its own full-state envelope(s) via ctx.send(...)
+  },
+});
+```
+
+Or at runtime: `ModuleBE_WsApi.setOnIdleResync(handler)`.
+
+Reschedules after each idle period; app messages reset the idle clock.
+
 ## PTW next
 
 1. Depend on `@nu-art/ws-api-shared` + `@nu-art/ws-api-backend` in PTW backend.

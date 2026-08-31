@@ -5,9 +5,8 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import type {HttpServer} from '@nu-art/http-server';
 import {WsServer} from './WsServer.js';
-import type {WsApiConfig, WsAuthenticator, WsMessageHandler} from './types.js';
+import type {WsApiConfig, WsAuthenticator, WsIdleResyncHandler, WsMessageHandler, WsHttpAttachTarget} from './types.js';
 
 /**
  * Storm module façade over {@link WsServer}.
@@ -25,8 +24,7 @@ export class ModuleBE_WsApi_Class
 
 	protected init(): void {
 		super.init();
-		if (this.config.path)
-			this.wsServer.setPath(this.config.path);
+		this.wsServer.applyConfig(this.config);
 	}
 
 	setAuthenticator(authenticator: WsAuthenticator | undefined): this {
@@ -39,8 +37,13 @@ export class ModuleBE_WsApi_Class
 		return this;
 	}
 
+	setOnIdleResync(handler: WsIdleResyncHandler | undefined): this {
+		this.wsServer.setOnIdleResync(handler);
+		return this;
+	}
+
 	/** Attach upgrade handler to HttpServer's Node server. Safe to call before or after startServer. */
-	attach(httpServer: HttpServer): this {
+	attach(httpServer: WsHttpAttachTarget): this {
 		this.wsServer.attach(httpServer);
 		return this;
 	}
