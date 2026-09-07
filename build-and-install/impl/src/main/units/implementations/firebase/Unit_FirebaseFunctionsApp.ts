@@ -1248,15 +1248,23 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			void commando.killSubprocess(nodePid);
 		});
 
-		while (!existsSync(entryPoint)) {
-			if (this.shouldStop())
-				return this.terminateNode(emulatorTerminated);
+		const waitForEntryPoint = async () => {
+			while (!existsSync(entryPoint)) {
+				if (this.shouldStop())
+					return false;
 
-			this.logInfo(`Waiting for ${entryPoint}...`);
-			await this.interruptibleSleep(2 * Second);
-		}
+				this.logInfo(`Waiting for ${entryPoint}...`);
+				await this.interruptibleSleep(2 * Second);
+			}
+			return true;
+		};
 
 		while (!this.shouldStop()) {
+			// Watch dies with MODULE_NOT_FOUND when compile wipes dist. Wait on every
+			// restart, not just first start — otherwise the loop hammers the missing file.
+			if (!await waitForEntryPoint())
+				return this.terminateNode(emulatorTerminated);
+
 			let exitCode = -1;
 			nodePid = undefined;
 			await this.executeAsyncCommando(commando, nodeCommand, (stdout, stderr, code) => exitCode = code, _pid => nodePid = _pid);
