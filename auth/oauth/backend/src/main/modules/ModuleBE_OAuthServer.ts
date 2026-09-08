@@ -37,6 +37,24 @@ const DefaultConfig: Config = {
 	signingAlgorithm: 'RS256',
 };
 
+/** Public origin the client used. Host wins over RTDB issuer/baseUrl so sandbox cannot advertise stable. */
+const resolveOAuthPublicOrigin = (fallback: string): string => {
+	try {
+		const req = MemKey_HttpRequest.get();
+		const forwardedHost = req.headers['x-forwarded-host'];
+		const hostHeader = (Array.isArray(forwardedHost) ? forwardedHost[0] : forwardedHost) ?? req.headers.host;
+		if (!hostHeader)
+			return fallback;
+
+		const host = hostHeader.split(',')[0].trim();
+		const forwardedProto = req.headers['x-forwarded-proto'];
+		const proto = (Array.isArray(forwardedProto) ? forwardedProto[0] : forwardedProto)?.split(',')[0].trim() || 'https';
+		return `${proto}://${host}`;
+	} catch {
+		return fallback;
+	}
+};
+
 export type OAuthUserResolver = {
 	resolveAccountId: (sessionJwt: string) => Promise<string>;
 };
@@ -153,9 +171,9 @@ export class ModuleBE_OAuthServer_Class
 
 	@ApiHandler(ApiDef_OAuth.getServerMetadata)
 	async handleServerMetadata(_params: API_OAuth['getServerMetadata']['Params']): Promise<API_OAuth['getServerMetadata']['Response']> {
-		const baseUrl = this.config.baseUrl;
+		const baseUrl = resolveOAuthPublicOrigin(this.config.baseUrl);
 		const metadata: OAuthServerMetadata = {
-			issuer: this.config.issuer,
+			issuer: baseUrl,
 			authorization_endpoint: `${baseUrl}/oauth/authorize`,
 			token_endpoint: `${baseUrl}/oauth/token`,
 			registration_endpoint: `${baseUrl}/oauth/register`,
@@ -575,8 +593,8 @@ export class ModuleBE_OAuthServer_Class
 		} satisfies Partial<OAuthTokenClaims>)
 			.setProtectedHeader({alg: this.config.signingAlgorithm, kid: this.kid})
 			.setSubject(userId)
-			.setIssuer(this.config.issuer)
-			.setAudience(this.config.baseUrl)
+			.setIssuer(resolveOAuthPublicOrigin(this.config.issuer))
+			.setAudience(resolveOAuthPublicOrigin(this.config.baseUrl))
 			.setIssuedAt(now)
 			.setExpirationTime(exp)
 			.setJti(jti)
@@ -681,8 +699,8 @@ export class ModuleBE_OAuthServer_Class
 		return {
 			verifyAccessToken: async (token: string) => {
 				const {payload} = await jose.jwtVerify(token, self.publicKey, {
-					issuer: self.config.issuer,
-					audience: self.config.baseUrl,
+					issuer: resolveOAuthPublicOrigin(self.config.issuer),
+					audience: resolveOAuthPublicOrigin(self.config.baseUrl),
 				});
 
 				const tokenHash = createHash('sha256').update(token).digest('hex');
