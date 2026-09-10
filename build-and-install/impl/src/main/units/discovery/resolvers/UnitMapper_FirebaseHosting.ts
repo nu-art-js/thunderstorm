@@ -5,6 +5,7 @@ import {
 	tsValidateMustExist,
 	tsValidateOptional,
 	tsValidateOptionalAnyNumber,
+	tsValidateOptionalAnyString,
 	tsValidateOptionalObject,
 	tsValidateRegexp,
 	tsValidateValue,
@@ -19,6 +20,7 @@ const valuesValidator = {
 	config: tsValidateMustExist,
 	projectId: tsValidateAnyString,
 	isLocal: tsValidateBoolean(false),
+	hostingSite: tsValidateOptionalAnyString,
 	webpackConfig: tsValidateOptional
 };
 
@@ -64,6 +66,7 @@ export class UnitMapper_FirebaseHosting_Class
 			config: envUnitConfig?.config,
 			projectId: envUnitConfig?.projectId,
 			isLocal: envUnitConfig?.isLocal ?? env === 'local',
+			hostingSite: envUnitConfig?.hostingSite,
 			webpackConfig: envUnitConfig?.webpackConfig,
 		};
 

@@ -5,6 +5,7 @@ import {
 	tsValidateMustExist,
 	tsValidateOptional,
 	tsValidateOptionalAnyNumber,
+	tsValidateOptionalAnyString,
 	tsValidateOptionalObject,
 	tsValidateRegexp,
 	tsValidateValue,
@@ -20,6 +21,7 @@ const valuesValidator = {
 	config: tsValidateMustExist,
 	projectId: tsValidateAnyString,
 	isLocal: tsValidateBoolean(false),
+	hostingSite: tsValidateOptionalAnyString,
 };
 
 const packageNameRegex = /^[a-z0-9]+([._-][a-z0-9]+)*$/;
@@ -65,7 +67,8 @@ export class UnitMapper_ViteHosting_Class
 		const envConfig = {
 			config: envUnitConfig?.config,
 			projectId: envUnitConfig?.projectId,
-			isLocal: envUnitConfig?.isLocal ?? env === 'local'
+			isLocal: envUnitConfig?.isLocal ?? env === 'local',
+			hostingSite: envUnitConfig?.hostingSite,
 		};
 
 		const {type, ...unitConfig} = context.packageJson.unitConfig;

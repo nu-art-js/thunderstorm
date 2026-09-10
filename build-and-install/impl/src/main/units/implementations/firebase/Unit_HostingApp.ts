@@ -24,12 +24,14 @@ export type FirebaseHostingConfig = {
 		source: string
 		destination: string
 	}[]
+	site?: string
 };
 
 export type FirebaseHosting_EnvConfig = {
 	config: TS_Object,
 	projectId: string,
 	isLocal?: boolean,
+	hostingSite?: string,
 };
 
 export type Unit_HostingApp_Config = Unit_TypescriptLib_Config & {
@@ -128,15 +130,18 @@ export abstract class Unit_HostingApp<C extends Unit_HostingApp_Config = Unit_Ho
 
 		if (envConfig.isLocal)
 			fileContent = {};
-		else
-			fileContent = {
-				hosting: this.config.hostingConfig ?? {
+		else {
+			const hosting: FirebaseHostingConfig = {
+				...(this.config.hostingConfig ?? {
 					'public': 'dist',
 					'rewrites': [
 						{'source': '**', 'destination': '/index.html'}
 					]
-				}
+				}),
+				...(envConfig.hostingSite ? {site: envConfig.hostingSite} : {}),
 			};
+			fileContent = {hosting};
+		}
 
 		await FileSystemUtils.file.write.json(targetPath, fileContent);
 	}
