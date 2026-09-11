@@ -3,6 +3,8 @@ import {
 	BadImplementationException,
 	dispatch_onApplicationException,
 	Dispatcher,
+	GraphDispatcher,
+	asDispatchKey,
 	exists,
 	Module,
 	Year
@@ -55,8 +57,18 @@ export interface OnAccountPreDelete {
 	__onAccountPreDelete: (account: DB_Account) => Promise<void>;
 }
 
-const dispatch_OnAccountPreDelete = new Dispatcher<OnAccountPreDelete, '__onAccountPreDelete'>('__onAccountPreDelete');
-const dispatch_OnAccountDeleted = new Dispatcher<OnAccountDeleted, '__onAccountDeleted'>('__onAccountDeleted');
+export const DispatchKey_AccountOrgPurge = asDispatchKey('delete.account.org-purge');
+export const DispatchKey_AccountSessions = asDispatchKey('delete.account.sessions');
+export const DispatchKey_AccountPermissions = asDispatchKey('delete.account.permissions');
+export const DispatchKey_AccountOAuthGrants = asDispatchKey('delete.account.oauth-grants');
+export const DispatchKey_AccountOAuthTokens = asDispatchKey('delete.account.oauth-tokens');
+export const DispatchKey_AccountFailedLogins = asDispatchKey('delete.account.failed-logins');
+export const DispatchKey_AccountLoginAttempts = asDispatchKey('delete.account.login-attempts');
+export const DispatchKey_AccountPasswordCredentials = asDispatchKey('delete.account.password-credentials');
+export const DispatchKey_AccountPasswordResetTokens = asDispatchKey('delete.account.password-reset-tokens');
+
+export const graph_OnAccountPreDelete = new GraphDispatcher<OnAccountPreDelete, '__onAccountPreDelete'>('__onAccountPreDelete');
+export const graph_OnAccountDeleted = new GraphDispatcher<OnAccountDeleted, '__onAccountDeleted'>('__onAccountDeleted');
 
 export class ModuleBE_AccountDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_Account>
@@ -242,8 +254,8 @@ export class ModuleBE_AccountDB_Class
 					throw HttpCodes._4XX.NOT_FOUND(`Account with id ${request.accountId} Not Found!`);
 
 				try {
-					await dispatch_OnAccountPreDelete.dispatchModuleAsyncSerial(account);
-					await dispatch_OnAccountDeleted.dispatchModuleAsyncSerial(account);
+					await graph_OnAccountPreDelete.dispatch(account);
+					await graph_OnAccountDeleted.dispatch(account);
 					await this.delete.item(account);
 					return {account};
 				} catch (err: any) {

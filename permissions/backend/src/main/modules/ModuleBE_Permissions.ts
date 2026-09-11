@@ -1,4 +1,4 @@
-import {_keys, ApiException, BadImplementationException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, BadImplementationException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, OnDispatch, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
@@ -40,7 +40,7 @@ import {
 } from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
-import {ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
+import {DispatchKey_AccountPermissions, graph_OnAccountDeleted, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
 import {DB_Account, DatabaseDef_Account, DatabaseDef_Session} from '@nu-art/user-account-shared';
 import {HttpCodes} from '@nu-art/api-types';
 
@@ -361,6 +361,7 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
+	@OnDispatch(graph_OnAccountDeleted, {key: DispatchKey_AccountPermissions})
 	async __onAccountDeleted(account: DB_Account) {
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);

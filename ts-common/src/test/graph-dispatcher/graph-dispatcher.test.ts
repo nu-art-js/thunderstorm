@@ -17,6 +17,7 @@ import {
 	Key_ProjectPurge,
 	newDeleteGraph,
 	newSetupGraph,
+	traced,
 	type PerformProjectSetup,
 	type Trace,
 } from './dummy-modules.js';
@@ -64,6 +65,32 @@ describe('GraphDispatcher', () => {
 
 			expect(endedBeforeStarted(trace, Key_ProjectPurge, Key_OrgKnowledge)).to.equal(true);
 			expect(endedBeforeStarted(trace, Key_ProjectPurge, Key_OrgTags)).to.equal(true);
+		});
+	});
+
+	describe('diamond A → B,C → D', () => {
+		it('runs B and C in one wave after A, and D after both', async () => {
+			const graph = newSetupGraph();
+			const trace: Trace = [];
+			const Key_A = Key_Permissions;
+			const Key_B = Key_OrgBootstrap;
+			const Key_C = Key_Locales;
+			const Key_D = Key_CapabilityGroups;
+
+			graph.register({key: Key_A, run: traced(trace, Key_A)});
+			graph.register({key: Key_B, runAfter: [Key_A], run: traced(trace, Key_B, 12)});
+			graph.register({key: Key_C, runAfter: [Key_A], run: traced(trace, Key_C, 12)});
+			graph.register({key: Key_D, runAfter: [Key_B, Key_C], run: traced(trace, Key_D)});
+
+			await graph.dispatch();
+
+			expect(endedBeforeStarted(trace, Key_A, Key_B)).to.equal(true);
+			expect(endedBeforeStarted(trace, Key_A, Key_C)).to.equal(true);
+			expect(endedBeforeStarted(trace, Key_B, Key_D)).to.equal(true);
+			expect(endedBeforeStarted(trace, Key_C, Key_D)).to.equal(true);
+			const bStart = trace.findIndex(entry => entry.event === 'start' && entry.key === Key_B);
+			const cEnd = trace.findIndex(entry => entry.event === 'end' && entry.key === Key_C);
+			expect(bStart).to.be.lessThan(cEnd);
 		});
 	});
 

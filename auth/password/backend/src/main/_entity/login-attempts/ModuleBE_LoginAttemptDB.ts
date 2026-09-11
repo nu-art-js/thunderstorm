@@ -11,10 +11,10 @@ import {
 	LoginStatus_Failed,
 	LoginStatus_Success,
 } from '@nu-art/password-auth-shared';
-import {filterKeys} from '@nu-art/ts-common';
+import {filterKeys, OnDispatch} from '@nu-art/ts-common';
 import {OnLoginFailed} from './dispatchers.js';
 import {MemKey_HttpRequest} from '@nu-art/http-server';
-import {OnUserLogin, type OnAccountDeleted} from '@nu-art/user-account-backend';
+import {DispatchKey_AccountLoginAttempts, graph_OnAccountDeleted, OnUserLogin, type OnAccountDeleted} from '@nu-art/user-account-backend';
 
 export class ModuleBE_LoginAttemptDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_LoginAttempt>
@@ -29,6 +29,7 @@ export class ModuleBE_LoginAttemptDB_Class
 		return this.createLoginAttempt(account._id, LoginStatus_Success);
 	}
 
+	@OnDispatch(graph_OnAccountDeleted, {key: DispatchKey_AccountLoginAttempts})
 	async __onAccountDeleted(account: DB_Account): Promise<void> {
 		const attempts = await this.query.unManipulatedQuery({where: {accountId: account._id}});
 		for (const attempt of attempts)

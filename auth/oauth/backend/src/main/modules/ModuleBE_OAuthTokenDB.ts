@@ -4,9 +4,10 @@
  * Licensed under the Apache License, Version 2.0
  */
 
+import {OnDispatch} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_OAuthToken, DBDef_OAuthToken, OAuthTokenKind_OAuthJwt, UI_OAuthToken} from '@nu-art/oauth-shared';
-import {type OnAccountDeleted} from '@nu-art/user-account-backend';
+import {DispatchKey_AccountOAuthTokens, graph_OnAccountDeleted, type OnAccountDeleted} from '@nu-art/user-account-backend';
 import type {DB_Account} from '@nu-art/user-account-shared';
 
 export class ModuleBE_OAuthTokenDB_Class
@@ -21,6 +22,7 @@ export class ModuleBE_OAuthTokenDB_Class
 		dbInstance.tokenKind ??= OAuthTokenKind_OAuthJwt;
 	}
 
+	@OnDispatch(graph_OnAccountDeleted, {key: DispatchKey_AccountOAuthTokens})
 	async __onAccountDeleted(account: DB_Account): Promise<void> {
 		const tokens = await this.query.unManipulatedQuery({where: {userId: account._id}});
 		for (const token of tokens)

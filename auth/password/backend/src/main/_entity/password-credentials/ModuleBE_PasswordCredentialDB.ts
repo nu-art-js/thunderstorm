@@ -1,6 +1,7 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_PasswordCredentials, DBDef_PasswordCredentials, UI_PasswordCredentials} from '@nu-art/password-auth-shared';
-import {ModuleBE_AccountDB, type OnAccountDeleted} from '@nu-art/user-account-backend';
+import {OnDispatch} from '@nu-art/ts-common';
+import {DispatchKey_AccountPasswordCredentials, graph_OnAccountDeleted, ModuleBE_AccountDB, type OnAccountDeleted} from '@nu-art/user-account-backend';
 import {DB_Account} from '@nu-art/user-account-shared';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
@@ -23,6 +24,7 @@ export class ModuleBE_PasswordCredentialDB_Class
 		await new MemStorage().init(() => this.migrateFromAccounts());
 	}
 
+	@OnDispatch(graph_OnAccountDeleted, {key: DispatchKey_AccountPasswordCredentials})
 	async __onAccountDeleted(account: DB_Account): Promise<void> {
 		const credentials = await this.query.unManipulatedQuery({where: {accountId: account._id}});
 		for (const credential of credentials)

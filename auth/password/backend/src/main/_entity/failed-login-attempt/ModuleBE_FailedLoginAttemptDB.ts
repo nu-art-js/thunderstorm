@@ -10,11 +10,11 @@ import {
 	DefaultMaxLoginAttempts,
 	ErrorType_LoginBlocked,
 } from '@nu-art/password-auth-shared';
-import {ApiException, currentTimeMillis, exists, Format_HHmmss_DDMMYYYY, formatTimestamp, Minute} from '@nu-art/ts-common';
+import {ApiException, currentTimeMillis, exists, Format_HHmmss_DDMMYYYY, formatTimestamp, Minute, OnDispatch} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/api-types';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 import {dispatch_OnLoginFailed} from '../login-attempts/dispatchers.js';
-import {OnUserLogin, type OnAccountDeleted} from '@nu-art/user-account-backend';
+import {DispatchKey_AccountFailedLogins, graph_OnAccountDeleted, OnUserLogin, type OnAccountDeleted} from '@nu-art/user-account-backend';
 
 
 type Config = {
@@ -45,6 +45,7 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 		return this.onLoginSuccessful(account._id);
 	}
 
+	@OnDispatch(graph_OnAccountDeleted, {key: DispatchKey_AccountFailedLogins})
 	async __onAccountDeleted(account: DB_Account): Promise<void> {
 		const attempts = await this.query.unManipulatedQuery({where: {accountId: account._id}});
 		for (const attempt of attempts)
