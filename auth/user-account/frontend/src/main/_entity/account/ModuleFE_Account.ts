@@ -226,7 +226,7 @@ class ModuleFE_Account_Class
 		await this.onEntryUpdated(ctx.response.account, ctx.response.account);
 	};
 
-	private onAccountDeleted = async (ctx: ApiCallContext<API_UserAccount['deleteAccount']>) => {
+	private onAccountDeleted = async (ctx: ApiCallContext<API_UserAccount['deleteAccount'] | API_UserAccount['deleteMyAccount']>) => {
 		await this.onEntryDeleted(ctx.response.account);
 	};
 }
