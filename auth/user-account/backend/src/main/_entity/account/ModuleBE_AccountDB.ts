@@ -3,8 +3,6 @@ import {
 	BadImplementationException,
 	dispatch_onApplicationException,
 	Dispatcher,
-	GraphDispatcher,
-	asDispatchKey,
 	exists,
 	Module,
 	Year
@@ -30,7 +28,7 @@ import {
 
 import {Header_AuthorizationDeprecated403, MemKey_AccountEmail, MemKey_AccountId, MemKey_AccountType, SessionKey_Account_BE} from '../session/consts.js';
 import {BaseSessionClaims, CollectSessionData, ModuleBE_SessionDB} from '../session/ModuleBE_SessionDB.js';
-
+import {graph_OnAccountDeleted, graph_OnAccountPreDelete} from '../../dispatchers/account-deletion.js';
 
 export interface OnNewUserRegistered {
 	__onNewUserRegistered(account: DB_Account): void;
@@ -48,27 +46,6 @@ export const dispatch_onAccountLogin = new Dispatcher<OnUserLogin, '__onUserLogi
 
 const dispatch_onAccountRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 export const dispatch_onPreLogout = new Dispatcher<OnPreLogout, '__onPreLogout'>('__onPreLogout');
-
-export interface OnAccountDeleted {
-	__onAccountDeleted: (account: DB_Account) => Promise<void>;
-}
-
-export interface OnAccountPreDelete {
-	__onAccountPreDelete: (account: DB_Account) => Promise<void>;
-}
-
-export const DispatchKey_AccountOrgPurge = asDispatchKey('delete.account.org-purge');
-export const DispatchKey_AccountSessions = asDispatchKey('delete.account.sessions');
-export const DispatchKey_AccountPermissions = asDispatchKey('delete.account.permissions');
-export const DispatchKey_AccountOAuthGrants = asDispatchKey('delete.account.oauth-grants');
-export const DispatchKey_AccountOAuthTokens = asDispatchKey('delete.account.oauth-tokens');
-export const DispatchKey_AccountFailedLogins = asDispatchKey('delete.account.failed-logins');
-export const DispatchKey_AccountLoginAttempts = asDispatchKey('delete.account.login-attempts');
-export const DispatchKey_AccountPasswordCredentials = asDispatchKey('delete.account.password-credentials');
-export const DispatchKey_AccountPasswordResetTokens = asDispatchKey('delete.account.password-reset-tokens');
-
-export const graph_OnAccountPreDelete = new GraphDispatcher<OnAccountPreDelete, '__onAccountPreDelete'>('__onAccountPreDelete');
-export const graph_OnAccountDeleted = new GraphDispatcher<OnAccountDeleted, '__onAccountDeleted'>('__onAccountDeleted');
 
 export class ModuleBE_AccountDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_Account>
@@ -125,7 +102,7 @@ export class ModuleBE_AccountDB_Class
 	}
 
 	@ApiHandler(ApiDef_UserAccount.deleteMyAccount)
-	async deleteMyAccount(): Promise<API_UserAccount['deleteMyAccount']['Response']> {
+	async deleteMyAccount(_body: API_UserAccount['deleteMyAccount']['Body']): Promise<API_UserAccount['deleteMyAccount']['Response']> {
 		return this.account.delete({accountId: MemKey_AccountId.get()});
 	}
 

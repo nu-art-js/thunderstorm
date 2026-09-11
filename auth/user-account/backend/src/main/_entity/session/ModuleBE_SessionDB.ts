@@ -20,12 +20,12 @@ import {MemKey_HttpResponse} from '@nu-art/http-server';
 import {JWT_Handler, ModuleBE_JWT} from './ModuleBE_JWT.js';
 import {HttpCodes} from '@nu-art/api-types';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
+import {ModuleBE_AccountDB} from '../account/ModuleBE_AccountDB.js';
 import {
 	DispatchKey_AccountSessions,
 	graph_OnAccountDeleted,
-	ModuleBE_AccountDB,
-	OnAccountDeleted,
-} from '../account/ModuleBE_AccountDB.js';
+	type OnAccountDeleted,
+} from '../../dispatchers/account-deletion.js';
 import {ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
 import {dbObjectToId, hashToUniqueId} from '@nu-art/db-api-shared';
 

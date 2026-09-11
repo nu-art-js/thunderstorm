@@ -2,6 +2,7 @@ export * from './module-pack.js';
 export * from './SlackReporter.js';
 export * from './ModuleBE_AuthGate.js';
 
+export * from './dispatchers/account-deletion.js';
 export * from './_entity/account/ModuleBE_AccountDB.js';
 export * from './_entity/account/module-pack.js';
 export * from './_entity/session/ModuleBE_SessionDB.js';
