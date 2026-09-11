@@ -1,6 +1,6 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_PasswordCredentials, DBDef_PasswordCredentials, UI_PasswordCredentials} from '@nu-art/password-auth-shared';
-import {ModuleBE_AccountDB} from '@nu-art/user-account-backend';
+import {ModuleBE_AccountDB, type OnAccountDeleted} from '@nu-art/user-account-backend';
 import {DB_Account} from '@nu-art/user-account-shared';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
@@ -11,7 +11,8 @@ type LegacyPasswordFields = {
 };
 
 export class ModuleBE_PasswordCredentialDB_Class
-	extends ModuleBE_BaseDB<DatabaseDef_PasswordCredentials> {
+	extends ModuleBE_BaseDB<DatabaseDef_PasswordCredentials>
+	implements OnAccountDeleted {
 
 	constructor() {
 		super(DBDef_PasswordCredentials);
@@ -20,6 +21,12 @@ export class ModuleBE_PasswordCredentialDB_Class
 	async init() {
 		super.init();
 		await new MemStorage().init(() => this.migrateFromAccounts());
+	}
+
+	async __onAccountDeleted(account: DB_Account): Promise<void> {
+		const credentials = await this.query.unManipulatedQuery({where: {accountId: account._id}});
+		for (const credential of credentials)
+			await this.delete.unique(credential._id);
 	}
 
 	private async migrateFromAccounts() {

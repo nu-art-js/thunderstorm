@@ -14,11 +14,11 @@ import {
 import {filterKeys} from '@nu-art/ts-common';
 import {OnLoginFailed} from './dispatchers.js';
 import {MemKey_HttpRequest} from '@nu-art/http-server';
-import {OnUserLogin} from '@nu-art/user-account-backend';
+import {OnUserLogin, type OnAccountDeleted} from '@nu-art/user-account-backend';
 
 export class ModuleBE_LoginAttemptDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_LoginAttempt>
-	implements OnLoginFailed, OnUserLogin {
+	implements OnLoginFailed, OnUserLogin, OnAccountDeleted {
 
 	__onLoginFailed(accountId: DatabaseDef_Account['id']) {
 		return this.createLoginAttempt(accountId, LoginStatus_Failed);
@@ -27,6 +27,12 @@ export class ModuleBE_LoginAttemptDB_Class
 	__onUserLogin(account: DB_Account) {
 		this.logDebug(`__onUserLogin: recording success for _id='${account._id}'`);
 		return this.createLoginAttempt(account._id, LoginStatus_Success);
+	}
+
+	async __onAccountDeleted(account: DB_Account): Promise<void> {
+		const attempts = await this.query.unManipulatedQuery({where: {accountId: account._id}});
+		for (const attempt of attempts)
+			await this.delete.unique(attempt._id);
 	}
 
 	constructor() {

@@ -21,6 +21,7 @@ export * from './core/module-manager.js';
 export * from './core/application.js';
 export * from './core/exceptions/exceptions.js';
 export * from './core/dispatcher.js';
+export * from './core/graph-dispatcher.js';
 export * from './core/error-handling.js';
 
 export * from './db/consts.js';

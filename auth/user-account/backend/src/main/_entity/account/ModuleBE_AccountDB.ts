@@ -51,6 +51,11 @@ export interface OnAccountDeleted {
 	__onAccountDeleted: (account: DB_Account) => Promise<void>;
 }
 
+export interface OnAccountPreDelete {
+	__onAccountPreDelete: (account: DB_Account) => Promise<void>;
+}
+
+const dispatch_OnAccountPreDelete = new Dispatcher<OnAccountPreDelete, '__onAccountPreDelete'>('__onAccountPreDelete');
 const dispatch_OnAccountDeleted = new Dispatcher<OnAccountDeleted, '__onAccountDeleted'>('__onAccountDeleted');
 
 export class ModuleBE_AccountDB_Class
@@ -105,6 +110,11 @@ export class ModuleBE_AccountDB_Class
 	@ApiHandler(ApiDef_UserAccount.deleteAccount)
 	async deleteAccount(params: API_UserAccount['deleteAccount']['Params']): Promise<API_UserAccount['deleteAccount']['Response']> {
 		return this.account.delete(params);
+	}
+
+	@ApiHandler(ApiDef_UserAccount.deleteMyAccount)
+	async deleteMyAccount(): Promise<API_UserAccount['deleteMyAccount']['Response']> {
+		return this.account.delete({accountId: MemKey_AccountId.get()});
 	}
 
 	async __collectSessionData(data: BaseSessionClaims) {
@@ -232,6 +242,7 @@ export class ModuleBE_AccountDB_Class
 					throw HttpCodes._4XX.NOT_FOUND(`Account with id ${request.accountId} Not Found!`);
 
 				try {
+					await dispatch_OnAccountPreDelete.dispatchModuleAsyncSerial(account);
 					await dispatch_OnAccountDeleted.dispatchModuleAsyncSerial(account);
 					await this.delete.item(account);
 					return {account};

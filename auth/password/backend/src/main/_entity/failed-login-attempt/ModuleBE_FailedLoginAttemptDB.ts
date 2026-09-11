@@ -14,7 +14,7 @@ import {ApiException, currentTimeMillis, exists, Format_HHmmss_DDMMYYYY, formatT
 import {HttpCodes} from '@nu-art/api-types';
 import {ResponseError} from '@nu-art/ts-common/core/exceptions/types';
 import {dispatch_OnLoginFailed} from '../login-attempts/dispatchers.js';
-import {OnUserLogin} from '@nu-art/user-account-backend';
+import {OnUserLogin, type OnAccountDeleted} from '@nu-art/user-account-backend';
 
 
 type Config = {
@@ -29,7 +29,7 @@ type LoginBlockedErrorBody = ResponseError<typeof ErrorType_LoginBlocked, {
 
 export class ModuleBE_FailedLoginAttemptDB_Class
 	extends ModuleBE_BaseDB<DatabaseDef_FailedLoginAttempt, Config>
-	implements OnUserLogin {
+	implements OnUserLogin, OnAccountDeleted {
 
 	constructor() {
 		super(DBDef_FailedLoginAttempt);
@@ -43,6 +43,12 @@ export class ModuleBE_FailedLoginAttemptDB_Class
 	__onUserLogin(account: DB_Account) {
 		this.logDebug(`__onUserLogin: clearing failed attempts for _id='${account._id}'`);
 		return this.onLoginSuccessful(account._id);
+	}
+
+	async __onAccountDeleted(account: DB_Account): Promise<void> {
+		const attempts = await this.query.unManipulatedQuery({where: {accountId: account._id}});
+		for (const attempt of attempts)
+			await this.delete.unique(attempt._id);
 	}
 
 	public updateFailedLoginAttempt = async (accountId: DatabaseDef_Account['id']) => {

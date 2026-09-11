@@ -2,6 +2,7 @@ import {generateHex, Hour} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_PasswordResetToken, DB_PasswordResetToken, DBDef_PasswordResetToken} from '@nu-art/password-auth-shared';
 import {HttpCodes} from '@nu-art/api-types';
+import {type OnAccountDeleted} from '@nu-art/user-account-backend';
 import {DB_Account} from '@nu-art/user-account-shared';
 
 type Config = {
@@ -10,7 +11,8 @@ type Config = {
 };
 
 export class ModuleBE_PasswordResetTokenDB_Class
-	extends ModuleBE_BaseDB<DatabaseDef_PasswordResetToken> {
+	extends ModuleBE_BaseDB<DatabaseDef_PasswordResetToken>
+	implements OnAccountDeleted {
 
 	private tokenConfig: Config = {ttlMs: 24 * Hour, maxRequestsPerHour: 3};
 
@@ -20,6 +22,12 @@ export class ModuleBE_PasswordResetTokenDB_Class
 
 	setTokenConfig(config: Partial<Config>) {
 		Object.assign(this.tokenConfig, config);
+	}
+
+	async __onAccountDeleted(account: DB_Account): Promise<void> {
+		const tokens = await this.query.unManipulatedQuery({where: {accountId: account._id}});
+		for (const token of tokens)
+			await this.delete.unique(token._id);
 	}
 
 	async createToken(accountId: DB_Account['_id']): Promise<DB_PasswordResetToken> {

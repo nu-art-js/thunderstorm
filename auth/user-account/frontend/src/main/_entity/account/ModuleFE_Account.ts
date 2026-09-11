@@ -92,6 +92,11 @@ class ModuleFE_Account_Class
 		return undefined as unknown as API_UserAccount['deleteAccount']['Response'];
 	}
 
+	@ApiCaller(ApiDef_UserAccount.deleteMyAccount, { onComplete: (m: ModuleFE_Account_Class, ctx: ApiCallContext<API_UserAccount['deleteMyAccount']>) => m.onAccountDeleted(ctx) })
+	async deleteMyAccount(_body?: API_UserAccount['deleteMyAccount']['Body']): Promise<API_UserAccount['deleteMyAccount']['Response']> {
+		return undefined as unknown as API_UserAccount['deleteMyAccount']['Response'];
+	}
+
 	protected init() {
 		super.init();
 

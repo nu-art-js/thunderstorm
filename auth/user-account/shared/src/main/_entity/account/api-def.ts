@@ -16,6 +16,7 @@ export type API_UserAccount = {
 	getSessions: QueryApi<{ sessions: DB_Session[] }, DB_BaseObject<DatabaseDef_Account['dbKey']>>;
 	changeThumbnail: BodyApi<{ account: DB_Account }, { accountId: DatabaseDef_Account['id']; hash: string }>;
 	deleteAccount: QueryApi<{ account: DB_Account }, { accountId: DatabaseDef_Account['id'] }>;
+	deleteMyAccount: BodyApi<{ account: DB_Account }, {}>;
 }
 
 export const ApiDef_UserAccount: ApiDefResolver<API_UserAccount> = {
@@ -26,4 +27,5 @@ export const ApiDef_UserAccount: ApiDefResolver<API_UserAccount> = {
 	getSessions: {method: HttpMethod.GET, path: '/v1/account/get-sessions'},
 	changeThumbnail: {method: HttpMethod.POST, path: '/v1/account/change-thumbnail'},
 	deleteAccount: {method: HttpMethod.GET, path: '/v1/account/delete-account'},
+	deleteMyAccount: {method: HttpMethod.POST, path: '/v1/account/delete-my-account'},
 };
