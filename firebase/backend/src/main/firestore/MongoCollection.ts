@@ -49,11 +49,13 @@ import {
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {composeDbObjectUniqueId, _EmptyQuery, maxBatch} from '@nu-art/firebase-shared';
 import {addDeletedToTransaction, drainTransactionPreClose, getActiveTransaction, markTransactionWrite, MemKey_FirestoreTransaction} from './consts.js';
-import {MongoInterface} from './MongoInterface.js';
+import {MongoInterface, type MqlCompiledQuery} from './MongoInterface.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
 import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb, Document, UpdateFilter} from 'mongodb';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
 
+/** Firestore Mongo and DocumentDB reject getMore inside a transaction. One find must fit one batch. */
+const TxFindPageSize = 100;
 
 const getDbDefValidator = <Proto extends DB_Prototype>(dbDef: Database<Proto>) => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
@@ -129,13 +131,10 @@ export class MongoCollection<Proto extends DB_Prototype>
 		return _id;
 	}
 
-	private async _customQuery(tsQuery: FirestoreQuery<Proto['dbType']>, canManipulateQuery: boolean): Promise<Proto['dbType'][]> {
-		if (canManipulateQuery)
-			tsQuery = this.hooks?.manipulateQuery?.(deepClone(tsQuery)) ?? tsQuery;
-
-		const compiled = MongoInterface.buildQuery<Proto['dbType']>(tsQuery);
-		this.logDebug(`_customQuery [${this.dbDef.dbKey}] filter=${__stringify(compiled.filter)} manipulated=${canManipulateQuery}`);
-		let cursor = this.mongoCollection.find(compiled.filter, this.sessionOpts());
+	private async _findCompiled(compiled: MqlCompiledQuery<Proto['dbType']>): Promise<Proto['dbType'][]> {
+		const session = this.getSession();
+		const opts = session ? {session, batchSize: compiled.limit ?? TxFindPageSize} : {};
+		let cursor = this.mongoCollection.find(compiled.filter, opts);
 
 		if (compiled.sort)
 			cursor = cursor.sort(compiled.sort);
@@ -149,7 +148,37 @@ export class MongoCollection<Proto extends DB_Prototype>
 		if (compiled.limit)
 			cursor = cursor.limit(compiled.limit);
 
-		const results = await cursor.toArray() as Proto['dbType'][];
+		return await cursor.toArray() as Proto['dbType'][];
+	}
+
+	private async _customQuery(tsQuery: FirestoreQuery<Proto['dbType']>, canManipulateQuery: boolean): Promise<Proto['dbType'][]> {
+		if (canManipulateQuery)
+			tsQuery = this.hooks?.manipulateQuery?.(deepClone(tsQuery)) ?? tsQuery;
+
+		const compiled = MongoInterface.buildQuery<Proto['dbType']>(tsQuery);
+		this.logDebug(`_customQuery [${this.dbDef.dbKey}] filter=${__stringify(compiled.filter)} manipulated=${canManipulateQuery}`);
+
+		if (!this.getSession()) {
+			const results = await this._findCompiled(compiled);
+			this.logDebug(`_customQuery [${this.dbDef.dbKey}] results=${results.length} ids=${results.map(r => r._id).join(',')}`);
+			return results;
+		}
+
+		const results: Proto['dbType'][] = [];
+		let skip = compiled.skip ?? 0;
+		while (true) {
+			const take = compiled.limit !== undefined ? Math.min(TxFindPageSize, compiled.limit - results.length) : TxFindPageSize;
+			if (take <= 0)
+				break;
+
+			const page = await this._findCompiled({...compiled, skip, limit: take});
+			results.push(...page);
+			if (page.length < take)
+				break;
+
+			skip += take;
+		}
+
 		this.logDebug(`_customQuery [${this.dbDef.dbKey}] results=${results.length} ids=${results.map(r => r._id).join(',')}`);
 		return results;
 	}
@@ -191,7 +220,10 @@ export class MongoCollection<Proto extends DB_Prototype>
 		},
 		all: async (_ids: (Proto['uniqueParam'])[]): Promise<(Proto['dbType'] | undefined)[]> => {
 			const idStrs = _ids.map(id => typeof id !== 'string' ? this.assertUniqueId(id) : id);
-			const results = await this.mongoCollection.find({_id: {$in: idStrs}} as any, this.sessionOpts()).toArray() as Proto['dbType'][];
+			if (!idStrs.length)
+				return [];
+
+			const results = await this._customQuery({where: {_id: {$in: idStrs}} as any}, false);
 			const resultMap = new Map(results.map(r => [r._id, r]));
 			return idStrs.map(id => resultMap.get(id));
 		},
@@ -211,7 +243,8 @@ export class MongoCollection<Proto extends DB_Prototype>
 		},
 		join: async (pipeline: Document[]): Promise<Record<string, unknown>[]> => {
 			this.logDebug(`query.join [${this.dbDef.dbKey}] stages=${pipeline.length}`);
-			const results = await this.mongoCollection.aggregate(pipeline, this.sessionOpts()).toArray();
+			// Aggregate getMore is rejected inside a Firestore Mongo transaction. Snapshot isolation is not required for joins.
+			const results = await this.mongoCollection.aggregate(pipeline).toArray();
 			return results as Record<string, unknown>[];
 		},
 	});

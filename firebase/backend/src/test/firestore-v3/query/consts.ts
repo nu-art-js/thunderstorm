@@ -80,6 +80,30 @@ export const queryTestCases: QueryTest[] = [
 			}
 		}
 	},
+	{
+		description: '120 items in transaction — more than one Mongo cursor batch',
+		result: Array.from({length: 120}, (_, i) => ({
+			...testInstance1,
+			_uniqueId: `tx-page-${`${i}`.padStart(3, '0')}`,
+			numeric: i,
+			stringValue: `tx-page-${i}`,
+		})),
+		input: {
+			value: Array.from({length: 120}, (_, i) => ({
+				...testInstance1,
+				_uniqueId: `tx-page-${`${i}`.padStart(3, '0')}`,
+				numeric: i,
+				stringValue: `tx-page-${i}`,
+			})),
+			check: async (collection, expectedResult) => {
+				await collection.runTransaction(async () => {
+					const items = sortArray(await collection.query.custom(_EmptyQuery), (item: DB_Type) => item.numeric);
+					expect(items.length).to.eql(120);
+					expect(true).to.eql(compare(items.map((item: DB_Type) => removeDBObjectKeys(item)), expectedResult));
+				});
+			}
+		}
+	},
 ];
 
 export const queryAllTestCases: TestModel<CollectionTestInput, TestInputValue>[] = [
