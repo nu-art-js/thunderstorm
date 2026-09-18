@@ -20,7 +20,7 @@
  */
 
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
-import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {DatabaseWrapperBE, getActiveTransaction, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {MongoCollection} from '@nu-art/firebase-backend/firestore/MongoCollection';
 import {
@@ -40,7 +40,7 @@ import {
 	resolveContent,
 	TypedMap
 } from '@nu-art/ts-common';
-import {ModuleBE_BaseDB, RuntimeBE_ModulesDB} from '@nu-art/db-api-backend';
+import {ModuleBE_BaseDB, RuntimeBE_ModulesDB, type PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
 import {
 	ApiDef_SyncManager,
@@ -94,6 +94,7 @@ export class ModuleBE_SyncManager_Class
 	private database!: DatabaseWrapperBE;
 	private dbModules!: ModuleBE_BaseDB<any>[];
 	private resolvableFirebaseBasePath: ResolvableContent<string> = `/state/${this.getName()}`;
+	private deletedDocsCollectionReady = false;
 
 	constructor() {
 		super();
@@ -112,14 +113,9 @@ export class ModuleBE_SyncManager_Class
 
 		for (const dbModule of this.dbModules) {
 			const dbKey = dbModule.dbDef.dbKey;
+			const uniqueKeys = [...(dbModule.dbDef.uniqueKeys ?? ['_id'])];
 			dbModule.registerPostWriteInterceptor(async (data) => {
-				const items = [
-					...asArray(data.updated ?? []),
-					...asArray(data.deleted ?? []),
-				];
-				const maxUpdated = items.reduce((acc, item) => Math.max(acc, item.__updated ?? 0), 0);
-				if (maxUpdated > 0)
-					await this.setLastUpdated(dbKey, maxUpdated);
+				await this.onPostWrite(dbKey, data, uniqueKeys);
 			});
 		}
 	}
@@ -286,7 +282,60 @@ export class ModuleBE_SyncManager_Class
 		return deletedItem;
 	};
 
+	private async onPostWrite(
+		collectionName: string,
+		data: PostWriteProcessingDataShape<DB_Object>,
+		uniqueKeys: string[],
+	): Promise<void> {
+		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
+			const latestUpdated = asArray(data.updated).reduce((acc, item) => Math.max(acc, item.__updated ?? 0), 0);
+			if (latestUpdated > 0)
+				await this.setLastUpdated(collectionName, latestUpdated);
+		}
+
+		if (data.deleted === null) {
+			await this.setOldestDeleted(collectionName, currentTimeMillis());
+			return;
+		}
+
+		if (data.deleted && !(Array.isArray(data.deleted) && data.deleted.length === 0)) {
+			const items = asArray(data.deleted);
+			await this.afterTransaction(async () => {
+				await this.onItemsDeleted(collectionName, items, uniqueKeys);
+				await this.setLastUpdated(collectionName, currentTimeMillis());
+			});
+		}
+	}
+
+	private afterTransaction(fn: () => Promise<void>): void | Promise<void> {
+		const transaction = getActiveTransaction() as {postTransaction?: (action: () => Promise<void>) => void} | undefined;
+		if (transaction?.postTransaction) {
+			transaction.postTransaction(fn);
+			return;
+		}
+		return fn();
+	}
+
+	private async ensureDeletedDocsCollection(): Promise<void> {
+		if (this.deletedDocsCollectionReady)
+			return;
+		if (this.collection instanceof MongoCollection) {
+			const name = DBDef_DeletedDoc.backend.name;
+			const exists = await this.collection.db.listCollections({name}).hasNext();
+			if (!exists) {
+				try {
+					await this.collection.db.createCollection(name);
+				} catch (e: any) {
+					if (e?.code !== 48 && e?.codeName !== 'NamespaceExists')
+						throw e;
+				}
+			}
+		}
+		this.deletedDocsCollectionReady = true;
+	}
+
 	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id']) {
+		await this.ensureDeletedDocsCollection();
 		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
 		const now = currentTimeMillis();
 		toInsert.forEach(item => item.__updated = now);
