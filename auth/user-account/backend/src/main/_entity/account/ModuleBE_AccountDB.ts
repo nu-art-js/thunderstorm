@@ -225,25 +225,27 @@ export class ModuleBE_AccountDB_Class
 			};
 		},
 		delete: async (request: API_UserAccount['deleteAccount']['Params']): Promise<API_UserAccount['deleteAccount']['Response']> => {
-			return await this.runTransaction(async () => {
-				const account = await this.query.unique(request.accountId);
-				if (!account)
-					throw HttpCodes._4XX.NOT_FOUND(`Account with id ${request.accountId} Not Found!`);
+			const account = await this.query.unique(request.accountId);
+			if (!account)
+				throw HttpCodes._4XX.NOT_FOUND(`Account with id ${request.accountId} Not Found!`);
 
+			try {
+				await graph_OnAccountPreDelete.dispatch(account);
+				await this.delete.item(account);
 				try {
-					await graph_OnAccountPreDelete.dispatch(account);
 					await graph_OnAccountDeleted.dispatch(account);
-					await this.delete.item(account);
-					return {account};
-				} catch (err: any) {
-					const error = err as ApiException;
-					if (error.responseCode === 422)
-						throw error;
-
-					this.logError('Failed deleting account', err);
-					throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Failed to delete account', error.message, error);
+				} catch (cascadeErr: any) {
+					this.logError('Account row deleted; cascade cleanup failed', cascadeErr);
 				}
-			});
+				return {account};
+			} catch (err: any) {
+				const error = err as ApiException;
+				if (error.responseCode === 422)
+					throw error;
+
+				this.logError('Failed deleting account', err);
+				throw HttpCodes._5XX.INTERNAL_SERVER_ERROR('Failed to delete account', error.message, error);
+			}
 		}
 	};
 
