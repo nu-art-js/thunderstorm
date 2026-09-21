@@ -37,7 +37,7 @@ export class TS_CheckboxV2
 	extends ComponentSync<Props_TS_CheckboxV2, State> {
 	private defaultIconSpec: IconSpec_TS_CheckboxV2 = {
 		checked: () => <TS_Icons.v.component/>,
-		unChecked: () => <TS_Icons.x.component/>,
+		unChecked: () => null,
 		indeterminate: () => <TS_Icons.dash.component/>,
 	};
 
