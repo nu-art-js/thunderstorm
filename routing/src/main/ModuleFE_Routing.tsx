@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
+import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes, useLocation} from 'react-router-dom';
 import {TS_Route} from './types.js';
 import {TS_RoutePage} from './TS_RoutePage.js';
 import {UrlQueryParams} from '@nu-art/api-types';
@@ -158,8 +158,9 @@ class ModuleFE_Routing_Class
 		if (indexRoute) {
 			const element = this.resolveRouteElement(indexRoute);
 			if (indexRoute.path) {
-				this.logDebug(`index route redirect to path: ${path}/${indexRoute.path}`);
-				_indexRoute = <Route index element={<Navigate to={`${path}/${indexRoute.path}`}/>}/>;
+				const indexTarget = `${path}/${indexRoute.path}`.replace(/\/{2,}/g, '/');
+				this.logDebug(`index route redirect to path: ${indexTarget}`);
+				_indexRoute = <Route index element={<IndexPathRedirect to={indexTarget}/>}/>;
 			} else {
 				this.logDebug(`index route render component: ${path}/${indexRoute.path}`);
 				_indexRoute = <Route index element={element}/>;
@@ -450,6 +451,12 @@ export const TS_NavLink = (props: {
 			middle: () => window.open(fullPath, '_blank'),
 		})}
 	>{children}</NavLink>;
+};
+
+/** Index redirect that keeps the current query and hash (handoff `?Authorization=`). */
+const IndexPathRedirect = (props: {to: string}) => {
+	const location = useLocation();
+	return <Navigate to={{pathname: props.to, search: location.search, hash: location.hash}} replace/>;
 };
 
 /**
