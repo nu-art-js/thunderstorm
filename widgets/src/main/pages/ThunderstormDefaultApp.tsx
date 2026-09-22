@@ -33,7 +33,7 @@ export class ThunderstormDefaultApp
 				{ModuleFE_Routing.generateRoutes(this.props.rootRoute)}
 				<TS_DialogOverlay/>
 				<TS_ToastOverlay/>
-				<TS_MemoryMonitor/>
+				{Thunder.getInstance().showsDebugChrome() && <TS_MemoryMonitor/>}
 				{this.props.additionalOverlays?.map(Overlay => this.getAdditionalOverlayRenderer(Overlay))}
 			</div>);
 	}

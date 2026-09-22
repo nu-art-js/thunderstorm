@@ -85,6 +85,9 @@ export class Thunder
 		if (!appJsx)
 			throw new ImplementationMissingException('Could not get app from Thunder!');
 
+		if (this.showsDebugChrome())
+			document.body.classList.add('ts-debug');
+
 		const rootDiv = document.createElement('div');
 		rootDiv.classList.add('match_parent');
 		rootDiv.setAttribute('id', 'root');
@@ -181,5 +184,11 @@ export class Thunder
 
 	public getEnvironment(): string {
 		return Thunder.getInstance().getConfig().label as string;
+	}
+
+	/** Breakpoint chip and memory monitor. Off for deployed prod and staging. */
+	public showsDebugChrome(): boolean {
+		const label = this.getEnvironment();
+		return label === 'local' || label === 'dev' || label === 'test';
 	}
 }
