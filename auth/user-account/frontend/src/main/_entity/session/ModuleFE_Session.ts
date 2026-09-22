@@ -37,9 +37,9 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number | 'accou
 		// @ts-ignore
 		const sessionData = ModuleFE_Session.sessionData;
 
-		// means that we don't have a session yet
-		if (!sessionData)
-			return;
+		// No token yet, or logged out. An empty object is truthy — do not treat it as a decoded session.
+		if (!sessionData || Object.keys(sessionData).length === 0)
+			return defaultValue;
 
 		if (!(this.key in sessionData) && !exists(defaultValue))
 			throw new BadImplementationException(`Couldn't find key "${this.key}" in session data`);
@@ -58,8 +58,7 @@ class ModuleFE_Session_Class
 	extends Module
 	implements OnStorageKeyChangedListener, OnAuthRequiredListener {
 
-	// @ts-ignore
-	private sessionData!: TS_Object;
+	private sessionData?: TS_Object;
 	sessionDecoder: SessionDecoder = sessionContentJWT;
 	private sessionKey: ResolvableContent<string> = 'session-jwt';
 	private StorageKey_SessionId!: StorageKey<string | undefined>;
@@ -158,7 +157,7 @@ class ModuleFE_Session_Class
 				this.logError('Error decoding session data', e);
 			}
 		else
-			this.sessionData = {};
+			this.sessionData = undefined;
 
 		dispatch_onSessionUpdated.dispatchAll();
 	}
