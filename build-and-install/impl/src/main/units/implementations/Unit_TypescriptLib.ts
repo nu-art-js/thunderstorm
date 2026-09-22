@@ -857,11 +857,16 @@ ${browserNames}
 		}
 
 		const tsConfigPath = pathResolve(entryPath, CONST_TS_CONFIG);
+		// outDir is resolved from the tsconfig file, which lives in src/<folder>, not the package root.
+		const outDir = path.relative(entryPath, this.config.output);
 		if (this.config.customTSConfig) {
 			if (!existsSync(tsConfigPath))
 				throw new BadImplementationException(`Expected custom tsconfig in folder for source folder: ${entryPath}`);
 
-			this.logVerbose(`${CONST_TS_CONFIG} is defined custom for source: ${sourceFolderType}, skipping copy.`);
+			const existing = await FileSystemUtils.file.read.json<TsConfig>(tsConfigPath);
+			existing.compilerOptions = {...existing.compilerOptions, outDir};
+			await FileSystemUtils.file.write.json(tsConfigPath, existing);
+			this.logVerbose(`${CONST_TS_CONFIG} is custom for source: ${sourceFolderType}; stamped outDir ${outDir}.`);
 			return;
 		}
 
@@ -879,6 +884,7 @@ ${browserNames}
 				...tsConfigOverride,
 				compilerOptions: {
 					...tsConfigOverride?.compilerOptions,
+					outDir,
 					...(this.runtimeContext.runtimeParams.publish ? {} : {
 						sourceMap: true,
 						sourceRoot: entryPath
