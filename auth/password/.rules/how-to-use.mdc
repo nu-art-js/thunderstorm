@@ -10,7 +10,7 @@ Password auth provides email/password registration, login, password change, and 
 | Package | Purpose |
 |---------|---------|
 | `@nu-art/password-auth-shared` | `API_PasswordAuth` definition, `DB_PasswordCredentials` / `DB_LoginAttempt` / `DB_FailedLoginAttempt` entities, password assertion config and validator |
-| `@nu-art/password-auth-backend` | `ModuleBE_PasswordAuth` (register, login, changePassword, setPassword, `CollectSessionData`), `ModuleBE_PasswordCredentialDB`, `ModuleBE_LoginAttemptDB`, `ModuleBE_FailedLoginAttemptDB` |
+| `@nu-art/password-auth-backend` | `ModuleBE_PasswordAuth` (register, login, setPassword, `CollectSessionData`), `ModuleBE_PasswordCredentialDB`, `ModuleBE_LoginAttemptDB`, `ModuleBE_FailedLoginAttemptDB` |
 | `@nu-art/password-auth-frontend` | `ModuleFE_PasswordAuth` (API callers), `Component_Login`, `Component_Register`, `Component_ChangePassword`, `Component_LoginBlocked` |
 
 ---
@@ -22,8 +22,8 @@ Password auth provides email/password registration, login, password change, and 
 - **Passwords are salted + hashed.** Each credential has a unique random salt. Storage is `{ accountId, salt, saltedPassword }` — the raw password is never persisted.
 - **Password assertion is configurable.** Set `passwordAssertion` in config to enforce minimum length, uppercase, lowercase, digit, and special character rules. The `getPasswordAssertionConfig` endpoint exposes the rules so the frontend can validate client-side.
 - **Failed login tracking.** `ModuleBE_FailedLoginAttemptDB` records failed password attempts. On mismatch, it updates the failed attempt counter before throwing 401.
-- **`CollectSessionData` adds `hasPassword`.** The module implements `CollectSessionData` to inject `{ passwordAuth: { hasPassword: boolean } }` into every JWT — useful for UI that conditionally shows "set password" for SSO-only users.
-- **Login endpoints are open APIs.** `ApiDef_PasswordAuth.login` and `ApiDef_PasswordAuth.registerAccount` must be in the `openApis` list (no session required). `changePassword`, `setPassword`, and `getPasswordAssertionConfig` require an authenticated session.
+- **`CollectSessionData` adds `hasPassword`.** The module implements `CollectSessionData` to inject `{ passwordAuth: { hasPassword: boolean } }` into every JWT — UI hint only (show current-password field). Set-or-update always goes through `setPassword`; the credentials collection is the SSOT.
+- **Login endpoints are open APIs.** `ApiDef_PasswordAuth.login` and `ApiDef_PasswordAuth.registerAccount` must be in the `openApis` list (no session required). `setPassword` and `getPasswordAssertionConfig` require an authenticated session.
 - **Session label is `'password-login'`** for login, `'password-change'`/`'password-set'` for password operations.
 
 ---
@@ -84,7 +84,7 @@ import {Component_Login, Component_Register} from '@nu-art/password-auth-fronten
 <Component_Register />
 ```
 
-For password change (requires authenticated session):
+For password set/change (requires authenticated session). The component calls `setPassword`; the BE decides set vs update from the credentials row:
 
 ```typescript
 import {Component_ChangePassword} from '@nu-art/password-auth-frontend';
@@ -115,9 +115,10 @@ await ModuleFE_PasswordAuth.registerAccount({
   deviceId: StorageKey_DeviceId.get()!,
 });
 
-// Change password (requires session):
-await ModuleFE_PasswordAuth.changePassword({
-  oldPassword: 'oldSecret',
+// Set or update password (requires session). BE checks password-credentials SSOT:
+// no row → set; existing row → requires oldPassword and updates.
+await ModuleFE_PasswordAuth.setPassword({
+  oldPassword: 'oldSecret', // omit when the account has no password yet
   password: 'newSecret',
   passwordCheck: 'newSecret',
 });

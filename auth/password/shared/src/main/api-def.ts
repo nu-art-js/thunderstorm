@@ -17,8 +17,8 @@ export type Request_PasswordResetExecute = { token: string } & PasswordWithCheck
 export type API_PasswordAuth = {
 	registerAccount: BodyApi<Response_PasswordAuth, Request_RegisterAccount>;
 	login: BodyApi<Response_PasswordAuth, AccountEmailWithDevice & AccountPassword>;
-	changePassword: BodyApi<Response_PasswordAuth, PasswordWithCheck & { oldPassword: string }>;
-	setPassword: BodyApi<Response_PasswordAuth, PasswordWithCheck>;
+	/** Set or update — BE checks password-credentials SSOT. `oldPassword` required when credentials already exist. */
+	setPassword: BodyApi<Response_PasswordAuth, PasswordWithCheck & { oldPassword?: string }>;
 	getPasswordAssertionConfig: QueryApi<{ config: PasswordAssertionConfig | undefined }>;
 	requestReset: BodyApi<void, Request_PasswordResetRequest>;
 	executeReset: BodyApi<void, Request_PasswordResetExecute>;
@@ -27,7 +27,6 @@ export type API_PasswordAuth = {
 export const ApiDef_PasswordAuth: ApiDefResolver<API_PasswordAuth> = {
 	registerAccount: {method: HttpMethod.POST, path: '/v1/auth/password/register'},
 	login: {method: HttpMethod.POST, path: '/v1/auth/password/login', timeout: Minute},
-	changePassword: {method: HttpMethod.POST, path: '/v1/auth/password/change-password'},
 	setPassword: {method: HttpMethod.POST, path: '/v1/auth/password/set-password'},
 	getPasswordAssertionConfig: {method: HttpMethod.GET, path: '/v1/auth/password/assertion-config'},
 	requestReset: {method: HttpMethod.POST, path: '/v1/auth/password/request-reset'},

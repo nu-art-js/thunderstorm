@@ -1,6 +1,5 @@
 import {
 	ApiException,
-	compare,
 	generateHex,
 	hashPasswordWithSalt,
 	Module,
@@ -119,11 +118,6 @@ export class ModuleBE_PasswordAuth_Class
 			throw HttpCodes._4XX.FORBIDDEN('Password authentication is disabled');
 
 		return this.account.login(body);
-	}
-
-	@ApiHandler(ApiDef_PasswordAuth.changePassword)
-	async changePassword(body: API_PasswordAuth['changePassword']['Body']): Promise<API_PasswordAuth['changePassword']['Response']> {
-		return this.account.changePassword(body);
 	}
 
 	@ApiHandler(ApiDef_PasswordAuth.setPassword)
@@ -294,43 +288,11 @@ export class ModuleBE_PasswordAuth_Class
 			this.logDebug(`login: session created for _id='${dbAccount._id}'`);
 			return dbAccount;
 		},
-		changePassword: async (passwordToChange: API_PasswordAuth['changePassword']['Body']): Promise<API_PasswordAuth['changePassword']['Response']> => {
-			return ModuleBE_AccountDB.runTransaction(async () => {
-				const email = MemKey_AccountEmail.get();
-				const deviceId = MemKey_DB_Session.get().deviceId;
-				await this.account.login({email, deviceId, password: passwordToChange.oldPassword});
-
-				if (!compare(passwordToChange.password, passwordToChange.passwordCheck))
-					throw HttpCodes._4XX.UNAUTHORIZED('Password check mismatch');
-
-				this.password.assertPasswordCheck({
-					email,
-					password: passwordToChange.password,
-					passwordCheck: passwordToChange.passwordCheck
-				});
-
-				const dbAccount = await ModuleBE_AccountDB.impl.queryAccountByEmail({email});
-				const existingCredentials = await this.credentials.queryByAccountId(dbAccount._id);
-				if (!existingCredentials)
-					throw HttpCodes._4XX.UNAUTHORIZED('No password credentials found for this account');
-
-				const salt = generateHex(32);
-				await ModuleBE_PasswordCredentialDB.set.item({
-					...existingCredentials,
-					salt,
-					saltedPassword: hashPasswordWithSalt(salt, passwordToChange.password),
-				});
-
-				const initialClaims = {
-					accountId: dbAccount._id,
-					deviceId,
-					label: 'password-change'
-				};
-
-				await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
-				return dbAccount;
-			});
-		},
+		/**
+		 * Set or update password. Credentials collection is the SSOT —
+		 * missing row → create; existing row → require oldPassword and update.
+		 * Do not branch on the session `hasPassword` claim.
+		 */
 		setPassword: async (passwordBody: API_PasswordAuth['setPassword']['Body']): Promise<API_PasswordAuth['setPassword']['Response']> => {
 			return ModuleBE_AccountDB.runTransaction(async () => {
 				const email = MemKey_AccountEmail.get();
@@ -340,20 +302,40 @@ export class ModuleBE_PasswordAuth_Class
 				if (dbAccount.type === 'service')
 					throw HttpCodes._4XX.FORBIDDEN('Cannot use password authentication for service accounts');
 
-				const existingCredentials = await this.credentials.queryByAccountId(dbAccount._id);
-				if (existingCredentials)
-					throw HttpCodes._4XX.FORBIDDEN('account already has password');
-
 				this.password.assertPasswordCheck({email, ...passwordBody});
+
+				const existingCredentials = await this.credentials.queryByAccountId(dbAccount._id);
+				if (existingCredentials) {
+					if (!passwordBody.oldPassword)
+						throw HttpCodes._4XX.BAD_REQUEST('Current password is required');
+
+					await this.password.assertPasswordMatch(existingCredentials, passwordBody.oldPassword);
+
+					const salt = generateHex(32);
+					await ModuleBE_PasswordCredentialDB.set.item({
+						...existingCredentials,
+						salt,
+						saltedPassword: hashPasswordWithSalt(salt, passwordBody.password),
+					});
+
+					await ModuleBE_SessionDB._session.create.andReturn({
+						initialClaims: {
+							accountId: dbAccount._id,
+							deviceId,
+							label: 'password-change',
+						},
+					});
+					return dbAccount;
+				}
+
 				await this.credentials.create(dbAccount, passwordBody.password);
-
-				const initialClaims = {
-					accountId: dbAccount._id,
-					deviceId,
-					label: 'password-set'
-				};
-
-				await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
+				await ModuleBE_SessionDB._session.create.andReturn({
+					initialClaims: {
+						accountId: dbAccount._id,
+						deviceId,
+						label: 'password-set',
+					},
+				});
 				return dbAccount;
 			});
 		},

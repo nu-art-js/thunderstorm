@@ -24,12 +24,6 @@ class ModuleFE_PasswordAuth_Class
 		return undefined as unknown as API_PasswordAuth['login']['Response'];
 	}
 
-	@ApiCaller(ApiDef_PasswordAuth.changePassword)
-	async changePassword(body: API_PasswordAuth['changePassword']['Body']): Promise<API_PasswordAuth['changePassword']['Response']> {
-		void body;
-		return undefined as unknown as API_PasswordAuth['changePassword']['Response'];
-	}
-
 	@ApiCaller(ApiDef_PasswordAuth.setPassword)
 	async setPassword(body: API_PasswordAuth['setPassword']['Body']): Promise<API_PasswordAuth['setPassword']['Response']> {
 		void body;

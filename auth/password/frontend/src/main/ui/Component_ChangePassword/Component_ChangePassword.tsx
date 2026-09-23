@@ -31,22 +31,12 @@ export class Component_ChangePassword
 		}
 
 		try {
-			if (!this.state.shouldGiveCurrentPassword)
-				await ModuleFE_PasswordAuth.setPassword({
-					password: this.state.newPassword,
-					passwordCheck: this.state.newPasswordCheck,
-				});
-			else {
-				if (!this.state.currentPassword) {
-					this.logError('No current password given');
-					return;
-				}
-				await ModuleFE_PasswordAuth.changePassword({
-					oldPassword: this.state.currentPassword,
-					password: this.state.newPassword,
-					passwordCheck: this.state.newPasswordCheck,
-				});
-			}
+			// BE checks password-credentials SSOT (set vs update). Session hasPassword is UI hint only.
+			await ModuleFE_PasswordAuth.setPassword({
+				oldPassword: this.state.shouldGiveCurrentPassword ? this.state.currentPassword : undefined,
+				password: this.state.newPassword,
+				passwordCheck: this.state.newPasswordCheck,
+			});
 			this.props.postSubmitAction?.();
 		} catch (e: any) {
 			this.logError(e);
