@@ -52,10 +52,7 @@ export class ModuleBE_PasswordAuth_Class
 	}
 
 	async __collectSessionData(data: BaseSessionClaims) {
-		const credentials = (await ModuleBE_PasswordCredentialDB.query.custom({
-			where: {accountId: data.accountId},
-			limit: 1
-		}))[0];
+		const credentials = await this.credentials.queryByAccountId(data.accountId);
 		return {
 			key: 'passwordAuth' as const,
 			value: {hasPassword: !!credentials},
@@ -75,7 +72,7 @@ export class ModuleBE_PasswordAuth_Class
 
 	async createRegisteredAccount(body: { email: string; password: string }): Promise<DB_Account> {
 		const dbAccount = await ModuleBE_AccountDB.impl.create({email: body.email, type: 'user'});
-		await this.credentials.create(dbAccount, body.password);
+		await this.credentials.upsert(dbAccount, body.password);
 		await ModuleBE_AccountDB.impl.setAccountMemKeys(dbAccount);
 		await ModuleBE_AccountDB.impl.onAccountCreated(dbAccount);
 		return dbAccount;
@@ -166,35 +163,24 @@ export class ModuleBE_PasswordAuth_Class
 			throw HttpCodes._4XX.BAD_REQUEST('Invalid reset token');
 
 		const existingCredentials = await this.credentials.queryByAccountId(account._id);
-		const salt = generateHex(32);
-		if (existingCredentials) {
-			await ModuleBE_PasswordCredentialDB.set.item({
-				...existingCredentials,
-				salt,
-				saltedPassword: hashPasswordWithSalt(salt, body.password),
-			});
-		} else {
-			await this.credentials.create(account, body.password);
-		}
+		await this.credentials.upsert(account, body.password, existingCredentials);
 
 		await ModuleBE_PasswordResetTokenDB.consumeToken(resetToken);
 		await ModuleBE_SessionDB.delete.where({accountId: account._id});
 	}
 
 	private credentials = {
-		create: async (account: DB_Account, password: string): Promise<DB_PasswordCredentials> => {
+		upsert: async (account: DB_Account, password: string, existing?: DB_PasswordCredentials): Promise<DB_PasswordCredentials> => {
 			const salt = generateHex(32);
-			return ModuleBE_PasswordCredentialDB.create.item({
+			return ModuleBE_PasswordCredentialDB.set.item({
+				...(existing ?? {}),
 				accountId: account._id,
 				salt,
 				saltedPassword: hashPasswordWithSalt(salt, password),
 			});
 		},
-		queryByAccountId: async (accountId: DB_Account['_id']): Promise<DB_PasswordCredentials | undefined> => {
-			return (await ModuleBE_PasswordCredentialDB.query.custom({
-				where: {accountId},
-				limit: 1
-			}))[0];
+		queryByAccountId: (accountId: DB_Account['_id']): Promise<DB_PasswordCredentials | undefined> => {
+			return ModuleBE_PasswordCredentialDB.queryByAccountId(accountId);
 		},
 	};
 
@@ -310,30 +296,15 @@ export class ModuleBE_PasswordAuth_Class
 						throw HttpCodes._4XX.BAD_REQUEST('Current password is required');
 
 					await this.password.assertPasswordMatch(existingCredentials, passwordBody.oldPassword);
-
-					const salt = generateHex(32);
-					await ModuleBE_PasswordCredentialDB.set.item({
-						...existingCredentials,
-						salt,
-						saltedPassword: hashPasswordWithSalt(salt, passwordBody.password),
-					});
-
-					await ModuleBE_SessionDB._session.create.andReturn({
-						initialClaims: {
-							accountId: dbAccount._id,
-							deviceId,
-							label: 'password-change',
-						},
-					});
-					return dbAccount;
 				}
 
-				await this.credentials.create(dbAccount, passwordBody.password);
+				await this.credentials.upsert(dbAccount, passwordBody.password, existingCredentials);
+
 				await ModuleBE_SessionDB._session.create.andReturn({
 					initialClaims: {
 						accountId: dbAccount._id,
 						deviceId,
-						label: 'password-set',
+						label: existingCredentials ? 'password-change' : 'password-set',
 					},
 				});
 				return dbAccount;

@@ -1,8 +1,9 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {DatabaseDef_PasswordCredentials, DBDef_PasswordCredentials, UI_PasswordCredentials} from '@nu-art/password-auth-shared';
+import {DatabaseDef_PasswordCredentials, DB_PasswordCredentials, DBDef_PasswordCredentials, UI_PasswordCredentials} from '@nu-art/password-auth-shared';
 import {OnDispatch} from '@nu-art/ts-common';
 import {DispatchKey_AccountPasswordCredentials, graph_OnAccountDeleted, ModuleBE_AccountDB, type OnAccountDeleted} from '@nu-art/user-account-backend';
 import {DB_Account} from '@nu-art/user-account-shared';
+import {GroupId_BootstrapServiceAccount, ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '@nu-art/permissions-backend';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 type LegacyPasswordFields = {
@@ -21,7 +22,51 @@ export class ModuleBE_PasswordCredentialDB_Class
 
 	async init() {
 		super.init();
+		ModuleBE_Permissions.setAccessContextResolver(this, item => this.accessForAccount(item.accountId));
 		await new MemStorage().init(() => this.migrateFromAccounts());
+	}
+
+	/**
+	 * __access should be this account id too, not only bootstrap.
+	 * Registration runs as the bootstrap SA, so the default stamp is bootstrap-only
+	 * and a signed-in query misses the row.
+	 */
+	private accessForAccount(accountId: DB_Account['_id']) {
+		return {
+			__access: {
+				readers: [accountId, GroupId_BootstrapServiceAccount],
+				writers: [accountId, GroupId_BootstrapServiceAccount],
+				creators: [],
+				deleters: [GroupId_BootstrapServiceAccount],
+				owners: [accountId],
+			}
+		};
+	}
+
+	protected async preWriteProcessing(dbInstance: UI_PasswordCredentials): Promise<void> {
+		Object.assign(dbInstance, this.accessForAccount(dbInstance.accountId));
+	}
+
+	async queryByAccountId(accountId: DB_Account['_id']): Promise<DB_PasswordCredentials | undefined> {
+		const read = async () => (await this.query.custom({where: {accountId}, limit: 1}))[0];
+		const visible = await read();
+		if (visible)
+			return visible;
+
+		const repaired = await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			const existing = await read();
+			if (!existing)
+				return false;
+
+			await ModuleBE_Permissions.share(DBDef_PasswordCredentials.dbKey, existing._id, {
+				readers: [accountId],
+				writers: [accountId],
+				owners: [accountId],
+			});
+			return true;
+		});
+
+		return repaired ? read() : undefined;
 	}
 
 	@OnDispatch(graph_OnAccountDeleted, {key: DispatchKey_AccountPasswordCredentials})
