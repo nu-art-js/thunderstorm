@@ -87,16 +87,45 @@ function createIdentityProvider(provider: DB_SamlProvider): IdentityProvider {
 export class ModuleBE_SAML_Class
 	extends Module<SamlSpConfig> {
 
+	private assertionHandoff?: (email: string, relayState: string) => Promise<string>;
+
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
+	}
+
+	/** When set, a verified assertion redirects to the returned URL and does not create an account. */
+	setAssertionHandoff(handoff: (email: string, relayState: string) => Promise<string>) {
+		this.assertionHandoff = handoff;
 	}
 
 	protected init(): void {
 		super.init();
 
 		if (!this.config.spConfig)
-			throw new ImplementationMissingException('Config must contain spConfig');
+			this.logWarningBold('SAML spConfig is empty. Set ModuleBE_SAML.spConfig in env config before SSO login.');
+	}
+
+	/** Login URL for one already-loaded provider. Relay state is returned on the assertion. */
+	async createLoginUrl(provider: DB_SamlProvider, relayState: string): Promise<string> {
+		if (!this.config.spConfig)
+			throw new ImplementationMissingException('SAML spConfig is not configured');
+
+		const idp = createIdentityProvider(provider);
+		const sp = new ServiceProvider(this.config.spConfig);
+		return new Promise<string>((resolve, rejected) => {
+			sp.create_login_request_url(idp, {relay_state: relayState}, (error, loginUrl) => {
+				if (error)
+					return rejected(error);
+				resolve(loginUrl);
+			});
+		});
+	}
+
+	/** Verifies the assertion and returns the email plus relay state. Does not create an account. */
+	async readAssertion(body: API_SAML['assertSAML']['Body']): Promise<{email: string; relayState: string}> {
+		const data = await this.assertImpl(body);
+		return {email: data.userId.toLowerCase(), relayState: body.RelayState};
 	}
 
 	private async resolveProvider(domain: string): Promise<DB_SamlProvider> {
@@ -116,6 +145,12 @@ export class ModuleBE_SAML_Class
 
 			const email = data.userId.toLowerCase();
 			MemKey_AccountEmail.set(email);
+
+			if (this.assertionHandoff) {
+				const url = await this.assertionHandoff(email, body.RelayState);
+				MemKey_HttpResponse.get().redirect(302, url);
+				return;
+			}
 
 			const account = await ModuleBE_AccountDB.findOrCreateByEmail(email);
 			const initialClaims = {accountId: account._id, deviceId: data.loginContext.deviceId, label: 'saml-login'};

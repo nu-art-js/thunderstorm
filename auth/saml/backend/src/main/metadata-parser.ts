@@ -57,8 +57,8 @@ export function parseSamlMetadataXml(xml: string): ParsedIdpMetadata {
 	};
 }
 
-export async function fetchIdpMetadata(url: string): Promise<ParsedIdpMetadata> {
-	validateMetadataHost(url);
+export async function fetchIdpMetadata(url: string, allowedHosts?: string[]): Promise<ParsedIdpMetadata> {
+	validateMetadataHost(url, allowedHosts);
 
 	const response = await fetch(url);
 	if (!response.ok)
