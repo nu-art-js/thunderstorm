@@ -151,6 +151,21 @@ class ModuleFE_PasskeyAuth_Class
 		this.logInfo('login: verified successfully, flag set');
 	}
 
+	/** Browser ceremony only. The app sends the assertion to its own login API. */
+	async collectLoginAssertion(): Promise<API_Passkey['loginVerify']['Body']> {
+		const {options, challengeId} = await this._loginOptions({});
+		const assertionResponse = await startAuthentication({optionsJSON: options as any});
+		const deviceId = StorageKey_DeviceId.get();
+		if (!deviceId)
+			throw new MUSTNeverHappenException('Missing deviceId');
+
+		return {
+			assertionResponse: assertionResponse as any,
+			challengeId,
+			deviceId,
+		};
+	}
+
 	browserSupportsPasskeys(): boolean {
 		return !!window.PublicKeyCredential;
 	}

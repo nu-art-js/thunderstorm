@@ -7,7 +7,7 @@
 import {Module} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/api-types';
 import {ApiHandler, MemKey_HttpRequestHeaders} from '@nu-art/http-server';
-import {CollectAuthMethodStatus, MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_AuthGate, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {CollectAuthMethodStatus, MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import {
 	API_Passkey,
 	ApiDef_Passkey,
@@ -56,10 +56,16 @@ export class ModuleBE_PasskeyAuth_Class
 	implements CollectAuthMethodStatus {
 
 	private readonly pendingChallenges = new Map<string, PendingChallenge>();
+	private lastCredentialGuard?: (accountId: string) => Promise<void>;
 
 	constructor() {
 		super();
 		this.setDefaultConfig(DefaultConfig);
+	}
+
+	/** Beamz sets this so the last passkey cannot be removed unless another sign-in method remains. */
+	setLastCredentialGuard(guard: (accountId: string) => Promise<void>) {
+		this.lastCredentialGuard = guard;
 	}
 
 	protected init(): void {
@@ -107,8 +113,6 @@ export class ModuleBE_PasskeyAuth_Class
 	async registerOptions(_body: API_Passkey['registerOptions']['Body']): Promise<API_Passkey['registerOptions']['Response']> {
 		if (!this.config.enabled)
 			throw HttpCodes._4XX.FORBIDDEN('Passkey authentication is disabled');
-
-		ModuleBE_AuthGate.assertRegistrationAllowed();
 
 		const accountId = MemKey_AccountId.get();
 		const account = await ModuleBE_AccountDB.query.unique(accountId);
@@ -225,9 +229,12 @@ export class ModuleBE_PasskeyAuth_Class
 		return {options: options as any, challengeId};
 	}
 
-	@ApiHandler(ApiDef_Passkey.loginVerify)
-	async loginVerify(body: API_Passkey['loginVerify']['Body']): Promise<API_Passkey['loginVerify']['Response']> {
-		this.logInfo(`loginVerify: challengeId=${body.challengeId}`);
+	/**
+	 * Verifies a discoverable-credential assertion and returns the existing account id.
+	 * Does not create an account or a session. Callers that want a generic session use loginVerify.
+	 */
+	async completeAuthentication(body: API_Passkey['loginVerify']['Body']): Promise<string> {
+		this.logInfo(`completeAuthentication: challengeId=${body.challengeId}`);
 
 		const pending = this.pendingChallenges.get(body.challengeId);
 		if (!pending) {
@@ -294,15 +301,21 @@ export class ModuleBE_PasskeyAuth_Class
 			lastUsedAt: Date.now(),
 		} as DB_PasskeyCredential);
 
-		MemKey_AccountId.set(credential.accountId);
+		return credential.accountId;
+	}
 
-		const initialClaims = {
-			accountId: credential.accountId,
-			deviceId: body.deviceId,
-			label: 'passkey-login',
-		};
+	@ApiHandler(ApiDef_Passkey.loginVerify)
+	async loginVerify(body: API_Passkey['loginVerify']['Body']): Promise<API_Passkey['loginVerify']['Response']> {
+		const accountId = await this.completeAuthentication(body);
+		MemKey_AccountId.set(accountId);
 
-		await ModuleBE_SessionDB._session.create.andReturn({initialClaims});
+		await ModuleBE_SessionDB._session.create.andReturn({
+			initialClaims: {
+				accountId,
+				deviceId: body.deviceId,
+				label: 'passkey-login',
+			},
+		});
 	}
 
 	@ApiHandler(ApiDef_Passkey.deleteCredential)
@@ -320,6 +333,10 @@ export class ModuleBE_PasskeyAuth_Class
 		const credential = credentials[0];
 		if (credential.accountId !== accountId)
 			throw HttpCodes._4XX.FORBIDDEN('Credential does not belong to this account');
+
+		const owned = await ModuleBE_PasskeyCredentialDB.query.custom({where: {accountId}});
+		if (owned.length <= 1 && this.lastCredentialGuard)
+			await this.lastCredentialGuard(accountId);
 
 		await ModuleBE_PasskeyCredentialDB.delete.item(credential);
 	}
