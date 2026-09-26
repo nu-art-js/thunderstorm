@@ -166,7 +166,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		// Then, add ALL dependencyUnits to the dependencies (this includes transitive dependencies)
 		// This ensures the entire dependency tree is referenced in the main package.json
 		this.dependencyUnits.reduce((dependencies, unit) => {
-			dependencies[unit.config.key] = distDependencies[unit.config.key];
+			dependencies[unit.config.key] = distDependencies[unit.config.key] ?? `file:.dependencies/${unit.config.key}`;
 			return dependencies;
 		}, dependencies);
 
