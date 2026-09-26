@@ -8,6 +8,7 @@ import {Module} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/api-types';
 import {ApiHandler, MemKey_HttpRequestHeaders} from '@nu-art/http-server';
 import {CollectAuthMethodStatus, MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {DB_Account} from '@nu-art/user-account-shared';
 import {
 	API_Passkey,
 	ApiDef_Passkey,
@@ -233,7 +234,7 @@ export class ModuleBE_PasskeyAuth_Class
 	 * Verifies a discoverable-credential assertion and returns the existing account id.
 	 * Does not create an account or a session. Callers that want a generic session use loginVerify.
 	 */
-	async completeAuthentication(body: API_Passkey['loginVerify']['Body']): Promise<string> {
+	async completeAuthentication(body: API_Passkey['loginVerify']['Body']): Promise<DB_Account['_id']> {
 		this.logInfo(`completeAuthentication: challengeId=${body.challengeId}`);
 
 		const pending = this.pendingChallenges.get(body.challengeId);
