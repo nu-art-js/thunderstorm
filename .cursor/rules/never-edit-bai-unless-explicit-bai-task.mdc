@@ -1,0 +1,10 @@
+---
+description: Never edit BAI unless the task is explicitly a BAI task
+alwaysApply: true
+---
+
+Never edit anything under `build-and-install/` unless the task you are currently working on is explicitly a bai - build and install task!
+
+any task that not explicitly say fix bai, change something in bai - IS NOT A BAI TASK!
+
+bai is working as expected.. if something is wrong read the bai knowledge to understand how to use it properly
