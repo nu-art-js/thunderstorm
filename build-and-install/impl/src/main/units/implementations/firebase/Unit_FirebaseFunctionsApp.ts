@@ -1226,13 +1226,6 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 
 		await Promise.all(units.map(unit =>
 			this.rewriteVendoredPackageJsonAsSiblings(`${this.config.output}/.dependencies/${unit.config.key}/${CONST_PackageJSON}`, vendoredKeys)));
-
-		const rootPackageJsonPath = resolve(this.config.output, CONST_PackageJSON);
-		const rootPkg = await FileSystemUtils.file.read.json<{ dependencies?: Record<string, string> }>(rootPackageJsonPath);
-		rootPkg.dependencies = rootPkg.dependencies ?? {};
-		for (const key of vendoredKeys)
-			rootPkg.dependencies[key] = `file:.dependencies/${key}`;
-		await FileSystemUtils.file.write.json(rootPackageJsonPath, rootPkg);
 	}
 
 	//######################### Launch Logic #########################
