@@ -226,6 +226,7 @@ describe('Firebase Deploy Phase', () => {
 			functionUnit.logDebug('=== Verifying nested package.json structure ===');
 			const libAPackage = JSON.parse(readFileSync(libAPackageJson, 'utf-8'));
 			expect(libAPackage.name).to.equal('@test/lib-a');
+			expect(libAPackage.dependencies['@test/lib-b']).to.equal('file:../lib-b');
 			functionUnit.logDebug(`@test/lib-a package name: ${libAPackage.name}`);
 
 			const libBPackage = JSON.parse(readFileSync(libBPackageJson, 'utf-8'));

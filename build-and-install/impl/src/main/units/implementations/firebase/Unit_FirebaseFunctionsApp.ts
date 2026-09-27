@@ -13,12 +13,13 @@ import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissin
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, Default_Files, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
 import {Commando_NVM, CommandoException} from '@nu-art/commando';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/consts.js';
-import {resolve} from 'path';
+import {dirname, resolve} from 'path';
 import {existsSync} from 'fs';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
 import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval} from './mongo-emulator.js';
+import {vendoredFileSpecifier} from './vendored-file-specifier.js';
 
 /** Exit code BaseStorm uses when RTDB config changes and the node server must restart. */
 const StormConfigChangeExitCode = 2;
@@ -1158,7 +1159,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const byKey = new Map<string, Unit_TypescriptLib>();
 		const stack: Unit_TypescriptLib[] = [...(this.dependencyUnits ?? [])];
 		for (const key of _keys(this.config.packageJson.dependencies ?? {})) {
-			const unit = innerByKey.get(key);
+			const unit = innerByKey.get(String(key));
 			if (unit)
 				stack.push(unit);
 		}
@@ -1169,7 +1170,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				continue;
 			byKey.set(unit.config.key, unit);
 			for (const key of _keys(unit.config.packageJson.dependencies ?? {})) {
-				const dep = innerByKey.get(key);
+				const dep = innerByKey.get(String(key));
 				if (dep)
 					stack.push(dep);
 			}
@@ -1198,9 +1199,13 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			if (!deps)
 				continue;
 			for (const key of _keys(deps)) {
-				if (!vendoredKeys.has(key))
+				if (!vendoredKeys.has(String(key)))
 					continue;
-				const next = `file:../${key}`;
+				const next = vendoredFileSpecifier(
+					dirname(packageJsonPath),
+					String(key),
+					resolve(this.config.output, '.dependencies'),
+				);
 				if (deps[key] !== next) {
 					deps[key] = next;
 					changed = true;
