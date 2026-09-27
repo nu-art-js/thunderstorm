@@ -1144,20 +1144,35 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	/**
-	 * Workspace packages that must ship as `file:.dependencies/…` in the Cloud Run image.
-	 * The BAI graph (`dependencyUnits`) can omit a direct `__package.json` dep; npm then
-	 * looks that name up on the registry and 404s unpublished packages (passkey, saml).
+	 * In-repo packages that must ship as `file:` deps in the Cloud Run image.
+	 * Walks the app package.json plus each vendored unit's package.json so a nested
+	 * lib (e.g. organization-backend → passkey) is copied even if the BAI graph omitted it.
 	 */
 	private unitsToVendorIntoImage(): Unit_TypescriptLib[] {
-		const byKey = new Map<string, Unit_TypescriptLib>();
-		for (const unit of this.dependencyUnits ?? [])
-			byKey.set(unit.config.key, unit);
-
-		const named = new Set(_keys(this.config.packageJson.dependencies ?? {}));
+		const innerByKey = new Map<string, Unit_TypescriptLib>();
 		for (const unit of this.runtimeContext.childUnits) {
-			if (!named.has(unit.config.key) || !unit.isInstanceOf(Unit_TypescriptLib))
+			if (unit.isInstanceOf(Unit_TypescriptLib))
+				innerByKey.set(unit.config.key, unit as Unit_TypescriptLib);
+		}
+
+		const byKey = new Map<string, Unit_TypescriptLib>();
+		const stack: Unit_TypescriptLib[] = [...(this.dependencyUnits ?? [])];
+		for (const key of _keys(this.config.packageJson.dependencies ?? {})) {
+			const unit = innerByKey.get(key);
+			if (unit)
+				stack.push(unit);
+		}
+
+		while (stack.length) {
+			const unit = stack.pop()!;
+			if (byKey.has(unit.config.key))
 				continue;
-			byKey.set(unit.config.key, unit as Unit_TypescriptLib);
+			byKey.set(unit.config.key, unit);
+			for (const key of _keys(unit.config.packageJson.dependencies ?? {})) {
+				const dep = innerByKey.get(key);
+				if (dep)
+					stack.push(dep);
+			}
 		}
 		return [...byKey.values()];
 	}
@@ -1169,9 +1184,37 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		}, super.deriveDistDependencies());
 	}
 
+	private async rewriteVendoredPackageJsonAsSiblings(packageJsonPath: string, vendoredKeys: Set<string>) {
+		if (!existsSync(packageJsonPath))
+			return;
+
+		const pkg = await FileSystemUtils.file.read.json<{
+			dependencies?: Record<string, string>;
+			devDependencies?: Record<string, string>;
+		}>(packageJsonPath);
+		let changed = false;
+		for (const field of ['dependencies', 'devDependencies'] as const) {
+			const deps = pkg[field];
+			if (!deps)
+				continue;
+			for (const key of _keys(deps)) {
+				if (!vendoredKeys.has(key))
+					continue;
+				const next = `file:../${key}`;
+				if (deps[key] !== next) {
+					deps[key] = next;
+					changed = true;
+				}
+			}
+		}
+		if (changed)
+			await FileSystemUtils.file.write.json(packageJsonPath, pkg);
+	}
+
 	private async createDependenciesDir() {
-		await Promise.all(this.unitsToVendorIntoImage().map(async unit => {
-			//Copy dependency unit output into this units output/.dependency dir
+		const units = this.unitsToVendorIntoImage();
+		const vendoredKeys = new Set(units.map(unit => unit.config.key));
+		await Promise.all(units.map(async unit => {
 			const dependencyOutputPath = `${unit.config.output}/`;
 			const targetPath = `${this.config.output}/.dependencies/${unit.config.key}/`;
 			await FileSystemUtils.folder.create(targetPath);
@@ -1180,6 +1223,9 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				.append(`rsync -a --delete ${dependencyOutputPath} ${targetPath}`)
 				.execute();
 		}));
+
+		await Promise.all(units.map(unit =>
+			this.rewriteVendoredPackageJsonAsSiblings(`${this.config.output}/.dependencies/${unit.config.key}/${CONST_PackageJSON}`, vendoredKeys)));
 	}
 
 	//######################### Launch Logic #########################
