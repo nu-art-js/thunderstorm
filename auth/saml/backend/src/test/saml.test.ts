@@ -8,7 +8,7 @@ import {expect} from 'chai';
 import {ApiDef_SAML} from '@nu-art/saml-shared';
 import {QueryParam_Email, QueryParam_RedirectUrl, QueryParam_SessionId} from '@nu-art/user-account-shared';
 import {decode} from '@nu-art/ts-common';
-import {resolveAssertion} from '../main/ModuleBE_SAML.js';
+import {resolveAssertion, samlProviderDomainFromRelayState} from '../main/ModuleBE_SAML.js';
 import type {SamlIdpResponse} from '../main/ModuleBE_SAML.js';
 
 describe('ApiDef_SAML contract', () => {
@@ -79,6 +79,30 @@ describe('SAML redirect URL substitution', () => {
 		const url = 'https://app.example.com/callback?key=value';
 		const result = substituteRedirectUrl(url, 'jwt', 'a@b.com');
 		expect(result).to.equal(url);
+	});
+});
+
+describe('samlProviderDomainFromRelayState', () => {
+	it('uses explicit domain from Beamz org start', () => {
+		const relay = JSON.stringify({organizationId: 'aa'.repeat(16), deviceId: 'd1', domain: 'org:' + 'aa'.repeat(16)});
+		expect(samlProviderDomainFromRelayState(relay)).to.equal('org:' + 'aa'.repeat(16));
+	});
+
+	it('falls back to org:{organizationId} when domain is omitted', () => {
+		const organizationId = 'bb'.repeat(16);
+		expect(samlProviderDomainFromRelayState(JSON.stringify({organizationId, deviceId: 'd1'})))
+			.to.equal(`org:${organizationId}`);
+	});
+
+	it('uses email domain from the old loginSaml relay', () => {
+		expect(samlProviderDomainFromRelayState(JSON.stringify({
+			email: 'alex@acme.example',
+			deviceId: 'd1',
+		}))).to.equal('acme.example');
+	});
+
+	it('refuses empty relay', () => {
+		expect(() => samlProviderDomainFromRelayState('')).to.throw(/missing/i);
 	});
 });
 

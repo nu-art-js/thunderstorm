@@ -72,6 +72,28 @@ export function extractDomain(email: string): string {
 	return parts[1].toLowerCase();
 }
 
+/** Provider unique key carried through SAML RelayState — never guess among all enabled rows. */
+export function samlProviderDomainFromRelayState(relayState: string): string {
+	if (!relayState)
+		throw HttpCodes._4XX.BAD_REQUEST('SAML relay state is missing');
+
+	let ctx: {domain?: unknown; email?: unknown; organizationId?: unknown};
+	try {
+		ctx = JSON.parse(relayState);
+	} catch {
+		throw HttpCodes._4XX.BAD_REQUEST('SAML relay state is not JSON');
+	}
+
+	if (typeof ctx.domain === 'string' && ctx.domain.trim())
+		return ctx.domain.toLowerCase().trim();
+	if (typeof ctx.email === 'string' && ctx.email)
+		return extractDomain(ctx.email);
+	if (typeof ctx.organizationId === 'string' && ctx.organizationId)
+		return `org:${ctx.organizationId}`;
+
+	throw HttpCodes._4XX.BAD_REQUEST('SAML relay state has no provider domain');
+}
+
 function createIdentityProvider(provider: DB_SamlProvider): IdentityProvider {
 	const options: any = {
 		sso_login_url: provider.ssoLoginUrl,
@@ -176,7 +198,10 @@ export class ModuleBE_SAML_Class
 		return new Promise<API_SAML['loginSaml']['Response']>((resolve, rejected) => {
 			const sp = new ServiceProvider(this.config.spConfig);
 			const options = {
-				relay_state: __stringify(loginContext)
+				relay_state: __stringify({
+					...loginContext,
+					domain: extractDomain(loginContext.email),
+				})
 			};
 
 			sp.create_login_request_url(idp, options, (error, loginUrl, requestId) => {
@@ -222,33 +247,21 @@ export class ModuleBE_SAML_Class
 
 		const assertBody: RequestBody_SamlAssertOptions = {request_body};
 		const sp = new ServiceProvider(this.config.spConfig);
+		const provider = await this.resolveProvider(samlProviderDomainFromRelayState(request_body.RelayState));
+		const idp = createIdentityProvider(provider);
 
-		const providers = await ModuleBE_SamlProviderDB.query.custom({where: {enabled: true}});
-		if (providers.length === 0)
-			throw HttpCodes._4XX.UNAUTHORIZED('No SAML providers configured');
+		return new Promise<SamlAssertResponse>((resolve, reject) => {
+			sp.post_assert(idp, assertBody, (error, response: SamlIdpResponse) => {
+				if (error)
+					return reject(error);
 
-		let lastError: any;
-		for (const provider of providers) {
-			const idp = createIdentityProvider(provider);
-			try {
-				return await new Promise<SamlAssertResponse>((resolve, reject) => {
-					sp.post_assert(idp, assertBody, (error, response: SamlIdpResponse) => {
-						if (error)
-							return reject(error);
-
-						try {
-							resolve(resolveAssertion(response, assertBody.request_body.RelayState));
-						} catch (e) {
-							reject(e);
-						}
-					});
-				});
-			} catch (e) {
-				lastError = e;
-			}
-		}
-
-		throw lastError;
+				try {
+					resolve(resolveAssertion(response, assertBody.request_body.RelayState));
+				} catch (e) {
+					reject(e);
+				}
+			});
+		});
 	};
 }
 
