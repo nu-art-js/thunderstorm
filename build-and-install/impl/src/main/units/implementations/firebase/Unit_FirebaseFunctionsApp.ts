@@ -163,9 +163,8 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			return dependencies;
 		}, dependencies);
 
-		// Then, add ALL dependencyUnits to the dependencies (this includes transitive dependencies)
-		// This ensures the entire dependency tree is referenced in the main package.json
-		this.dependencyUnits.reduce((dependencies, unit) => {
+		// Then, add in-repo packages named in package.json plus the BAI graph (transitive).
+		this.unitsToVendorIntoImage().reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = distDependencies[unit.config.key];
 			return dependencies;
 		}, dependencies);
@@ -1144,16 +1143,34 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		await FileSystemUtils.file.write.json(targetPath, {version: appVersion});
 	}
 
+	/**
+	 * Workspace packages that must ship as `file:.dependencies/…` in the Cloud Run image.
+	 * The BAI graph (`dependencyUnits`) can omit a direct `__package.json` dep; npm then
+	 * looks that name up on the registry and 404s unpublished packages (passkey, saml).
+	 */
+	private unitsToVendorIntoImage(): Unit_TypescriptLib[] {
+		const byKey = new Map<string, Unit_TypescriptLib>();
+		for (const unit of this.dependencyUnits ?? [])
+			byKey.set(unit.config.key, unit);
+
+		const named = new Set(_keys(this.config.packageJson.dependencies ?? {}));
+		for (const unit of this.runtimeContext.childUnits) {
+			if (!named.has(unit.config.key) || !unit.isInstanceOf(Unit_TypescriptLib))
+				continue;
+			byKey.set(unit.config.key, unit as Unit_TypescriptLib);
+		}
+		return [...byKey.values()];
+	}
+
 	protected deriveDistDependencies() {
-		return this.dependencyUnits.reduce((dependencies, unit) => {
+		return this.unitsToVendorIntoImage().reduce((dependencies, unit) => {
 			dependencies[unit.config.key] = `file:.dependencies/${unit.config.key}`;
 			return dependencies;
 		}, super.deriveDistDependencies());
 	}
 
 	private async createDependenciesDir() {
-		//Gather units that are dependencies of this unit
-		await Promise.all(this.dependencyUnits.map(async unit => {
+		await Promise.all(this.unitsToVendorIntoImage().map(async unit => {
 			//Copy dependency unit output into this units output/.dependency dir
 			const dependencyOutputPath = `${unit.config.output}/`;
 			const targetPath = `${this.config.output}/.dependencies/${unit.config.key}/`;
