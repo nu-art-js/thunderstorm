@@ -40,10 +40,14 @@ class ModuleFE_Routing_Class
 
 	constructor() {
 		super();
-		// Listen to browser navigation events (back/forward buttons, etc.)
 		window.addEventListener('popstate', () => {
+			this.logInfo(`[routing] url popstate href='${window.location.href}'`);
 			dispatch_onLocationChanged.dispatchUI(window.location.pathname);
 		});
+	}
+
+	protected init() {
+		this.logInfo(`[routing] boot href='${window.location.href}'`);
 	}
 
 	// ######################## Public Functions ########################
@@ -84,6 +88,7 @@ class ModuleFE_Routing_Class
 
 		const target = new URL(url);
 		if (target.origin !== window.location.origin) {
+			this.logInfo(`[routing] url assign: '${window.location.href}' → '${url}'`);
 			window.location.href = url;
 			return;
 		}
@@ -415,9 +420,12 @@ class ModuleFE_Routing_Class
 	}
 
 	private navigateIfChanged(url: string, mode: 'push' | 'replace'): boolean {
-		if (this.resolveLocationUrl(url) === this.getCurrentLocationUrl())
+		const from = this.getCurrentLocationUrl();
+		const to = this.resolveLocationUrl(url);
+		if (to === from)
 			return false;
 
+		this.logInfo(`[routing] url ${mode}: '${from}' → '${to}'`);
 		if (mode === 'push')
 			window.history.pushState({}, '', url);
 		else
@@ -468,7 +476,7 @@ const IndexPathRedirect = (props: {to: string}) => {
  */
 const RoutingFallbackRedirect = (props: { to: string }) => {
 	useEffect(() => {
-		ModuleFE_Routing.logWarning(`[routing] fallback fired: attempted='${window.location.pathname}', redirectingTo='${props.to}'`);
+		ModuleFE_Routing.logWarning(`[routing] fallback fired: attempted='${window.location.pathname}${window.location.search}', redirectingTo='${props.to}'`);
 	}, []);
 	return <Navigate to={props.to}/>;
 };
