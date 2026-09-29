@@ -408,6 +408,43 @@
   --ts-tree--parent-font-weight: var(--font-weight-medium);
   --ts-tree--icon-color: var(--color-text-muted);
   --ts-tree--icon-size: 12px;
+
+  // Messaging (ts-messaging ChatPanel / bubble / composer)
+  --ts-messaging--panel-bg: var(--color-surface-base);
+  --ts-messaging--list-gap: var(--space-sm);
+  --ts-messaging--list-padding: var(--space-base);
+  --ts-messaging--empty-color: var(--color-text-muted);
+  --ts-messaging--empty-font-size: var(--font-size-sm);
+  --ts-messaging--bubble-max-width: 32rem;
+  --ts-messaging--bubble-gap: var(--space-xs);
+  --ts-messaging--bubble-padding: var(--space-sm) var(--space-md);
+  --ts-messaging--bubble-radius: var(--radius-md);
+  --ts-messaging--bubble-mine-bg: var(--color-action-primary-bg);
+  --ts-messaging--bubble-mine-text: var(--color-action-primary-text);
+  --ts-messaging--bubble-theirs-bg: var(--color-surface-input);
+  --ts-messaging--bubble-theirs-text: var(--color-text-primary);
+  --ts-messaging--bubble-theirs-border: var(--color-border-strong);
+  --ts-messaging--sender: var(--color-text-primary);
+  --ts-messaging--time: var(--color-text-muted);
+  --ts-messaging--font-size: var(--font-size-sm);
+  --ts-messaging--font-size-meta: var(--font-size-xs);
+  --ts-messaging--attachment-bg: var(--color-surface-raised);
+  --ts-messaging--composer-bg: var(--color-surface-raised);
+  --ts-messaging--composer-border: var(--color-border);
+  --ts-messaging--composer-gap: var(--space-sm);
+  --ts-messaging--composer-padding: var(--space-md) var(--space-base);
+  --ts-messaging--input-bg: var(--ts-textarea--bg);
+  --ts-messaging--input-text: var(--ts-textarea--content);
+  --ts-messaging--input-border: var(--ts-textarea--border);
+  --ts-messaging--input-border-focus: var(--ts-textarea--border-focus);
+  --ts-messaging--input-radius: var(--ts-textarea--radius);
+  --ts-messaging--input-padding: var(--ts-textarea--padding);
+  --ts-messaging--thread-width: 20rem;
+  --ts-messaging--thread-bg: var(--color-surface-raised);
+  --ts-messaging--thread-border: var(--color-border);
+  --ts-messaging--thread-header: var(--color-text-primary);
+  --ts-messaging--parent-bg: var(--color-surface-input);
+  --ts-messaging--parent-text: var(--color-text-muted-hi);
 }
 
 // Text selection — global; uses semantic tokens so themes remap automatically.

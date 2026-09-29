@@ -2,8 +2,8 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
-	gap: var(--space-sm);
-	padding: var(--space-base);
+	gap: var(--ts-messaging--list-gap);
+	padding: var(--ts-messaging--list-padding);
 	overflow-y: auto;
 	flex: 1;
 	min-height: 0;
@@ -20,7 +20,7 @@
 		margin: auto;
 		padding: var(--space-lg);
 		text-align: center;
-		color: var(--color-text-muted);
-		font-size: var(--font-size-sm);
+		color: var(--ts-messaging--empty-color);
+		font-size: var(--ts-messaging--empty-font-size);
 	}
 }

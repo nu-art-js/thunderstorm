@@ -6,23 +6,23 @@
 		justify-content: flex-end;
 
 		.ts-messaging__bubble {
-			background: var(--color-action-primary-bg);
-			color: var(--color-action-primary-text);
+			background: var(--ts-messaging--bubble-mine-bg);
+			color: var(--ts-messaging--bubble-mine-text);
 		}
 
 		.ts-messaging__bubble__sender,
 		.ts-messaging__bubble__time {
-			color: var(--color-action-primary-text);
+			color: var(--ts-messaging--bubble-mine-text);
 			opacity: 0.72;
 		}
 
 		.ts-messaging__bubble__attachment {
-			background: var(--color-action-primary-tint);
-			color: var(--color-action-primary-text);
+			background: var(--ts-messaging--attachment-bg);
+			color: var(--ts-messaging--bubble-mine-text);
 		}
 
 		.ts-messaging__bubble__reply-btn {
-			--ts-button--ghost-text: var(--color-action-primary-text);
+			--ts-button--ghost-text: var(--ts-messaging--bubble-mine-text);
 		}
 	}
 
@@ -30,9 +30,9 @@
 		justify-content: flex-start;
 
 		.ts-messaging__bubble {
-			background: var(--color-surface-input);
-			border: 0.5px solid var(--color-border-strong);
-			color: var(--color-text-primary);
+			background: var(--ts-messaging--bubble-theirs-bg);
+			border: 0.5px solid var(--ts-messaging--bubble-theirs-border);
+			color: var(--ts-messaging--bubble-theirs-text);
 		}
 	}
 }
@@ -40,22 +40,22 @@
 .ts-messaging__bubble {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-xs);
-	max-width: min(72%, 520px);
-	padding: var(--space-sm) var(--space-md);
-	border-radius: var(--radius-md);
+	gap: var(--ts-messaging--bubble-gap);
+	max-width: min(72%, var(--ts-messaging--bubble-max-width));
+	padding: var(--ts-messaging--bubble-padding);
+	border-radius: var(--ts-messaging--bubble-radius);
 
 	&__header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		gap: var(--space-sm);
-		font-size: var(--font-size-xs);
+		font-size: var(--ts-messaging--font-size-meta);
 	}
 
 	&__sender {
 		font-weight: 600;
-		color: var(--color-text-primary);
+		color: var(--ts-messaging--sender);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -63,27 +63,27 @@
 
 	&__time {
 		flex-shrink: 0;
-		color: var(--color-text-muted);
+		color: var(--ts-messaging--time);
 	}
 
 	&__text {
 		white-space: pre-wrap;
 		word-break: break-word;
-		font-size: var(--font-size-sm);
+		font-size: var(--ts-messaging--font-size);
 		line-height: 1.5;
 	}
 
 	&__attachments {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--space-xs);
+		gap: var(--ts-messaging--bubble-gap);
 	}
 
 	&__attachment {
 		padding: var(--space-xs) var(--space-sm);
-		border-radius: var(--radius-md);
-		background: var(--color-surface-raised);
-		font-size: var(--font-size-xs);
+		border-radius: var(--ts-messaging--bubble-radius);
+		background: var(--ts-messaging--attachment-bg);
+		font-size: var(--ts-messaging--font-size-meta);
 	}
 
 	&__reply-btn {

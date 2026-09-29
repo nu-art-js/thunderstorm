@@ -3,29 +3,29 @@
 	flex-direction: column;
 	height: 100%;
 	min-height: 0;
-	border-left: 0.5px solid var(--color-border);
-	background: var(--color-surface-raised);
+	border-left: 0.5px solid var(--ts-messaging--thread-border);
+	background: var(--ts-messaging--thread-bg);
 
 	&__header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		padding: var(--space-sm) var(--space-md);
-		border-bottom: 0.5px solid var(--color-border);
+		border-bottom: 0.5px solid var(--ts-messaging--thread-border);
 		font-weight: 600;
-		font-size: var(--font-size-sm);
-		color: var(--color-text-primary);
+		font-size: var(--ts-messaging--font-size);
+		color: var(--ts-messaging--thread-header);
 	}
 
 	&__parent {
 		padding: var(--space-sm) var(--space-md);
-		border-bottom: 0.5px solid var(--color-border);
-		background: var(--color-surface-input);
+		border-bottom: 0.5px solid var(--ts-messaging--thread-border);
+		background: var(--ts-messaging--parent-bg);
 	}
 
 	&__parent-text {
 		font-style: italic;
-		font-size: var(--font-size-sm);
-		color: var(--color-text-muted-hi);
+		font-size: var(--ts-messaging--font-size);
+		color: var(--ts-messaging--parent-text);
 	}
 }

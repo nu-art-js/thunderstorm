@@ -3,7 +3,7 @@
 	height: 100%;
 	width: 100%;
 	min-height: 0;
-	background: var(--color-surface-base);
+	background: var(--ts-messaging--panel-bg);
 
 	&__main {
 		display: flex;
@@ -14,7 +14,7 @@
 	}
 
 	&__thread {
-		width: 320px;
+		width: var(--ts-messaging--thread-width);
 		flex-shrink: 0;
 	}
 }

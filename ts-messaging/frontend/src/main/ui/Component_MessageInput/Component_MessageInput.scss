@@ -1,11 +1,11 @@
 .ts-messaging__input {
 	flex-shrink: 0;
 	width: 100%;
-	gap: var(--space-sm);
+	gap: var(--ts-messaging--composer-gap);
 	align-items: flex-end;
-	padding: var(--space-md) var(--space-base);
-	border-top: 0.5px solid var(--color-border);
-	background: var(--color-surface-raised);
+	padding: var(--ts-messaging--composer-padding);
+	border-top: 0.5px solid var(--ts-messaging--composer-border);
+	background: var(--ts-messaging--composer-bg);
 
 	.ts-textarea,
 	&__textarea {
@@ -13,18 +13,19 @@
 		width: 0;
 		min-width: 0;
 		margin: 0;
-		padding: var(--space-sm) var(--space-md);
-		background: var(--color-surface-input);
-		border: 0.5px solid var(--color-border);
-		border-radius: var(--radius-input);
-		color: var(--color-text-primary);
-		font-size: var(--font-size-sm);
+		padding: var(--ts-messaging--input-padding);
+		background: var(--ts-messaging--input-bg);
+		border: 0.5px solid var(--ts-messaging--input-border);
+		border-radius: var(--ts-messaging--input-radius);
+		color: var(--ts-messaging--input-text);
+		font-size: var(--ts-messaging--font-size);
 		font-family: inherit;
+		white-space: pre-wrap;
 		resize: none;
 
 		&:focus-visible {
 			outline: none;
-			border-color: var(--color-action-primary-border);
+			border-color: var(--ts-messaging--input-border-focus);
 		}
 	}
 }
