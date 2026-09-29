@@ -38,6 +38,21 @@ export class Component_ChatPanel
 	}
 
 	private readonly fillCache = async () => {
+		const cached = ModuleFE_Message.listTopicMessages(this.props.topicId);
+		const isLoadMore = !!this.state.nextCursor;
+		if (!isLoadMore && cached.length > 0) {
+			this.logInfo('chat-panel: skip messages/query — cache already has messages', {
+				topicId: this.props.topicId,
+				cached: cached.length,
+			});
+			return;
+		}
+
+		this.logInfo('chat-panel: fetch messages/query', {
+			topicId: this.props.topicId,
+			cursor: this.state.nextCursor,
+			cached: cached.length,
+		});
 		try {
 			const response = await ModuleFE_Message.getMessagesForTopic({
 				topicId: this.props.topicId,
@@ -49,7 +64,7 @@ export class Component_ChatPanel
 				error: undefined,
 			});
 		} catch (e: any) {
-			this.logError('Failed to load messages', e);
+			this.logError('chat-panel: messages/query failed', e);
 			// Cache + live sync still render the thread if the paginated query is scoped out.
 		}
 	};

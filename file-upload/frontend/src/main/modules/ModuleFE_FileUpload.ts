@@ -74,6 +74,13 @@ export class ModuleFE_FileUpload_Class
 		isPublic: boolean = false,
 		options?: {metadata?: UploadRequest['metadata']},
 	): Promise<DB_Asset[]> {
+		this.logInfo('file-upload: upload()', {
+			count: files.length,
+			names: files.map(file => file.name),
+			key,
+			isPublic,
+			hasMetadata: !!options?.metadata,
+		});
 		const requests: UploadRequest[] = files.map(file => ({
 			name: file.name,
 			mimeType: file.type,
@@ -165,6 +172,12 @@ export class ModuleFE_FileUpload_Class
 	private async uploadToStorage(pending: PendingUpload, file: File, onProgress: (ev: UploadProgressEvent) => void): Promise<void> {
 		// Signed GCS URLs accept only the signed Content-Type. HttpClient.default
 		// always attaches Authorization / tab-id / device-id and would 403.
+		this.logInfo('file-upload: PUT storage', {
+			assetId: pending.asset._id,
+			mimeType: pending.asset.mimeType,
+			name: file.name,
+			size: file.size,
+		});
 		await new Promise<void>((resolve, reject) => {
 			const xhr = new XMLHttpRequest();
 			xhr.open('PUT', pending.signedUrl);
