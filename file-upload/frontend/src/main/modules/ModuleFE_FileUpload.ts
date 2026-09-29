@@ -1,6 +1,5 @@
 import {Module, Minute} from '@nu-art/ts-common';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
-import {HttpMethod} from '@nu-art/api-types';
 import {HttpClient} from '@nu-art/http-client';
 import {ThunderDispatcher} from '@nu-art/thunder-core';
 import {
@@ -164,14 +163,25 @@ export class ModuleFE_FileUpload_Class
 	}
 
 	private async uploadToStorage(pending: PendingUpload, file: File, onProgress: (ev: UploadProgressEvent) => void): Promise<void> {
-		await HttpClient.default
-			.createRequest({method: HttpMethod.PUT, path: ''})
-			.setUrl(pending.signedUrl)
-			.setHeader('Content-Type', pending.asset.mimeType)
-			.setTimeout(20 * Minute)
-			.setBody(file)
-			.setOnProgressListener(onProgress)
-			.execute();
+		// Signed GCS URLs accept only the signed Content-Type. HttpClient.default
+		// always attaches Authorization / tab-id / device-id and would 403.
+		await new Promise<void>((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+			xhr.open('PUT', pending.signedUrl);
+			xhr.setRequestHeader('Content-Type', pending.asset.mimeType);
+			xhr.timeout = 20 * Minute;
+			xhr.upload.onprogress = (ev) => {
+				onProgress({loaded: ev.loaded, total: ev.lengthComputable ? ev.total : undefined});
+			};
+			xhr.onload = () => {
+				if (xhr.status >= 200 && xhr.status < 300)
+					return resolve();
+				reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText || xhr.responseText}`));
+			};
+			xhr.onerror = () => reject(new Error('Upload failed'));
+			xhr.ontimeout = () => reject(new Error('Upload timed out'));
+			xhr.send(file);
+		});
 	}
 
 	// ── Download ──
