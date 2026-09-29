@@ -1,57 +1,92 @@
+.ts-messaging__row {
+	width: 100%;
+	display: flex;
+
+	&.mine {
+		justify-content: flex-end;
+
+		.ts-messaging__bubble {
+			background: var(--color-action-primary-bg);
+			color: var(--color-action-primary-text);
+		}
+
+		.ts-messaging__bubble__sender,
+		.ts-messaging__bubble__time {
+			color: var(--color-action-primary-text);
+			opacity: 0.72;
+		}
+
+		.ts-messaging__bubble__attachment {
+			background: var(--color-action-primary-tint);
+			color: var(--color-action-primary-text);
+		}
+
+		.ts-messaging__bubble__reply-btn {
+			--ts-button--ghost-text: var(--color-action-primary-text);
+		}
+	}
+
+	&.theirs {
+		justify-content: flex-start;
+
+		.ts-messaging__bubble {
+			background: var(--color-surface-input);
+			border: 0.5px solid var(--color-border-strong);
+			color: var(--color-text-primary);
+		}
+	}
+}
+
 .ts-messaging__bubble {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
-	padding: 8px 12px;
-	border-radius: 8px;
-	background: var(--ts-messaging-bubble-bg, #f0f0f0);
+	gap: var(--space-xs);
+	max-width: min(72%, 520px);
+	padding: var(--space-sm) var(--space-md);
+	border-radius: var(--radius-md);
 
 	&__header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		font-size: 0.75rem;
+		gap: var(--space-sm);
+		font-size: var(--font-size-xs);
 	}
 
 	&__sender {
 		font-weight: 600;
-		color: var(--ts-messaging-sender-color, #333);
+		color: var(--color-text-primary);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	&__time {
-		color: var(--ts-messaging-time-color, #999);
+		flex-shrink: 0;
+		color: var(--color-text-muted);
 	}
 
 	&__text {
 		white-space: pre-wrap;
 		word-break: break-word;
+		font-size: var(--font-size-sm);
+		line-height: 1.5;
 	}
 
 	&__attachments {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 4px;
+		gap: var(--space-xs);
 	}
 
 	&__attachment {
-		padding: 2px 6px;
-		border-radius: 4px;
-		background: var(--ts-messaging-attachment-bg, #e0e0e0);
-		font-size: 0.75rem;
+		padding: var(--space-xs) var(--space-sm);
+		border-radius: var(--radius-md);
+		background: var(--color-surface-raised);
+		font-size: var(--font-size-xs);
 	}
 
 	&__reply-btn {
 		align-self: flex-start;
-		padding: 2px 8px;
-		border: none;
-		border-radius: 4px;
-		background: transparent;
-		color: var(--ts-messaging-reply-color, #666);
-		cursor: pointer;
-		font-size: 0.75rem;
-
-		&:hover {
-			background: var(--ts-messaging-reply-hover-bg, #e8e8e8);
-		}
 	}
 }

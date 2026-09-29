@@ -1,6 +1,7 @@
-import {ComponentSync} from '@nu-art/thunder-widgets';
+import {Button, ComponentSync} from '@nu-art/thunder-widgets';
+import type {UniqueId} from '@nu-art/ts-common';
 import type {DB_Message} from '@nu-art/ts-messaging-shared';
-import {Component_MessageBubble} from '../Component_MessageBubble/Component_MessageBubble.js';
+import {Component_MessageBubble, type ResolveSenderLabel} from '../Component_MessageBubble/Component_MessageBubble.js';
 import './Component_MessageList.scss';
 
 type Props = {
@@ -8,6 +9,8 @@ type Props = {
 	hasMore: boolean;
 	onLoadMore?: () => void;
 	onReplyClick?: (messageId: string) => void;
+	resolveSenderLabel?: ResolveSenderLabel;
+	viewerAccountId?: UniqueId;
 };
 
 type State = {};
@@ -20,14 +23,14 @@ export class Component_MessageList
 	}
 
 	render() {
-		const {messages, hasMore, onLoadMore, onReplyClick} = this.props;
+		const {messages, hasMore, onLoadMore, onReplyClick, resolveSenderLabel, viewerAccountId} = this.props;
 
 		return (
 			<div className="ts-messaging__list">
 				{hasMore && onLoadMore && (
-					<button className="ts-messaging__list__load-more" onClick={onLoadMore}>
+					<Button variant="text" className="ts-messaging__list__load-more" onClick={onLoadMore}>
 						Load older messages
-					</button>
+					</Button>
 				)}
 
 				{messages.map(msg => (
@@ -35,6 +38,8 @@ export class Component_MessageList
 						key={msg._id}
 						message={msg}
 						onReplyClick={onReplyClick}
+						resolveSenderLabel={resolveSenderLabel}
+						viewerAccountId={viewerAccountId}
 					/>
 				))}
 

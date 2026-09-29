@@ -1,41 +1,30 @@
 .ts-messaging__input {
-	display: flex;
-	gap: 8px;
-	padding: 8px;
-	border-top: 1px solid var(--ts-messaging-border-color, #e0e0e0);
-	background: var(--ts-messaging-input-bg, #fff);
+	flex-shrink: 0;
+	width: 100%;
+	gap: var(--space-sm);
+	align-items: flex-end;
+	padding: var(--space-md) var(--space-base);
+	border-top: 0.5px solid var(--color-border);
+	background: var(--color-surface-raised);
 
+	.ts-textarea,
 	&__textarea {
 		flex: 1;
-		resize: none;
-		border: 1px solid var(--ts-messaging-border-color, #e0e0e0);
-		border-radius: 8px;
-		padding: 8px 12px;
+		width: 0;
+		min-width: 0;
+		margin: 0;
+		padding: var(--space-sm) var(--space-md);
+		background: var(--color-surface-input);
+		border: 0.5px solid var(--color-border);
+		border-radius: var(--radius-input);
+		color: var(--color-text-primary);
+		font-size: var(--font-size-sm);
 		font-family: inherit;
-		font-size: inherit;
-		outline: none;
+		resize: none;
 
-		&:focus {
-			border-color: var(--ts-messaging-focus-color, #007bff);
-		}
-	}
-
-	&__send-btn {
-		padding: 8px 16px;
-		border: none;
-		border-radius: 8px;
-		background: var(--ts-messaging-send-bg, #007bff);
-		color: var(--ts-messaging-send-color, #fff);
-		cursor: pointer;
-		font-weight: 600;
-
-		&:disabled {
-			opacity: 0.5;
-			cursor: not-allowed;
-		}
-
-		&:hover:not(:disabled) {
-			background: var(--ts-messaging-send-hover-bg, #0056b3);
+		&:focus-visible {
+			outline: none;
+			border-color: var(--color-action-primary-border);
 		}
 	}
 }

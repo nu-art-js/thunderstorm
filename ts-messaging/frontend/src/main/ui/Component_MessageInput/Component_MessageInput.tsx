@@ -1,14 +1,16 @@
-import type {ChangeEvent, KeyboardEvent} from 'react';
-import {ComponentSync} from '@nu-art/thunder-widgets';
+import type {KeyboardEvent} from 'react';
+import {Button, ComponentSync, LL_H_C, TS_TextArea} from '@nu-art/thunder-widgets';
 import './Component_MessageInput.scss';
 
 type Props = {
 	onSend: (text: string) => void | Promise<void>;
 	placeholder?: string;
+	inputId?: string;
 };
 
 type State = {
 	text: string;
+	sending?: boolean;
 };
 
 export class Component_MessageInput
@@ -19,45 +21,52 @@ export class Component_MessageInput
 		return state;
 	}
 
-	private readonly onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-		this.setState({text: e.target.value});
+	private readonly onChange = (value: string) => {
+		this.setState({text: value});
 	};
 
-	private readonly onKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+	private readonly onKeyDown = (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		if (e.key === 'Enter' && !e.shiftKey) {
 			e.preventDefault();
-			this.send();
+			void this.send();
 		}
 	};
 
 	private readonly send = async () => {
 		const text = this.state.text.trim();
-		if (!text)
+		if (!text || this.state.sending)
 			return;
 
-		await this.props.onSend(text);
-		this.setState({text: ''});
+		this.setState({sending: true});
+		try {
+			await this.props.onSend(text);
+			this.setState({text: '', sending: false});
+		} catch {
+			this.setState({sending: false});
+		}
 	};
 
 	render() {
+		const {text, sending} = this.state;
+
 		return (
-			<div className="ts-messaging__input">
-				<textarea
+			<LL_H_C className="ts-messaging__input">
+				<TS_TextArea
+					id={this.props.inputId ?? 'ts-messaging-composer'}
 					className="ts-messaging__input__textarea"
-					value={this.state.text}
+					value={text}
 					onChange={this.onChange}
 					onKeyDown={this.onKeyDown}
-					placeholder={this.props.placeholder ?? 'Type a message...'}
-					rows={1}
+					placeholder={this.props.placeholder ?? 'Type a message'}
 				/>
-				<button
-					className="ts-messaging__input__send-btn"
-					onClick={this.send}
-					disabled={!this.state.text.trim()}
-				>
+				<Button
+					variant="primary"
+					disabled={!text.trim() || !!sending}
+					actionInProgress={!!sending}
+					onClick={this.send}>
 					Send
-				</button>
-			</div>
+				</Button>
+			</LL_H_C>
 		);
 	}
 }

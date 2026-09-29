@@ -5,10 +5,13 @@ import {ModuleFE_Message, type OnMessagesUpdated} from '../../ModuleFE_Message.j
 import {Component_MessageList} from '../Component_MessageList/Component_MessageList.js';
 import {Component_MessageInput} from '../Component_MessageInput/Component_MessageInput.js';
 import {Component_ThreadPanel} from '../Component_ThreadPanel/Component_ThreadPanel.js';
+import type {ResolveSenderLabel} from '../Component_MessageBubble/Component_MessageBubble.js';
 import './Component_ChatPanel.scss';
 
 type Props = {
 	topicId: UniqueId;
+	resolveSenderLabel?: ResolveSenderLabel;
+	viewerAccountId?: UniqueId;
 };
 
 type State = {
@@ -66,6 +69,7 @@ export class Component_ChatPanel
 
 	render() {
 		const {hasMore, threadMessage} = this.state;
+		const {resolveSenderLabel, viewerAccountId} = this.props;
 		const messages = ModuleFE_Message.listTopicMessages(this.props.topicId);
 
 		return (
@@ -76,13 +80,20 @@ export class Component_ChatPanel
 						hasMore={hasMore}
 						onLoadMore={this.fillCache}
 						onReplyClick={this.onReplyClick}
+						resolveSenderLabel={resolveSenderLabel}
+						viewerAccountId={viewerAccountId}
 					/>
-					<Component_MessageInput onSend={this.onSend} />
+					<Component_MessageInput onSend={this.onSend} inputId="ts-messaging-composer"/>
 				</div>
 
 				{threadMessage && (
 					<div className="ts-messaging__chat-panel__thread">
-						<Component_ThreadPanel parentMessage={threadMessage} onClose={this.closeThread} />
+						<Component_ThreadPanel
+							parentMessage={threadMessage}
+							onClose={this.closeThread}
+							resolveSenderLabel={resolveSenderLabel}
+							viewerAccountId={viewerAccountId}
+						/>
 					</div>
 				)}
 			</div>

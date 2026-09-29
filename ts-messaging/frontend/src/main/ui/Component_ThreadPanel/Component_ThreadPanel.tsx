@@ -1,13 +1,17 @@
-import {ComponentSync} from '@nu-art/thunder-widgets';
+import {Button, ComponentSync} from '@nu-art/thunder-widgets';
+import type {UniqueId} from '@nu-art/ts-common';
 import type {DB_Message, PaginatedMessagesResponse} from '@nu-art/ts-messaging-shared';
 import {ModuleFE_Message} from '../../ModuleFE_Message.js';
 import {Component_MessageList} from '../Component_MessageList/Component_MessageList.js';
 import {Component_MessageInput} from '../Component_MessageInput/Component_MessageInput.js';
+import type {ResolveSenderLabel} from '../Component_MessageBubble/Component_MessageBubble.js';
 import './Component_ThreadPanel.scss';
 
 type Props = {
 	parentMessage: DB_Message;
 	onClose?: () => void;
+	resolveSenderLabel?: ResolveSenderLabel;
+	viewerAccountId?: UniqueId;
 };
 
 type State = {
@@ -57,22 +61,36 @@ export class Component_ThreadPanel
 	};
 
 	render() {
-		const {parentMessage, onClose} = this.props;
+		const {parentMessage, onClose, resolveSenderLabel, viewerAccountId} = this.props;
 		const {replies, hasMore} = this.state;
 
 		return (
 			<div className="ts-messaging__thread">
 				<div className="ts-messaging__thread__header">
 					<span>Thread</span>
-					{onClose && <button className="ts-messaging__thread__close" onClick={onClose}>x</button>}
+					{onClose && (
+						<Button variant="text" className="ts-messaging__thread__close" onClick={onClose}>
+							Close
+						</Button>
+					)}
 				</div>
 
 				<div className="ts-messaging__thread__parent">
 					<div className="ts-messaging__thread__parent-text">{parentMessage.text}</div>
 				</div>
 
-				<Component_MessageList messages={replies} hasMore={hasMore} onLoadMore={this.loadReplies} />
-				<Component_MessageInput onSend={this.onSend} placeholder="Reply..." />
+				<Component_MessageList
+					messages={replies}
+					hasMore={hasMore}
+					onLoadMore={this.loadReplies}
+					resolveSenderLabel={resolveSenderLabel}
+					viewerAccountId={viewerAccountId}
+				/>
+				<Component_MessageInput
+					onSend={this.onSend}
+					placeholder="Reply"
+					inputId="ts-messaging-thread-composer"
+				/>
 			</div>
 		);
 	}
