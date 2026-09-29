@@ -12,6 +12,7 @@ type Props = {
 	topicId: UniqueId;
 	resolveSenderLabel?: ResolveSenderLabel;
 	viewerAccountId?: UniqueId;
+	enableThreads?: boolean;
 };
 
 type State = {
@@ -79,7 +80,7 @@ export class Component_ChatPanel
 						messages={messages}
 						hasMore={hasMore}
 						onLoadMore={this.fillCache}
-						onReplyClick={this.onReplyClick}
+						onReplyClick={this.props.enableThreads === false ? undefined : this.onReplyClick}
 						resolveSenderLabel={resolveSenderLabel}
 						viewerAccountId={viewerAccountId}
 					/>
