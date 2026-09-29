@@ -34,7 +34,7 @@ export class ModuleBE_MessagingApi_Class
 		if (request.parentMessageId)
 			where.parentMessageId = request.parentMessageId;
 		else
-			where.parentMessageId = {$exists: false};
+			where.$or = [{parentMessageId: {$exists: false}}, {parentMessageId: null}];
 
 		if (request.cursor)
 			where.__created = {$lt: Number(request.cursor)};

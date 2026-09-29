@@ -9,9 +9,10 @@ import {
 	AssetRef,
 	DatabaseDef_Message,
 	DBDef_Message,
+	DB_Message,
 	PaginatedMessagesResponse,
 } from '@nu-art/ts-messaging-shared';
-import type {UniqueId} from '@nu-art/ts-common';
+import {sortArray, type UniqueId} from '@nu-art/ts-common';
 
 export interface OnMessagesUpdated {
 	__onMessagesUpdated: (...params: ApiCallerEventType<DatabaseDef_Message['dbType']>) => void;
@@ -31,17 +32,34 @@ export class ModuleFE_Message_Class
 	}
 
 	async createMessage(topicId: UniqueId, text?: string, attachments?: AssetRef[], parentMessageId?: UniqueId) {
-		const newMessage: DatabaseDef_Message['uiType'] = {
-			topicId,
-			text,
-			attachments,
-			parentMessageId,
-		} as DatabaseDef_Message['uiType'];
+		const newMessage: DatabaseDef_Message['uiType'] = {topicId} as DatabaseDef_Message['uiType'];
+		if (text !== undefined)
+			newMessage.text = text;
+		if (attachments !== undefined)
+			newMessage.attachments = attachments;
+		if (parentMessageId !== undefined)
+			newMessage.parentMessageId = parentMessageId;
 		return this.upsert(newMessage);
 	}
 
-	@ApiCaller(ApiDef_Messaging.getMessages)
+	listTopicMessages(topicId: UniqueId, parentMessageId?: UniqueId): DB_Message[] {
+		return sortArray(
+			this.cache.all().filter(message =>
+				message.topicId === topicId
+				&& (parentMessageId ? message.parentMessageId === parentMessageId : !message.parentMessageId)),
+			message => message.__created ?? 0,
+		);
+	}
+
 	async getMessagesForTopic(body: API_Messaging['getMessages']['Body']): Promise<PaginatedMessagesResponse> {
+		const response = await this.fetchMessages(body);
+		if (response.messages.length)
+			await this.onEntriesUpdated(response.messages);
+		return response;
+	}
+
+	@ApiCaller(ApiDef_Messaging.getMessages)
+	async fetchMessages(body: API_Messaging['getMessages']['Body']): Promise<PaginatedMessagesResponse> {
 		void body;
 		return undefined as unknown as PaginatedMessagesResponse;
 	}

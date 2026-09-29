@@ -3,7 +3,7 @@ import {ComponentSync} from '@nu-art/thunder-widgets';
 import './Component_MessageInput.scss';
 
 type Props = {
-	onSend: (text: string) => void;
+	onSend: (text: string) => void | Promise<void>;
 	placeholder?: string;
 };
 
@@ -30,12 +30,12 @@ export class Component_MessageInput
 		}
 	};
 
-	private readonly send = () => {
+	private readonly send = async () => {
 		const text = this.state.text.trim();
 		if (!text)
 			return;
 
-		this.props.onSend(text);
+		await this.props.onSend(text);
 		this.setState({text: ''});
 	};
 
