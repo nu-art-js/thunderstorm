@@ -64,7 +64,11 @@ export class ModuleBE_MessagingAccess_Class
 
 	private async resolveMessageAccess(item: DatabaseDef_Message['uiType']): Promise<DocumentAccessFields> {
 		const topic = await this.loadTopicUnmanipulated(item.topicId);
-		return copyAccessFields(topic);
+		const fields = copyAccessFields(topic);
+		const authorId = item._auditorId ?? MemKey_AccountId.get();
+		const authorPersonalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(authorId);
+		fields.__access.deleters = filterDuplicates([...(fields.__access.deleters ?? []), authorPersonalGroupId]);
+		return fields;
 	}
 
 	private async onMessageWrite(dbItem: DatabaseDef_Message['uiType'], original: DatabaseDef_Message['dbType']): Promise<void> {
@@ -141,8 +145,30 @@ export class ModuleBE_MessagingAccess_Class
 	}
 
 	async listTopicWriterAccountIds(topicId: UniqueId): Promise<Set<string>> {
-		const group = await ModuleBE_AccessGroupDB.query.uniqueUnmanipulated(deriveEntityGroupId(topicId, 'writers'));
-		return new Set(group?.members ?? []);
+		const accountIds = new Set<string>();
+		const pending: DatabaseDef_AccessGroup['id'][] = [deriveEntityGroupId(topicId, 'writers')];
+		const seen = new Set<string>();
+
+		while (pending.length > 0) {
+			const groupId = pending.pop()!;
+			if (seen.has(groupId))
+				continue;
+
+			seen.add(groupId);
+			const group = await ModuleBE_AccessGroupDB.query.uniqueUnmanipulated(groupId);
+			if (!group)
+				continue;
+
+			if (group.type === 'user') {
+				accountIds.add(group._id);
+				continue;
+			}
+
+			for (const memberId of group.members)
+				pending.push(stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(memberId));
+		}
+
+		return accountIds;
 	}
 
 	async addAccountToTopic(topicId: UniqueId, accountId: UniqueId): Promise<void> {

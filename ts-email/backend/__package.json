@@ -9,7 +9,6 @@
   "publishConfig": {"directory": "dist", "linkDirectory": true},
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "scripts": {"build": "tsc"},
   "dependencies": {
     "@nu-art/ts-email-shared": "?",
     "@nu-art/ts-common": "?",

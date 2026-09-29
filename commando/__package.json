@@ -34,9 +34,6 @@
   "files": [
     "**/*"
   ],
-  "scripts": {
-    "build": "tsc"
-  },
   "dependencies": {
     "@nu-art/cli-params": "?",
     "@nu-art/ts-common": "?"

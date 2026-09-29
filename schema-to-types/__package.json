@@ -34,9 +34,6 @@
   "files": [
     "**/*"
   ],
-  "scripts": {
-    "build": "tsc"
-  },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^14.2.0",
     "command-line-args": "^6.0.1",

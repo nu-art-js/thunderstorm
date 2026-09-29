@@ -60,6 +60,12 @@ export class StorageAdapter_GCS
 		return file.exists();
 	}
 
+	async writeFile(path: string, content: Buffer): Promise<void> {
+		const bucket = await this.storage.getOrCreateBucket(this.bucketName);
+		const file = await bucket.getFile(path);
+		await file.write(content);
+	}
+
 	async makePublic(path: string): Promise<void> {
 		const bucket = await this.storage.getOrCreateBucket(this.bucketName);
 		const file = await bucket.getFile(path);

@@ -22,6 +22,8 @@ const ValidatorKey_Image = 'test-image';
 const ValidatorKey_Document = 'test-document';
 const ValidatorKey_Custom = 'test-custom';
 
+const reuseLog: {existingId: string; pendingId: string}[] = [];
+
 const registerTestValidators = () => {
 	ModuleBE_FileUpload.registerValidator(ValidatorKey_Image, {
 		allowedMimeTypes: ['image/png', 'image/jpeg'],
@@ -61,10 +63,14 @@ describe('File Upload — E2E', function () {
 		app.init();
 
 		registerTestValidators();
+		ModuleBE_FileUpload.registerAssetReuseHandler(async (existing, pending) => {
+			reuseLog.push({existingId: existing._id, pendingId: pending._id});
+		});
 	});
 
 	afterEach(function () {
 		storageAdapter.clear();
+		reuseLog.length = 0;
 	});
 
 	after(async function () {
@@ -102,9 +108,8 @@ describe('File Upload — E2E', function () {
 
 			expect(pendingUploads).to.have.length(2);
 
-			for (const pending of pendingUploads) {
-				simulateUploadToStorage(pending.asset, Buffer.from('content'));
-			}
+			simulateUploadToStorage(pendingUploads[0].asset, Buffer.from('content-a'));
+			simulateUploadToStorage(pendingUploads[1].asset, Buffer.from('content-b'));
 
 			const response1 = await ModuleBE_FileUpload.confirmUpload({_id: pendingUploads[0].asset._id});
 			const response2 = await ModuleBE_FileUpload.confirmUpload({_id: pendingUploads[1].asset._id});
@@ -112,6 +117,33 @@ describe('File Upload — E2E', function () {
 			expect(response1.asset.status).to.equal(AssetStatus.Validated);
 			expect(response2.asset.status).to.equal(AssetStatus.Validated);
 			expect(response1.asset._id).to.not.equal(response2.asset._id);
+		}));
+	});
+
+	describe('Content reuse', () => {
+		it('confirm of the same bytes returns the existing asset and drops the pending blob', () => inMemStorage(async () => {
+			const [firstPending] = await ModuleBE_FileUpload.requestUpload([{
+				name: 'a.png',
+				mimeType: 'image/png',
+				key: ValidatorKey_Image,
+			}]);
+			const bytes = Buffer.from('same-bytes');
+			simulateUploadToStorage(firstPending.asset, bytes);
+			const first = await ModuleBE_FileUpload.confirmUpload({_id: firstPending.asset._id});
+
+			const [secondPending] = await ModuleBE_FileUpload.requestUpload([{
+				name: 'b.png',
+				mimeType: 'image/png',
+				key: ValidatorKey_Image,
+			}]);
+			simulateUploadToStorage(secondPending.asset, bytes);
+			const second = await ModuleBE_FileUpload.confirmUpload({_id: secondPending.asset._id});
+
+			expect(second.error).to.be.undefined;
+			expect(second.asset._id).to.equal(first.asset._id);
+			expect(reuseLog).to.deep.equal([{existingId: first.asset._id, pendingId: secondPending.asset._id}]);
+			expect(await storageAdapter.fileExists(secondPending.asset.path)).to.equal(false);
+			expect(await storageAdapter.fileExists(first.asset.path)).to.equal(true);
 		}));
 	});
 

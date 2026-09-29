@@ -4,9 +4,6 @@
   "author": "nu-art",
   "description": "Styles by Cipher",
   "type": "module",
-  "scripts": {
-    "build": "tsc"
-  },
   "license": "ISC",
   "publishConfig": {
     "directory": "dist",

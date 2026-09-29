@@ -10,9 +10,6 @@
 		"url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
 		"directory": "_thunderstorm/http"
 	},
-	"scripts": {
-		"build": "tsc"
-	},
 	"dependencies": {
 		"@nu-art/api-types": "?",
 		"@nu-art/http-client": "?",

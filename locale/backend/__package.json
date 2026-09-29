@@ -3,9 +3,6 @@
 	"version": "{{THUNDERSTORM_VERSION}}",
 	"description": "Locale — Backend DB modules",
 	"license": "Apache-2.0",
-	"scripts": {
-		"build": "tsc"
-	},
 	"publishConfig": {
 		"directory": "dist",
 		"linkDirectory": true

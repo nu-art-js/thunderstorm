@@ -19,7 +19,6 @@
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "scripts": {
-    "build": "tsc",
     "launch": "tsc --watch & firebase emulators:start --import=../.trash/data --export-on-exit",
     "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },

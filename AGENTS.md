@@ -2,7 +2,7 @@
 
 Thunderstorm is a TypeScript ESM monorepo framework.
 
-**Start here:** Sky knowledge — Thunderstorm Home. Open `rules`; child labels are the routing table. Read lighthouse before generating Thunderstorm code. Read vocabulary on first touch of Thunderstorm in the session.
+**Start here:** Beamz knowledge — Thunderstorm Home. Open `rules`; child labels are the routing table. Read lighthouse before generating Thunderstorm code. Read vocabulary on first touch of Thunderstorm in the session.
 
 ## Non-negotiable principles
 

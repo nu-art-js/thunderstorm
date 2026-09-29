@@ -3,9 +3,6 @@
 	"version": "{{THUNDERSTORM_VERSION}}",
 	"description": "Locale — Shared types (Locale, LocalizedString)",
 	"license": "Apache-2.0",
-	"scripts": {
-		"build": "tsc"
-	},
 	"publishConfig": {
 		"directory": "dist",
 		"linkDirectory": true

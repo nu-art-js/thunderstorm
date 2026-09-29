@@ -32,7 +32,6 @@
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "scripts": {
-    "build": "tsc",
     "typedocs": "typedoc --options typedoc.json",
     "run-tests": "ts-mocha --timeout 50000 -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },

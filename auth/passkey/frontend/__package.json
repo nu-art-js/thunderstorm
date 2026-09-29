@@ -26,9 +26,6 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "scripts": {
-    "build": "tsc"
-  },
   "dependencies": {
     "@nu-art/passkey-shared": "?",
     "@nu-art/user-account-shared": "?",

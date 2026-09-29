@@ -27,9 +27,6 @@
 	},
 	"license": "Apache-2.0",
 	"author": "TacB0sS",
-	"scripts": {
-		"build": "tsc"
-	},
 	"unitConfig": {
 		"type": "typescript-lib"
 	},

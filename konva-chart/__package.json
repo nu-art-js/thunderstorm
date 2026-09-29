@@ -5,9 +5,6 @@
 	"description": "Reusable Konva-based chart components — time-series lines, event markers, crosshair",
 	"type": "module",
 	"license": "Apache-2.0",
-	"scripts": {
-		"build": "tsc"
-	},
 	"publishConfig": {
 		"directory": "dist",
 		"linkDirectory": true

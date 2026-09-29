@@ -22,9 +22,6 @@
   "author": "TacB0sS",
   "main": "index.js",
   "types": "index.d.ts",
-  "scripts": {
-    "build": "tsc"
-  },
   "contributors": [
     {
       "name": "TacB0sS"

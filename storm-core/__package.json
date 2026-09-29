@@ -23,9 +23,6 @@
     "directory": "dist",
     "linkDirectory": true
   },
-  "scripts": {
-    "build": "tsc"
-  },
   "dependencies": {
     "@nu-art/api-types": "?",
     "@nu-art/firebase-backend": "?",

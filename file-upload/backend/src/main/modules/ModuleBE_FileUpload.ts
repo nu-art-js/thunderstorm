@@ -40,6 +40,8 @@ export class ModuleBE_FileUpload_Class
 
 	private storageAdapter!: StorageAdapter;
 	private readonly validators: TypedMap<FileValidationConfig> = {};
+	/** App hook when confirm finds an existing validated blob with the same md5. No domain fields. */
+	private readonly assetReuseHandlers: ((existing: DB_Asset, pending: DB_Asset) => Promise<void>)[] = [];
 
 	constructor() {
 		super(DBDef_Assets);
@@ -57,6 +59,10 @@ export class ModuleBE_FileUpload_Class
 			gcs.init();
 			this.storageAdapter = gcs;
 		}
+	}
+
+	registerAssetReuseHandler(handler: (existing: DB_Asset, pending: DB_Asset) => Promise<void>) {
+		this.assetReuseHandlers.push(handler);
 	}
 
 	registerValidator = (key: string, config: FileValidationConfig) => {
@@ -177,6 +183,29 @@ export class ModuleBE_FileUpload_Class
 		}
 
 		asset.md5Hash = metadata.md5Hash;
+
+		if (asset.md5Hash) {
+			// Content identity is global. Caller ACL must not hide an existing blob.
+			const [existing] = await this.query.unManipulatedQuery({
+				where: {md5Hash: asset.md5Hash, status: AssetStatus.Validated} as any,
+				limit: 1,
+			});
+			if (existing && existing._id !== asset._id) {
+				for (const handler of this.assetReuseHandlers)
+					await handler(existing, asset);
+
+				try {
+					if (await this.storageAdapter.fileExists(asset.path))
+						await this.storageAdapter.deleteFile(asset.path);
+				} catch (e: any) {
+					this.logError(`Failed to delete duplicate pending file: ${asset.path}`, e);
+				}
+
+				await this.delete.all([asset._id]);
+				return {asset: existing};
+			}
+		}
+
 		asset.status = AssetStatus.Validated;
 
 		if (asset.public && this.storageAdapter.makePublic) {

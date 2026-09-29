@@ -26,9 +26,6 @@
   "files": [
     "**/*"
   ],
-  "scripts": {
-    "build": "tsc"
-  },
   "dependencies": {
     "@nu-art/file-upload-shared": "?",
     "@nu-art/firebase-backend": "?",

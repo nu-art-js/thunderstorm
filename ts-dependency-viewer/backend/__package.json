@@ -27,9 +27,6 @@
   "files": [
     "**/*"
   ],
-  "scripts": {
-    "build": "tsc"
-  },
   "dependencies": {
     "@nu-art/ts-dependency-viewer-shared": "?",
     "@nu-art/ts-common": "?",

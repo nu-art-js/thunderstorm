@@ -69,12 +69,18 @@ export class ModuleFE_FileUpload_Class
 
 	// ── Upload ──
 
-	async upload(files: File[], key: string, isPublic: boolean = false): Promise<DB_Asset[]> {
+	async upload(
+		files: File[],
+		key: string,
+		isPublic: boolean = false,
+		options?: {metadata?: UploadRequest['metadata']},
+	): Promise<DB_Asset[]> {
 		const requests: UploadRequest[] = files.map(file => ({
 			name: file.name,
 			mimeType: file.type,
 			key,
 			public: isPublic,
+			...options?.metadata ? {metadata: options.metadata} : {},
 		}));
 
 		const states: FileTransferState[] = files.map(f => ({

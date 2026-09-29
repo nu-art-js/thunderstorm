@@ -17,5 +17,8 @@ export interface StorageAdapter {
 
 	fileExists(path: string): Promise<boolean>;
 
+	/** Server-side write. Browsers use `getWriteSignedUrl` instead. */
+	writeFile(path: string, content: Buffer): Promise<void>;
+
 	makePublic?(path: string): Promise<void>;
 }

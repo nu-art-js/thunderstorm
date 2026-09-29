@@ -19,9 +19,6 @@
   "files": [
     "**/*"
   ],
-  "scripts": {
-    "build": "tsc"
-  },
   "dependencies": {
     "@nu-art/api-types": "?",
     "@nu-art/ts-common": "?"

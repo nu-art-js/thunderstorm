@@ -52,7 +52,7 @@ export class StorageAdapter_InMemory
 		this.publicFiles.add(path);
 	}
 
-	writeFile(path: string, content: Buffer): void {
+	async writeFile(path: string, content: Buffer): Promise<void> {
 		this.files.set(path, content);
 	}
 

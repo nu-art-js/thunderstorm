@@ -34,7 +34,6 @@
     "**/*"
   ],
   "scripts": {
-    "build": "tsc",
     "plop": "npm run plop --prefix ../../.."
   },
   "dependencies": {
