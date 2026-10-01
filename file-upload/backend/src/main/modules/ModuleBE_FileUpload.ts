@@ -120,6 +120,7 @@ export class ModuleBE_FileUpload_Class
 				bucketName: this.config.bucketName ?? 'default',
 				status: AssetStatus.Pending,
 				public: file.public ?? false,
+				...file.description ? {description: file.description} : {},
 				...file.metadata ? {metadata: file.metadata} : {},
 			} as DB_Asset);
 

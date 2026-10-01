@@ -22,6 +22,7 @@ export type AssetData = {
 	bucketName: string
 	md5Hash?: string
 	public?: boolean
+	description?: string
 	metadata?: TS_Object
 	signedUrl?: {
 		url: string
@@ -54,6 +55,7 @@ export type UploadRequest = {
 	mimeType: string
 	key?: string
 	public?: boolean
+	description?: string
 	metadata?: TS_Object
 };
 

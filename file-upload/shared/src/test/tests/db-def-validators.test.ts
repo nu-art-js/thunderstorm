@@ -9,6 +9,7 @@ type ModifiableInput = {
 	ext: string
 	mimeType: string
 	key: string
+	description?: string
 };
 
 type ValidResult = boolean;
@@ -46,6 +47,11 @@ describe('DBDef_Assets — modifiable props validator', () => {
 
 	it('Accepts long file name', runModifiableTestCase({
 		input: {name: 'my-very-long-file-name-with-special-chars_2026.pdf', ext: 'pdf', mimeType: 'application/pdf', key: 'document'},
+		result: true,
+	}));
+
+	it('Accepts optional content description', runModifiableTestCase({
+		input: {name: 'notes.txt', ext: 'txt', mimeType: 'text/plain', key: 'doc', description: 'Plain-text notes from the meeting'},
 		result: true,
 	}));
 });
