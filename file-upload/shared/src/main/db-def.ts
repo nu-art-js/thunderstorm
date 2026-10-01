@@ -18,6 +18,7 @@ const Validator_ModifiableProps: DatabaseDef_Assets['modifiablePropsValidator'] 
 	ext: tsValidateExists(true),
 	mimeType: tsValidateExists(true),
 	key: tsValidateExists(true),
+	description: tsValidateString(-1, false),
 };
 
 const Validator_GeneratedProps: DatabaseDef_Assets['generatedPropsValidator'] = {

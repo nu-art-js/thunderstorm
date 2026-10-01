@@ -22,10 +22,10 @@ export class ModuleBE_MessagingApi_Class
 	@RequirePermission(PermissionScope_Messaging, 'read')
 	@ApiHandler(ApiDef_Messaging.getMessages)
 	async getMessages(body: API_Messaging['getMessages']['Body']): Promise<PaginatedMessagesResponse> {
-		return this.queryMessages(body);
+		return this.listMessages(body);
 	}
 
-	private async queryMessages(request: PaginatedMessagesRequest): Promise<PaginatedMessagesResponse> {
+	async listMessages(request: PaginatedMessagesRequest): Promise<PaginatedMessagesResponse> {
 		const limit = request.limit ?? DefaultPageSize;
 
 		// Build MongoDB-style where clause — typed as Record because of $exists/$lt operators
