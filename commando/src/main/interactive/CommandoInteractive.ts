@@ -272,9 +272,9 @@ export class CommandoInteractive
 	 * Appends a command to run in the background and tracks its PID.
 	 *
 	 * **Behavior**:
-	 * - Runs command with `&` (background)
+	 * - Runs command with `&` in its own process group
 	 * - Captures PID using `pid=$!` and echoes it with unique key
-	 * - Waits for the process to complete
+	 * - Waits for that pid, then kills anything left in its group
 	 * - Calls pidListener when PID is detected
 	 *
 	 * **Use Case**: Running long-running processes while continuing
@@ -298,10 +298,15 @@ export class CommandoInteractive
 			return false;
 		};
 
-		this.append(`${command} &`)
+		this.append('set -m')
+			.append(`${command} &`)
 			.append('pid=$!')
 			.append(`echo "${pidUniqueKey}=\${pid}"`)
-			.append(`wait \$pid`)
+			.append('wait $pid')
+			.append('status=$?')
+			.append('kill -KILL -- -$pid 2>/dev/null || true')
+			.append('set +m')
+			.append('(exit $status)')
 			.addLogProcessor(pidLogProcessor, 0);
 
 		return this;

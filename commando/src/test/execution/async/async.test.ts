@@ -139,8 +139,8 @@ describe('Commando - Async Execution', () => {
 			);
 		},
 		result: {
-			out: 'Start\nEnd',
-			exitCode: 0
+			out: 'Start\nCaught SIGINT (2)',
+			exitCode: 2
 		},
 	})).timeout(5000);
 
@@ -169,7 +169,7 @@ describe('Commando - Async Execution', () => {
 			);
 		},
 		result: {
-			err: /\/bin\/bash: line.*Killed: 9/,
+			err: /\/bin\/bash: line.*Killed/,
 			out: 'Start',
 			exitCode: 137
 		},
@@ -201,10 +201,30 @@ describe('Commando - Async Execution', () => {
 		},
 		result: {
 			out: 'Start\nEnd',
-			err: 'Terminated: 15'
+			err: /Terminated/
 		},
 	}, testValidator)).timeout(5000);
 
+
+	it('releases grandchildren after the command exits', async () => {
+		const {existsSync, readFileSync, unlinkSync} = await import('node:fs');
+		const pidFile = `/tmp/commando-orphan-${process.pid}.pid`;
+		if (existsSync(pidFile))
+			unlinkSync(pidFile);
+
+		const command = `node -e 'const fs=require("fs"); const {spawn}=require("child_process"); const c=spawn("sleep",["30"],{stdio:"ignore"}); fs.writeFileSync(${JSON.stringify(pidFile)}, String(c.pid)); setTimeout(()=>process.exit(0),200)'`;
+		const result = await commando.appendAsync(command).execute((stdout, stderr, exitCode) => ({stdout, stderr, exitCode}));
+		expect(result.exitCode).to.equal(0);
+
+		const pid = Number(readFileSync(pidFile, 'utf8'));
+		let alive = true;
+		try {
+			process.kill(pid, 0);
+		} catch {
+			alive = false;
+		}
+		expect(alive, `grandchild ${pid} still running`).to.equal(false);
+	}).timeout(5000);
 
 	after(async () => {
 		await commando.kill('SIGKILL');

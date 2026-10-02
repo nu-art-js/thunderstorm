@@ -166,6 +166,11 @@ class ModuleFE_Session_Class
 		return !!this.StorageKey_SessionId.get();
 	}
 
+	/** Drop this origin's stored JWT without calling logout. */
+	public clearLocalSession() {
+		this.StorageKey_SessionId.delete();
+	}
+
 	public async isSessionValid() {
 		const sessionToken = this.StorageKey_SessionId.get();
 		if (!sessionToken)
