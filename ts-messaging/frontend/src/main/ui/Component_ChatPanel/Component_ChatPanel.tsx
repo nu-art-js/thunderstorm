@@ -45,6 +45,11 @@ export class Component_ChatPanel
 				topicId: this.props.topicId,
 				cached: cached.length,
 			});
+			// listTopicMessages is oldest-first. Seed that timestamp so Load older
+			// still calls messages/query for rows older than the cache.
+			const oldestCreated = cached[0]?.__created;
+			if (oldestCreated != null)
+				this.setState({hasMore: true, nextCursor: String(oldestCreated), error: undefined});
 			return;
 		}
 
