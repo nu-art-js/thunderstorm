@@ -6,6 +6,7 @@ import {Component_MessageList} from '../Component_MessageList/Component_MessageL
 import {Component_MessageInput} from '../Component_MessageInput/Component_MessageInput.js';
 import {Component_ThreadPanel} from '../Component_ThreadPanel/Component_ThreadPanel.js';
 import type {ResolveSenderLabel} from '../Component_MessageBubble/Component_MessageBubble.js';
+import {resolveCachedTopicQuery} from './resolve-cached-topic-query.js';
 import './Component_ChatPanel.scss';
 
 type Props = {
@@ -39,17 +40,14 @@ export class Component_ChatPanel
 
 	private readonly fillCache = async () => {
 		const cached = ModuleFE_Message.listTopicMessages(this.props.topicId);
-		const isLoadMore = !!this.state.nextCursor;
-		if (!isLoadMore && cached.length > 0) {
+		const plan = resolveCachedTopicQuery(cached, this.state.nextCursor);
+		if (plan.skipQuery) {
 			this.logInfo('chat-panel: skip messages/query — cache already has messages', {
 				topicId: this.props.topicId,
 				cached: cached.length,
 			});
-			// listTopicMessages is oldest-first. Seed that timestamp so Load older
-			// still calls messages/query for rows older than the cache.
-			const oldestCreated = cached[0]?.__created;
-			if (oldestCreated != null)
-				this.setState({hasMore: true, nextCursor: String(oldestCreated), error: undefined});
+			if ('nextCursor' in plan)
+				this.setState({hasMore: plan.hasMore, nextCursor: plan.nextCursor, error: undefined});
 			return;
 		}
 
