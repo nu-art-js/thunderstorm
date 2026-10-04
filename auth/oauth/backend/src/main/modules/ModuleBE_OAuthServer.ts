@@ -304,7 +304,10 @@ export class ModuleBE_OAuthServer_Class
 		this.logInfo(`/oauth/complete-authorization request: authReqId=${body.authReqId} claims=${body.claims ? 'present' : 'none'}`);
 		const {grant, binder} = await this.loadPendingConsentGrant(body.authReqId);
 		const accountId = MemKey_AccountId.get();
-		const oauthClient = (await ModuleBE_OAuthClientDB.query.custom({where: {clientId: grant.clientId}, limit: 1}))[0];
+		// Approved by TacB0sS (Adam van der Kruk) on 2026-10-04.
+		// Why: the client row is written before any user exists, so it has no reader list. Confirm runs signed in, and the access filter then hides the row, so the session cannot be minted.
+		// Do not use unManipulatedQuery anywhere else without TacB0sS's explicit approval.
+		const oauthClient = (await ModuleBE_OAuthClientDB.query.unManipulatedQuery({where: {clientId: grant.clientId}, limit: 1}))[0];
 		if (!oauthClient)
 			throw HttpCodes._4XX.BAD_REQUEST(`OAuth client not found: ${grant.clientId}`);
 
