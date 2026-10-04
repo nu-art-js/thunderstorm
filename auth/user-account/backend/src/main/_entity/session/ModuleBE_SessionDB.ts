@@ -42,7 +42,7 @@ export type Props_CreateSession = {
 };
 
 export interface CollectSessionData<R extends TypedKeyValue<any, AnyPrimitive>> {
-	__collectSessionData(data: BaseSessionClaims): Promise<R>;
+	__collectSessionData(data: BaseSessionClaims): Promise<R | undefined>;
 }
 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, RecursiveObjectOfPrimitives>>, '__collectSessionData'>('__collectSessionData');
@@ -94,6 +94,9 @@ export class ModuleBE_SessionDB_Class
 	private collectSessionData = async (content: BaseSessionClaims) => {
 		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(content));
 		return collectedData.reduce((sessionData, moduleSessionData) => {
+			if (!moduleSessionData)
+				return sessionData;
+
 			// We don't skip existing keys. This allows us to override session data provided by infra, with session data provided by app. If wanted, add flag to symbolize this is intentional to all relevant places.
 			sessionData[moduleSessionData.key] = moduleSessionData.value;
 			return sessionData;
@@ -175,7 +178,16 @@ export class ModuleBE_SessionDB_Class
 				label: `reissued from ${dbSession._id}`,
 			};
 
-			const jwt = await this.token.create(initialClaims, (claims.exp - claims.iat) * 1000);
+			// Listeners that keep a claim across reissue read it off the previous JWT.
+			const priorSessionData = MemKey_SessionData.peak();
+			MemKey_SessionData.set(claims);
+			let jwt: string;
+			try {
+				jwt = await this.token.create(initialClaims, (claims.exp - claims.iat) * 1000);
+			} finally {
+				if (priorSessionData)
+					MemKey_SessionData.set(priorSessionData);
+			}
 
 			const content: Props_CreateSession = {
 				linkedSessionId: dbSession._id,

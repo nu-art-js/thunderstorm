@@ -16,7 +16,8 @@ import {ModuleBE_OAuthClientDB} from './ModuleBE_OAuthClientDB.js';
 import {ModuleBE_OAuthGrantDB} from './ModuleBE_OAuthGrantDB.js';
 import {ModuleBE_OAuthSigningKeyDB} from './ModuleBE_OAuthSigningKeyDB.js';
 import {ModuleBE_OAuthTokenDB} from './ModuleBE_OAuthTokenDB.js';
-import {MemKey_AccountId, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {MemKey_AccountId, MemKey_DB_Session, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
+import {MemKey_OAuthClientId} from './ModuleBE_OAuthClientSessionData.js';
 import {HttpCodes} from '@nu-art/api-types';
 
 type Config = {
@@ -303,14 +304,19 @@ export class ModuleBE_OAuthServer_Class
 		this.logInfo(`/oauth/complete-authorization request: authReqId=${body.authReqId} claims=${body.claims ? 'present' : 'none'}`);
 		const {grant, binder} = await this.loadPendingConsentGrant(body.authReqId);
 		const accountId = MemKey_AccountId.get();
-		const deviceId = `oauth-consent-${grant.clientId}`;
-		this.logInfo(`  grant resource=${grant.resource ?? 'none'} binder=${binder.constructor.name} accountId=${accountId}`);
+		const oauthClient = (await ModuleBE_OAuthClientDB.query.custom({where: {clientId: grant.clientId}, limit: 1}))[0];
+		if (!oauthClient)
+			throw HttpCodes._4XX.BAD_REQUEST(`OAuth client not found: ${grant.clientId}`);
+
+		const deviceId = MemKey_DB_Session.get().deviceId;
+		MemKey_OAuthClientId.set(oauthClient._id);
+		this.logInfo(`  grant resource=${grant.resource ?? 'none'} binder=${binder.constructor.name} accountId=${accountId} oauthClient=${oauthClient._id}`);
 
 		const claims = {
+			...body.claims,
 			accountId,
 			deviceId,
-			label: `oauth-consent-${grant.clientId}`,
-			...body.claims,
+			label: oauthClient.name,
 		};
 		const sessionId = await binder.mintSession({claims});
 		this.logInfo(`  session minted: sessionId=${sessionId}`);

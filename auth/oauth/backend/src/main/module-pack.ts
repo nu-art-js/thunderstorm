@@ -6,6 +6,7 @@
 
 import type {Module} from '@nu-art/ts-common';
 import {ModuleBE_OAuthClientDB} from './modules/ModuleBE_OAuthClientDB.js';
+import {ModuleBE_OAuthClientSessionData} from './modules/ModuleBE_OAuthClientSessionData.js';
 import {ModuleBE_OAuthGrantDB} from './modules/ModuleBE_OAuthGrantDB.js';
 import {ModuleBE_OAuthServer} from './modules/ModuleBE_OAuthServer.js';
 import {ModuleBE_OAuthSigningKeyDB} from './modules/ModuleBE_OAuthSigningKeyDB.js';
@@ -14,6 +15,7 @@ import {ModuleBE_OAuthTokenDB} from './modules/ModuleBE_OAuthTokenDB.js';
 export const ModulePackBE_OAuth: Module[] = [
 	ModuleBE_OAuthSigningKeyDB,
 	ModuleBE_OAuthClientDB,
+	ModuleBE_OAuthClientSessionData,
 	ModuleBE_OAuthGrantDB,
 	ModuleBE_OAuthTokenDB,
 	ModuleBE_OAuthServer,

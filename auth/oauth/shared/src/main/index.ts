@@ -17,5 +17,6 @@ export * from './_entity/oauth-signing-key/types.js';
 export * from './_entity/oauth-signing-key/validators.js';
 export * from './_entity/oauth-signing-key/db-def.js';
 export * from './token-claims.js';
+export * from './session-types.js';
 export * from './oauth-consent-types.js';
 export * from './api-def.js';

@@ -5,6 +5,7 @@
  */
 
 export * from './modules/ModuleBE_OAuthClientDB.js';
+export * from './modules/ModuleBE_OAuthClientSessionData.js';
 export * from './modules/ModuleBE_OAuthGrantDB.js';
 export * from './modules/ModuleBE_OAuthServer.js';
 export * from './modules/ModuleBE_OAuthSigningKeyDB.js';
