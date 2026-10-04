@@ -39,6 +39,7 @@
     "jose": "?"
   },
   "devDependencies": {
+    "@nu-art/storm-testalot": "?",
     "@types/express": "?"
   },
   "unitConfig": {
