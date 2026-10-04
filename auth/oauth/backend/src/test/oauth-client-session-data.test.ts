@@ -5,30 +5,33 @@
  */
 
 import {expect} from 'chai';
+import {stringToUniqueId} from '@nu-art/db-api-shared';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {MemKey_SessionData} from '@nu-art/user-account-backend';
-import {SessionKey_OAuthClient} from '@nu-art/oauth-shared';
+import {BaseSessionClaims, MemKey_SessionData} from '@nu-art/user-account-backend';
+import type {DatabaseDef_Account} from '@nu-art/user-account-shared';
+import {SessionKey_OAuthClient, type DatabaseDef_OAuthClient} from '@nu-art/oauth-shared';
 import {MemKey_OAuthClientId, ModuleBE_OAuthClientSessionData, SessionKey_OAuthClient_BE} from '../main/modules/ModuleBE_OAuthClientSessionData.js';
 
-const clientRowId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-const baseClaims = {
-	accountId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-	deviceId: 'device-1',
+const clientRowId = stringToUniqueId<DatabaseDef_OAuthClient['dbKey']>('a'.repeat(32));
+const otherClientId = stringToUniqueId<DatabaseDef_OAuthClient['dbKey']>('c'.repeat(32));
+const baseClaims: BaseSessionClaims = {
+	accountId: stringToUniqueId<DatabaseDef_Account['dbKey']>('b'.repeat(32)),
+	deviceId: 'd'.repeat(32),
 	label: 'Cursor',
 };
 
 describe('OAuth client session claim', () => {
 	it('abstains when no client row is in context', async () => {
 		await new MemStorage().init(async () => {
-			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims as never);
+			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims);
 			expect(claim).to.equal(undefined);
 		});
 	});
 
 	it('stamps the OAuth client row id from the memkey', async () => {
 		await new MemStorage().init(async () => {
-			MemKey_OAuthClientId.set(clientRowId as never);
-			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims as never);
+			MemKey_OAuthClientId.set(clientRowId);
+			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims);
 			expect(claim).to.deep.equal({
 				key: SessionKey_OAuthClient,
 				value: {clientId: clientRowId},
@@ -38,9 +41,9 @@ describe('OAuth client session claim', () => {
 
 	it('prefers the memkey over a claim already on the session', async () => {
 		await new MemStorage().init(async () => {
-			MemKey_SessionData.set({oauthClient: {clientId: 'cccccccccccccccccccccccccccccccc'}});
-			MemKey_OAuthClientId.set(clientRowId as never);
-			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims as never);
+			MemKey_SessionData.set({oauthClient: {clientId: otherClientId}});
+			MemKey_OAuthClientId.set(clientRowId);
+			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims);
 			expect(claim?.value.clientId).to.equal(clientRowId);
 		});
 	});
@@ -54,10 +57,8 @@ describe('OAuth client session claim', () => {
 
 	it('copies the claim already on the session when reissuing', async () => {
 		await new MemStorage().init(async () => {
-			MemKey_SessionData.set({
-				oauthClient: {clientId: clientRowId},
-			});
-			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims as never);
+			MemKey_SessionData.set({oauthClient: {clientId: clientRowId}});
+			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims);
 			expect(claim?.value.clientId).to.equal(clientRowId);
 		});
 	});
