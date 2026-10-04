@@ -8,7 +8,7 @@ import {expect} from 'chai';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_SessionData} from '@nu-art/user-account-backend';
 import {SessionKey_OAuthClient} from '@nu-art/oauth-shared';
-import {MemKey_OAuthClientId, ModuleBE_OAuthClientSessionData} from '../main/modules/ModuleBE_OAuthClientSessionData.js';
+import {MemKey_OAuthClientId, ModuleBE_OAuthClientSessionData, SessionKey_OAuthClient_BE} from '../main/modules/ModuleBE_OAuthClientSessionData.js';
 
 const clientRowId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const baseClaims = {
@@ -42,6 +42,13 @@ describe('OAuth client session claim', () => {
 			MemKey_OAuthClientId.set(clientRowId as never);
 			const claim = await ModuleBE_OAuthClientSessionData.__collectSessionData(baseClaims as never);
 			expect(claim?.value.clientId).to.equal(clientRowId);
+		});
+	});
+
+	it('reads the claim through SessionKey_OAuthClient_BE', async () => {
+		await new MemStorage().init(async () => {
+			MemKey_SessionData.set({oauthClient: {clientId: clientRowId}});
+			expect(SessionKey_OAuthClient_BE.get().clientId).to.equal(clientRowId);
 		});
 	});
 

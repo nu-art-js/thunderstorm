@@ -6,7 +6,7 @@
 
 import {Module} from '@nu-art/ts-common';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {BaseSessionClaims, CollectSessionData, MemKey_SessionData} from '@nu-art/user-account-backend';
+import {BaseSessionClaims, CollectSessionData, MemKey_SessionData, SessionKey_BE} from '@nu-art/user-account-backend';
 import {
 	SessionData_OAuthClient,
 	SessionKey_OAuthClient,
@@ -17,12 +17,18 @@ import {
 /** Set before session create so the listener stamps this client row onto the new JWT. */
 export const MemKey_OAuthClientId = new MemKey<DatabaseDef_OAuthClient['dbType']['_id']>('oauth-client-row-id');
 
-const clientIdFromSession = (): OAuthClientSession['clientId'] | undefined => {
-	const claim = MemKey_SessionData.peak()?.[SessionKey_OAuthClient] as OAuthClientSession | undefined;
-	if (typeof claim?.clientId === 'string' && claim.clientId.length > 0)
-		return claim.clientId;
+export const SessionKey_OAuthClient_BE = new SessionKey_BE<SessionData_OAuthClient>(SessionKey_OAuthClient);
 
-	return undefined;
+const clientIdFromSession = (): OAuthClientSession['clientId'] | undefined => {
+	const sessionData = MemKey_SessionData.peak();
+	if (!sessionData || !(SessionKey_OAuthClient in sessionData))
+		return undefined;
+
+	const clientId = SessionKey_OAuthClient_BE.get(sessionData).clientId;
+	if (clientId.length === 0)
+		return undefined;
+
+	return clientId;
 };
 
 class ModuleBE_OAuthClientSessionData_Class
