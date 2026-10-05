@@ -77,11 +77,24 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	//######################### Internal Logic #########################
 
 	protected npmCommand(command: string) {
+		const parentBin = resolve(this.runtimeContext.parentUnit.config.fullPath, './node_modules/.bin', command);
 		const packageBin = resolve(this.config.fullPath, './node_modules/.bin', command);
+		// A transitive dependency (vite-plugin-svgr → typescript 7) can drop a tsc
+		// shim into the unit. That compiler is not the workspace TypeScript and
+		// fails frontend libs on node and scss types. Use it only when this unit
+		// declares typescript itself.
+		if (command === 'tsc' && !this.declaresDependency('typescript') && existsSync(parentBin))
+			return parentBin;
+
 		if (existsSync(packageBin))
 			return packageBin;
 
-		return resolve(this.runtimeContext.parentUnit.config.fullPath, './node_modules/.bin', command);
+		return parentBin;
+	}
+
+	private declaresDependency(name: string) {
+		const pkg = this.config.packageJson;
+		return Boolean(pkg.dependencies?.[name] || pkg.devDependencies?.[name]);
 	}
 
 	protected templateParamMap(): StringMap {
