@@ -110,6 +110,7 @@ export class ModuleBE_SAML_Class
 	extends Module<SamlSpConfig> {
 
 	private assertionHandoff?: (email: string, relayState: string) => Promise<string>;
+	private signingCertificates?: (provider: DB_SamlProvider) => Promise<string[]>;
 
 	constructor() {
 		super();
@@ -119,6 +120,18 @@ export class ModuleBE_SAML_Class
 	/** When set, a verified assertion redirects to the returned URL and does not create an account. */
 	setAssertionHandoff(handoff: (email: string, relayState: string) => Promise<string>) {
 		this.assertionHandoff = handoff;
+	}
+
+	/** Backend-only. The returned PEM list is for assertion verification and is not an API response. */
+	setSigningCertificates(load: (provider: DB_SamlProvider) => Promise<string[]>) {
+		this.signingCertificates = load;
+	}
+
+	private async identityProvider(provider: DB_SamlProvider): Promise<IdentityProvider> {
+		if (!this.signingCertificates)
+			return createIdentityProvider(provider);
+		const certificates = await this.signingCertificates(provider);
+		return createIdentityProvider({...provider, certificates});
 	}
 
 	protected init(): void {
@@ -133,7 +146,7 @@ export class ModuleBE_SAML_Class
 		if (!this.config.spConfig)
 			throw new ImplementationMissingException('SAML spConfig is not configured');
 
-		const idp = createIdentityProvider(provider);
+		const idp = await this.identityProvider(provider);
 		const sp = new ServiceProvider(this.config.spConfig);
 		return new Promise<string>((resolve, rejected) => {
 			sp.create_login_request_url(idp, {relay_state: relayState}, (error, loginUrl) => {
@@ -193,7 +206,7 @@ export class ModuleBE_SAML_Class
 	async loginSaml(loginContext: API_SAML['loginSaml']['Params']) {
 		const domain = extractDomain(loginContext.email);
 		const provider = await this.resolveProvider(domain);
-		const idp = createIdentityProvider(provider);
+		const idp = await this.identityProvider(provider);
 
 		return new Promise<API_SAML['loginSaml']['Response']>((resolve, rejected) => {
 			const sp = new ServiceProvider(this.config.spConfig);
@@ -248,7 +261,7 @@ export class ModuleBE_SAML_Class
 		const assertBody: RequestBody_SamlAssertOptions = {request_body};
 		const sp = new ServiceProvider(this.config.spConfig);
 		const provider = await this.resolveProvider(samlProviderDomainFromRelayState(request_body.RelayState));
-		const idp = createIdentityProvider(provider);
+		const idp = await this.identityProvider(provider);
 
 		return new Promise<SamlAssertResponse>((resolve, reject) => {
 			sp.post_assert(idp, assertBody, (error, response: SamlIdpResponse) => {
