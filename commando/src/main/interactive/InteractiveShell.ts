@@ -165,12 +165,57 @@ export class InteractiveShell
 	};
 
 	/**
+	 * PID of the spawned session-leader shell, if still attached.
+	 */
+	getPid = (): number | undefined => this.shell.pid;
+
+	/**
 	 * Awaits for the end of the interactive shell session.
 	 */
 	endInteractive = () => {
 		return new Promise<void>(resolve => {
 			this.shell.stdin?.end(resolve);
 		});
+	};
+
+	/**
+	 * Close stdin so an idle bash exits, then SIGKILL the process group if it stays up.
+	 * SIGINT alone does not reap a detached shell waiting on stdin.
+	 */
+	release = async (timeout = 5000): Promise<void> => {
+		const pid = this.shell.pid;
+		if (!this.alive && (pid === undefined || !this.isAlive(pid)))
+			return;
+
+		try {
+			await this.endInteractive();
+		} catch (e: any) {
+			this.logError('Failed to close shell stdin', e);
+		}
+
+		if (pid !== undefined) {
+			try {
+				await this.waitForExit(pid, timeout);
+			} catch {
+				this.logWarning(`Shell PID ${pid} still alive after stdin close; sending SIGKILL to the process group`);
+				try {
+					process.kill(-pid, 'SIGKILL');
+				} catch {
+					try {
+						this.shell.kill('SIGKILL');
+					} catch (e: any) {
+						this.logError(`Failed to SIGKILL shell PID ${pid}`, e);
+					}
+				}
+				try {
+					await this.waitForExit(pid, 2000);
+				} catch {
+					this.logWarning(`Shell PID ${pid} still reported alive after SIGKILL`);
+				}
+			}
+		}
+
+		this.alive = false;
 	};
 
 // Check if a given PID is alive

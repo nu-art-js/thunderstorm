@@ -60,12 +60,25 @@ export const CommandoPool = {
 		return commando;
 	},
 	/**
+	 * Reap one allocated commando and drop it from the pool.
+	 *
+	 * Use after a one-shot compile/watch step so the interactive bash does not
+	 * stay idle under a long-lived `bai -w` Node process.
+	 */
+	releaseCommando: async (commando: CommandoInteractive & BaseCommando & Commando_Basic) => {
+		const index = commandoPool.indexOf(commando);
+		if (index >= 0)
+			commandoPool.splice(index, 1);
+		await commando.release();
+	},
+	/**
 	 * Kills all allocated commando instances.
 	 *
-	 * Calls `kill()` on all commandos in the pool asynchronously.
+	 * Calls `release()` on all commandos in the pool asynchronously.
 	 * Useful for cleanup in test teardown or application shutdown.
 	 */
 	killAll: async () => {
-		await Promise.all(commandoPool.map(c => c.kill()));
+		const allocated = commandoPool.splice(0, commandoPool.length);
+		await Promise.all(allocated.map(c => c.release()));
 	}
 };

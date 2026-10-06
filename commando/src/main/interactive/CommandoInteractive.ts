@@ -100,6 +100,21 @@ export class CommandoInteractive
 	}
 
 	/**
+	 * PID of the interactive bash session, if still attached.
+	 */
+	getPid() {
+		return this.shell.getPid();
+	}
+
+	/**
+	 * Reap the interactive bash after a one-shot command. Closes stdin, then SIGKILLs
+	 * the process group if the detached shell stays idle.
+	 */
+	release() {
+		return this.shell.release();
+	}
+
+	/**
 	 * Kills the shell process with a given signal.
 	 * @param {NodeJS.Signals | number} [signal] - The signal to send to the process.
 	 * @returns {boolean} - Whether the kill signal was successfully sent.

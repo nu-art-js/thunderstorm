@@ -511,26 +511,32 @@ ${browserNames}
 			})
 			.addLogProcessor((log) => !log.includes('Now using node') && !log.includes('.nvmrc\' with version'));
 
-		await this.executeAsyncCommando(commando, `${this.npmCommand('tsc')} -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.config.output}"`,
-			(stdout, stderr, exitCode) => {
-				if (stderr.length)
-					this.logError(stderr);
+		try {
+			await this.executeAsyncCommando(commando, `${this.npmCommand('tsc')} -p "${pathToTSConfig}" --rootDir "${pathToCompile}" --outDir "${this.config.output}"`,
+				(stdout, stderr, exitCode) => {
+					if (stderr.length)
+						this.logError(stderr);
 
-				if (exitCode > 0)
-					throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
-			});
+					if (exitCode > 0)
+						throw new CommandoException(`Error compiling`, stdout, stderr, exitCode);
+				});
+		} finally {
+			await this.releaseCommando(commando);
+		}
 	}
 
 	protected async copyAssetsToOutput() {
 		const command = `find . \\( -name ${assets.map(pattern => `'${pattern}'`)
 			.join(' -o -name ')} \\) | cpio -pdmuv "${this.config.output}" > /dev/null 2>&1`;
-		await this.allocateCommando(Commando_Basic)
-			.cd(`${this.config.fullPath}/src/main`)
-			// .setStdErrorValidator(stderr => {
-			// 	return !stderr.match(/\d+\sblock/);
-			// })
-			.append(command)
-			.execute();
+		const commando = this.allocateCommando(Commando_Basic)
+			.cd(`${this.config.fullPath}/src/main`);
+		try {
+			await commando
+				.append(command)
+				.execute();
+		} finally {
+			await this.releaseCommando(commando);
+		}
 
 		await FileSystemUtils.file.delete(resolve(this.config.output, CONST_TS_CONFIG));
 	}

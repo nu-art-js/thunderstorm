@@ -130,6 +130,10 @@ export abstract class BaseUnit<C extends BaseUnit_Config = BaseUnit_Config, RT_C
 		return CommandoPool.allocateCommando(this.config.key, ...plugins);
 	}
 
+	async releaseCommando(commando: CommandoInteractive) {
+		await CommandoPool.releaseCommando(commando as CommandoInteractive & BaseCommando & Commando_Basic);
+	}
+
 	async executeAsyncCommando<T>(commando: CommandoInteractive, command: string, callback?: (stdout: string, stderr: string, exitCode: number) => T, onPid?: (pid: number) => void) {
 		let pid: number;
 
