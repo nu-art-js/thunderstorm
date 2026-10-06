@@ -1,0 +1,51 @@
+{
+  "name": "@nu-art/http-request-backend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Execute a stored HTTP request — params, then secrets, then send",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "storm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "dependencies": {
+    "@nu-art/http-request-shared": "?",
+    "@nu-art/api-types": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "unitConfig": {
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

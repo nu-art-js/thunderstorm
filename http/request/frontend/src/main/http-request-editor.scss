@@ -1,0 +1,12 @@
+.http-request-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.http-request-header,
+.http-request-headers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
