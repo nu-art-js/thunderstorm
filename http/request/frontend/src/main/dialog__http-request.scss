@@ -1,0 +1,52 @@
+@use '@nu-art/ts-styles' as styles;
+
+.dialog__http-request {
+	width: min(36rem, 92vw);
+
+	&__header {
+		width: 100%;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	&__title {
+		font-size: var(--font-size-lg, 1.1rem);
+		font-weight: 600;
+		color: var(--color-text-primary);
+	}
+
+	&__error {
+		margin: 0;
+		color: var(--color-dangerous, #c0392b);
+		font-size: var(--font-size-sm, 0.85rem);
+	}
+
+	&__close {
+		min-width: unset;
+		min-height: unset;
+		padding: var(--space-xs, 4px);
+
+		.icon--wrapper {
+			width: 16px;
+			height: 16px;
+			display: flex;
+			@include styles.mouse-interactive-icon(var(--color-text-primary));
+
+			svg {
+				width: 100%;
+				height: 100%;
+				display: block;
+			}
+		}
+	}
+
+	.ts-input,
+	.ts-textarea {
+		width: 100%;
+	}
+
+	.http-request-header {
+		width: 100%;
+		gap: var(--space-sm, 8px);
+	}
+}

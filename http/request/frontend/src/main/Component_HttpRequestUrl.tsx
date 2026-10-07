@@ -8,6 +8,7 @@ import {TS_Input, TS_PropRenderer} from '@nu-art/thunder-widgets';
 
 type Props = {
 	url: string;
+	focus?: boolean;
 	onChange: (url: string) => void;
 	onBlur?: (url: string) => void;
 };
@@ -17,6 +18,7 @@ export function Component_HttpRequestUrl(props: Props) {
 		<TS_Input
 			type={'text'}
 			value={props.url}
+			focus={props.focus}
 			placeholder={'https://…'}
 			onChange={props.onChange}
 			onBlur={props.onBlur}/>

@@ -1,12 +1,66 @@
-.http-request-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+@use '@nu-art/ts-styles' as styles;
 
-.http-request-header,
-.http-request-headers {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.http-request-editor {
+	width: 100%;
+	gap: var(--space-xs, 4px);
+
+	&__tools {
+		width: 100%;
+		justify-content: flex-end;
+	}
+
+	&__line {
+		width: 100%;
+		align-items: center;
+	}
+
+	&__open {
+		flex: 1;
+		min-width: 0;
+		justify-content: flex-start;
+
+		.ts-button__content {
+			width: 100%;
+			justify-content: flex-start;
+			gap: var(--space-md, 12px);
+		}
+	}
+
+	&__label {
+		flex: 0 0 6.5rem;
+		color: var(--color-text-muted);
+		text-align: left;
+	}
+
+	&__value {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		color: var(--color-text-primary);
+		text-align: left;
+
+		&[data-empty='true'] {
+			color: var(--color-text-muted);
+		}
+	}
+
+	&__icon {
+		min-width: unset;
+		min-height: unset;
+		padding: var(--space-xs, 4px);
+
+		.icon--wrapper {
+			width: 16px;
+			height: 16px;
+			display: flex;
+			@include styles.mouse-interactive-icon(var(--color-text-primary));
+
+			svg {
+				width: 100%;
+				height: 100%;
+				display: block;
+			}
+		}
+	}
 }

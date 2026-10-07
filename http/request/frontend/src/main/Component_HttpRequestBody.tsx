@@ -10,6 +10,7 @@ import {httpRequestMethodAllowsBody, type OutboundHttpMethod} from '@nu-art/http
 type Props = {
 	method: OutboundHttpMethod;
 	body?: string;
+	focus?: boolean;
 	onChange: (body: string) => void;
 	onBlur?: (body: string) => void;
 };
@@ -21,6 +22,7 @@ export function Component_HttpRequestBody(props: Props) {
 		<TS_TextArea
 			type={'text'}
 			value={props.body ?? ''}
+			focus={props.focus}
 			placeholder={'{"version":"{{version}}"}'}
 			onChange={props.onChange}
 			onBlur={props.onBlur}/>

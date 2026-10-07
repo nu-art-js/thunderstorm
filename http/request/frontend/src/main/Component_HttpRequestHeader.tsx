@@ -6,7 +6,7 @@
 
 import {useState} from 'react';
 import {HeaderKey_Authorization} from '@nu-art/api-types';
-import {Button, TS_Input, TS_PropRenderer} from '@nu-art/thunder-widgets';
+import {Button, LL_V_L, TS_Input, TS_PropRenderer} from '@nu-art/thunder-widgets';
 
 export type HttpRequestHeaderRow = {
 	name: string;
@@ -14,9 +14,8 @@ export type HttpRequestHeaderRow = {
 };
 
 type Props = HttpRequestHeaderRow & {
+	focus?: boolean;
 	onChange: (row: HttpRequestHeaderRow) => void;
-	onBlur: (row: HttpRequestHeaderRow) => void;
-	onRemove: () => void;
 };
 
 const rawBearer = (name: string, value: string): boolean =>
@@ -27,21 +26,21 @@ const rawBearer = (name: string, value: string): boolean =>
 export function Component_HttpRequestHeader(props: Props) {
 	const [secretName, setSecretName] = useState('');
 	const offerSecret = rawBearer(props.name, props.value);
-	return <div className={'http-request-header'}>
-		<TS_PropRenderer.Horizontal label={'Header'}>
+	return <LL_V_L className={'http-request-header'}>
+		<TS_PropRenderer.Horizontal label={'Name'}>
 			<TS_Input
 				type={'text'}
 				value={props.name}
-				placeholder={'Name'}
-				onChange={name => props.onChange({name, value: props.value})}
-				onBlur={name => props.onBlur({name, value: props.value})}/>
+				focus={props.focus}
+				placeholder={'Authorization'}
+				onChange={name => props.onChange({name, value: props.value})}/>
+		</TS_PropRenderer.Horizontal>
+		<TS_PropRenderer.Horizontal label={'Value'}>
 			<TS_Input
 				type={'text'}
 				value={props.value}
-				placeholder={'Value'}
-				onChange={value => props.onChange({name: props.name, value})}
-				onBlur={value => props.onBlur({name: props.name, value})}/>
-			<Button variant={'text'} onClick={props.onRemove}>Remove</Button>
+				placeholder={'Bearer …'}
+				onChange={value => props.onChange({name: props.name, value})}/>
 		</TS_PropRenderer.Horizontal>
 		{offerSecret
 			? <TS_PropRenderer.Horizontal label={'Secret name'}>
@@ -53,7 +52,7 @@ export function Component_HttpRequestHeader(props: Props) {
 				<Button
 					variant={'secondary'}
 					disabled={!secretName.trim()}
-					onClick={() => props.onBlur({
+					onClick={() => props.onChange({
 						name: props.name,
 						value: `Bearer {{secret:${secretName.trim()}}}`,
 					})}>
@@ -61,5 +60,5 @@ export function Component_HttpRequestHeader(props: Props) {
 				</Button>
 			</TS_PropRenderer.Horizontal>
 			: null}
-	</div>;
+	</LL_V_L>;
 }

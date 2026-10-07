@@ -1,17 +1,15 @@
 /*
- * @nu-art/http-request-frontend — composes the request fields
+ * @nu-art/http-request-frontend — one line per part of a stored request
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
 
-import {useState} from 'react';
 import {emptyHttpRequest, httpRequestMethodAllowsBody, type HttpRequestDef} from '@nu-art/http-request-shared';
-import {LL_V_L} from '@nu-art/thunder-widgets';
-import {Component_CurlImport} from './Component_CurlImport.js';
-import {Component_HttpRequestBody} from './Component_HttpRequestBody.js';
-import {Component_HttpRequestHeaders} from './Component_HttpRequestHeaders.js';
-import {Component_HttpRequestMethod} from './Component_HttpRequestMethod.js';
-import {Component_HttpRequestUrl} from './Component_HttpRequestUrl.js';
+import {Button, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
+import {TS_Icons} from '@nu-art/ts-styles';
+import {Component_HttpRequestLine} from './Component_HttpRequestLine.js';
+import {Dialog_CurlImport} from './Dialog_CurlImport.js';
+import {Dialog_HttpRequestPart, type HttpRequestPart} from './Dialog_HttpRequestPart.js';
 import './http-request-editor.scss';
 
 type Props = {
@@ -21,39 +19,71 @@ type Props = {
 };
 
 export function Component_HttpRequestEditor(props: Props) {
-	const [curlStamp, setCurlStamp] = useState(0);
 	const request = props.value ?? emptyHttpRequest();
-	const patch = (next: Partial<HttpRequestDef>) => props.onChange({...request, ...next});
-	const commit = (next: Partial<HttpRequestDef>) => {
-		const updated = {...request, ...next};
-		props.onChange(updated);
-		props.onCommit?.(updated);
+	const commit = (next: HttpRequestDef) => {
+		props.onChange(next);
+		props.onCommit?.(next);
 	};
+	const savePart = (part: HttpRequestPart) => {
+		if (part.kind === 'method') {
+			commit({
+				...request,
+				method: part.method,
+				...(httpRequestMethodAllowsBody(part.method) ? {} : {body: undefined}),
+			});
+			return;
+		}
+		if (part.kind === 'url') {
+			commit({...request, url: part.url.trim()});
+			return;
+		}
+		if (part.kind === 'body') {
+			commit({...request, body: part.body});
+			return;
+		}
+		const headers = {...(request.headers ?? {})};
+		if (part.originalName && part.originalName !== part.name)
+			delete headers[part.originalName];
+		headers[part.name] = part.value;
+		commit({...request, headers});
+	};
+	const headers = Object.entries(request.headers ?? {});
 	return <LL_V_L className={'http-request-editor'}>
-		<Component_CurlImport onParsed={parsed => {
-			setCurlStamp(stamp => stamp + 1);
-			props.onChange(parsed);
-			props.onCommit?.(parsed);
-		}}/>
-		<Component_HttpRequestMethod
-			method={request.method}
-			onChange={method => commit({
-				method,
-				...(httpRequestMethodAllowsBody(method) ? {} : {body: undefined}),
-			})}/>
-		<Component_HttpRequestUrl
-			url={request.url}
-			onChange={url => patch({url})}
-			onBlur={url => props.onCommit?.({...request, url})}/>
-		<Component_HttpRequestHeaders
-			key={curlStamp}
-			headers={request.headers}
-			onChange={headers => patch({headers})}
-			onCommit={headers => props.onCommit?.({...request, headers})}/>
-		<Component_HttpRequestBody
-			method={request.method}
-			body={request.body}
-			onChange={body => patch({body})}
-			onBlur={body => props.onCommit?.({...request, body})}/>
+		<LL_H_C className={'http-request-editor__tools'}>
+			<Button
+				variant={'text'}
+				className={'http-request-editor__icon'}
+				aria-label={'Import curl'}
+				title={'Import curl'}
+				onClick={() => Dialog_CurlImport.show(commit)}>
+				<TS_Icons.download.component/>
+			</Button>
+		</LL_H_C>
+		<Component_HttpRequestLine
+			label={'Method'}
+			value={request.method}
+			onOpen={() => Dialog_HttpRequestPart.show({kind: 'method', method: request.method}, savePart)}/>
+		<Component_HttpRequestLine
+			label={'URL'}
+			value={request.url}
+			onOpen={() => Dialog_HttpRequestPart.show({kind: 'url', url: request.url}, savePart)}/>
+		{headers.map(([name, value]) => <Component_HttpRequestLine
+			key={name}
+			label={'Header'}
+			value={`${name}: ${value}`}
+			removeLabel={`Remove ${name}`}
+			onOpen={() => Dialog_HttpRequestPart.show({kind: 'header', name, value, originalName: name}, savePart)}
+			onRemove={() => {
+				const next = {...(request.headers ?? {})};
+				delete next[name];
+				commit({...request, headers: next});
+			}}/>)}
+		<Component_HttpRequestLine
+			label={'Header'}
+			onOpen={() => Dialog_HttpRequestPart.show({kind: 'header', name: '', value: ''}, savePart)}/>
+		{httpRequestMethodAllowsBody(request.method) && <Component_HttpRequestLine
+			label={'Body'}
+			value={request.body}
+			onOpen={() => Dialog_HttpRequestPart.show({kind: 'body', method: request.method, body: request.body ?? ''}, savePart)}/>}
 	</LL_V_L>;
 }
