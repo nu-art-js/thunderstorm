@@ -9,7 +9,7 @@ import {
 } from '@nu-art/i18n-shared';
 import {ModuleFE_I18n, OnI18nChanged} from '../../ModuleFE_I18n.js';
 import {ModuleFE_I18nOverlay, OnI18nOverlaysUpdated} from '../../_entity/overlay/ModuleFE_I18nOverlay.js';
-import {ModuleFE_Locale, OnLocalesUpdated} from '../../_entity/locale/ModuleFE_Locale.js';
+import type {OnLocalesUpdated} from '../../_entity/locale/ModuleFE_Locale.js';
 import './I18n.scss';
 
 const ReservedProps = new Set(['id', 'className']);
