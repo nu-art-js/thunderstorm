@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: {{SERVICE_NAME}}
   labels:
-    goog-cloudfunctions-runtime: nodejs22
+    goog-cloudfunctions-runtime: nodejs26
     cloud.googleapis.com/location: {{REGION}}
     goog-managed-by: cloudfunctions
   annotations:

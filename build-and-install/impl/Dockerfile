@@ -1,4 +1,4 @@
-FROM node:22
+FROM node:26
 WORKDIR /workspace
 COPY dist/ ./dist/
 COPY package.json ./

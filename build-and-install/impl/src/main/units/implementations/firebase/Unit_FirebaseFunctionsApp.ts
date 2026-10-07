@@ -1111,7 +1111,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				functions: {
 					source: this.config.output.replace(`${this.config.fullPath}/`, ''),
 					ignore: this.config.ignore,
-					runtime: 'nodejs22',
+					runtime: 'nodejs26',
 				}
 			};
 		}

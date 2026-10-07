@@ -142,8 +142,11 @@ export class Commando
 		} catch (_error: any) {
 			simpleShell.logError(_error);
 			const cliError = _error as CliError;
-			if ('isInstanceOf' in cliError && cliError.isInstanceOf(CliError))
-				return callback?.(cliError.stdout, cliError.stderr, cliError.cause.code ?? -1);
+			if ('isInstanceOf' in cliError && cliError.isInstanceOf(CliError)) {
+				const code = cliError.cause.code;
+				const exitCode = typeof code === 'number' ? code : -1;
+				return callback?.(cliError.stdout, cliError.stderr, exitCode);
+			}
 
 			throw new ThisShouldNotHappenException('Unhandled error', _error);
 		}

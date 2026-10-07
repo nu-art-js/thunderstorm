@@ -153,7 +153,7 @@ describe('Firebase Build Push Image Phase', () => {
 			// Verify Dockerfile content
 			functionUnit.logDebug('=== Verifying Dockerfile content ===');
 			const dockerfileContent = readFileSync(dockerfilePath, 'utf-8');
-			expect(dockerfileContent).to.include('FROM node:22');
+			expect(dockerfileContent).to.include('FROM node:26');
 			expect(dockerfileContent).to.include('WORKDIR /workspace');
 			expect(dockerfileContent).to.include('COPY dist/');
 			expect(dockerfileContent).to.include('COPY package.json');
@@ -231,7 +231,7 @@ describe('Firebase Build Push Image Phase', () => {
 			functionUnit.logDebug('=== Verifying Dockerfile content is valid ===');
 			const dockerfileContent = readFileSync(dockerfilePath, 'utf-8');
 			expect(dockerfileContent.length).to.be.greaterThan(0);
-			expect(dockerfileContent).to.include('FROM node:22');
+			expect(dockerfileContent).to.include('FROM node:26');
 
 			functionUnit.logDebug('=== Custom Dockerfile Name Test Completed ===');
 		}
