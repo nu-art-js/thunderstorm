@@ -21,6 +21,9 @@
     "removeComments": true,
     "sourceMap": true,
     "strict": true,
+    "types": ["*"],
+    "skipLibCheck": true,
+    "noUncheckedSideEffectImports": false,
     "target": "es6"
   },
   "exclude": [
