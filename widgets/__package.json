@@ -66,15 +66,18 @@
   "type": "module",
   "exports": {
     ".": {
+      "sass": "./styles.scss",
+      "style": "./styles.scss",
       "types": "./index.d.ts",
-      "import": "./index.js",
-      "sass": "./styles.scss"
+      "import": "./index.js"
     },
     "./theme": {
-      "sass": "./theme.scss"
+      "sass": "./theme.scss",
+      "style": "./theme.scss"
     },
     "./styles": {
-      "sass": "./styles.scss"
+      "sass": "./styles.scss",
+      "style": "./styles.scss"
     },
     "./v1": {
       "types": "./v1.d.ts",
@@ -89,9 +92,10 @@
       "import": "./v3.js"
     },
     "./skeleton-loaders": {
+      "sass": "./skeleton-loaders/index.scss",
+      "style": "./skeleton-loaders/index.scss",
       "types": "./skeleton-loaders/index.d.ts",
-      "import": "./skeleton-loaders/index.js",
-      "sass": "./skeleton-loaders/index.scss"
+      "import": "./skeleton-loaders/index.js"
     }
   }
 }

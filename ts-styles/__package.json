@@ -27,14 +27,16 @@
   ],
   "exports": {
     ".": {
+      "sass": "./index.scss",
+      "style": "./index.scss",
       "types": "./index.d.ts",
-      "import": "./index.js",
-      "sass": "./index.scss"
+      "import": "./index.js"
     },
     "./*": {
+      "sass": "./*.scss",
+      "style": "./*.scss",
       "types": "./*.d.ts",
-      "import": "./*.js",
-      "sass": "./*.scss"
+      "import": "./*.js"
     }
   }
 }
