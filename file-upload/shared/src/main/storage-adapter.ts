@@ -21,4 +21,7 @@ export interface StorageAdapter {
 	writeFile(path: string, content: Buffer): Promise<void>;
 
 	makePublic?(path: string): Promise<void>;
+
+	/** Browser PUT to a signed URL fails closed when the bucket has no CORS. */
+	ensureSignedUrlCors?(): Promise<void>;
 }

@@ -4,6 +4,7 @@ import {FileTransferState, TransferDirection, FileTransferPhase} from '../main/m
 describe('FileTransferState types', () => {
 	it('Upload state has correct direction', () => {
 		const state: FileTransferState = {
+			transferId: 'upload-1',
 			name: 'test.jpg',
 			progress: 0,
 			phase: 'requesting',
@@ -15,6 +16,7 @@ describe('FileTransferState types', () => {
 
 	it('Download state has correct direction', () => {
 		const state: FileTransferState = {
+			transferId: 'download-1',
 			name: 'report.pdf',
 			progress: 0.5,
 			phase: 'downloading',
@@ -28,6 +30,7 @@ describe('FileTransferState types', () => {
 		const uploadPhases: FileTransferPhase[] = ['requesting', 'uploading', 'confirming', 'completed', 'failed'];
 		for (const phase of uploadPhases) {
 			const state: FileTransferState = {
+				transferId: `upload-${phase}`,
 				name: 'test.jpg',
 				progress: 0,
 				phase,
@@ -42,6 +45,7 @@ describe('FileTransferState types', () => {
 		const downloadPhases: FileTransferPhase[] = ['requesting', 'preparing', 'downloading', 'completed', 'failed'];
 		for (const phase of downloadPhases) {
 			const state: FileTransferState = {
+				transferId: `download-${phase}`,
 				name: 'report.pdf',
 				progress: 0,
 				phase,
@@ -54,6 +58,7 @@ describe('FileTransferState types', () => {
 
 	it('Failed state includes error message', () => {
 		const state: FileTransferState = {
+			transferId: 'failed-1',
 			name: 'broken.zip',
 			progress: 0.3,
 			phase: 'failed',
@@ -66,6 +71,7 @@ describe('FileTransferState types', () => {
 
 	it('Completed state has progress 1', () => {
 		const state: FileTransferState = {
+			transferId: 'done-1',
 			name: 'done.jpg',
 			progress: 1,
 			phase: 'completed',

@@ -59,6 +59,10 @@ export class ModuleBE_FileUpload_Class
 			gcs.init();
 			this.storageAdapter = gcs;
 		}
+
+		void this.storageAdapter.ensureSignedUrlCors?.().catch((e: unknown) => {
+			this.logError('Failed to allow browser uploads on the assets bucket', e instanceof Error ? e : String(e));
+		});
 	}
 
 	registerAssetReuseHandler(handler: (existing: DB_Asset, pending: DB_Asset) => Promise<void>) {

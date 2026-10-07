@@ -17,6 +17,24 @@ export class StorageAdapter_GCS
 		this.storage = ModuleBE_Firebase.createAdminSession().getStorage();
 	}
 
+	/** Signed-URL uploads are credentialed by the URL. The bucket must answer the browser preflight. */
+	async ensureSignedUrlCors(): Promise<void> {
+		const wrapped = await this.storage.getOrCreateBucket(this.bucketName);
+		const [metadata] = await wrapped.bucket.getMetadata();
+		const rules = metadata.cors ?? [];
+		const allowsBrowserPut = rules.some(rule =>
+			(rule.origin ?? []).includes('*') && (rule.method ?? []).includes('PUT'));
+		if (allowsBrowserPut)
+			return;
+
+		await wrapped.bucket.setCorsConfiguration([{
+			origin: ['*'],
+			method: ['GET', 'HEAD', 'PUT', 'OPTIONS'],
+			responseHeader: ['Content-Type', 'Content-Length', 'Content-MD5', 'x-goog-hash'],
+			maxAgeSeconds: 3600,
+		}]);
+	}
+
 	async getWriteSignedUrl(path: string, contentType: string, expiresMs: number = Hour): Promise<string> {
 		const bucket = await this.storage.getOrCreateBucket(this.bucketName);
 		const file = await bucket.getFile(path);

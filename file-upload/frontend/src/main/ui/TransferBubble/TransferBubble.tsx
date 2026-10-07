@@ -48,9 +48,14 @@ export class TransferBubble
 	}
 
 	__onFileTransferStateChanged = (fileState: FileTransferState) => {
-		const key = fileState.assetId ?? fileState.name;
 		const files = new Map(this.state.files);
-		files.set(key, {...fileState});
+		// Older events keyed the row by name, then again by asset id, so one file drew twice.
+		if (fileState.assetId)
+			for (const [key, existing] of files)
+				if (!existing.transferId && !existing.assetId && existing.name === fileState.name && existing.direction === fileState.direction)
+					files.delete(key);
+
+		files.set(fileState.transferId, {...fileState});
 
 		this.clearAutoHideTimer();
 
@@ -258,7 +263,7 @@ export class TransferBubble
 			return;
 
 		const files = new Map(this.state.files);
-		files.delete(fileState.assetId);
+		files.delete(fileState.transferId);
 		this.setState({files});
 
 		if (fileState.direction === 'upload')
@@ -404,7 +409,7 @@ export class TransferBubble
 				<span>{failedFiles.length} failed</span>
 			</div>
 			<div className="ts-transfer-bubble__errors-list">
-				{failedFiles.map((f, i) => <div key={f.assetId ?? i} className="ts-transfer-bubble__errors-item">
+				{failedFiles.map(f => <div key={f.transferId} className="ts-transfer-bubble__errors-item">
 					<span className="ts-transfer-bubble__errors-item-name">{f.name}</span>
 					<span className="ts-transfer-bubble__errors-item-reason">{f.error ?? 'Unknown error'}</span>
 					<button className="ts-transfer-bubble__errors-item-retry" onClick={() => this.retryFile(f)}>Retry</button>
@@ -423,9 +428,9 @@ export class TransferBubble
 		const tickerSlots = active.slice(0, 3);
 
 		return <div className="ts-transfer-bubble__ticker">
-			{tickerSlots.map((f, i) => {
+			{tickerSlots.map(f => {
 				const pct = Math.round(f.progress * 100);
-				return <div key={f.assetId ?? i} className="ts-transfer-bubble__ticker-item">
+				return <div key={f.transferId} className="ts-transfer-bubble__ticker-item">
 					<span className="ts-transfer-bubble__ticker-item-name">{f.name}</span>
 					<div className="ts-transfer-bubble__ticker-item-bar">
 						<div className="ts-transfer-bubble__ticker-item-bar-fill" style={{width: `${pct}%`}}/>
@@ -510,7 +515,7 @@ export class TransferBubble
 				</button>)}
 			</div>}
 			<div className="ts-transfer-bubble__browse-list">
-				{filteredFiles.map((f, i) => <div key={f.assetId ?? i} className="ts-transfer-bubble__browse-item">
+				{filteredFiles.map(f => <div key={f.transferId} className="ts-transfer-bubble__browse-item">
 					<span className="ts-transfer-bubble__browse-item-name">{f.name}</span>
 					<span className={_className('ts-transfer-bubble__browse-item-status', `ts-transfer-bubble__browse-item-status--${f.phase}`)}>
 						{this.getPhaseLabel(f.phase)}

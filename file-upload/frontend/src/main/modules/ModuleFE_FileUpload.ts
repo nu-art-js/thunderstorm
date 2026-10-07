@@ -1,4 +1,4 @@
-import {Module, Minute} from '@nu-art/ts-common';
+import {generateHex, Minute, Module} from '@nu-art/ts-common';
 import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {HttpClient} from '@nu-art/http-client';
 import {ThunderDispatcher} from '@nu-art/thunder-core';
@@ -24,6 +24,8 @@ export type FileTransferPhase =
 	| 'failed';
 
 export type FileTransferState = {
+	/** Stable for the whole transfer. The bubble must not re-key when assetId arrives. */
+	transferId: string
 	assetId?: string
 	name: string
 	progress: number
@@ -53,6 +55,7 @@ type FailedUploadEntry = {
 	file: File
 	key: string
 	isPublic: boolean
+	metadata?: UploadRequest['metadata']
 };
 
 const DefaultParallelTransfers = 3;
@@ -90,6 +93,7 @@ export class ModuleFE_FileUpload_Class
 		}));
 
 		const states: FileTransferState[] = files.map(f => ({
+			transferId: generateHex(16),
 			name: f.name,
 			progress: 0,
 			phase: 'requesting' as const,
@@ -110,7 +114,12 @@ export class ModuleFE_FileUpload_Class
 		for (let i = 0; i < pendingUploads.length; i++) {
 			const state = states[i];
 			state.assetId = pendingUploads[i].asset._id;
-			this.failedUploads.set(pendingUploads[i].asset._id, {file: files[i], key, isPublic});
+			this.failedUploads.set(pendingUploads[i].asset._id, {
+				file: files[i],
+				key,
+				isPublic,
+				metadata: options?.metadata,
+			});
 
 			queue.addItemImpl(
 				{pending: pendingUploads[i], file: files[i], state},
@@ -201,6 +210,7 @@ export class ModuleFE_FileUpload_Class
 
 	async download(assetIds: string[], fileNames?: string[]): Promise<void> {
 		const states: FileTransferState[] = assetIds.map((id, i) => ({
+			transferId: generateHex(16),
 			assetId: id,
 			name: fileNames?.[i] ?? id,
 			progress: 0,
@@ -293,7 +303,12 @@ export class ModuleFE_FileUpload_Class
 			return undefined;
 
 		this.failedUploads.delete(assetId);
-		const results = await this.upload([cached.file], cached.key, cached.isPublic);
+		const results = await this.upload(
+			[cached.file],
+			cached.key,
+			cached.isPublic,
+			cached.metadata ? {metadata: cached.metadata} : undefined,
+		);
 		return results[0];
 	}
 
