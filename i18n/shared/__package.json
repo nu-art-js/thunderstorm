@@ -1,0 +1,30 @@
+{
+	"name": "@nu-art/i18n-shared",
+	"version": "{{THUNDERSTORM_VERSION}}",
+	"description": "i18n — branded keys, resolve, locale catalog, overlay",
+	"license": "Apache-2.0",
+	"publishConfig": {
+		"directory": "dist",
+		"linkDirectory": true
+	},
+	"dependencies": {
+		"@nu-art/db-api-shared": "?",
+		"@nu-art/permissions-shared": "?",
+		"@nu-art/ts-common": "?"
+	},
+	"devDependencies": {},
+	"unitConfig": {
+		"type": "typescript-lib"
+	},
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./index.d.ts",
+			"import": "./index.js"
+		},
+		"./*": {
+			"types": "./*.d.ts",
+			"import": "./*.js"
+		}
+	}
+}

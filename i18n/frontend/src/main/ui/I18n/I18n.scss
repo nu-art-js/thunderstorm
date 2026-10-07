@@ -1,0 +1,40 @@
+.ts-i18n {
+	position: relative;
+
+	&--edit {
+		outline: 1px dashed currentColor;
+		cursor: pointer;
+	}
+
+	&__editor {
+		position: absolute;
+		z-index: 20;
+		inset-inline-start: 0;
+		top: 100%;
+		min-width: 16rem;
+		padding: 0.5rem;
+		background: var(--color-surface, #fff);
+		color: var(--color-on-surface, #111);
+		border: 1px solid currentColor;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+	}
+
+	&__hint {
+		font-size: 0.75rem;
+		opacity: 0.8;
+	}
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		font-size: 0.75rem;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 0.35rem;
+	}
+}
