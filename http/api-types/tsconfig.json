@@ -9,8 +9,10 @@
     "outDir": "./dist",
     "rootDir": "./src/main",
     "strict": true,
+    "types": ["*"],
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "noUncheckedSideEffectImports": false,
     "sourceMap": true
   },
   "include": ["src/main/**/*.ts"],
