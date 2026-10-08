@@ -582,7 +582,7 @@ describe('ServerApi - Supertest permutations', () => {
 			}
 
 			new FirstApi();
-			expect(() => new SecondApi()).to.throw(Error, /Duplicate API path: \/duplicate-path/);
+			expect(() => new SecondApi()).to.throw(Error, /Duplicate API route: GET \/duplicate-path/);
 		});
 
 		it('First registered API wins; duplicate registration fails before any request', async () => {
@@ -609,7 +609,7 @@ describe('ServerApi - Supertest permutations', () => {
 				new OtherApi();
 				expect.fail('should have thrown');
 			} catch (e) {
-				expect((e as Error).message).to.include('Duplicate API path');
+				expect((e as Error).message).to.include('Duplicate API route: GET /only-one');
 			}
 			const res = await request(server.getExpress()).get('/only-one').expect(200);
 			expect(res.body).to.deep.equal({winner: true});

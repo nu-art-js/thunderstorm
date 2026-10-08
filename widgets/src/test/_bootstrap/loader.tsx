@@ -1,6 +1,9 @@
 import {Thunder} from '@nu-art/thunder-core';
 import * as React from 'react';
 import {createRoot} from 'react-dom/client';
+// Load the package stylesheet (theme tokens + component classes) so entries render the
+// way consumers see them; tokenized sizes (e.g. --ts-loader--size) are otherwise unset.
+import '../../main/styles.scss';
 
 new Thunder({configUrl: '/test-config.json'});
 
