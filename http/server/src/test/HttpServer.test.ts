@@ -41,6 +41,6 @@ describe('HttpServer - addRoute', () => {
 		const api1 = new _ServerQueryApi(apiDef, async () => ({}));
 		const api2 = new _ServerQueryApi(apiDef, async () => ({}));
 		server.addRoute(api1);
-		expect(() => server.addRoute(api2)).to.throw(Error, /Duplicate API path: \/same-path/);
+		expect(() => server.addRoute(api2)).to.throw(Error, /Duplicate API route: GET \/same-path/);
 	});
 });
