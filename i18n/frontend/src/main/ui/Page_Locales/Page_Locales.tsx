@@ -68,18 +68,7 @@ class Page_Locales
 					</span>
 				</LL_H_C>
 				<LL_H_C style={{gap: 'var(--space-2)'}}>
-					<TS_PropRenderer.Vertical label={'Register'}>
-				<select
-					className={'input'}
-					value={editable.item.register ?? ''}
-					onChange={e => void editable.updateObj({register: (e.target.value || undefined) as LocaleRegister | undefined})}
-				>
-					<option value={''}>Not set</option>
-					{LocaleRegisters.map(register => <option key={register} value={register}>{register}</option>)}
-				</select>
-			</TS_PropRenderer.Vertical>
-
-			<label className={'toggle'}>
+					<label className={'toggle'}>
 						<input
 							type={'checkbox'}
 							checked={locale.enabled}
@@ -114,6 +103,17 @@ class Page_Locales
 					value={String(editable.item.displayName ?? '')}
 					onChange={e => void editable.updateObj({displayName: e.target.value})}
 				/>
+			</TS_PropRenderer.Vertical>
+
+			<TS_PropRenderer.Vertical label={'Register'}>
+				<select
+					className={'input'}
+					value={editable.item.register ?? ''}
+					onChange={e => void editable.updateObj({register: (e.target.value || undefined) as LocaleRegister | undefined})}
+				>
+					<option value={''}>Not set</option>
+					{LocaleRegisters.map(register => <option key={register} value={register}>{register}</option>)}
+				</select>
 			</TS_PropRenderer.Vertical>
 
 			<label className={'toggle'}>
