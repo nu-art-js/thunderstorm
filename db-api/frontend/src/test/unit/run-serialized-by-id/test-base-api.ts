@@ -11,16 +11,49 @@ import type {TestItemTypes, TestItemTypesFailingValidator, UI_TestItem} from '..
 import {createStubCrudApiDefShape, testItemBaseDBConfig, testItemBaseDBConfigFailingValidator, testItemBaseDBConfigUpgrade} from '../../fixtures/index.js';
 import {HttpClient} from '@nu-art/http-client';
 
+/** Test spy shape used by dispatcher tests (window.DbApiFrontend.TestBaseApi#setDispatcher). */
+export type TestDispatchSpy = {
+	dispatchModule?: (event: string, item: any) => void;
+	dispatchUI?: (event: string, item: any) => void;
+	dispatchAll?: (event: string, item: any) => void;
+};
+
+/**
+ * Base DB now takes a single event dispatcher in the constructor; tests route it to an optional, swappable spy.
+ * Each event reaches the spy's module and UI hooks (or dispatchAll when the spy only has that).
+ */
+const createTestDispatcher = (target: { spy?: TestDispatchSpy }) => (event: string, item: any) => {
+	const spy = target.spy;
+	if (!spy)
+		return;
+
+	if (!spy.dispatchModule && !spy.dispatchUI)
+		return spy.dispatchAll?.(event, item);
+
+	spy.dispatchModule?.(event, item);
+	spy.dispatchUI?.(event, item);
+};
+
 /** Test-only subclass exposing protected runSerializedById. Name ends with _Class for Module base. */
 export class TestBaseApi_Class
 	extends ModuleFE_BaseApi<TestItemTypes> {
 
+	private readonly dispatchTarget: { spy?: TestDispatchSpy };
+
 	constructor(client: HttpClient) {
+		const dispatchTarget: { spy?: TestDispatchSpy } = {};
 		super({
 			config: testItemBaseDBConfig,
 			crudApiDef: createStubCrudApiDefShape(),
+			dispatcher: createTestDispatcher(dispatchTarget),
 			httpClient: client
 		});
+		this.dispatchTarget = dispatchTarget;
+	}
+
+	/** Routes this module's dispatched events to the given spy. */
+	setDispatcher(spy: TestDispatchSpy): void {
+		this.dispatchTarget.spy = spy;
 	}
 
 	/** Exposes runSerializedById for tests. */
@@ -47,6 +80,7 @@ export class TestBaseApiValidation_Class
 		super({
 			config: testItemBaseDBConfigFailingValidator,
 			crudApiDef: createStubCrudApiDefShape(),
+			dispatcher: createTestDispatcher({}),
 			httpClient: client
 		});
 	}
@@ -64,6 +98,7 @@ export class TestBaseApiUpgrade_Class
 		super({
 			config: testItemBaseDBConfigUpgrade,
 			crudApiDef: createStubCrudApiDefShape(),
+			dispatcher: createTestDispatcher({}),
 			httpClient: client
 		});
 	}

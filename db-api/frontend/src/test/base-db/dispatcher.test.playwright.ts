@@ -156,7 +156,8 @@ test.describe('BaseDB - dispatcher', () => {
 		expect(result.moduleEvents.some((e: any) => e.event === 'update')).toBe(true);
 	});
 
-	test('patch dispatches patch event', async ({page}) => {
+	// Skipped: patch() was removed from ModuleFE_BaseApi and the CRUD ApiDef (1b2b91b9e); restore if patch returns.
+	test.skip('patch dispatches patch event', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
 			const moduleEvents: { event: string }[] = [];

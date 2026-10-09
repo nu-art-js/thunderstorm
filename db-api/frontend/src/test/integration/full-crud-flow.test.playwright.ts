@@ -15,7 +15,8 @@ test.describe('Integration - full CRUD flow', () => {
 		await page.evaluate(() => (window as _Window).DbApiFrontend.cleanupDbApiIDB());
 	});
 
-	test('query then upsert then patch then delete leaves cache in correct final state', async ({page}) => {
+	// Skipped: patch() was removed from ModuleFE_BaseApi and the CRUD ApiDef (1b2b91b9e); restore if patch returns.
+	test.skip('query then upsert then patch then delete leaves cache in correct final state', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;
 			let callCount = 0;

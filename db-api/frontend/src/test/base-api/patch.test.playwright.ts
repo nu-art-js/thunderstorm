@@ -15,7 +15,8 @@ test.describe('BaseApi - patch', () => {
 		await page.evaluate(() => (window as _Window).DbApiFrontend.cleanupDbApiIDB());
 	});
 
-	test('patch(partial) and handlePatchComplete', async ({page}) => {
+	// Skipped: patch() was removed from ModuleFE_BaseApi and the CRUD ApiDef (1b2b91b9e); restore if patch returns.
+	test.skip('patch(partial) and handlePatchComplete', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;
 			const response = {_id: '1', name: 'patched', __created: 1, __updated: 2, _v: 'v1'};
