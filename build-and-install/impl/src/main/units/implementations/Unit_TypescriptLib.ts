@@ -928,7 +928,7 @@ ${browserNames}
 			this.logDebug(`Publishing Dry Run`);
 			await this.allocateCommando(Commando_Basic)
 				.cd(this.config.output)
-				.append('npm publish --dry-run')
+				.append('npm publish --dry-run --tag latest')
 				.execute();
 			this.logWarning(` ===> Publish Simulation - ENDED <=== `);
 
@@ -938,7 +938,7 @@ ${browserNames}
 		this.logDebug(`Publishing Package - For REAL`);
 		await this.allocateCommando(Commando_Basic)
 			.cd(this.config.output)
-			.append('npm publish --access public')
+			.append('npm publish --access public --tag latest')
 			.execute();
 	}
 
