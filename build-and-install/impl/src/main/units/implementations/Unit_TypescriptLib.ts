@@ -97,7 +97,10 @@ const TestsCommandComposer: Record<TestType, (config: Unit_TypescriptLib_Config,
 		// const pah = 'ts-mocha  --timeout 0 --inspect=8107 --watch-files \'src/test/**/*.test.ts\' src/test/**/*.test.ts';
 
 		const functionContextCommand = `${CONST_ESM_PREFIX} && ${command} -p src/test/${CONST_TS_CONFIG} --timeout 0 ${cli_debug}${cli_testFiles}${cli_testCases}`;
-		return `firebase emulators:exec "${functionContextCommand}"`;
+		// Same resolution as npmCommand(): the unit's own CLI first, then the workspace one (not a global firebase on PATH)
+		const packageFirebase = resolve(config.fullPath, 'node_modules/.bin/firebase');
+		const firebase = existsSync(packageFirebase) ? packageFirebase : resolve(runtimeContext.parentUnit.config.fullPath, 'node_modules/.bin/firebase');
+		return `${firebase} emulators:exec "${functionContextCommand}"`;
 	},
 	ui: async () => {
 		throw new NotImplementedYetException('UI tests not implemented yet');
