@@ -17,6 +17,7 @@
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

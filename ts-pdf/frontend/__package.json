@@ -33,6 +33,7 @@
     "@types/pdfjs-dist": "2.10.378",
     "@types/react": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

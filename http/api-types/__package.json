@@ -20,6 +20,7 @@
   "dependencies": {
     "@nu-art/ts-common": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

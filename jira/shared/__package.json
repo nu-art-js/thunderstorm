@@ -31,6 +31,7 @@
     "@types/request": "^2.48.3",
     "@types/saml2-js": "^1.6.8"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

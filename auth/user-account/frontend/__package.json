@@ -61,6 +61,7 @@
     "@types/pako": "^2.0.0",
     "@types/jsonwebtoken": "^9.0.6"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

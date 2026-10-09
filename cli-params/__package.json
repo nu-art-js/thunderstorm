@@ -35,6 +35,7 @@
   "devDependencies": {
     "@nu-art/testalot": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

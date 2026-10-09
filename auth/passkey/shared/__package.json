@@ -29,6 +29,7 @@
     "@nu-art/user-account-shared": "?"
   },
   "devDependencies": {},
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

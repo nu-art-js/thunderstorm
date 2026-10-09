@@ -37,6 +37,7 @@
     "@playwright/test": "?",
     "axios": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

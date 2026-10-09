@@ -40,6 +40,7 @@
     "@types/urijs": "^1.19.25",
     "@types/command-line-args": "^5.2.3"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

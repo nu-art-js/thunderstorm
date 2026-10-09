@@ -40,6 +40,7 @@
     "vite": "?",
     "vite-plugin-node-polyfills": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"
