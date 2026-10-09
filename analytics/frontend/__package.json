@@ -17,7 +17,6 @@
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {},
-  "private": false,
   "unitConfig": {
     "type": "typescript-lib"
   },

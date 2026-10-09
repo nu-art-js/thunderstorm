@@ -17,7 +17,6 @@
     "mixpanel": "~0.18.1"
   },
   "devDependencies": {},
-  "private": false,
   "unitConfig": {
     "type": "typescript-lib"
   },
