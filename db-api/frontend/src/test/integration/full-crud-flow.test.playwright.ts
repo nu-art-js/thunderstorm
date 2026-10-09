@@ -15,8 +15,7 @@ test.describe('Integration - full CRUD flow', () => {
 		await page.evaluate(() => (window as _Window).DbApiFrontend.cleanupDbApiIDB());
 	});
 
-	// Skipped: patch() was removed from ModuleFE_BaseApi and the CRUD ApiDef (1b2b91b9e); restore if patch returns.
-	test.skip('query then upsert then patch then delete leaves cache in correct final state', async ({page}) => {
+	test('query then upsert then delete leaves cache in correct final state', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;
 			let callCount = 0;
@@ -39,15 +38,8 @@ test.describe('Integration - full CRUD flow', () => {
 					headers: {},
 					config: {}
 				};
-				if (path.includes('patch')) return {
-					data: {_id: '1', name: 'patched', __created: 1, __updated: 3, _v: 'v1'},
-					status: 200,
-					statusText: 'OK',
-					headers: {},
-					config: {}
-				};
 				if (path.includes('delete-unique')) return {
-					data: {_id: '1', name: 'patched', __created: 1, __updated: 3, _v: 'v1'},
+					data: {_id: '1', name: 'upserted', __created: 1, __updated: 2, _v: 'v1'},
 					status: 200,
 					statusText: 'OK',
 					headers: {},
@@ -61,15 +53,12 @@ test.describe('Integration - full CRUD flow', () => {
 			const afterQuery = api.cache.all().length;
 			await api.upsert({_id: '1', name: 'upserted'});
 			const afterUpsert = api.cache.all().find((x: any) => x._id === '1')?.name;
-			await api.patch({_id: '1', name: 'patched'});
-			const afterPatch = api.cache.all().find((x: any) => x._id === '1')?.name;
 			await api.deleteUnique({_id: '1'});
 			const afterDelete = api.cache.all().length;
-			return {afterQuery, afterUpsert, afterPatch, afterDelete, callCount};
+			return {afterQuery, afterUpsert, afterDelete, callCount};
 		});
 		expect(result.afterQuery).toBe(1);
 		expect(result.afterUpsert).toBe('upserted');
-		expect(result.afterPatch).toBe('patched');
 		expect(result.afterDelete).toBe(0);
 	});
 

@@ -120,32 +120,6 @@ test.describe('BaseApi - error handling', () => {
 		expect(result.stillHas).toBe(true);
 	});
 
-	test('HTTP error on patch: promise rejects and cache not updated', async ({page}) => {
-		const result = await page.evaluate(async () => {
-			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;
-			const existing = {_id: '1', name: 'original', __created: 1, __updated: 1, _v: 'v1'};
-			const client = new HttpClient();
-			client.setConfig({origin: 'http://127.0.0.1'});
-			(client as any).sendRequest = async () => {
-				throw new Error('Patch failed');
-			};
-			const api = new TestBaseApi(client);
-			await api.init();
-			await api.onEntriesUpdated([existing]);
-			await api.loadCache();
-			let thrown = false;
-			try {
-				await api.patch({_id: '1', name: 'patched'});
-			} catch (_e) {
-				thrown = true;
-			}
-			const item = api.cache.all().find((x: any) => x._id === '1');
-			return {thrown, name: item?.name};
-		});
-		expect(result.thrown).toBe(true);
-		expect(result.name).toBe('original');
-	});
-
 	test('HTTP error on upsertAll: promise rejects and cache not updated', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {TestBaseApi, HttpClient} = (window as _Window).DbApiFrontend;

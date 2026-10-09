@@ -156,34 +156,6 @@ test.describe('BaseDB - dispatcher', () => {
 		expect(result.moduleEvents.some((e: any) => e.event === 'update')).toBe(true);
 	});
 
-	// Skipped: patch() was removed from ModuleFE_BaseApi and the CRUD ApiDef (1b2b91b9e); restore if patch returns.
-	test.skip('patch dispatches patch event', async ({page}) => {
-		const result = await page.evaluate(async () => {
-			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
-			const moduleEvents: { event: string }[] = [];
-			const spy = {
-				dispatchModule(event: string, _item: any) {
-					moduleEvents.push({event});
-				},
-				dispatchUI(event: string, _item: any) {
-					moduleEvents.push({event});
-				},
-				dispatchAll(_event: string, _item: any) {
-				}
-			};
-			const patched = {_id: '1', name: 'patched', __created: 1, __updated: 2, _v: 'v1'};
-			const client = new HttpClient();
-			client.setConfig({origin: 'http://127.0.0.1'});
-			(client as any).sendRequest = async () => ({data: patched, status: 200, statusText: 'OK', headers: {}, config: {}});
-			const api = new TestBaseApi(client);
-			await api.init();
-			api.setDispatcher(spy);
-			await api.patch({_id: '1', name: 'patched'});
-			return {moduleEvents};
-		});
-		expect(result.moduleEvents.some((e: any) => e.event === 'patch')).toBe(true);
-	});
-
 	test('queryUnique dispatches unique event', async ({page}) => {
 		const result = await page.evaluate(async () => {
 			const {TestBaseApi, HttpClient} = (window as any).DbApiFrontend;
