@@ -4,7 +4,6 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import * as React from 'react';
 import {ComponentSync} from '@nu-art/thunder-widgets';
 import type {ConsentCategoryKey} from '@nu-art/consent-shared';
 import {ModuleFE_Consent} from '../../ModuleFE_Consent.js';
