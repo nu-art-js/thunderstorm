@@ -45,12 +45,13 @@ type UnitConfigJSON_FirebaseFunction = UnitConfigJSON_Node & {
 // Pattern: starts with alphanumeric, optionally followed by (separator + alphanumeric) groups
 const imageNameRegex = /^[a-z0-9]+([._-][a-z0-9]+)*$/;
 
-const containerDeploymentValidator = {
+export const containerDeploymentValidator = {
 	artifactRegistry: {
 		region: tsValidateAnyString,
 		repository: tsValidateAnyString,
 		projectId: tsValidateAnyString,
 	},
+	runRegion: tsValidateOptionalAnyString, // Cloud Run region; falls back to artifactRegistry.region
 	imageName: tsValidateRegexp(imageNameRegex, true), // Required: Docker image name matching Artifact Registry rules
 	dockerfile: tsValidateOptionalAnyString,
 };
