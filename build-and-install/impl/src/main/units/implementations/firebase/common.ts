@@ -90,9 +90,12 @@ export function resolveCloudRunRegion(containerDeployment: { runRegion?: string;
 }
 
 /**
- * RTDB URL for FIREBASE_CONFIG.databaseURL: the env's `databaseURL` when set (e.g. a europe-west1
- * https://<instance>.europe-west1.firebasedatabase.app), otherwise the us-central1 default instance URL.
+ * Default RTDB instance URL for FIREBASE_CONFIG.databaseURL, in the Cloud Run region (resolveCloudRunRegion):
+ * us-central1 -> https://<project>-default-rtdb.firebaseio.com, any other region ->
+ * https://<project>-default-rtdb.<region>.firebasedatabase.app
  */
-export function resolveDatabaseURL(envConfig: { projectId: string; databaseURL?: string }): string {
-	return envConfig.databaseURL || `https://${envConfig.projectId}-default-rtdb.firebaseio.com`;
+export function resolveDatabaseURL(projectId: string, region: string): string {
+	if (region === 'us-central1')
+		return `https://${projectId}-default-rtdb.firebaseio.com`;
+	return `https://${projectId}-default-rtdb.${region}.firebasedatabase.app`;
 }

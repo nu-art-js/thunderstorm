@@ -32,7 +32,7 @@ export const firebaseFunctionEmulator_WarningStrings: string[] = [
 	'⚠',
 ];
 
-type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean, databaseURL?: string };
+type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean };
 
 export type FunctionTriggerType = 'http' | 'schedule' | 'eventarc';
 
@@ -762,7 +762,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			const locationId = region.replace(/\d+$/, ''); // Remove trailing digits
 			const firebaseConfig = {
 				projectId: runtimeProjectId,
-				databaseURL: resolveDatabaseURL(envConfig),
+				databaseURL: resolveDatabaseURL(runtimeProjectId, region),
 				storageBucket: `${runtimeProjectId}.appspot.com`,
 				locationId: locationId
 			};
@@ -901,7 +901,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				GOOGLE_CLOUD_PROJECT: runtimeProjectId,
 				FIREBASE_CONFIG: JSON.stringify({
 					projectId: runtimeProjectId,
-					databaseURL: resolveDatabaseURL(envConfig),
+					databaseURL: resolveDatabaseURL(runtimeProjectId, region),
 					storageBucket: `${runtimeProjectId}.appspot.com`,
 					locationId: locationId,
 				}),

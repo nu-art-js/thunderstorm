@@ -1,24 +1,25 @@
 import {expect} from 'chai';
-import {tsValidateResult} from '@nu-art/ts-common';
-import {resolveDatabaseURL} from '../../main/units/implementations/firebase/common.js';
-import {envConfigValidator} from '../../main/units/discovery/resolvers/UnitMapper_FirebaseFunction.js';
+import {resolveCloudRunRegion, resolveDatabaseURL} from '../../main/units/implementations/firebase/common.js';
 
-describe('Firebase function env databaseURL (FIREBASE_CONFIG on Cloud Run)', () => {
-	it('falls back to the us-central1 default instance URL when databaseURL is unset', () => {
-		expect(resolveDatabaseURL({projectId: 'my-project'})).to.equal('https://my-project-default-rtdb.firebaseio.com');
+const artifactRegistry = {region: 'us-central1', repository: 'web-apps', projectId: 'images-project'};
+
+describe('FIREBASE_CONFIG databaseURL from the Cloud Run region', () => {
+	it('us-central1 uses the firebaseio.com default instance URL', () => {
+		expect(resolveDatabaseURL('my-project', 'us-central1')).to.equal('https://my-project-default-rtdb.firebaseio.com');
 	});
 
-	it('uses the env databaseURL when set (e.g. a europe-west1 instance)', () => {
-		const databaseURL = 'https://my-project-default-rtdb.europe-west1.firebasedatabase.app';
-		expect(resolveDatabaseURL({projectId: 'my-project', databaseURL})).to.equal(databaseURL);
+	it('any other region uses the regional firebasedatabase.app URL', () => {
+		expect(resolveDatabaseURL('my-project', 'europe-west1')).to.equal('https://my-project-default-rtdb.europe-west1.firebasedatabase.app');
+		expect(resolveDatabaseURL('my-project', 'asia-southeast1')).to.equal('https://my-project-default-rtdb.asia-southeast1.firebasedatabase.app');
 	});
 
-	it('validates an env with and without databaseURL', () => {
-		expect(tsValidateResult({projectId: 'my-project'}, envConfigValidator)).to.be.undefined;
-		expect(tsValidateResult({projectId: 'my-project', databaseURL: 'https://my-project-default-rtdb.europe-west1.firebasedatabase.app'}, envConfigValidator)).to.be.undefined;
+	it('follows runRegion, not the image region', () => {
+		const region = resolveCloudRunRegion({artifactRegistry, runRegion: 'europe-west1'});
+		expect(resolveDatabaseURL('my-project', region)).to.equal('https://my-project-default-rtdb.europe-west1.firebasedatabase.app');
 	});
 
-	it('rejects a non-string databaseURL', () => {
-		expect(tsValidateResult({projectId: 'my-project', databaseURL: 42} as any, envConfigValidator)).to.not.be.undefined;
+	it('falls back to the image region when runRegion is unset', () => {
+		const region = resolveCloudRunRegion({artifactRegistry});
+		expect(resolveDatabaseURL('my-project', region)).to.equal('https://my-project-default-rtdb.firebaseio.com');
 	});
 });
