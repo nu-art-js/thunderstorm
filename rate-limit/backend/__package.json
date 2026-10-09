@@ -1,0 +1,31 @@
+{
+  "name": "@nu-art/rate-limit-backend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Rate limit backend: ModuleBE_RateLimit (sliding-window counters in the rate-limit--buckets db-api entity) and an http API middleware that answers 429",
+  "keywords": ["TacB0sS", "infra", "nu-art", "rate-limit", "middleware", "thunderstorm", "typescript"],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+  "repository": {"type": "git", "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git", "directory": "_thunderstorm/rate-limit/backend"},
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "dependencies": {
+    "@nu-art/rate-limit-shared": "?",
+    "@nu-art/api-types": "?",
+    "@nu-art/db-api-backend": "?",
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/google-services-backend": "?",
+    "@nu-art/http-server": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?",
+    "@nu-art/firebase-backend": "?"
+  },
+  "unitConfig": {"type": "typescript-lib"},
+  "type": "module",
+  "exports": {
+    ".": {"types": "./index.d.ts", "import": "./index.js"},
+    "./*": {"types": "./*.d.ts", "import": "./*.js"}
+  }
+}

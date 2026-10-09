@@ -1,0 +1,71 @@
+---
+description: How to use rate-limit — sliding-window limits per (policy, subject) over db-api, with a 429 http middleware
+alwaysApply: false
+---
+
+# How to use rate-limit
+
+`@nu-art/rate-limit-shared` and `@nu-art/rate-limit-backend` provide sliding-window rate limiting that is shared by every backend instance.
+
+| Package | Contents |
+|---|---|
+| `@nu-art/rate-limit-shared` | `RateLimitPolicy`, `decideRateLimit` (pure), `resolveRateLimitPolicy`, the `rate-limit--buckets` entity contract |
+| `@nu-art/rate-limit-backend` | `ModuleBE_RateLimit` (`consume`, `hit`, `middleware`, `purgeExpired`), `ModuleBE_RateLimitBucketDB`, `ModulePackBE_RateLimit` |
+
+## Model
+
+- A **policy** is defined in code: `{key, windowMs, limit}`. The key is stable and domain-agnostic (`'auth.login.ip'`), never a product noun.
+- A **subject** is what the policy counts against: an IP, an email, an account id. The app resolves it.
+- One bucket per (policy, subject). Its `_id` is a keyed digest (HMAC-SHA256 with a Secret Manager pepper), so no subject is stored in clear.
+- A hit is decided and written inside a db transaction, so concurrent instances cannot both take the last slot. Refused hits are not recorded.
+
+## Setup
+
+1. Add `ModulePackBE_RateLimit` to Storm (infra packs before app modules).
+2. Create the pepper secret (a JSON string, read through `SecretKey`). Default name `rate-limit--pepper`:
+   ```bash
+   printf '"%s"' "$(openssl rand -hex 32)" | gcloud secrets create rate-limit--pepper --data-file=-
+   ```
+3. Optional RTDB `_config/<plane>/ModuleBE_RateLimit`:
+   ```json
+   {"pepperSecretName": "rate-limit--pepper", "policies": {"auth.login.ip": {"limit": 20}}, "rejectMessage": "Too many requests. Please try again later."}
+   ```
+   `policies` overrides `windowMs` / `limit` per policy key. Code defaults apply otherwise.
+
+## Usage
+
+Define policies next to the concern that owns them:
+
+```typescript
+import {Minute} from '@nu-art/ts-common';
+import type {RateLimitPolicy} from '@nu-art/rate-limit-shared';
+
+export const RateLimitPolicy_LoginIp: RateLimitPolicy = {key: 'auth.login.ip', windowMs: 10 * Minute, limit: 20};
+```
+
+Guard ApiDefs with the middleware (register **before** `Storm.build()`):
+
+```typescript
+HttpServer.getDefault().addApiMiddleware(
+	apiDef => apiDef === ApiDef_Login.login,
+	ModuleBE_RateLimit.middleware(RateLimitPolicy_LoginIp, () => resolveClientIp()),
+);
+```
+
+Or consume inside a handler when the subject comes from the body:
+
+```typescript
+await ModuleBE_RateLimit.consume(RateLimitPolicy_GuestEmail, body.email.trim().toLowerCase());
+```
+
+A refused hit throws `HttpCodes._4XX.TOO_MANY_REQUESTS` and, inside a request, sets `Retry-After` (seconds). Use `hit()` to get the decision without throwing.
+
+## Housekeeping
+
+`ModuleBE_RateLimit.purgeExpired()` deletes buckets whose window has passed. It is a manual trigger; wire a scheduler to it if the collection should be pruned automatically. Alternatively enable a Firestore TTL policy on field `expiresAtTtl` of collection group `rate-limit--buckets` (each bucket writes it as a Date).
+
+## Rules
+
+- Never put a product noun in a policy key, and never store the subject yourself.
+- Resolving the client IP is the app's job (it knows its proxy chain).
+- Middleware order: register rate-limit middleware **before** the session/permissions middleware on routes that also authenticate, so bucket writes are not stamped with the caller's document access (see ISSUES.md).
