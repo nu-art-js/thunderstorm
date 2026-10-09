@@ -94,7 +94,7 @@ export class ModuleFE_I18n_Class
 			this.catalogLocale = localeCode;
 			dispatch_onI18nChanged.dispatchAll();
 		} catch (e) {
-			this.logWarning(`Failed to load i18n defaults for '${localeCode}'`, e);
+			this.logWarning(`Failed to load i18n defaults for '${localeCode}'`, e as Error);
 		}
 	};
 
