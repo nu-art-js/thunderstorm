@@ -77,7 +77,9 @@ export default [
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "declaration": true,
+    "moduleResolution": "bundler"
   }
 }
 
@@ -85,7 +87,8 @@ export default [
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -148,7 +151,8 @@ export default [
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "typescript": "latest",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "@typescript/native": "npm:typescript@7.0.2",
     "ts-node": "latest",
     "mocha": "latest",
     "ts-mocha": "latest",

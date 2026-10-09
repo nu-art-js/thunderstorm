@@ -8,7 +8,7 @@ import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
 import {CONST_DeployHostingDir, CONST_DeploymentId, CONST_DeploymentMetadata, CONST_TrashDir} from '../../../main/config/consts.js';
-import {CONST_TestFixture_HostingHello} from './test-consts.js';
+import {CONST_TestFixture_HostingHello, describeLiveDeploy} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
@@ -111,7 +111,7 @@ type TestCase_DeployHosting = TestModel<Input, Output>;
 
 const runTestCase = (testCase: TestCase_DeployHosting, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
-describe('Firebase Deploy Hosting Phase', () => {
+describeLiveDeploy('Firebase Deploy Hosting Phase', () => {
 	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {

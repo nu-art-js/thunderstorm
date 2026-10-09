@@ -8,7 +8,7 @@ import {resolve} from 'path';
 import {existsSync, readFileSync} from 'fs';
 import {expect} from 'chai';
 import {CONST_DeploymentId} from '../../../main/config/consts.js';
-import {CONST_TestFixture_FunctionHello} from './test-consts.js';
+import {CONST_TestFixture_FunctionHello, describeLiveDeploy} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
@@ -108,7 +108,7 @@ type TestCase_BuildPushImage = TestModel<Input, Output>;
 
 const runTestCase = (testCase: TestCase_BuildPushImage, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
-describe('Firebase Build Push Image Phase', () => {
+describeLiveDeploy('Firebase Build Push Image Phase', () => {
 	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {

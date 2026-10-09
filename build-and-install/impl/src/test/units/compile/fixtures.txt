@@ -3,7 +3,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -27,7 +28,8 @@ export const x = 5;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -43,7 +45,8 @@ export const x = 5;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -71,7 +74,8 @@ export const = 5;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -117,7 +121,8 @@ export const x = 5;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 

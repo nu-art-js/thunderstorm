@@ -9,7 +9,7 @@ import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator'
 import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
 import {CONST_FirebaseJSON, CONST_FirebaseRC} from '../../../main/config/consts.js';
-import {CONST_TestFixture_FunctionHello, CONST_TestFixture_HostingHello} from './test-consts.js';
+import {CONST_TestFixture_FunctionHello, CONST_TestFixture_HostingHello, itLiveDeploy} from './test-consts.js';
 import {FilesCache} from '../../../main/core/FilesCache.js';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
@@ -69,7 +69,7 @@ describe('Firebase Deploy Phase', () => {
 	});
 
 	describe('Deploy Phase', () => {
-		it('Functions - Deploy to Firebase', runTestCase({
+		itLiveDeploy('Functions - Deploy to Firebase', runTestCase({
 			input: {fixtures: ['./workspace-deploy.txt', './firebase-function-hello.txt'], skipDeploy: false},
 			result: async (bai: BuildAndInstall) => {
 				const functionUnit = bai.workspace.getUnitByKey<Unit_FirebaseFunctionsApp>(CONST_TestFixture_FunctionHello, Unit_FirebaseFunctionsApp);
@@ -121,7 +121,7 @@ describe('Firebase Deploy Phase', () => {
 			}
 		})).timeout(300000); // Skip by default - requires Firebase CLI authentication
 
-		it('Hosting - Deploy to Firebase', runTestCase({
+		itLiveDeploy('Hosting - Deploy to Firebase', runTestCase({
 			input: {fixtures: ['./workspace-deploy.txt', './firebase-hosting-hello.txt'], skipDeploy: false},
 			result: async (bai: BuildAndInstall) => {
 				const hostingUnit = bai.workspace.getUnitByKey<Unit_FirebaseHostingApp>(CONST_TestFixture_HostingHello, Unit_FirebaseHostingApp);

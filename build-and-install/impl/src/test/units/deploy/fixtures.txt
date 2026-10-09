@@ -37,7 +37,8 @@ service firebase.storage {
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -72,7 +73,8 @@ service firebase.storage {
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "typescript": "latest",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "@typescript/native": "npm:typescript@7.0.2",
     "ts-node": "latest",
     "mocha": "latest",
     "ts-mocha": "latest",
@@ -128,8 +130,8 @@ service firebase.storage {
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true
   }
@@ -213,8 +215,8 @@ export const hello = onRequest((request, response) => {
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true
   }

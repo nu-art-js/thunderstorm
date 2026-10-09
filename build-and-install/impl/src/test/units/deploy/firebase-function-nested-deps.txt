@@ -30,8 +30,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true
   }
@@ -71,8 +71,9 @@ export const hello = functions.https.onRequest((request, response) => {
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "declaration": true,
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true
   }
@@ -105,8 +106,9 @@ export const libAFunction = () => {
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "declaration": true,
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "skipLibCheck": true
   }

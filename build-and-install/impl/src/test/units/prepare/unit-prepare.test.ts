@@ -20,6 +20,13 @@ const pathToWorkspace = resolve(pathToTemp, './workspace');
 const fixtureTemplateExtractor = new TestWorkspaceCreator(dirname, pathToFixtures);
 const workspaceCreator = new TestWorkspaceCreator(pathToFixtures, pathToWorkspace);
 
+// Fixture extraction runs its own {{param}} substitution; map the package.json template params
+// to themselves so they reach the workspace verbatim and are resolved by the Prepare phase.
+const passThroughTemplateParams = {
+	app_version: '{{app_version}}',
+	app_version_doesnt_exists: '{{app_version_doesnt_exists}}',
+};
+
 let unit: Unit_TypescriptLib;
 let buildAndInstall: BuildAndInstall;
 
@@ -31,7 +38,7 @@ type Output = () => Promise<void>;
 const test = async (input: Input): Promise<void> => {
 	FilesCache.clear();
 	await workspaceCreator.setupWorkspace(['workspace.txt']);
-	await workspaceCreator.setupWorkspace(input.fixtures, 'lib-prepare');
+	await workspaceCreator.setupWorkspace(input.fixtures, passThroughTemplateParams, 'lib-prepare');
 	buildAndInstall = new BuildAndInstall({pathToProject: pathToWorkspace});
 	await buildAndInstall.build();
 
@@ -48,7 +55,7 @@ describe('Unit_NodeLib - Prepare Phase', () => {
 	before(async function () {
 		this.timeout(10000);
 		await FileSystemUtils.folder.delete(pathToTemp);
-		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt']);
+		await fixtureTemplateExtractor.setupWorkspace(['../../workspace-fixture.txt', 'fixtures.txt'], passThroughTemplateParams);
 	});
 
 	it('Prepare - Copies __package.json to package.json with no templates', runTestCase({

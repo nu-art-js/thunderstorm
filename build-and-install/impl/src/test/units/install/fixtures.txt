@@ -5,7 +5,8 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "typescript": "latest",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "@typescript/native": "npm:typescript@7.0.2",
     "ts-node": "latest",
     "mocha": "latest",
     "eslint": "latest",
@@ -38,5 +39,5 @@
 //// file: ./lib-linked/dist/index.js
 module.exports = { linked: true };
 
-//// file: ./lib-linked/src/main/index.js
+//// file: ./lib-linked/src/main/index.ts
 export const linked = true;

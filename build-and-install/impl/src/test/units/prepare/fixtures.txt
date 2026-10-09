@@ -16,7 +16,7 @@
 //// file: ./__package.json
 {
   "name": "lib-prepare",
-  "version": "$app_version",
+  "version": "{{app_version}}",
   "publishConfig": {
     "directory": "dist"
   },
@@ -30,7 +30,7 @@
 //// file: ./__package.json
 {
   "name": "lib-prepare",
-  "version": "$app_version_doesnt_exists",
+  "version": "{{app_version_doesnt_exists}}",
   "publishConfig": {
     "directory": "dist"
   },
@@ -44,8 +44,8 @@
 //// file: ./__package.json
 {
   "name": "lib-prepare",
-  "version": "$app_version",
-  "description": "$app_version",
+  "version": "{{app_version}}",
+  "description": "{{app_version}}",
   "publishConfig": {
     "directory": "dist"
   },

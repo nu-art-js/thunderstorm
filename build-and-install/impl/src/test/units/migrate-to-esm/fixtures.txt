@@ -21,7 +21,8 @@ version: v1
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -42,7 +43,8 @@ export const h = () => 'h';
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -58,7 +60,8 @@ export const lib = () => 1;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -76,7 +79,8 @@ export type Foo = { a: number };
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -89,7 +93,8 @@ export const r = _.camelCase('A B');
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "baseUrl": "./src/main",
     "paths": {
       "@app/*": ["*"]
@@ -109,7 +114,8 @@ export const sum = (a: number, b: number) => a + b;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -144,7 +150,8 @@ export const u = () => 'u';
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -172,7 +179,8 @@ export const r = b();
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -184,7 +192,8 @@ export const b = () => 'b';
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -200,7 +209,8 @@ export const lib = () => 1;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -216,7 +226,8 @@ export const lib = () => 2;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -232,7 +243,8 @@ export const out = main();
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -248,7 +260,8 @@ export const out = u();
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx"
   }
 }
@@ -272,7 +285,8 @@ version: v1
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -287,7 +301,8 @@ export const lib = () => 1;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -302,7 +317,8 @@ export const lib = () => 2;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -317,7 +333,8 @@ export const out = main();
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -332,7 +349,8 @@ export const out = u();
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx"
   }
 }
@@ -374,7 +392,8 @@ version: v1
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -402,7 +421,8 @@ export const r = b();
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -414,7 +434,8 @@ export const b = () => 'b';
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -432,7 +453,8 @@ export const run = async () => {
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -445,7 +467,8 @@ export const run = async () => import('./lib/' + name);
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -462,7 +485,8 @@ export const r = m.u();
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -477,7 +501,8 @@ export const r = m;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node"
+    "module": "esnext",
+    "moduleResolution": "bundler"
   }
 }
 
@@ -493,7 +518,8 @@ export const x = 1;
 {
   "compilerOptions": {
     "target": "ES2020",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true
   }
 }
