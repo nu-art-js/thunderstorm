@@ -79,7 +79,7 @@ export function createStubCrudApiDefShape(): CrudApiDefShape {
 		upsert: {method: HttpMethod.POST, path: `${basePath}/upsert`},
 		upsertAll: {method: HttpMethod.POST, path: `${basePath}/upsert-all`},
 		patch: {method: HttpMethod.POST, path: `${basePath}/patch`},
-		delete: {method: HttpMethod.GET, path: `${basePath}/delete-unique`},
+		deleteUnique: {method: HttpMethod.GET, path: `${basePath}/delete-unique`},
 		deleteQuery: {method: HttpMethod.POST, path: `${basePath}/delete`},
 		deleteAll: {method: HttpMethod.GET, path: `${basePath}/delete-all`}
 	};

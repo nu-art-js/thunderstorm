@@ -9,6 +9,10 @@
 import {defineConfig, type Plugin} from 'vite';
 import {nodePolyfills} from 'vite-plugin-node-polyfills';
 import * as ts from 'typescript';
+import {fileURLToPath} from 'node:url';
+
+// _thunderstorm root (this file's dir); vite.config is shared by every Playwright test page
+const thunderstormRoot = fileURLToPath(new URL('.', import.meta.url));
 
 /**
  * Transform .ts/.tsx with the TypeScript compiler so Stage 3 decorators
@@ -56,6 +60,11 @@ export default defineConfig({
 	resolve: {
 		preserveSymlinks: true,
 		conditions: ['import', 'module', 'browser', 'default'],
+		alias: [
+			// With preserveSymlinks, transitive linked deps (e.g. http-client -> api-types) are resolved from the
+			// importing package's symlink path, where they're not installed. Point them at the built package.
+			{find: /^@nu-art\/api-types$/, replacement: `${thunderstormRoot}http/api-types/dist/index.js`},
+		],
 	},
 	server: {
 		port: 5173,

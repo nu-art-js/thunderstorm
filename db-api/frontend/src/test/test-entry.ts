@@ -3,7 +3,8 @@
  * Exposes package exports to window for page.evaluate() — main/ + test-utils only (playwright-tests rule).
  */
 
-import {ModuleFE_BaseApi, ModuleFE_BaseDB} from '../main/base/index.js';
+import {ModuleFE_BaseApi} from '../main/ModuleFE_BaseApi.js';
+import {ModuleFE_BaseDB} from '../main/ModuleFE_BaseDB.js';
 import {HttpClient} from '@nu-art/http-client';
 import {
 	cleanupDbApiIDB,
