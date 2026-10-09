@@ -1,0 +1,57 @@
+---
+description: How to use turnstile — fail-closed Cloudflare Turnstile verification (backend middleware) and the widget (frontend)
+alwaysApply: false
+---
+
+# How to use turnstile
+
+| Package | Contents |
+|---|---|
+| `@nu-art/turnstile-shared` | `HeaderName_TurnstileToken` (`x-turnstile-token`), `TurnstileVerifyContext` |
+| `@nu-art/turnstile-backend` | `ModuleBE_Turnstile` (`verify`, `check`, `middleware`), `ModuleBE_TurnstileSiteverify` (external-API module, own `HttpClient`), `ModulePackBE_Turnstile` |
+| `@nu-art/turnstile-frontend` | `ModuleFE_Turnstile` (site key, script loader), `Component_Turnstile`, `ModulePackFE_Turnstile` |
+
+## Behaviour
+
+Verification fails closed. A missing token, a missing secret, a network or 5xx error (after one retry with the same idempotency key), `success: false`, or a hostname / action mismatch all reject:
+
+- 403 `FORBIDDEN` for a rejected token,
+- 503 `SERVICE_UNAVAILABLE` when the secret cannot be loaded.
+
+Each verification logs one structured line (`event: turnstile_siteverify`, outcome, reason, hostname, error codes). It never contains the token, the secret or the IP. Request-level logging of the siteverify call is capped at Info because its body carries the secret.
+
+## Backend setup
+
+1. Add `ModulePackBE_Turnstile` to Storm.
+2. Secret Manager: the Turnstile secret key as a JSON string, default name `turnstile-secret-key` (read through `SecretKey`).
+3. RTDB `_config/<plane>/ModuleBE_Turnstile`:
+   ```json
+   {"secretKeySecretName": "turnstile-secret-key", "allowedHostnames": ["app.example.com"]}
+   ```
+   Empty `allowedHostnames` accepts any hostname. Set it in every real plane.
+4. Guard ApiDefs before `Storm.build()`:
+   ```typescript
+   HttpServer.getDefault().addApiMiddleware(
+      apiDef => apiDef === ApiDef_Signup.register,
+      ModuleBE_Turnstile.middleware({context: {expectedAction: 'signup'}, resolveRemoteIp: () => resolveClientIp()}),
+   );
+   ```
+   Or call `await ModuleBE_Turnstile.verify(token, remoteIp, context)` in a handler.
+
+## Frontend setup
+
+1. Add `ModulePackFE_Turnstile` to Thunder.
+2. RTDB `_config/frontend/<app>/ModuleFE_Turnstile`: `{"siteKey": "<public site key>"}`.
+3. Render the widget and send the token in the header with the `@ApiCaller` `onBeforeExecute` hook:
+   ```tsx
+   <Component_Turnstile action="signup" onToken={token => this.token = token} onTokenLost={() => this.token = undefined}/>
+   ```
+   ```typescript
+   @ApiCaller(ApiDef_Signup.register, {onBeforeExecute: (m: ModuleFE_Signup_Class, req) => req.addHeader(HeaderName_TurnstileToken, m.token)})
+   ```
+   A token is single-use: call `reset()` on the component after a guarded call.
+
+## Rules
+
+- Which endpoints are protected is app logic. The lib never decides it.
+- Never weaken fail-closed behaviour to unblock local runs: use Cloudflare's test keys instead.
