@@ -1,6 +1,11 @@
 import {Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '@nu-art/thunder-core';
+import {ApiCaller, HttpClient} from '@nu-art/http-client';
 import {
+	ApiDef_I18n,
+	textToForms,
+	type API_I18n,
+	type I18N_LocaleCatalog,
 	asI18nKey,
 	isRtlLanguage,
 	languageFromLocaleCode,
@@ -31,6 +36,8 @@ export class ModuleFE_I18n_Class
 
 	private localeCode = DefaultLocaleCode;
 	private editMode = false;
+	private catalog: I18N_LocaleCatalog = {};
+	private catalogLocale?: string;
 
 	constructor() {
 		super();
@@ -41,6 +48,7 @@ export class ModuleFE_I18n_Class
 		const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(StorageKey_I18nLocale) : undefined;
 		this.localeCode = stored || this.config.defaultLocaleCode || DefaultLocaleCode;
 		this.applyDocumentLocale();
+		void this.loadCatalog();
 	}
 
 	getLocaleCode = (): string => this.localeCode;
@@ -53,6 +61,7 @@ export class ModuleFE_I18n_Class
 			localStorage.setItem(StorageKey_I18nLocale, localeCode);
 		this.applyDocumentLocale();
 		dispatch_onI18nChanged.dispatchAll();
+		void this.loadCatalog();
 	};
 
 	setEditMode = (editMode: boolean) => {
@@ -65,9 +74,37 @@ export class ModuleFE_I18n_Class
 			id,
 			params,
 			localeCode: this.localeCode,
-			overlayForms: this.overlayFormsFor(id),
+			override: this.overlayFormsFor(id),
+			defaultText: this.catalog[asI18nKey(id)],
 		});
 	};
+
+	/** The default forms of a key in the active locale (for the editor). */
+	defaultFormsFor = (id: I18N_Brand): I18N_Forms | undefined => textToForms(this.catalog[asI18nKey(id)]);
+
+	/** Loads the active locale's defaults; texts re-render when it arrives. */
+	loadCatalog = async (): Promise<void> => {
+		const localeCode = this.localeCode;
+		try {
+			const catalog = await this.fetchCatalog({locale: localeCode});
+			if (localeCode !== this.localeCode)
+				return;
+
+			this.catalog = catalog;
+			this.catalogLocale = localeCode;
+			dispatch_onI18nChanged.dispatchAll();
+		} catch (e) {
+			this.logWarning(`Failed to load i18n defaults for '${localeCode}'`, e);
+		}
+	};
+
+	isCatalogLoaded = (): boolean => this.catalogLocale === this.localeCode;
+
+	@ApiCaller(ApiDef_I18n.catalog, {httpClient: () => HttpClient.default})
+	protected async fetchCatalog(params: API_I18n['catalog']['Params']): Promise<API_I18n['catalog']['Response']> {
+		void params;
+		return undefined as unknown as API_I18n['catalog']['Response'];
+	}
 
 	applyDocumentLocale = () => {
 		if (typeof document === 'undefined')

@@ -5,6 +5,7 @@
 	"license": "Apache-2.0",
 	"dependencies": {
 		"@nu-art/i18n-shared": "?",
+		"@nu-art/http-client": "?",
 		"@nu-art/db-api-frontend": "?",
 		"@nu-art/permissions-frontend": "?",
 		"@nu-art/permissions-shared": "?",

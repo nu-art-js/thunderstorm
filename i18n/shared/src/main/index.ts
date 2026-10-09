@@ -1,5 +1,7 @@
 export * from './brand.js';
 export * from './register.js';
+export * from './catalog.js';
+export * from './api-def.js';
 export * from './plural.js';
 export * from './resolve.js';
 export * from './permission-scope.js';

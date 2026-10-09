@@ -4,6 +4,7 @@
 	"description": "i18n — branded keys, resolve, locale catalog, overlay",
 	"license": "Apache-2.0",
 	"dependencies": {
+		"@nu-art/api-types": "?",
 		"@nu-art/db-api-shared": "?",
 		"@nu-art/permissions-shared": "?",
 		"@nu-art/ts-common": "?"
