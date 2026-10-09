@@ -1,5 +1,5 @@
 ---
-description: How to use rate-limit — sliding-window limits per (policy, subject) over db-api, with a 429 http middleware
+description: How to use rate-limit — sliding-window limits per (policy, subject) in the Realtime Database, with a 429 http middleware
 alwaysApply: false
 ---
 
@@ -9,15 +9,16 @@ alwaysApply: false
 
 | Package | Contents |
 |---|---|
-| `@nu-art/rate-limit-shared` | `RateLimitPolicy`, `decideRateLimit` (pure), `resolveRateLimitPolicy`, the `rate-limit--buckets` entity contract |
-| `@nu-art/rate-limit-backend` | `ModuleBE_RateLimit` (`consume`, `hit`, `middleware`, `purgeExpired`), `ModuleBE_RateLimitBucketDB`, `ModulePackBE_RateLimit` |
+| `@nu-art/rate-limit-shared` | `RateLimitPolicy`, `decideRateLimit` (pure), `resolveRateLimitPolicy`, the `RateLimitBucket` shape |
+| `@nu-art/rate-limit-backend` | `ModuleBE_RateLimit` (`consume`, `hit`, `middleware`, `purgeExpired`), `ModulePackBE_RateLimit` |
 
 ## Model
 
 - A **policy** is defined in code: `{key, windowMs, limit}`. The key is stable and domain-agnostic (`'auth.login.ip'`), never a product noun.
 - A **subject** is what the policy counts against: an IP, an email, an account id. The app resolves it.
-- One bucket per (policy, subject). Its `_id` is a keyed digest (HMAC-SHA256 with a Secret Manager pepper), so no subject is stored in clear.
-- A hit is decided and written inside a db transaction, so concurrent instances cannot both take the last slot. Refused hits are not recorded.
+- One bucket per (policy, subject), stored in the Realtime Database at `/state/RateLimit/buckets/<bucketId>` (module state via `ModuleBE_Firebase.createModuleStateFirebaseRef`). The id is a keyed digest (HMAC-SHA256 with a Secret Manager pepper), so no subject is stored in clear.
+- A hit is decided and written inside an RTDB transaction, so concurrent instances cannot both take the last slot. Refused hits are not recorded.
+- A bucket whose window has passed is rewritten (cleaned up) the next time its key is touched.
 
 ## Setup
 
@@ -62,10 +63,10 @@ A refused hit throws `HttpCodes._4XX.TOO_MANY_REQUESTS` and, inside a request, s
 
 ## Housekeeping
 
-`ModuleBE_RateLimit.purgeExpired()` deletes buckets whose window has passed. It is a manual trigger; wire a scheduler to it if the collection should be pruned automatically. Alternatively enable a Firestore TTL policy on field `expiresAtTtl` of collection group `rate-limit--buckets` (each bucket writes it as a Date).
+Touched keys clean themselves up. For keys that are never touched again, call `ModuleBE_RateLimit.purgeExpired()` periodically (e.g. from a scheduled function); it deletes each expired bucket in a transaction that re-checks expiry.
 
 ## Rules
 
 - Never put a product noun in a policy key, and never store the subject yourself.
 - Resolving the client IP is the app's job (it knows its proxy chain).
-- Middleware order: register rate-limit middleware **before** the session/permissions middleware on routes that also authenticate, so bucket writes are not stamped with the caller's document access (see ISSUES.md).
+- Keep `/state` closed to clients in the RTDB rules; buckets are written by the backend (admin) only.

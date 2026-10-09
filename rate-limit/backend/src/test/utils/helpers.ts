@@ -1,13 +1,14 @@
 /*
- * @nu-art/rate-limit-backend - Sliding-window rate limiting over db-api with an http 429 middleware
+ * @nu-art/rate-limit-backend - Sliding-window rate limiting over the Realtime Database with an http 429 middleware
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
 
-import {Dispatcher, generateHex} from '@nu-art/ts-common';
-import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase-backend';
+import {generateHex, type TypedMap} from '@nu-art/ts-common';
+import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {JWT_Input, ModuleBE_Auth} from '@nu-art/google-services-backend';
-import {ModuleBE_RateLimitBucketDB} from '../../main/_entity/bucket/ModuleBE_RateLimitBucketDB.js';
+import {deleteApp} from 'firebase-admin/app';
+import type {RateLimitBucket} from '@nu-art/rate-limit-shared';
 import {ModuleBE_RateLimit_Class} from '../../main/ModuleBE_RateLimit.js';
 
 const database = 'demo-test';
@@ -33,11 +34,18 @@ export async function setupFirebaseEmulator(): Promise<void> {
 			} as JWT_Input,
 		},
 	});
-	// No ModuleManager in this test: db-api deletes dispatch canDelete to all modules, and there are none to ask.
-	Dispatcher.modulesResolver = () => [];
-	ModuleBE_RateLimitBucketDB.init();
 }
 
-export async function cleanupBuckets(): Promise<void> {
-	await ModuleBE_RateLimitBucketDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+/** The RTDB node holding all buckets of `module` (its module state). */
+export function bucketsRef(module: ModuleBE_RateLimit_Class) {
+	return ModuleBE_Firebase.createModuleStateFirebaseRef<TypedMap<RateLimitBucket>>(module, 'buckets');
+}
+
+export async function cleanupBuckets(module: ModuleBE_RateLimit_Class): Promise<void> {
+	await bucketsRef(module).delete();
+}
+
+/** The RTDB client keeps a live connection that would keep mocha running after the last test; close it. */
+export async function teardownFirebase(): Promise<void> {
+	await deleteApp(ModuleBE_Firebase.createAdminSession().app);
 }

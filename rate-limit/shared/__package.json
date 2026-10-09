@@ -1,7 +1,7 @@
 {
   "name": "@nu-art/rate-limit-shared",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "Rate limit shared: sliding-window policy types, pure decision logic and the rate-limit--buckets entity contract",
+  "description": "Rate limit shared: sliding-window policy types, pure decision logic and the bucket state contract",
   "keywords": ["TacB0sS", "infra", "nu-art", "rate-limit", "thunderstorm", "typescript"],
   "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
@@ -10,7 +10,6 @@
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "dependencies": {
-    "@nu-art/db-api-shared": "?",
     "@nu-art/ts-common": "?"
   },
   "devDependencies": {

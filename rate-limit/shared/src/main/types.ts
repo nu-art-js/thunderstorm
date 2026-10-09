@@ -1,5 +1,5 @@
 /*
- * @nu-art/rate-limit-shared - Sliding-window rate-limit policies, decision logic and bucket entity contract
+ * @nu-art/rate-limit-shared - Sliding-window rate-limit policies, decision logic and bucket state contract
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
@@ -27,3 +27,16 @@ export type RateLimitPolicyOverride = Partial<Pick<RateLimitPolicy, 'windowMs' |
 export type RateLimitDecision =
 	| { action: 'allow'; hits: number[]; expiresAt: number }
 	| { action: 'reject'; retryAfterMs: number };
+
+/**
+ * One bucket as stored in the Realtime Database under the rate-limit module state
+ * (`/state/RateLimit/buckets/<bucketId>`). The subject is never stored; the id is a keyed digest.
+ */
+export type RateLimitBucket = {
+	/** The policy key, kept in clear for operations (purge, inspection per policy). */
+	policyKey: string;
+	/** Accepted hit timestamps (ms) inside the current window, oldest first. At most `limit` entries. */
+	hits: number[];
+	/** Newest hit + window. From this instant the bucket counts as empty and may be deleted. */
+	expiresAt: number;
+};

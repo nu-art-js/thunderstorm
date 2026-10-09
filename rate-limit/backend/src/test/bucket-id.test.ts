@@ -1,5 +1,5 @@
 /*
- * @nu-art/rate-limit-backend - Sliding-window rate limiting over db-api with an http 429 middleware
+ * @nu-art/rate-limit-backend - Sliding-window rate limiting over the Realtime Database with an http 429 middleware
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
@@ -17,10 +17,10 @@ const run_BucketId = (testCase: TestCase_BucketId) => () => runSingleTestCase(te
 const base: Input_BucketId = {pepper: 'pepper-a', policyKey: 'auth.login.ip', subject: '203.0.113.7'};
 
 describe('rate-limit - deriveRateLimitBucketId', () => {
-	it('is a 32 char db-api unique id that does not contain the subject', run_BucketId({
+	it('is a 64 char hex RTDB key that does not contain the subject', run_BucketId({
 		input: base,
 		result: async (id: string) => {
-			expect(id).to.match(/^[0-9a-f]{32}$/);
+			expect(id).to.match(/^[0-9a-f]{64}$/);
 			expect(id).to.not.contain('203.0.113.7');
 		},
 	}));

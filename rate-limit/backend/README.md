@@ -1,14 +1,11 @@
 # @nu-art/rate-limit-backend
 
-Backend rate limiting for Thunderstorm: per (policy, subject) sliding-window counters stored in the `rate-limit--buckets` db-api entity, updated in a transaction, with an http API middleware that answers 429.
-
-> Known limitation: until the `FirestoreWrapperBE.runTransaction` retry issue in `ISSUES.md` is fixed, concurrent hits for the same subject can exceed the limit.
+Backend rate limiting for Thunderstorm: per (policy, subject) sliding-window counters in the Realtime Database (this module's state, `/state/RateLimit/buckets/<bucketId>`), updated in RTDB transactions, with an http API middleware that answers 429.
 
 ## Exports
 
 - `ModuleBE_RateLimit`: `consume(policy, subject)`, `hit(policy, subject)`, `middleware(policy, resolveSubject)`, `purgeExpired()`, `resolvePolicy(policy)`
-- `ModuleBE_RateLimitBucketDB`: storage module (no CRUD API exposed)
-- `deriveRateLimitBucketId(pepper, policyKey, subject)`: keyed bucket id, never contains the subject
+- `deriveRateLimitBucketId(pepper, policyKey, subject)`: keyed bucket id (64 hex chars), never contains the subject
 - `ModulePackBE_RateLimit`
 
 ## Config (`ModuleBE_RateLimit`)

@@ -1,5 +1,5 @@
 /*
- * @nu-art/rate-limit-backend - Sliding-window rate limiting over db-api with an http 429 middleware
+ * @nu-art/rate-limit-backend - Sliding-window rate limiting over the Realtime Database with an http 429 middleware
  * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
@@ -7,8 +7,10 @@
 import {HttpCodes} from '@nu-art/api-types';
 import {SecretKey} from '@nu-art/google-services-backend';
 import {MemKey_HttpRawResponse, type ServerApi_Middleware} from '@nu-art/http-server';
+import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {
 	decideRateLimit,
+	type RateLimitBucket,
 	type RateLimitDecision,
 	type RateLimitPolicy,
 	type RateLimitPolicyOverride,
@@ -16,7 +18,6 @@ import {
 } from '@nu-art/rate-limit-shared';
 import {currentTimeMillis, ImplementationMissingException, Module, type TypedMap} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {ModuleBE_RateLimitBucketDB} from './_entity/bucket/ModuleBE_RateLimitBucketDB.js';
 import {deriveRateLimitBucketId} from './bucket-id.js';
 
 type Config = {
@@ -35,8 +36,9 @@ export type RateLimitSubjectResolver = () => string | Promise<string>;
  * Sliding-window rate limiting shared by every instance of the backend.
  *
  * Policies are defined in code (`RateLimitPolicy`), their numbers may be overridden by module config.
- * Each (policy, subject) pair is one `rate-limit--buckets` document updated inside a db transaction,
- * so concurrent instances cannot both take the last slot.
+ * Each (policy, subject) pair is one Realtime Database node under this module's state
+ * (`/state/RateLimit/buckets/<bucketId>`), updated in an RTDB transaction, so concurrent instances cannot
+ * both take the last slot.
  *
  * Use {@link consume} from a handler, or {@link middleware} with `HttpServer.addApiMiddleware` to guard ApiDefs.
  */
@@ -77,23 +79,33 @@ export class ModuleBE_RateLimit_Class
 	}
 
 	/**
-	 * Atomic read-decide-write of one bucket. Returns the decision instead of throwing, for callers that
-	 * want to degrade rather than refuse.
+	 * Atomic read-decide-write of one bucket in a Realtime Database transaction. Returns the decision
+	 * instead of throwing, for callers that want to degrade rather than refuse.
+	 *
+	 * A bucket whose window has passed is cleaned up when its key is touched: an allowed hit rewrites it
+	 * with only the hits still inside the window. A rejected hit leaves the bucket unchanged.
 	 */
 	async hit(policy: RateLimitPolicy, subject: string, now: number = currentTimeMillis()): Promise<RateLimitDecision> {
 		const resolved = this.resolvePolicy(policy);
-		const _id = deriveRateLimitBucketId(await this.getPepper(), resolved.key, subject);
+		const bucketRef = this.bucketRef(deriveRateLimitBucketId(await this.getPepper(), resolved.key, subject));
 
-		return ModuleBE_RateLimitBucketDB.runTransaction(async () => {
-			// Sanctioned internal read: buckets are infra counters keyed by a server-side digest, not product data;
-			// a caller's document-access context must not hide or fork a shared counter.
-			const current = await ModuleBE_RateLimitBucketDB.query.uniqueUnmanipulated(_id);
-			const decision = decideRateLimit(current?.hits ?? [], resolved, now);
-			if (decision.action === 'allow')
-				await ModuleBE_RateLimitBucketDB.set.item({_id, policyKey: resolved.key, hits: decision.hits, expiresAt: decision.expiresAt, expiresAtTtl: new Date(decision.expiresAt)});
+		// The update function can run several times (first against the local cache, then against the server
+		// value); the decision of the last run is the one that committed or aborted.
+		let decision: RateLimitDecision | undefined;
+		await bucketRef.transaction((current: RateLimitBucket | null) => {
+			decision = decideRateLimit(current?.hits ?? [], resolved, now);
+			// Reject: return the value unchanged rather than aborting. Aborting would accept a decision taken
+			// on a possibly stale local cache; returning it makes the SDK compare with the server and rerun.
+			if (decision.action === 'reject')
+				return current as RateLimitBucket;
 
-			return decision;
+			return {policyKey: resolved.key, hits: decision.hits, expiresAt: decision.expiresAt};
 		});
+
+		if (!decision)
+			throw new ImplementationMissingException('Rate limit transaction finished without a decision');
+
+		return decision;
 	}
 
 	/**
@@ -105,13 +117,38 @@ export class ModuleBE_RateLimit_Class
 	}
 
 	/**
-	 * Deletes buckets whose window has fully passed. Manual trigger; wire a scheduler to it if the
-	 * collection should be pruned automatically. Returns the number of deleted buckets.
+	 * Deletes buckets whose window has passed (periodic cleanup; touched keys clean themselves up in `hit`).
+	 * Each delete is a transaction that re-checks expiry, so a bucket hit meanwhile is kept.
+	 * Returns the number of deleted buckets.
 	 */
 	async purgeExpired(now: number = currentTimeMillis()): Promise<number> {
-		const deleted = await ModuleBE_RateLimitBucketDB.delete.where({expiresAt: {$lt: now}});
-		this.logInfo(`Purged ${deleted.length} expired rate limit buckets`);
-		return deleted.length;
+		const buckets = await this.bucketsRef().get({});
+		let deleted = 0;
+		for (const bucketId of Object.keys(buckets)) {
+			if (!(buckets[bucketId].expiresAt <= now))
+				continue;
+
+			// The update function may first run against an empty local cache (null); returning null then is a
+			// no-op that makes the SDK retry with the server value. Only the last run decides.
+			let expired = false;
+			const result = await this.bucketRef(bucketId).transaction((current: RateLimitBucket | null) => {
+				expired = !!current && current.expiresAt <= now;
+				return (expired ? null : current) as RateLimitBucket;
+			});
+			if (result.committed && expired)
+				deleted++;
+		}
+
+		this.logInfo(`Purged ${deleted} expired rate limit buckets`);
+		return deleted;
+	}
+
+	private bucketsRef() {
+		return ModuleBE_Firebase.createModuleStateFirebaseRef<TypedMap<RateLimitBucket>>(this, 'buckets');
+	}
+
+	private bucketRef(bucketId: string) {
+		return ModuleBE_Firebase.createModuleStateFirebaseRef<RateLimitBucket>(this, `buckets/${bucketId}`);
 	}
 
 	/** Loads the pepper once from Secret Manager. Fails loudly when the secret is missing or empty. */
