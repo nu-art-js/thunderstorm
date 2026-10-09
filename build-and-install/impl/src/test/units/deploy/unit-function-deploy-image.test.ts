@@ -10,7 +10,7 @@ import {existsSync, readFileSync} from 'fs';
 import {execSync} from 'child_process';
 import {expect} from 'chai';
 import {CONST_DeploymentId, CONST_LatestTag} from '../../../main/config/consts.js';
-import {CONST_TestFixture_FunctionHello} from './test-consts.js';
+import {CONST_TestFixture_FunctionHello, describeLiveDeploy} from './test-consts.js';
 import {TestWorkspaceCreator} from '@nu-art/ts-common/testing/workspace-creator';
 import {CommandoPool} from '@nu-art/commando';
 import {BuildAndInstall} from '../../../main/build-and-install-v3.js';
@@ -118,7 +118,7 @@ type TestCase_DeployImage = TestModel<Input, Output>;
 
 const runTestCase = (testCase: TestCase_DeployImage, processor?: typeof defaultTestProcessor) => () => runSingleTestCase(test, testCase, processor);
 
-describe('Firebase Deploy Image Phase', () => {
+describeLiveDeploy('Firebase Deploy Image Phase', () => {
 	let suiteHasFailures: boolean | undefined;
 
 	before(async function () {

@@ -6,6 +6,7 @@ import {BuildAndInstall} from '../../main/build-and-install-v3.js';
 import {CommandoPool} from '@nu-art/commando';
 import {___dirname} from '@nu-art/ts-common/esm';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
+import {Unit_HelpPrinter} from '../../main/core/Unit_HelpPrinter.js';
 
 const dirname = ___dirname(import.meta.url);
 
@@ -58,6 +59,13 @@ describe('UnitsMapper', () => {
 				fixtures: ['full-workspace.txt'],
 			},
 			result: [
+				{
+					// BuildAndInstall always registers the help printer as a project unit
+					type: Unit_HelpPrinter.constructor.name,
+					key: 'help-printer',
+					relativePath: '.',
+					outputPath: undefined
+				},
 				{
 					type: Unit_NodeProject.name,
 					key: 'project-root',
