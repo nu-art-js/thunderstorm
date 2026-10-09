@@ -17,7 +17,7 @@ import {dirname, resolve} from 'path';
 import {existsSync} from 'fs';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
-import {deployLogFilter, ensureArtifactRegistryRepository} from './common.js';
+import {deployLogFilter, ensureArtifactRegistryRepository, resolveCloudRunRegion} from './common.js';
 import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval} from './mongo-emulator.js';
 import {vendoredFileSpecifier} from './vendored-file-specifier.js';
 
@@ -79,6 +79,8 @@ export type Unit_FirebaseFunctionsApp_Config = Unit_TypescriptLib_Config & {
 			repository: string;
 			projectId: string;
 		};
+		/** Cloud Run region for deploy/delete; defaults to artifactRegistry.region (the image region) when unset. */
+		runRegion?: string;
 		imageName: string;
 		dockerfile?: string;
 	};
@@ -525,8 +527,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			throw new ImplementationMissingException(`Missing containerDeployment config in unit ${this.config.key}`);
 		}
 
-		const artifactRegistry = containerDeployment.artifactRegistry;
-		const region = artifactRegistry.region;
+		const region = resolveCloudRunRegion(containerDeployment);
 		// Use runtime project ID (where function is deployed), not Artifact Registry project ID
 		const envConfig = this.getEnvConfig();
 		const runtimeProjectId = envConfig.projectId;
@@ -696,7 +697,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		this.logInfo(`Deploying container image: ${imageReference}`);
 
 		if (this.config.runtime === 'node') {
-			await this.deployNodeContainer(imageReference, artifactRegistry.region);
+			await this.deployNodeContainer(imageReference, resolveCloudRunRegion(containerDeployment));
 			return;
 		}
 
@@ -724,7 +725,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			functionsToDeploy = allFunctionConfigs;
 		}
 
-		const region = artifactRegistry.region;
+		const region = resolveCloudRunRegion(containerDeployment);
 		// Use runtime project ID (where function is deployed), not Artifact Registry project ID
 		const envConfig = this.getEnvConfig();
 		const runtimeProjectId = envConfig.projectId;
