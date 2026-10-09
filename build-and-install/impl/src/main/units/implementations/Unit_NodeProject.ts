@@ -17,13 +17,14 @@ import {Unit_TypescriptLib} from './Unit_TypescriptLib.js';
 import {Commando_NVM, Commando_PNPM, CommandoException, PNPM} from '@nu-art/commando';
 import {Unit_PackageJson, Unit_PackageJson_Config} from './Unit_PackageJson.js';
 import {resolve} from 'path';
+import {existsSync} from 'fs';
 import {Config_ProjectUnit, ProjectUnit} from '../base/ProjectUnit.js';
 import {PhaseManager} from '../../phases/PhaseManager.js';
 import type {Phase} from '../../phases/definitions/types.js';
 import {phase_CompileWatch, phase_InstallWatch, Phase_IndicesMcpServer, Phase_Install, Phase_InstallWatch, Phase_PostPublish, phase_PrepareWatch, Phase_Watch} from '../../phases/definitions/consts.js';
 import {UnitsDependencyMapper} from '../../dependencies/UnitsDependencyMapper.js';
 import {BaseUnit} from '../base/BaseUnit.js';
-import {CONST_PackageJSONTemplate, CONST_PNPM_LOCK, CONST_PNPM_WORKSPACE} from '../../config/consts.js';
+import {CONST_PackageJSONTemplate, CONST_PNPM_LOCK, CONST_PNPM_WORKSPACE, CONST_TrashDir} from '../../config/consts.js';
 import {RunningStatusHandler} from '../../runtime/RunningStatusHandler.js';
 import {FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {IndicesMcpServer} from '../../exports/IndicesMcpServer.js';
@@ -151,9 +152,9 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 		const commando = this.allocateCommando(Commando_NVM, Commando_PNPM)
 			.cd(this.config.fullPath)
-			.append(`pnpm store prune`);
+			.append(`${this.pnpmCommand()} store prune`);
 
-		await this.executeAsyncCommando(commando, `pnpm install -f --no-frozen-lockfile --prefer-offline false`, (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(commando, `${this.pnpmCommand()} install -f --no-frozen-lockfile --prefer-offline false`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Error installing packages`, stdout, stderr, exitCode);
 		});
@@ -168,7 +169,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		const commando = this.allocateCommando(Commando_NVM, Commando_PNPM)
 			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, 'pnpm i --no-frozen-lockfile', (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(commando, `${this.pnpmCommand()} i --no-frozen-lockfile`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException('Error installing packages during watch', stdout, stderr, exitCode);
 		});
@@ -370,6 +371,18 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		await FileSystemUtils.file.delete(resolve(this.config.fullPath, CONST_PNPM_LOCK));
 		await FileSystemUtils.file.delete(resolve(this.config.fullPath, CONST_PNPM_WORKSPACE));
 		return super.purge();
+	}
+
+	/**
+	 * The repo's pnpm (node_modules/.bin/pnpm when present, else the one the bootstrap put on PATH),
+	 * pinned to a repo-local store so `store prune` and install never touch the global store.
+	 * BAI_PNPM_STORE_DIR overrides the store location.
+	 */
+	private pnpmCommand() {
+		const repoPnpm = resolve(this.config.fullPath, 'node_modules/.bin/pnpm');
+		const pnpm = existsSync(repoPnpm) ? repoPnpm : 'pnpm';
+		const storeDir = process.env.BAI_PNPM_STORE_DIR || resolve(this.config.fullPath, CONST_TrashDir, 'pnpm-store');
+		return `"${pnpm}" --store-dir "${storeDir}"`;
 	}
 
 	async postPublish() {
