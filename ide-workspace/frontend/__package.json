@@ -13,10 +13,6 @@
   ],
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
-  },
   "dependencies": {
     "@nu-art/ide-workspace-shared": "?",
     "@nu-art/thunder-core": "?",
@@ -30,6 +26,7 @@
     "@types/react-dom": "?"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

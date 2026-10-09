@@ -13,12 +13,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
     "directory": "_thunderstorm/http-server"
-  },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -42,6 +38,7 @@
     "supertest": "?"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

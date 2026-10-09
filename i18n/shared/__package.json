@@ -3,10 +3,6 @@
 	"version": "{{THUNDERSTORM_VERSION}}",
 	"description": "i18n — branded keys, resolve, locale catalog, overlay",
 	"license": "Apache-2.0",
-	"publishConfig": {
-		"directory": "dist",
-		"linkDirectory": true
-	},
 	"dependencies": {
 		"@nu-art/db-api-shared": "?",
 		"@nu-art/permissions-shared": "?",
@@ -14,6 +10,7 @@
 	},
 	"devDependencies": {},
 	"unitConfig": {
+		"output": "dist",
 		"type": "typescript-lib"
 	},
 	"type": "module",

@@ -7,7 +7,7 @@
 	"author": "TacB0sS",
 	"repository": {
 		"type": "git",
-		"url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+		"url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
 		"directory": "_thunderstorm/http"
 	},
 	"dependencies": {
@@ -20,11 +20,8 @@
 		"@nu-art/testalot": "?"
 	},
 	"unitConfig": {
+		"output": "dist",
 		"type": "typescript-lib"
 	},
-	"type": "module",
-	"publishConfig": {
-		"directory": "dist",
-		"linkDirectory": true
-	}
+	"type": "module"
 }

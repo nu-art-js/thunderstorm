@@ -3,10 +3,6 @@
 	"version": "{{THUNDERSTORM_VERSION}}",
 	"description": "i18n — Backend locale catalog, overlay, resolve",
 	"license": "Apache-2.0",
-	"publishConfig": {
-		"directory": "dist",
-		"linkDirectory": true
-	},
 	"dependencies": {
 		"@nu-art/i18n-shared": "?",
 		"@nu-art/action-processor-backend": "?",
@@ -16,6 +12,7 @@
 		"@nu-art/ts-common": "?"
 	},
 	"unitConfig": {
+		"output": "dist",
 		"type": "typescript-lib"
 	},
 	"type": "module",

@@ -18,13 +18,9 @@
   "bugs": {
     "url": "https://github.com/nu-art-js/user-account/issues"
   },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
-  },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/user-account.git"
+    "url": "git+ssh://git@github.com/nu-art-js/user-account.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -66,6 +62,7 @@
     "@types/jsonwebtoken": "^9.0.6"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

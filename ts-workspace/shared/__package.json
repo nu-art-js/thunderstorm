@@ -13,10 +13,6 @@
   ],
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
-  },
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/firebase-shared": "?",
@@ -37,6 +33,7 @@
     "@types/request": "^2.48.1"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

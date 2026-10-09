@@ -17,10 +17,16 @@ import {Unit_PackageJson} from '../../implementations/Unit_PackageJson.js';
 
 export type UnitConfigJSON_Node = UnitConfigJSON_Base & {
 	label: string
+	/** Build output directory. Replaces the non-standard publishConfig.directory. */
+	output?: string
 	customESLintConfig?: boolean
 	customTSConfig?: boolean
 	hasSelfHotReload?: boolean
 };
+
+export function resolvePackageOutputDir(packageJson: {unitConfig?: {output?: string}, publishConfig?: {directory?: string}}): string | undefined {
+	return packageJson.unitConfig?.output ?? packageJson.publishConfig?.directory;
+}
 
 export type UnitMapper_NodeContext<ConfigJSON extends UnitConfigJSON_Node = UnitConfigJSON_Node> = {
 	path: string,
@@ -39,6 +45,7 @@ export abstract class UnitMapper_Node<
 	private static invalidPaths: string[] = [];
 	static tsValidator_Node = {
 		label: tsValidateOptionalAnyString,
+		output: tsValidateOptionalAnyString,
 		customESLintConfig: tsValidateBoolean(false),
 		customTSConfig: tsValidateBoolean(false),
 		hasSelfHotReload: tsValidateBoolean(false),

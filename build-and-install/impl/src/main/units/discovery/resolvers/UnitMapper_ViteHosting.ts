@@ -11,7 +11,7 @@ import {
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
+import {resolvePackageOutputDir, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 import {FirebaseHosting_EnvConfig, Unit_HostingApp} from '../../implementations/firebase/Unit_HostingApp.js';
 import {Unit_ViteHostingApp} from '../../implementations/firebase/Unit_ViteHostingApp.js';
 import {resolve} from 'path';
@@ -58,7 +58,7 @@ export class UnitMapper_ViteHosting_Class
 	}
 
 	protected async resolveNodeUnit(context: UnitMapper_NodeContext<UnitConfigJSON_ViteHosting_Node>) {
-		const outputDir = context.packageJson.publishConfig?.directory;
+		const outputDir = resolvePackageOutputDir(context.packageJson);
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
 		const envUnitConfig = context.packageJson.unitConfig.envs[env];
 		if (!envUnitConfig)

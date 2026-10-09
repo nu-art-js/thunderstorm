@@ -13,12 +13,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
     "directory": "_thunderstorm/db-api/backend"
-  },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -36,6 +32,7 @@
     "firebase-admin": "?"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

@@ -23,11 +23,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
     "directory": "_thunderstorm/ts-common"
-  },
-  "publishConfig": {
-    "directory": "dist"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -51,6 +48,7 @@
     "@types/node-forge": "^1.0.0"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "exports": {

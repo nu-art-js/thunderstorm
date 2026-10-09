@@ -20,11 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/permissions.git"
-  },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
+    "url": "git+ssh://git@github.com/nu-art-js/permissions.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -68,6 +64,7 @@
     "@types/saml2-js": "^1.6.8"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

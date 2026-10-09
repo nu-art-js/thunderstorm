@@ -13,17 +13,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/push-pub-sub.git"
-  },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
+    "url": "git+ssh://git@github.com/nu-art-js/push-pub-sub.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "@nu-art/push-pub-sub-shared": "?",
     "@nu-art/firebase-backend": "?",
@@ -33,7 +27,6 @@
     "@nu-art/db-api-backend": "?",
     "@nu-art/db-api-shared": "?",
     "@nu-art/http-server": "?",
-    "@nu-art/push-pub-sub-shared": "?",
     "@nu-art/api-types": "?",
     "@nu-art/ts-common": "?",
     "@nu-art/user-account-backend": "?",
@@ -47,6 +40,7 @@
     "@types/react": "?"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

@@ -13,18 +13,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
     "directory": "_thunderstorm/db-api/shared"
-  },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "scripts": {
-
-  },
+  "scripts": {},
   "dependencies": {
     "@nu-art/firebase-shared": "?",
     "@nu-art/idb-shared": "?",
@@ -32,6 +26,7 @@
     "@nu-art/ts-common": "?"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

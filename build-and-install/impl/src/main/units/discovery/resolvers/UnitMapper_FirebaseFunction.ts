@@ -14,7 +14,7 @@ import {
 	tsValidateValue,
 	TypedMap
 } from '@nu-art/ts-common';
-import {UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
+import {resolvePackageOutputDir, UnitConfigJSON_Node, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 import {FunctionConfig, Unit_FirebaseFunctionsApp} from '../../implementations/firebase/Unit_FirebaseFunctionsApp.js';
 import {resolve} from 'path';
 import {BaiParam_SetEnv} from '../../../core/params.js';
@@ -168,7 +168,7 @@ export class UnitMapper_FirebaseFunction_Class
 	}
 
 	protected async resolveNodeUnit(context: UnitMapper_NodeContext<UnitConfigJSON_FirebaseFunction>) {
-		const outputDir = context.packageJson.publishConfig?.directory;
+		const outputDir = resolvePackageOutputDir(context.packageJson);
 
 		const env = this.runtimeParams[BaiParam_SetEnv.keyName];
 		const envUnitConfig = context.packageJson.unitConfig.envs[env];

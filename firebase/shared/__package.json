@@ -16,11 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/firebase.git"
-  },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
+    "url": "git+ssh://git@github.com/nu-art-js/firebase.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -54,6 +50,7 @@
     "@types/ws": "^8.5.5"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

@@ -14,13 +14,9 @@
   "bugs": {
     "url": "https://github.com/nu-art-js/thunderstorm/issues"
   },
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
-  },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -41,6 +37,7 @@
     "@types/react": "?"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

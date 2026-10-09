@@ -12,8 +12,8 @@ export type TS_PackageJSON<T = any> = {
 	version: string,
 	private?: boolean,
 	'publishConfig'?: {
-		'directory': string,
-		'linkDirectory': boolean
+		'directory'?: string,
+		'linkDirectory'?: boolean
 	},
 	'license'?: 'Apache-2.0' | string,
 	'author'?: string,

@@ -13,10 +13,6 @@
   ],
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
-  },
   "dependencies": {
     "@nu-art/work-hub-shared": "?",
     "@nu-art/ts-common": "?",
@@ -34,6 +30,7 @@
     "@types/react": "?"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

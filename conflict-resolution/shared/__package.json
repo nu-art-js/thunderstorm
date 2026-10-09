@@ -16,14 +16,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
     "directory": "_thunderstorm/to-review/conflict-resolution/shared"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "scripts": {
-
-  },
+  "scripts": {},
   "contributors": [
     {
       "name": "TacB0sS"
@@ -33,10 +31,6 @@
       "url": "https://www.linkedin.com/in/itay-leybovich-470b87229/"
     }
   ],
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
-  },
   "dependencies": {
     "@nu-art/db-api-shared": "?",
     "@nu-art/ts-common": "?",
@@ -47,6 +41,7 @@
     "@types/react": "?"
   },
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",

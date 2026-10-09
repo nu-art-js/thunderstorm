@@ -3,10 +3,6 @@
 	"version": "{{THUNDERSTORM_VERSION}}",
 	"description": "i18n — Frontend runtime, I18n component, locale admin",
 	"license": "Apache-2.0",
-	"publishConfig": {
-		"directory": "dist",
-		"linkDirectory": true
-	},
 	"dependencies": {
 		"@nu-art/i18n-shared": "?",
 		"@nu-art/db-api-frontend": "?",
@@ -27,6 +23,7 @@
 		"@types/react-dom": "?"
 	},
 	"unitConfig": {
+		"output": "dist",
 		"type": "typescript-lib"
 	},
 	"type": "module",

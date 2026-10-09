@@ -1,6 +1,6 @@
 import {Unit_TypescriptLib} from '../../implementations/Unit_TypescriptLib.js';
 import {BadImplementationException, tsValidateValue} from '@nu-art/ts-common';
-import {UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
+import {resolvePackageOutputDir, UnitMapper_Node, UnitMapper_NodeContext} from './UnitMapper_Node.js';
 import {resolve} from 'path';
 
 
@@ -9,12 +9,12 @@ import {resolve} from 'path';
  *
  * **Discovery Criteria**:
  * - Must have `package.json` with `unitConfig.type === 'typescript-lib'`
- * - Must have `publishConfig.directory` (output directory)
+ * - Must have `unitConfig.output` (output directory)
  * - Must have TypeScript source files
  *
  * **Unit Creation**:
  * - Creates `Unit_TypescriptLib` instance
- * - Configures output directory from `publishConfig.directory`
+ * - Configures output directory from `unitConfig.output`
  * - Sets hot reload flag from `unitConfig.hasSelfHotReload`
  * - Detects custom ESLint/TSConfig files
  *
@@ -37,12 +37,12 @@ export class UnitMapper_NodeLib_Class
 	 *
 	 * @param context - Resolved node unit context
 	 * @returns Unit_TypescriptLib instance
-	 * @throws BadImplementationException if publishConfig.directory is missing
+	 * @throws BadImplementationException if unitConfig.output is missing
 	 */
 	protected async resolveNodeUnit(context: UnitMapper_NodeContext) {
-		const outputDir = context.packageJson.publishConfig?.directory;
+		const outputDir = resolvePackageOutputDir(context.packageJson);
 		if (!outputDir)
-			throw new BadImplementationException('package.json MUST specify \'publishConfig.directory\'');
+			throw new BadImplementationException('package.json MUST specify \'unitConfig.output\'');
 
 		const unitConfig = context.packageJson.unitConfig;
 

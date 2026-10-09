@@ -13,19 +13,15 @@
   ],
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "publishConfig": {
-    "directory": "dist",
-    "linkDirectory": true
-  },
   "dependencies": {
     "@nu-art/ts-common": "?",
     "@nu-art/permissions-shared": "?",
     "@nu-art/permissions-backend": "?",
     "@nu-art/work-hub-shared": "?"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "unitConfig": {
+    "output": "dist",
     "type": "typescript-lib"
   },
   "type": "module",
