@@ -1,0 +1,26 @@
+---
+description: How to use email-resend — transactional email through Resend from a Thunderstorm backend
+alwaysApply: false
+---
+
+# How to use email-resend
+
+`@nu-art/email-resend-backend` sends transactional email through Resend. It does not use `@nu-art/ts-email*`.
+
+1. Add `ModulePackBE_EmailResend` to the backend packs.
+2. Store the Resend API key raw in Secret Manager as `resend-api-key` (or set `apiKeySecretName` in `_config/<plane>/ModuleBE_EmailResend`).
+3. Send:
+   ```typescript
+   const result = await ModuleBE_EmailResend.send({
+      to: [{email: guest.email, name: guest.name}],
+      subject,
+      html,
+      text,
+      idempotencyKey: `booking-${booking._id}-confirmation`,
+   });
+   if (!result.success)
+      this.logWarning(result.error);
+   ```
+- Set `defaultFrom` in config, or pass `from` per message.
+- Use one `idempotencyKey` per logical message, so a retry does not send twice.
+- Keep templates and copy in the app.
