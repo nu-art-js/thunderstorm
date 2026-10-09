@@ -88,3 +88,11 @@ export async function ensureArtifactRegistryRepository(
 export function resolveCloudRunRegion(containerDeployment: { runRegion?: string; artifactRegistry: { region: string } }): string {
 	return containerDeployment.runRegion || containerDeployment.artifactRegistry.region;
 }
+
+/**
+ * RTDB URL for FIREBASE_CONFIG.databaseURL: the env's `databaseURL` when set (e.g. a europe-west1
+ * https://<instance>.europe-west1.firebasedatabase.app), otherwise the us-central1 default instance URL.
+ */
+export function resolveDatabaseURL(envConfig: { projectId: string; databaseURL?: string }): string {
+	return envConfig.databaseURL || `https://${envConfig.projectId}-default-rtdb.firebaseio.com`;
+}

@@ -27,6 +27,7 @@ type EnvConfig = {
 	envConfig?: string,
 	projectId: string,
 	isLocal?: boolean,
+	databaseURL?: string,
 	functions?: EnvFunctionOverride[],
 };
 
@@ -111,11 +112,12 @@ const envFunctionsValidator = tsValidate_OptionalArray(
 	}
 );
 
-const valuesValidator = {
+export const envConfigValidator = {
 	defaultConfig: tsValidateOptionalAnyString,
 	envConfig: tsValidateOptionalAnyString,
 	projectId: tsValidateAnyString,
 	isLocal: tsValidateBoolean(false),
+	databaseURL: tsValidateOptionalAnyString, // RTDB URL for FIREBASE_CONFIG on Cloud Run; falls back to https://<projectId>-default-rtdb.firebaseio.com
 	functions: envFunctionsValidator,
 };
 
@@ -152,7 +154,7 @@ export class UnitMapper_FirebaseFunction_Class
 	static tsValidator_FirebaseFunction = {
 		type: tsValidateValue(['firebase-function']),
 		ignore: tsValidate_OptionalArray(tsValidateOptionalAnyString),
-		envs: tsValidateDynamicObject<TypedMap<EnvConfig>>(valuesValidator, tsValidateAnyString),
+		envs: tsValidateDynamicObject<TypedMap<EnvConfig>>(envConfigValidator, tsValidateAnyString),
 		debugPort: tsValidateOptionalAnyNumber,
 		basePort: tsValidateOptionalAnyNumber,
 		sslKey: tsValidateOptionalAnyString,
@@ -179,7 +181,8 @@ export class UnitMapper_FirebaseFunction_Class
 			defaultConfig: envUnitConfig?.defaultConfig,
 			envConfig: envUnitConfig?.envConfig,
 			projectId: envUnitConfig?.projectId,
-			isLocal: envUnitConfig?.isLocal ?? env === 'local'
+			isLocal: envUnitConfig?.isLocal ?? env === 'local',
+			databaseURL: envUnitConfig?.databaseURL
 		};
 
 		const {type, ...unitConfig} = context.packageJson.unitConfig;

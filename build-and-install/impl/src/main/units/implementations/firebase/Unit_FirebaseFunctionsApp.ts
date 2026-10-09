@@ -17,7 +17,7 @@ import {dirname, resolve} from 'path';
 import {existsSync} from 'fs';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
-import {deployLogFilter, ensureArtifactRegistryRepository, resolveCloudRunRegion} from './common.js';
+import {deployLogFilter, ensureArtifactRegistryRepository, resolveCloudRunRegion, resolveDatabaseURL} from './common.js';
 import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval} from './mongo-emulator.js';
 import {vendoredFileSpecifier} from './vendored-file-specifier.js';
 
@@ -32,7 +32,7 @@ export const firebaseFunctionEmulator_WarningStrings: string[] = [
 	'⚠',
 ];
 
-type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean };
+type EnvConfig = { defaultConfig?: string, envConfig?: string, projectId: string, isLocal?: boolean, databaseURL?: string };
 
 export type FunctionTriggerType = 'http' | 'schedule' | 'eventarc';
 
@@ -762,7 +762,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 			const locationId = region.replace(/\d+$/, ''); // Remove trailing digits
 			const firebaseConfig = {
 				projectId: runtimeProjectId,
-				databaseURL: `https://${runtimeProjectId}-default-rtdb.firebaseio.com`,
+				databaseURL: resolveDatabaseURL(envConfig),
 				storageBucket: `${runtimeProjectId}.appspot.com`,
 				locationId: locationId
 			};
@@ -901,7 +901,7 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 				GOOGLE_CLOUD_PROJECT: runtimeProjectId,
 				FIREBASE_CONFIG: JSON.stringify({
 					projectId: runtimeProjectId,
-					databaseURL: `https://${runtimeProjectId}-default-rtdb.firebaseio.com`,
+					databaseURL: resolveDatabaseURL(envConfig),
 					storageBucket: `${runtimeProjectId}.appspot.com`,
 					locationId: locationId,
 				}),
