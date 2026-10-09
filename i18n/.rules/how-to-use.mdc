@@ -1,0 +1,44 @@
+---
+description: How to use i18n - keys in code, default texts in the RTDB config, overrides, single resolution path, CI completeness check
+alwaysApply: false
+---
+
+# How to use i18n
+
+## Keys: code declares, never text
+
+```typescript
+export const i18n_BookingTitle = i18nRegister(i18nBrand('booking.title'), {
+	context: 'Heading of the public booking page',
+	params: {host: 'string'},
+});
+```
+
+## Defaults: RTDB config
+
+`/_config/i18n/defaults/<locale>/<key with ':' for '.'>` = `"text"` or `{one, other, ...}`. For example, `/_config/i18n/defaults/nl/booking:title = "Boek bij {host}"`.
+- Ship them through release deltas.
+- They can be edited at any time. The backend re-reads a locale after `ModuleBE_I18nDefaults.cacheTtlMs`, or at once on `bust(locale)`.
+- `register` (formal or informal) is set on the locale entity, not per text.
+
+## Resolution: one path
+
+`resolveI18n` resolves in this order: override, then the default for the same locale, then the key. There is no fallback to another locale.
+- Frontend: `<I18n id=.../>` and `ModuleFE_I18n.resolve`. The defaults come from `ApiDef_I18n.catalog`; add it to `openApis` for public pages.
+- Backend: `ModuleBE_I18n.resolve`.
+
+## CI completeness check (fails the release)
+
+```typescript
+import './all-i18n-keys.js';                       // import every module that registers keys
+const report = checkI18nCompleteness({enabledLocales: ['en', 'nl'], defaults: mergedReleaseDefaults});
+if (!report.ok) throw new Error(formatI18nCompletenessReport(report));
+```
+
+- **Errors** (the release fails): a registered key has no default in an enabled locale, or a default uses a `{param}` the key does not declare. `count` and `band` are implicit.
+- **Warnings**: texts for keys no code registers.
+
+## Rules
+
+- Never put text in `i18nRegister`, and never read defaults or overrides directly. Always go through `resolveI18n`.
+- A locale `code` (`ll` or `ll_CC`) is its identity and cannot change.
