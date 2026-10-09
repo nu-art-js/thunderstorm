@@ -17,6 +17,7 @@ database-debug.log
 firestore-debug.log
 pubsub-debug.log
 package.json
+.npmrc
 
 db-api-generator
 node_modules
