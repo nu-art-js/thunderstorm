@@ -12,6 +12,7 @@
   "devDependencies": {
     "@types/react": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

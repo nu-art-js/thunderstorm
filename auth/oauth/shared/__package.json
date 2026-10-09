@@ -27,6 +27,7 @@
     "@nu-art/api-types": "?"
   },
   "devDependencies": {},
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

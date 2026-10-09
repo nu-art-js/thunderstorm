@@ -44,6 +44,7 @@
     "@types/react-router-dom": "?",
     "@types/history": "^4.7.2"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

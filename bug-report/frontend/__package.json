@@ -49,6 +49,7 @@
     "@types/react": "?",
     "@types/request": "^2.48.1"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

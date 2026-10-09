@@ -40,6 +40,7 @@
     "@nu-art/testalot": "?",
     "@nu-art/storm-testalot": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

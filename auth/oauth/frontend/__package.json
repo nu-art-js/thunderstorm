@@ -35,6 +35,7 @@
     "@types/react": "?",
     "@types/react-dom": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

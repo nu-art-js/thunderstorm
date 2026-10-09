@@ -34,6 +34,7 @@
     "@simplewebauthn/server": "^13.3.0"
   },
   "devDependencies": {},
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

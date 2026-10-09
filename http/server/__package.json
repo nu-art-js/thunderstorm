@@ -37,6 +37,7 @@
     "@types/express": "^4.17.17",
     "supertest": "?"
   },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"

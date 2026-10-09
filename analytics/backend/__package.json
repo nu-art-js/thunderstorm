@@ -13,6 +13,7 @@
     "mixpanel": "~0.18.1"
   },
   "devDependencies": {},
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
     "output": "dist",
     "type": "typescript-lib"
