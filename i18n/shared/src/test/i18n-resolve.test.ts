@@ -5,6 +5,7 @@ import {i18nRegister} from '../main/register.js';
 import {resolveI18n} from '../main/resolve.js';
 import {DBDef_Locale} from '../main/_entity/locale/db-def.js';
 import {DBDef_I18nOverlay} from '../main/_entity/overlay/db-def.js';
+import {localeIdFromCode} from '../main/_entity/locale/locale-code.js';
 
 const i18n_INBOX_UNREAD = i18nBrand('inbox.unread');
 i18nRegister(i18n_INBOX_UNREAD, {
@@ -68,7 +69,7 @@ describe('validators', () => {
 	it('accepts an overlay', () => {
 		expect(tsValidateResult({
 			key: 'inbox.unread',
-			localeId: 'a'.repeat(32),
+			localeId: localeIdFromCode('en_US'),
 			forms: {other: '{count} new messages'},
 		}, DBDef_I18nOverlay.modifiablePropsValidator)).to.be.undefined;
 	});
