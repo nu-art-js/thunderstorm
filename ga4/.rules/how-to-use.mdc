@@ -1,0 +1,17 @@
+---
+description: How to use ga4 lib - consent-gated Google Analytics 4 composed with the consent lib
+alwaysApply: false
+---
+
+# How to use GA4
+
+- Package `@nu-art/ga4-frontend`: `ModuleFE_GA4`, `Ga4Controller`, `ModulePackFE_GA4`.
+- Depends on `ConsentSource` (consent-shared) only. The app wires it with `ModuleFE_GA4.setConsentSource(ModuleFE_Consent)`.
+- Config: `measurementId` (required to enable), `analyticsCategory` ('analytics'), `marketingCategory` ('marketing'), `sendPageView`.
+- Call `ModuleFE_GA4.event(...)` / `pageView(...)` freely. They no-op without consent.
+
+## Forbidden
+
+- Do not add a gtag `<script>` to index.html. Only ModuleFE_GA4 loads it, after consent.
+- Do not queue events before consent.
+- Do not import `@nu-art/consent-frontend` from this lib.
