@@ -2,6 +2,7 @@ export * from './brand.js';
 export * from './register.js';
 export * from './catalog.js';
 export * from './completeness.js';
+export * from './locale-detection.js';
 export * from './api-def.js';
 export * from './plural.js';
 export * from './resolve.js';
