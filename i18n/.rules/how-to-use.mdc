@@ -37,6 +37,12 @@ export const i18n_BookingTitle = i18nRegister(i18nBrand('booking.title'), {
 
 `const {t} = await ModuleBE_I18n.translator('nl')` loads the locale once (both sources come from cache). `t(id, params)` is then synchronous: use it for HTML shells, meta, `llms.txt` and emails. On the frontend, use `ModuleFE_I18n.t(id, params)` for attributes and titles, or `setDocumentTitle(id)`.
 
+## Locale selection (no cookies)
+
+- Default: `detectLocale` (browser languages, then region / time zone, then the app default). Configure `ModuleFE_I18n.supportedLocales`.
+- Explicit choice: `?lang=nl` in the URL or `setLocale('nl')`. The choice is remembered in localStorage and sent to APIs as the `lang` param (`ModuleFE_I18n.localeParam()`).
+- Backend: `ModuleBE_I18n.requestTranslator(params.lang, fallback)` validates the choice against enabled locales.
+
 ## CI completeness check (fails the release)
 
 ```typescript

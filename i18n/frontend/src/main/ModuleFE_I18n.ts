@@ -4,6 +4,9 @@ import {ApiCaller, HttpClient} from '@nu-art/http-client';
 import {ModuleFE_PermissionsAssert} from '@nu-art/permissions-frontend';
 import {
 	ApiDef_I18n,
+	detectLocale,
+	I18nLocaleParam,
+	matchSupportedLocale,
 	PermissionScope_I18nEdit,
 	textToForms,
 	type API_I18n,
@@ -32,6 +35,10 @@ export const dispatch_onI18nChanged = new ThunderDispatcher<OnI18nChanged, '__on
 
 type Config = {
 	defaultLocaleCode: string;
+	/** Enabled locale codes used for detection; defaults to the default locale only. */
+	supportedLocales?: string[];
+	countryLanguages?: Record<string, string>;
+	timeZoneCountries?: Record<string, string>;
 };
 
 export class ModuleFE_I18n_Class
@@ -48,11 +55,39 @@ export class ModuleFE_I18n_Class
 	}
 
 	protected init() {
-		const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(StorageKey_I18nLocale) : undefined;
-		this.localeCode = stored || this.config.defaultLocaleCode || DefaultLocaleCode;
+		this.localeCode = this.initialLocale();
 		this.applyDocumentLocale();
 		void this.loadCatalog();
 	}
+
+	/**
+	 * Explicit choice first (`?lang=` in the URL, then the choice remembered from setLocale), otherwise
+	 * detection: browser language, then time zone, then the app default. No cookies are involved.
+	 */
+	private initialLocale(): string {
+		const supported = this.supportedLocales();
+		const fromUrl = typeof location !== 'undefined' ? new URLSearchParams(location.search).get(I18nLocaleParam) : undefined;
+		const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(StorageKey_I18nLocale) : undefined;
+		const explicit = matchSupportedLocale(fromUrl, supported) ?? matchSupportedLocale(stored, supported);
+		if (explicit)
+			return explicit;
+
+		return detectLocale({
+			supported,
+			browserLanguages: typeof navigator !== 'undefined' ? navigator.languages ?? [navigator.language] : [],
+			timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+			appDefault: this.config.defaultLocaleCode || DefaultLocaleCode,
+			countryLanguages: this.config.countryLanguages,
+			timeZoneCountries: this.config.timeZoneCountries,
+		});
+	}
+
+	private supportedLocales(): string[] {
+		return this.config.supportedLocales ?? [this.config.defaultLocaleCode || DefaultLocaleCode];
+	}
+
+	/** The explicit choice as a request param, for APIs that render text: `{lang: 'nl'}`. */
+	localeParam = (): Record<typeof I18nLocaleParam, string> => ({[I18nLocaleParam]: this.localeCode});
 
 	getLocaleCode = (): string => this.localeCode;
 
