@@ -27,6 +27,16 @@ export const i18n_BookingTitle = i18nRegister(i18nBrand('booking.title'), {
 - Frontend: `<I18n id=.../>` and `ModuleFE_I18n.resolve`. The defaults come from `ApiDef_I18n.catalog`; add it to `openApis` for public pages.
 - Backend: `ModuleBE_I18n.resolve`.
 
+## Overrides
+
+- One document per `(locale, key)`. `_id` is composed from both, and there is a unique index on both.
+- Reads use one query per locale, cached per locale. A write busts that locale on the writing instance; `overridesCacheTtlMs` bounds staleness on other instances.
+- Clearing an override deletes the document, so the default shows again: `ModuleFE_I18n.clearOverride(id)`.
+
+## Server-side strings
+
+`const {t} = await ModuleBE_I18n.translator('nl')` loads the locale once (both sources come from cache). `t(id, params)` is then synchronous: use it for HTML shells, meta, `llms.txt` and emails. On the frontend, use `ModuleFE_I18n.t(id, params)` for attributes and titles, or `setDocumentTitle(id)`.
+
 ## CI completeness check (fails the release)
 
 ```typescript

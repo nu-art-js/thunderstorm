@@ -8,7 +8,7 @@ import {
 	type I18N_Params,
 } from '@nu-art/i18n-shared';
 import {ModuleFE_I18n, OnI18nChanged} from '../../ModuleFE_I18n.js';
-import {ModuleFE_I18nOverlay, OnI18nOverlaysUpdated} from '../../_entity/overlay/ModuleFE_I18nOverlay.js';
+import type {OnI18nOverlaysUpdated} from '../../_entity/overlay/ModuleFE_I18nOverlay.js';
 import type {OnLocalesUpdated} from '../../_entity/locale/ModuleFE_Locale.js';
 import './I18n.scss';
 
@@ -69,11 +69,7 @@ export class I18n
 	}
 
 	private currentOverlay(id: I18N_Brand): I18N_Forms {
-		const locale = ModuleFE_I18n.activeLocale();
-		if (!locale)
-			return {};
-		const overlay = ModuleFE_I18nOverlay.cache.all().find(row => row.key === asI18nKey(id) && row.localeId === locale._id);
-		return overlay?.forms ?? {};
+		return ModuleFE_I18n.overrideFormsFor(id) ?? {};
 	}
 
 	private rederiveState() {
@@ -89,26 +85,12 @@ export class I18n
 	};
 
 	private async saveOverlay() {
-		const locale = ModuleFE_I18n.activeLocale();
-		if (!locale)
-			return;
-		const existing = ModuleFE_I18nOverlay.cache.all().find(row => row.key === asI18nKey(this.props.id) && row.localeId === locale._id);
-		await ModuleFE_I18nOverlay.upsert({
-			...existing,
-			key: asI18nKey(this.props.id),
-			localeId: locale._id,
-			forms: this.state.draft,
-		});
+		await ModuleFE_I18n.saveOverride(this.props.id, this.state.draft);
 		this.setState({editing: false});
 	}
 
 	private async resetOverlay() {
-		const locale = ModuleFE_I18n.activeLocale();
-		if (!locale)
-			return;
-		const existing = ModuleFE_I18nOverlay.cache.all().find(row => row.key === asI18nKey(this.props.id) && row.localeId === locale._id);
-		if (existing)
-			await ModuleFE_I18nOverlay.deleteUnique({_id: existing._id});
+		await ModuleFE_I18n.clearOverride(this.props.id);
 		this.setState({editing: false, draft: this.formsForEditor(this.props.id)});
 	}
 

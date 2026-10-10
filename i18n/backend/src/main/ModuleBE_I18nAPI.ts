@@ -4,8 +4,9 @@ import {ApiHandler} from '@nu-art/http-server';
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_I18nDefaults} from './ModuleBE_I18nDefaults.js';
 import {ModuleBE_LocaleDB} from './_entity/locale/ModuleBE_LocaleDB.js';
+import {ModuleBE_I18nOverlayDB} from './_entity/overlay/ModuleBE_I18nOverlayDB.js';
 
-/** Serves the defaults catalog of an enabled locale to frontends. */
+/** Serves an enabled locale's texts (from the per-locale caches) to frontends. */
 export class ModuleBE_I18nAPI_Class
 	extends Module {
 
@@ -15,7 +16,11 @@ export class ModuleBE_I18nAPI_Class
 		if (!locales[0]?.enabled)
 			throw HttpCodes._4XX.NOT_FOUND('Unknown locale', `Locale '${params.locale}' does not exist or is disabled`);
 
-		return ModuleBE_I18nDefaults.getCatalog(params.locale);
+		const [overrides, defaults] = await Promise.all([
+			ModuleBE_I18nOverlayDB.getLocaleOverrides(params.locale),
+			ModuleBE_I18nDefaults.getCatalog(params.locale),
+		]);
+		return {overrides, defaults};
 	}
 }
 
