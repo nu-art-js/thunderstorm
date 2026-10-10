@@ -16,6 +16,8 @@ import type {ServerApi_Middleware} from './types.js';
 export type ApiHandlerOptions<Module> = {
 	httpServer?: ResolvableContent<HttpServer, [Module]>;
 	middlewares?: ServerApi_Middleware[];
+	/** The global body parsers skip this route: the handler reads the untouched request stream (MemKey_HttpRequest). */
+	rawBody?: boolean;
 };
 
 /** Single shape for registering a route: apiDef (or getter+instance), handler, server, options. */
@@ -35,7 +37,7 @@ function registerRoute<Module>(params: RouteRegistrationParams<Module>): void {
 		? new _ServerQueryApi(apiDef, params.handler as (params: unknown) => Promise<unknown>)
 		: new _ServerBodyApi(apiDef, params.handler as (body: unknown) => Promise<unknown>);
 	api.setMiddlewares(...(params.options?.middlewares ?? []));
-	resolveContent(server, params.enclosingClass).addRoute(api);
+	resolveContent(server, params.enclosingClass).addRoute(api, {rawBody: params.options?.rawBody});
 }
 
 /**
