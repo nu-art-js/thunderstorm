@@ -16,7 +16,7 @@ alwaysApply: false
 - Config: `appBaseUrl` (success, cancel and return paths are app-relative and joined to it; absolute URLs are refused) and `allowedPriceIds` (a client can only choose from these).
 - Call `ModuleBE_Stripe.setCustomerResolver(async () => ({customerId?, email?, clientReferenceId?}))` from the app. Map the session to a customer there, and throw when nobody is signed in.
 - Add `ApiDef_Stripe.webhook` to the app's open APIs. It is authenticated by the Stripe signature.
-- The webhook needs the **raw** body: `req.rawBody` (Cloud Functions provide it) or an unparsed body. If the http server parsed JSON first, the handler answers 503 and says so.
+- The webhook route is registered with `{rawBody: true}`, so the global body parsers skip it. The handler reads the exact bytes from the stream, capped at 1 MB. On Cloud Functions it uses `req.rawBody` instead.
 
 ## Webhooks
 

@@ -4,15 +4,31 @@ import {ApiDef_Stripe, type API_Stripe} from '@nu-art/stripe-shared';
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_Stripe} from './ModuleBE_Stripe.js';
 
-/** The raw request body. Signature verification needs the exact bytes Stripe sent. */
-export const rawRequestBody = (request: { rawBody?: unknown; body?: unknown }): Buffer | string | undefined => {
-	if (Buffer.isBuffer(request.rawBody) || typeof request.rawBody === 'string')
+/** Stripe events are small; anything larger is refused before it is buffered. */
+export const StripeWebhookMaxBytes = 1024 * 1024;
+
+type RawRequest = AsyncIterable<Buffer | string> & { rawBody?: unknown };
+
+/**
+ * The exact bytes Stripe sent. Cloud Functions already read the stream and keep the bytes on
+ * req.rawBody; elsewhere the route is registered with rawBody, so the stream is untouched and read here.
+ */
+export const readRawBody = async (request: RawRequest, maxBytes: number): Promise<Buffer> => {
+	if (Buffer.isBuffer(request.rawBody))
 		return request.rawBody;
 
-	if (Buffer.isBuffer(request.body) || typeof request.body === 'string')
-		return request.body;
+	const chunks: Buffer[] = [];
+	let size = 0;
+	for await (const chunk of request) {
+		const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+		size += buffer.length;
+		if (size > maxBytes)
+			throw HttpCodes._4XX.PAYLOAD_TOO_LARGE('Webhook body too large', `More than ${maxBytes} bytes`);
 
-	return undefined;
+		chunks.push(buffer);
+	}
+
+	return Buffer.concat(chunks);
 };
 
 export class ModuleBE_StripeAPI_Class
@@ -28,13 +44,11 @@ export class ModuleBE_StripeAPI_Class
 		return ModuleBE_Stripe.createPortalSession(body);
 	}
 
-	@ApiHandler(ApiDef_Stripe.webhook)
-	async webhook(_body: unknown): Promise<API_Stripe['webhook']['Response']> {
+	/** rawBody: the global body parsers skip this route, so the signature is checked against the exact bytes. */
+	@ApiHandler(ApiDef_Stripe.webhook, {rawBody: true})
+	async webhook(_body: API_Stripe['webhook']['Body']): Promise<API_Stripe['webhook']['Response']> {
 		const request = MemKey_HttpRequest.get();
-		const raw = rawRequestBody(request as never);
-		if (raw === undefined)
-			throw HttpCodes._5XX.SERVICE_UNAVAILABLE('Raw body unavailable', 'The server parsed the webhook body; Stripe signatures need the raw bytes (req.rawBody)');
-
+		const raw = await readRawBody(request as unknown as RawRequest, StripeWebhookMaxBytes);
 		const signature = request.headers['stripe-signature'];
 		await ModuleBE_Stripe.handleWebhook(raw, Array.isArray(signature) ? signature[0] : signature);
 		return {received: true};

@@ -2,7 +2,8 @@ import {expect} from 'chai';
 import Stripe from 'stripe';
 import {claimStripeEvent, type StripeEventLedger} from '../main/event-ledger.js';
 import {ModuleBE_Stripe_Class, type StripeClient} from '../main/ModuleBE_Stripe.js';
-import {rawRequestBody} from '../main/ModuleBE_StripeAPI.js';
+import {readRawBody} from '../main/ModuleBE_StripeAPI.js';
+import {Readable} from 'stream';
 
 const WebhookSecret = 'whsec_test_secret';
 const realWebhooks = new Stripe('sk_test_dummy').webhooks;
@@ -168,10 +169,19 @@ describe('claimStripeEvent', () => {
 	});
 });
 
-describe('rawRequestBody', () => {
-	it('prefers rawBody, accepts an unparsed body, refuses a parsed one', () => {
-		expect(rawRequestBody({rawBody: Buffer.from('x'), body: {a: 1}})?.toString()).to.equal('x');
-		expect(rawRequestBody({body: '{"a":1}'})).to.equal('{"a":1}');
-		expect(rawRequestBody({body: {a: 1}})).to.equal(undefined);
+describe('readRawBody', () => {
+	const stream = (...chunks: string[]) => Object.assign(Readable.from(chunks.map(c => Buffer.from(c))), {} as { rawBody?: unknown });
+
+	it('uses req.rawBody when Cloud Functions provided it', async () => {
+		const req = Object.assign(Readable.from([]), {rawBody: Buffer.from('exact')});
+		expect((await readRawBody(req, 100)).toString()).to.equal('exact');
+	});
+
+	it('reads the untouched stream byte-exact', async () => {
+		expect((await readRawBody(stream('{ "a":', ' 1 }\n'), 100)).toString()).to.equal('{ "a": 1 }\n');
+	});
+
+	it('refuses a body over the cap', async () => {
+		expect(await readRawBody(stream('x'.repeat(60), 'y'.repeat(60)), 100).then(() => 'ok', () => 'refused')).to.equal('refused');
 	});
 });
