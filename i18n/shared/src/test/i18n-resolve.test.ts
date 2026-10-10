@@ -1,63 +1,76 @@
 import {expect} from 'chai';
 import {tsValidateResult} from '@nu-art/ts-common';
 import {i18nBrand} from '../main/brand.js';
-import {i18nRegister} from '../main/register.js';
+import {getI18nRegistration, i18nRegister} from '../main/register.js';
 import {resolveI18n} from '../main/resolve.js';
 import {DBDef_Locale} from '../main/_entity/locale/db-def.js';
 import {DBDef_I18nOverlay} from '../main/_entity/overlay/db-def.js';
 import {localeIdFromCode} from '../main/_entity/locale/locale-code.js';
 
-const i18n_INBOX_UNREAD = i18nBrand('inbox.unread');
-i18nRegister(i18n_INBOX_UNREAD, {
-	hint: 'Chat list badge. {count} is unread.',
+const i18n_INBOX_UNREAD = i18nRegister(i18nBrand('inbox.unread'), {
+	context: 'Chat list badge. {count} is unread.',
 	params: {count: 'number'},
-	defaults: {
-		en: {
-			one: '{count} new message',
-			other: '{count} new messages',
-		},
-	},
 });
+const inboxDefault = {one: '{count} new message', other: '{count} new messages'};
 
-const i18n_WHO_AM_I = i18nBrand('who-am-i');
-i18nRegister(i18n_WHO_AM_I, {
-	defaults: {en: {other: 'Who am I'}},
-});
+const i18n_WHO_AM_I = i18nRegister(i18nBrand('who-am-i'));
 
 describe('resolveI18n', () => {
-	it('picks English other for count !== 1', () => {
-		expect(resolveI18n({id: i18n_INBOX_UNREAD, localeCode: 'en_US', params: {count: 3}})).to.equal('3 new messages');
+	it('picks other for count !== 1', () => {
+		expect(resolveI18n({id: i18n_INBOX_UNREAD, localeCode: 'en_US', params: {count: 3}, defaultText: inboxDefault})).to.equal('3 new messages');
 	});
 
-	it('picks English one for count === 1', () => {
-		expect(resolveI18n({id: i18n_INBOX_UNREAD, localeCode: 'en_US', params: {count: 1}})).to.equal('1 new message');
+	it('picks one for count === 1', () => {
+		expect(resolveI18n({id: i18n_INBOX_UNREAD, localeCode: 'en_US', params: {count: 1}, defaultText: inboxDefault})).to.equal('1 new message');
 	});
 
-	it('uses overlay form over defaults', () => {
+	it('a plain string default is the other form', () => {
+		expect(resolveI18n({id: i18n_WHO_AM_I, localeCode: 'nl', defaultText: 'Wie ben ik'})).to.equal('Wie ben ik');
+	});
+
+	it('override wins over the default', () => {
 		expect(resolveI18n({
 			id: i18n_INBOX_UNREAD,
 			localeCode: 'en_US',
 			params: {count: 3},
-			overlayForms: {other: '{count} unread'},
+			override: {other: '{count} unread'},
+			defaultText: inboxDefault,
 		})).to.equal('3 unread');
 	});
 
-	it('uses product band when provided', () => {
+	it('falls back to the default when the override lacks the needed form', () => {
+		expect(resolveI18n({id: i18n_INBOX_UNREAD, localeCode: 'en_US', params: {count: 1}, override: {}, defaultText: inboxDefault})).to.equal('1 new message');
+	});
+
+	it('uses a band when provided', () => {
 		expect(resolveI18n({
 			id: i18n_INBOX_UNREAD,
 			localeCode: 'en_US',
 			params: {count: 12, band: 'flood'},
-			overlayForms: {flood: '{count}+ in the queue', other: '{count} new messages'},
+			override: {flood: '{count}+ in the queue', other: '{count} new messages'},
 		})).to.equal('12+ in the queue');
 	});
 
-	it('falls back to the branded key when unregistered', () => {
-		const orphan = i18nBrand('not.registered');
-		expect(resolveI18n({id: orphan, localeCode: 'en_US'})).to.equal('not.registered');
+	it('falls back to the key when there is no override or default', () => {
+		expect(resolveI18n({id: i18nBrand('not.registered'), localeCode: 'en_US'})).to.equal('not.registered');
 	});
 
-	it('resolves a static string', () => {
-		expect(resolveI18n({id: i18n_WHO_AM_I, localeCode: 'he_IL'})).to.equal('Who am I');
+	it('has no cross-locale fallback (texts come only from the given locale)', () => {
+		expect(resolveI18n({id: i18n_WHO_AM_I, localeCode: 'he_IL'})).to.equal('who-am-i');
+	});
+
+	it('leaves unknown placeholders in place', () => {
+		expect(resolveI18n({id: i18n_WHO_AM_I, localeCode: 'en', defaultText: 'Hi {name}'})).to.equal('Hi {name}');
+	});
+});
+
+describe('i18nRegister', () => {
+	it('rejects a duplicate key', () => {
+		expect(() => i18nRegister(i18nBrand('who-am-i'))).to.throw('Duplicate');
+	});
+
+	it('keeps context and params, no text', () => {
+		expect(getI18nRegistration(i18n_INBOX_UNREAD)).to.deep.equal({context: 'Chat list badge. {count} is unread.', params: {count: 'number'}});
 	});
 });
 

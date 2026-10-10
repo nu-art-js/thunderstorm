@@ -64,10 +64,7 @@ export class I18n
 	}
 
 	private formsForEditor(id: I18N_Brand): I18N_Forms {
-		const registration = getI18nRegistration(id);
-		const localeCode = ModuleFE_I18n.getLocaleCode();
-		const language = localeCode.split(/[_-]/)[0] ?? 'en';
-		const defaults = registration?.defaults[localeCode] ?? registration?.defaults[language] ?? registration?.defaults.en ?? {other: ''};
+		const defaults = ModuleFE_I18n.defaultFormsFor(id) ?? {other: ''};
 		return {...defaults, ...this.currentOverlay(id)};
 	}
 
@@ -122,7 +119,7 @@ export class I18n
 		return <span className={className} data-i18n-key={asI18nKey(this.props.id)} onClick={this.openEditor}>
 			{this.state.text}
 			{this.state.editing && <div className={'ts-i18n__editor'} onClick={e => e.stopPropagation()}>
-				{registration?.hint && <div className={'ts-i18n__hint'}>{registration.hint}</div>}
+				{registration?.context && <div className={'ts-i18n__hint'}>{registration.context}</div>}
 				{Object.keys(this.state.draft).length === 0 && <label className={'ts-i18n__form'}>
 					<span>other</span>
 					<input
