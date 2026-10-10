@@ -1,6 +1,6 @@
 import {AwaitModules} from '@nu-art/sync-manager-frontend';
 import {ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunder-widgets';
-import {DB_Locale, DatabaseDef_Locale, UI_Locale} from '@nu-art/i18n-shared';
+import {DB_Locale, DatabaseDef_Locale, LocaleRegisters, UI_Locale, type LocaleRegister} from '@nu-art/i18n-shared';
 import {ModuleFE_Locale, OnLocalesUpdated} from '../../_entity/locale/ModuleFE_Locale.js';
 import {EditableDBItem} from '@nu-art/editable-item';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
@@ -88,7 +88,8 @@ class Page_Locales
 				<input
 					type={'text'}
 					className={'input input--text'}
-					placeholder={'e.g. en_US, he_IL, ar_*'}
+					placeholder={'e.g. en_US, nl, he_IL'}
+					disabled={!!editable.item._id}
 					value={String(editable.item.code ?? '')}
 					onChange={e => void editable.updateObj({code: e.target.value})}
 				/>
@@ -102,6 +103,17 @@ class Page_Locales
 					value={String(editable.item.displayName ?? '')}
 					onChange={e => void editable.updateObj({displayName: e.target.value})}
 				/>
+			</TS_PropRenderer.Vertical>
+
+			<TS_PropRenderer.Vertical label={'Register'}>
+				<select
+					className={'input'}
+					value={editable.item.register ?? ''}
+					onChange={e => void editable.updateObj({register: (e.target.value || undefined) as LocaleRegister | undefined})}
+				>
+					<option value={''}>Not set</option>
+					{LocaleRegisters.map(register => <option key={register} value={register}>{register}</option>)}
+				</select>
 			</TS_PropRenderer.Vertical>
 
 			<label className={'toggle'}>

@@ -1,11 +1,13 @@
-import {tsValidateBoolean, tsValidateString} from '@nu-art/ts-common';
+import {tsValidateBoolean, tsValidateRegexp, tsValidateString, tsValidateValue} from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
 import {DatabaseDef_Locale, Locale_DbKey} from './types.js';
+import {LocaleCodePattern, LocaleRegisters} from './locale-code.js';
 
 const modifiablePropsValidator: DatabaseDef_Locale['modifiablePropsValidator'] = {
-	code: tsValidateString(),
+	code: tsValidateRegexp(LocaleCodePattern),
 	displayName: tsValidateString(),
 	enabled: tsValidateBoolean(),
+	register: tsValidateValue([...LocaleRegisters], false),
 };
 
 const generatedPropsValidator: DatabaseDef_Locale['generatedPropsValidator'] = {
