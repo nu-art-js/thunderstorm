@@ -12,6 +12,7 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {UnitPhaseImplementor} from '../../core/types.js';
+import {preparePackageJsonForPublish} from './publish-package-json.js';
 import {CONST_BaiConfig, CONST_FirebaseJSON, CONST_FirebaseRC, CONST_PackageJSON, CONST_PackageJSONTemplate, CONST_TS_CONFIG} from '../../config/consts.js';
 import {Commando_Basic, Commando_NVM, CommandoException} from '@nu-art/commando';
 import {resolve, resolve as pathResolve} from 'path';
@@ -916,6 +917,8 @@ ${browserNames}
 	public async publish() {
 		if (this.config.packageJson.private)
 			return this.logInfo(`Not publishing a private package`);
+
+		await preparePackageJsonForPublish(this.config.output);
 
 		if (this.runtimeContext.runtimeParams.simulation) {
 			this.logWarning(` ===> Publish Simulation -STARTED <=== `);
