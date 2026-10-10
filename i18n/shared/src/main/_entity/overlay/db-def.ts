@@ -1,7 +1,7 @@
 import {tsValidateDynamicObject, tsValidateRegexp, tsValidateString} from '@nu-art/ts-common';
-import {Database} from '@nu-art/db-api-shared';
+import {composeDbObjectUniqueId, Database} from '@nu-art/db-api-shared';
 import {LocaleCodePattern} from '../locale/locale-code.js';
-import {DatabaseDef_I18nOverlay, I18nOverlay_DbKey} from './types.js';
+import {DatabaseDef_I18nOverlay, type DB_I18nOverlay, I18nOverlay_DbKey} from './types.js';
 
 const modifiablePropsValidator: DatabaseDef_I18nOverlay['modifiablePropsValidator'] = {
 	locale: tsValidateRegexp(LocaleCodePattern),
@@ -26,3 +26,7 @@ export const DBDef_I18nOverlay: Database<DatabaseDef_I18nOverlay> = {
 	frontend: {group: 'i18n', name: 'overlay'},
 	backend: {name: I18nOverlay_DbKey},
 };
+
+/** The override document id, composed by db-api from the unique keys (locale, key). */
+export const i18nOverrideId = (locale: string, key: string) =>
+	composeDbObjectUniqueId({locale, key} as unknown as DB_I18nOverlay, [...DBDef_I18nOverlay.uniqueKeys!]) as DB_I18nOverlay['_id'];

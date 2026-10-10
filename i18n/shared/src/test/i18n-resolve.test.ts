@@ -6,6 +6,7 @@ import {resolveI18n} from '../main/resolve.js';
 import {DBDef_Locale} from '../main/_entity/locale/db-def.js';
 import {DBDef_I18nOverlay} from '../main/_entity/overlay/db-def.js';
 import {createI18nTranslator} from '../main/resolve.js';
+import {i18nOverrideId} from '../main/_entity/overlay/db-def.js';
 
 const i18n_INBOX_UNREAD = i18nRegister(i18nBrand('inbox.unread'), {
 	context: 'Chat list badge. {count} is unread.',
@@ -93,6 +94,8 @@ describe('validators', () => {
 
 	it('overlay identity is (locale, key)', () => {
 		expect(DBDef_I18nOverlay.uniqueKeys).to.deep.equal(['locale', 'key']);
+		expect(i18nOverrideId('nl', 'a.b')).to.equal(i18nOverrideId('nl', 'a.b'));
+		expect(i18nOverrideId('nl', 'a.b')).to.not.equal(i18nOverrideId('de', 'a.b'));
 		expect(DBDef_I18nOverlay.indices?.find(i => i.id === 'locale-key')?.params?.unique).to.equal(true);
 	});
 });

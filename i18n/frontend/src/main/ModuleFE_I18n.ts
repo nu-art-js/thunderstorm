@@ -6,6 +6,7 @@ import {
 	textToForms,
 	type API_I18n,
 	createI18nTranslator,
+	i18nOverrideId,
 	type I18nLocaleTexts,
 	asI18nKey,
 	isRtlLanguage,
@@ -96,7 +97,7 @@ export class ModuleFE_I18n_Class
 	clearOverride = async (id: I18N_Brand): Promise<void> => {
 		const key = asI18nKey(id);
 		if (this.texts.overrides[key])
-			await ModuleFE_I18nOverlay.deleteUnique({locale: this.localeCode, key});
+			await ModuleFE_I18nOverlay.deleteUnique({_id: i18nOverrideId(this.localeCode, key)});
 
 		const overrides = {...this.texts.overrides};
 		delete overrides[key];
