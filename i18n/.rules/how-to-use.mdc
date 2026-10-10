@@ -58,3 +58,10 @@ if (!report.ok) throw new Error(formatI18nCompletenessReport(report));
 
 - Never put text in `i18nRegister`, and never read defaults or overrides directly. Always go through `resolveI18n`.
 - A locale `code` (`ll` or `ll_CC`) is its identity and cannot change.
+
+## Access (ACL)
+- Every locale has four entity groups: `readers`, `writers`, `deleters`, `owners` (`i18nLocaleGroupId(code, key)`, the same as permissions' `deriveEntityGroupId(localeId, key)`). The chain is: i18n admin -> owners -> writers and deleters -> readers.
+- Locale docs and override docs are minted with their locale's groups (`creators` = writers). Call `wireI18nDocumentAccess()` at backend init.
+- The app **must** declare the service account in `ModuleBE_Permissions` config: `serviceAccounts: {[ServiceAccountId_I18n]: ServiceAccountConfig_I18n}`. It is a member of every locale group. Public reads (catalog API, server strings, SEO, enabled locales) run as this account with normal queries, so every caller sees the same cached view.
+- The groups are ensured, idempotently, on project setup, on every instance start (`ModuleBE_I18n.init`) and when a locale is created. Missing groups are created. Missing required members are unioned into existing groups, which needs a Permissions Admin; otherwise a warning is logged.
+- To add a translator, a Permissions Admin adds the user's personal group to a locale's `writers` (or `deleters`, `owners`) group.
