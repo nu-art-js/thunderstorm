@@ -1,0 +1,29 @@
+---
+description: How to use the Stripe library (checkout, customer portal, signed idempotent webhooks, app hooks)
+alwaysApply: false
+---
+# Stripe
+
+| Package | Purpose |
+|---|---|
+| `@nu-art/stripe-shared` | `ApiDef_Stripe` (checkout, portal, webhook), request types, `appUrl` |
+| `@nu-art/stripe-backend` | `ModuleBE_Stripe`, `ModuleBE_StripeAPI`, `RtdbStripeEventLedger`, hooks |
+| `@nu-art/stripe-frontend` | `ModuleFE_Stripe.startCheckout()` / `openPortal()` |
+
+## Backend setup
+
+- Secrets, stored raw in Secret Manager and read lazily on first use: `stripe-secret-key` and `stripe-webhook-secret` (names are configurable).
+- Config: `appBaseUrl` (success, cancel and return paths are app-relative and joined to it; absolute URLs are refused) and `allowedPriceIds` (a client can only choose from these).
+- Call `ModuleBE_Stripe.setCustomerResolver(async () => ({customerId?, email?, clientReferenceId?}))` from the app. Map the session to a customer there, and throw when nobody is signed in.
+- Add `ApiDef_Stripe.webhook` to the app's open APIs. It is authenticated by the Stripe signature.
+- The webhook route is registered with `{rawBody: true}`, so the global body parsers skip it. The handler reads the exact bytes from the stream, capped at 1 MB. On Cloud Functions it uses `req.rawBody` instead.
+
+## Webhooks
+
+- Verify the signature, claim the event id in RTDB (`/state/ModuleBE_Stripe/events/<id>`, transaction), dispatch hooks, mark the event done.
+- A redelivered event is skipped. A hook that throws releases the claim, so Stripe's retry processes it again. An unfinished claim expires after `eventClaimLeaseMs`.
+- Hooks, implemented on any module:
+  - `OnStripeEvent.__onStripeEvent(event)`: every event.
+  - `OnStripeCheckoutCompleted.__onStripeCheckoutCompleted(session, event)`.
+  - `OnStripeSubscriptionChanged.__onStripeSubscriptionChanged(subscription, event)`: created, updated and deleted.
+- Hooks must be idempotent per object state (Stripe can deliver events out of order). Read `subscription.status` rather than counting events.
