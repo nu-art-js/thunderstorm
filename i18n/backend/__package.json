@@ -10,6 +10,8 @@
 		"@nu-art/http-server": "?",
 		"@nu-art/action-processor-backend": "?",
 		"@nu-art/permissions-backend": "?",
+		"@nu-art/permissions-shared": "?",
+		"@nu-art/user-account-backend": "?",
 		"@nu-art/db-api-backend": "?",
 		"@nu-art/db-api-shared": "?",
 		"@nu-art/ts-common": "?"

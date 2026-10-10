@@ -1,9 +1,13 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
-import {DatabaseDef_Locale, DBDef_Locale, localeIdFromCode, splitLocaleCode} from '@nu-art/i18n-shared';
+import {DatabaseDef_Locale, DBDef_Locale, i18nTranslatorGroupId, i18nTranslatorGroupKey, I18nTranslatorScopeEntryIds, localeIdFromCode, splitLocaleCode} from '@nu-art/i18n-shared';
 import {HttpCodes} from '@nu-art/api-types';
 import type {UI_Locale} from '@nu-art/i18n-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
-import {ModuleBE_Permissions, ServiceAccountId_Bootstrap, SetupTaskKey_PermissionsGroups} from '@nu-art/permissions-backend';
+import {ModuleBE_AccessGroupDB, ModuleBE_Permissions, ServiceAccountId_Bootstrap, SetupTaskKey_PermissionsGroups} from '@nu-art/permissions-backend';
+import type {UI_AccessGroup} from '@nu-art/permissions-shared';
+import type {PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
+import type {CollectionActionType} from '@nu-art/firebase-backend';
+import {asArray, filterInstances} from '@nu-art/ts-common';
 
 export const SetupTaskKey_DefaultLocales = asSetupTaskKey('default-locales');
 
@@ -41,11 +45,49 @@ export class ModuleBE_LocaleDB_Class
 		dbInstance._country = country;
 	}
 
+	/**
+	 * Every new locale gets its translator group (its ACL bucket), created under the caller's own
+	 * permissions (needs access-group:create). If the caller lacks them, the project setup task
+	 * creates the missing groups on its next run.
+	 */
+	protected async postWriteProcessing(data: PostWriteProcessingDataShape<DatabaseDef_Locale['dbType']>, actionType: CollectionActionType) {
+		await super.postWriteProcessing(data, actionType);
+		const created = data.before ? [] : filterInstances(data.updated ? asArray(data.updated) : []);
+		for (const locale of created)
+			await this.ensureTranslatorGroup(locale.code).catch((e: Error) =>
+				this.logWarning(`Translator group for '${locale.code}' not created (run project setup as a permissions admin)`, e));
+	}
+
+	async ensureTranslatorGroup(locale: string): Promise<void> {
+		const _id = i18nTranslatorGroupId(locale);
+		if (await ModuleBE_AccessGroupDB.query.unique(_id))
+			return;
+
+		await ModuleBE_AccessGroupDB.create.item({
+			_id,
+			type: 'entity',
+			key: i18nTranslatorGroupKey(locale),
+			label: `Translator — ${locale}`,
+			members: [],
+			scopeEntries: I18nTranslatorScopeEntryIds,
+		} as UI_AccessGroup);
+		this.logInfo(`Created translator group for locale '${locale}'`);
+	}
+
+	private async ensureTranslatorGroups() {
+		const locales = await this.query.custom({where: {}});
+		for (const locale of locales)
+			await this.ensureTranslatorGroup(locale.code);
+	}
+
 	__performProjectSetup(): SetupTask[] {
 		return [{
 			key: SetupTaskKey_DefaultLocales,
 			dependsOn: [SetupTaskKey_PermissionsGroups],
-			processor: () => ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.ensureDefaultLocales()),
+			processor: () => ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+				await this.ensureDefaultLocales();
+				await this.ensureTranslatorGroups();
+			}),
 		}];
 	}
 
