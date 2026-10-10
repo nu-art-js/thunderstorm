@@ -7,7 +7,7 @@ type DBKey = typeof I18nOverlay_DbKey;
 type VersionTypes = { '1.0.0': DB_I18nOverlay };
 type Versions = VersionsDeclaration<['1.0.0'], VersionTypes>;
 type UniqueKeys = 'locale' | 'key';
-type GeneratedKeys = never;
+type GeneratedKeys = '_editedBy' | '_editedAt';
 type Dependencies = {};
 
 export type DB_I18nOverlay = DB_Object<DBKey> & {
@@ -16,6 +16,9 @@ export type DB_I18nOverlay = DB_Object<DBKey> & {
 	key: string;
 	forms: I18N_Forms;
 	translatorNote?: string;
+	/** Audit: who made the last change (account id, or service account id) and when. */
+	_editedBy?: string;
+	_editedAt?: number;
 };
 
 export type DatabaseDef_I18nOverlay = DB_Prototype<DB_ProtoSeed<DB_I18nOverlay, DBKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;
