@@ -1,0 +1,19 @@
+---
+description: How to use seo (per-locale HTML shells and llms.txt from i18n)
+alwaysApply: false
+---
+# SEO
+
+Follows the i18n design (`/workspace/reports/i18n-design.md`, including the SEO/llms.txt and single-resolution-path addenda).
+
+- **Structure in code:** `SeoPageDef` (path, title/description keys, JSON-LD builder, sections, mount points) and `LlmsTxtDef` (section order and links).
+- **Text from i18n only:** every text is an i18n key, resolved through `createI18nTranslator`, so overrides win over the RTDB defaults. Register every key with `i18nRegister` so the CI completeness check covers it. `seoKeys(pages, llms)` lists the keys used outside the JSON-LD builders.
+- **Backend:** `ModuleBE_SEO` (with `ModulePackBE_SEO`, which wires the i18n texts source):
+  - `registerPages(...)` and `setLlmsTxt(def)` before init.
+  - Config: `baseUrl`, `defaultLocale`, `bundle` (one frontend bundle from Hosting), `siteName?`, `cacheMaxAgeSec`, `rootRedirect`.
+- **Routes:**
+  - `/<locale><path>`: the HTML shell, with title, description, canonical, hreflang for every enabled locale plus x-default, OG/Twitter, JSON-LD, `<main>` text, and `data-ts-embed` mount points.
+  - `/llms.txt?lang=` and `/<locale>/llms.txt`.
+  - `/` redirects to the visitor's locale (lang param, then Accept-Language, then the default) when `rootRedirect` is on. No cookies are used.
+- **Locale URL segments:** a code like `en_US` becomes the segment `/en-us/` and the hreflang `en-US`. Only enabled locales are served; anything else is 404.
+- **Firebase Hosting:** rewrite `/<locale>/**`, `/llms.txt` and `/` to the Cloud Run service.
