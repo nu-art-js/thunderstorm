@@ -1,11 +1,11 @@
-import {tsValidateDynamicObject, tsValidateString, tsValidateUniqueId} from '@nu-art/ts-common';
+import {tsValidateDynamicObject, tsValidateRegexp, tsValidateString} from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
-import {Locale_DbKey} from '../locale/types.js';
+import {LocaleCodePattern} from '../locale/locale-code.js';
 import {DatabaseDef_I18nOverlay, I18nOverlay_DbKey} from './types.js';
 
 const modifiablePropsValidator: DatabaseDef_I18nOverlay['modifiablePropsValidator'] = {
+	locale: tsValidateRegexp(LocaleCodePattern),
 	key: tsValidateString(),
-	localeId: tsValidateUniqueId,
 	forms: tsValidateDynamicObject(tsValidateString(), tsValidateString()),
 	translatorNote: tsValidateString(-1, false),
 };
@@ -18,10 +18,11 @@ export const DBDef_I18nOverlay: Database<DatabaseDef_I18nOverlay> = {
 	modifiablePropsValidator,
 	generatedPropsValidator,
 	versions: ['1.0.0'],
-	uniqueKeys: ['_id'],
+	uniqueKeys: ['locale', 'key'],
+	indices: [
+		{id: 'locale-key', keys: ['locale', 'key'], params: {unique: true, multiEntry: false}},
+		{id: 'locale', keys: 'locale', params: {unique: false, multiEntry: false}},
+	],
 	frontend: {group: 'i18n', name: 'overlay'},
 	backend: {name: I18nOverlay_DbKey},
-	dependencies: {
-		localeId: {dbKey: Locale_DbKey, fieldType: 'string'},
-	},
 };

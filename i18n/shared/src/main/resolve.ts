@@ -52,3 +52,21 @@ export const resolveI18n = (input: ResolveI18nInput): string => {
 	const template = fromOverride ?? fromDefault ?? input.id;
 	return interpolateI18n(template, input.params);
 };
+
+/** One locale's texts: overrides (by key) and defaults (by key). */
+export type I18nLocaleTexts = {
+	overrides: Record<string, I18N_Forms | undefined>;
+	defaults: Record<string, I18N_Text | undefined>;
+};
+
+export type I18nTranslator = {
+	localeCode: string;
+	/** Synchronous; goes through resolveI18n. Use for text, titles, meta and attributes alike. */
+	t: (id: I18N_Brand, params?: I18N_Params) => string;
+};
+
+/** Binds a locale's loaded texts to the single resolution path. */
+export const createI18nTranslator = (localeCode: string, texts: I18nLocaleTexts): I18nTranslator => ({
+	localeCode,
+	t: (id, params) => resolveI18n({id, params, localeCode, override: texts.overrides[id], defaultText: texts.defaults[id]}),
+});
