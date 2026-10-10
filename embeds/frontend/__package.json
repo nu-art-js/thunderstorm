@@ -1,0 +1,27 @@
+{
+  "name": "@nu-art/embeds-frontend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Embeds frontend: ModuleFE_Embeds (mount registered components into host-page placeholders; resize reporting inside third-party frames)",
+  "keywords": ["TacB0sS", "infra", "nu-art", "embed", "iframe", "thunderstorm", "typescript"],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+  "repository": {"type": "git", "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git", "directory": "_thunderstorm/embeds/frontend"},
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "dependencies": {
+    "@nu-art/embeds-shared": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?",
+    "jsdom": "^30.1.2",
+    "@types/jsdom": "^30.0.0"
+  },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {"output": "dist", "type": "typescript-lib"},
+  "type": "module",
+  "exports": {
+    ".": {"types": "./index.d.ts", "import": "./index.js"},
+    "./*": {"types": "./*.d.ts", "import": "./*.js"}
+  }
+}
