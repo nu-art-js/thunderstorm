@@ -1,0 +1,44 @@
+---
+description: How to use consent lib - categories, stored choice, subscribe API, GDPR bottom-right banner
+alwaysApply: false
+---
+
+# How to use consent
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/consent-shared` | `ConsentStore`, `ConsentSource`, `DefaultConsentCategories`, category constants |
+| `@nu-art/consent-frontend` | `ModuleFE_Consent`, `Component_ConsentBanner`, `ModulePackFE_Consent` |
+
+## Wiring
+
+```typescript
+import {ModulePackFE_Consent, Component_ConsentBanner} from '@nu-art/consent-frontend';
+
+.addModules(...ModulePackFE_Consent)
+
+// Frontend config
+ModuleFE_Consent: {privacyPolicyUrl: 'https://example.com/privacy', policyVersion: 1}
+
+// Once, at the app root
+<Component_ConsentBanner texts={{acceptAll: t('consent.accept'), ...}}/>
+```
+
+App-defined categories: set `categories: [...DefaultConsentCategories, {key: 'video-embeds'}]`.
+
+## Gating third parties
+
+```typescript
+ModuleFE_Consent.subscribe('video-embeds', granted => granted ? loadPlayer() : unloadPlayer());
+if (ModuleFE_Consent.isGranted('video-embeds')) loadPlayer();
+```
+
+`subscribe` fires on changes only. Read `isGranted` once at startup.
+
+## Rules
+
+- Consent-aware libraries take a `ConsentSource` (from consent-shared). They never import consent-frontend; the app passes `ModuleFE_Consent`.
+- Never load a non-necessary script, cookie or pixel before `isGranted` is true.
+- Keep Accept and Reject equal: do not restyle one of them.
+- Bump `policyVersion` when you add purposes or vendors.
+- Link a "Cookie settings" entry to `ModuleFE_Consent.openSettings()` so consent can be withdrawn.

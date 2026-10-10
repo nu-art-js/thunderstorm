@@ -1,0 +1,83 @@
+// Theme through custom properties; the defaults are neutral.
+.ts-consent {
+	position: fixed;
+	right: 16px;
+	bottom: 16px;
+	z-index: var(--ts-consent-z, 1000);
+	box-sizing: border-box;
+	width: min(360px, calc(100vw - 32px));
+	max-height: calc(100vh - 32px);
+	overflow: auto;
+	padding: 16px;
+	border-radius: 12px;
+	background: var(--ts-consent-bg, #fff);
+	color: var(--ts-consent-fg, #1a1a1a);
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+	font-size: 14px;
+	line-height: 1.45;
+
+	[dir='rtl'] & {
+		right: auto;
+		left: 16px;
+	}
+
+	.ts-consent__title {
+		margin: 0 0 6px;
+		font-size: 16px;
+	}
+
+	.ts-consent__message {
+		margin: 0 0 12px;
+
+		a {
+			color: inherit;
+			text-decoration: underline;
+		}
+	}
+
+	.ts-consent__categories {
+		margin: 0 0 12px;
+		padding: 0;
+		list-style: none;
+	}
+
+	.ts-consent__category {
+		padding: 4px 0;
+
+		label {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+		}
+	}
+
+	.ts-consent__description {
+		margin-inline-start: 24px;
+		opacity: 0.75;
+		font-size: 12px;
+	}
+
+	.ts-consent__actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	// Accept and Reject must look the same (Dutch AP): one class, one style.
+	.ts-consent__button {
+		flex: 1 1 0;
+		min-width: 96px;
+		padding: 8px 12px;
+		border: 1px solid var(--ts-consent-button-border, #1a1a1a);
+		border-radius: 8px;
+		background: var(--ts-consent-button-bg, #fff);
+		color: var(--ts-consent-button-fg, #1a1a1a);
+		font: inherit;
+		cursor: pointer;
+
+		&:focus-visible {
+			outline: 2px solid var(--ts-consent-focus, #2563eb);
+			outline-offset: 2px;
+		}
+	}
+}

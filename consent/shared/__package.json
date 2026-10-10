@@ -1,0 +1,24 @@
+{
+  "name": "@nu-art/consent-shared",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Consent shared: category definitions, the stored consent choice and ConsentStore (subscribe API), framework-free",
+  "keywords": ["TacB0sS", "infra", "nu-art", "consent", "gdpr", "cookies", "thunderstorm", "typescript"],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+  "repository": {"type": "git", "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git", "directory": "_thunderstorm/consent/shared"},
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "dependencies": {
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {"output": "dist", "type": "typescript-lib"},
+  "type": "module",
+  "exports": {
+    ".": {"types": "./index.d.ts", "import": "./index.js"},
+    "./*": {"types": "./*.d.ts", "import": "./*.js"}
+  }
+}

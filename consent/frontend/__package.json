@@ -1,0 +1,27 @@
+{
+  "name": "@nu-art/consent-frontend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Consent frontend: ModuleFE_Consent (localStorage-backed ConsentStore) and Component_ConsentBanner (GDPR / Dutch AP compliant)",
+  "keywords": ["TacB0sS", "infra", "nu-art", "consent", "gdpr", "cookies", "thunderstorm", "typescript"],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+  "repository": {"type": "git", "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git", "directory": "_thunderstorm/consent/frontend"},
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "dependencies": {
+    "@nu-art/consent-shared": "?",
+    "@nu-art/thunder-widgets": "?",
+    "@nu-art/ts-common": "?",
+    "react": "?"
+  },
+  "devDependencies": {
+    "@types/react": "?"
+  },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {"output": "dist", "type": "typescript-lib"},
+  "type": "module",
+  "exports": {
+    ".": {"types": "./index.d.ts", "import": "./index.js"},
+    "./*": {"types": "./*.d.ts", "import": "./*.js"}
+  }
+}
