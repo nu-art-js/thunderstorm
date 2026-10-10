@@ -12,8 +12,7 @@ export class ModuleBE_I18nAPI_Class
 
 	@ApiHandler(ApiDef_I18n.catalog)
 	async catalog(params: API_I18n['catalog']['Params']): Promise<API_I18n['catalog']['Response']> {
-		const locales = await ModuleBE_LocaleDB.query.custom({where: {code: params.locale}});
-		if (!locales[0]?.enabled)
+		if (!(await ModuleBE_LocaleDB.enabledLocaleCodes()).includes(params.locale))
 			throw HttpCodes._4XX.NOT_FOUND('Unknown locale', `Locale '${params.locale}' does not exist or is disabled`);
 
 		const [overrides, defaults] = await Promise.all([

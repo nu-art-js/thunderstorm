@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {I18nAdminGroupId, i18nTranslatorGroupId, type DB_I18nOverlay, type I18N_Forms} from '@nu-art/i18n-shared';
+import {I18nAdminGroupId, i18nLocaleGroupId, type DB_I18nOverlay, type I18N_Forms} from '@nu-art/i18n-shared';
 import {ModuleBE_I18nOverlayDB_Class} from '../main/_entity/overlay/ModuleBE_I18nOverlayDB.js';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_UserAccessIds, MemKey_UserScopePermissions} from '@nu-art/permissions-backend';
@@ -114,23 +114,29 @@ describe('ModuleBE_I18nOverlayDB - per-locale ACL on creation', () => {
 	});
 
 	it("the locale's translator may create its override", async () => {
-		await asCaller([i18nTranslatorGroupId('nl')], () => db.prepare({locale: 'nl', key: 'a', forms: {other: 'x'}}));
+		await asCaller([i18nLocaleGroupId('nl', 'writers')], () => db.prepare({locale: 'nl', key: 'a', forms: {other: 'x'}}));
 	});
 
 	it("another locale's translator may not", async () => {
 		let error: unknown;
-		await asCaller([i18nTranslatorGroupId('de')], () => db.prepare({locale: 'nl', key: 'a', forms: {other: 'x'}}).catch(e => error = e));
-		expect(String((error as Error)?.message)).to.contain('translator');
+		await asCaller([i18nLocaleGroupId('de', 'writers')], () => db.prepare({locale: 'nl', key: 'a', forms: {other: 'x'}}).catch(e => error = e));
+		expect(String((error as Error)?.message)).to.contain('writers group');
 	});
 
-	it('the i18n admins may create in any locale', async () => {
-		await asCaller([I18nAdminGroupId], () => db.prepare({locale: 'de', key: 'a', forms: {other: 'x'}}));
+	it('the i18n admins (through the owners chain) may create in any locale', async () => {
+		await asCaller([I18nAdminGroupId, i18nLocaleGroupId('de', 'owners'), i18nLocaleGroupId('de', 'writers')], () => db.prepare({locale: 'de', key: 'a', forms: {other: 'x'}}));
 	});
 
-	it('results seen by a caller outside the Default group are not cached for others', async () => {
+	it('a bare admin id without the locale chain may not (the chain is the grant)', async () => {
+		let error: unknown;
+		await asCaller([I18nAdminGroupId], () => db.prepare({locale: 'de', key: 'a', forms: {other: 'x'}}).catch(e => error = e));
+		expect(String((error as Error)?.message)).to.contain('writers group');
+	});
+
+	it('the per-locale cache is shared by every caller (reads run as the i18n service account)', async () => {
 		const cacheDb = new TestOverlayDB_Class();
-		await asCaller([i18nTranslatorGroupId('nl')], () => cacheDb.getLocaleOverrides('nl'));
+		await asCaller([i18nLocaleGroupId('nl', 'writers')], () => cacheDb.getLocaleOverrides('nl'));
 		await cacheDb.getLocaleOverrides('nl');
-		expect(cacheDb.queries).to.deep.equal(['nl', 'nl']);
+		expect(cacheDb.queries).to.deep.equal(['nl']);
 	});
 });

@@ -13,6 +13,11 @@ export const DefaultLocaleCode = 'en_US';
 export class ModuleBE_I18n_Class
 	extends Module {
 
+	/** Ensures every locale's four groups on each instance start (idempotent, as the i18n service account). */
+	protected init(): void {
+		ModuleBE_LocaleDB.ensureOnStart().catch((e: Error) => this.logWarning('Locale access ensure failed; it re-runs on next start or project setup', e));
+	}
+
 	async translator(localeCode: string = DefaultLocaleCode): Promise<I18nTranslator> {
 		const [overrides, defaults] = await Promise.all([
 			ModuleBE_I18nOverlayDB.getLocaleOverrides(localeCode),
@@ -26,7 +31,7 @@ export class ModuleBE_I18n_Class
 	 * fallback (the client's detected locale, or the app default). No cookies.
 	 */
 	async requestTranslator(explicit?: string | null, fallback: string = DefaultLocaleCode): Promise<I18nTranslator> {
-		const enabled = (await ModuleBE_LocaleDB.query.custom({where: {enabled: true}})).map(locale => locale.code);
+		const enabled = await ModuleBE_LocaleDB.enabledLocaleCodes();
 		return this.translator(resolveRequestLocale(explicit, enabled, fallback));
 	}
 
