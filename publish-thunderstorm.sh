@@ -2,7 +2,8 @@
 
 # Publish @nu-art packages from the project that contains this checkout as _thunderstorm.
 # The npm token comes from the login keychain item "npm-token".
-# The project .npmrc written for that publish is removed on exit.
+# npm publish runs inside each package dist, so the repo-root .npmrc is not the one npm loads.
+# This script points ~/.npmrc at the keychain token for the publish and restores it on exit.
 
 set -euo pipefail
 
@@ -32,7 +33,7 @@ if [[ ! -f "$PROJECT_ROOT/bai-config.json" || ! -f "$PROJECT_ROOT/build-and-inst
 	exit 1
 fi
 
-NPMRC="$PROJECT_ROOT/.npmrc"
+NPMRC="$HOME/.npmrc"
 NPMRC_BACKUP=""
 WROTE_NPMRC=0
 CLEANED=0
