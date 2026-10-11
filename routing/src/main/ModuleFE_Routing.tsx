@@ -4,11 +4,9 @@ import {TS_Route} from './types.js';
 import {TS_RoutePage} from './TS_RoutePage.js';
 import {UrlQueryParams} from '@nu-art/api-types';
 import {
-	_keys,
 	BadImplementationException,
 	composeQueryParams,
 	composeUrl,
-	exists,
 	Module,
 	RouteParams
 } from '@nu-art/ts-common';
@@ -233,14 +231,9 @@ class ModuleFE_Routing_Class
 	 * Get all query parameters from the current URL (decoded)
 	 */
 	getQueryParams(): UrlQueryParams {
-		const params = this.getEncodedQueryParams();
-		_keys(params).forEach(key => {
-			const _param = params[key];
-			if (!exists(_param))
-				return;
-
-			const value = `${params[key]}`;
-			params[key] = decodeURIComponent(value);
+		const params: UrlQueryParams = {};
+		new URL(window.location.href).searchParams.forEach((value, key) => {
+			params[key] = value.length === 0 ? undefined : value;
 		});
 		return params;
 	}
@@ -264,8 +257,16 @@ class ModuleFE_Routing_Class
 	 * @param queryParams - The query parameters to set
 	 */
 	setQuery(queryParams: UrlQueryParams) {
-		const encodedQueryParams = this.encodeUrlParams(queryParams);
-		this.updateQueryParams(encodedQueryParams);
+		const url = new URL(window.location.href);
+		url.search = '';
+		Object.keys(queryParams).forEach(key => {
+			const value = queryParams[key];
+			if (!value)
+				return;
+
+			url.searchParams.set(key, value);
+		});
+		this.replaceUrl(url);
 	}
 
 	/**
@@ -274,9 +275,9 @@ class ModuleFE_Routing_Class
 	 * @param value - The query parameter value
 	 */
 	addQueryParam(key: string, value: string) {
-		const decodedQueryParams = this.getQueryParams();
-		decodedQueryParams[key] = value;
-		this.updateQueryParams(decodedQueryParams);
+		const url = new URL(window.location.href);
+		url.searchParams.set(key, value);
+		this.replaceUrl(url);
 	}
 
 	/**
@@ -284,9 +285,9 @@ class ModuleFE_Routing_Class
 	 * @param key - The query parameter key to remove
 	 */
 	removeQueryParam(key: string) {
-		const queryParams = this.getQueryParams();
-		delete queryParams[key];
-		this.updateQueryParams(queryParams);
+		const url = new URL(window.location.href);
+		url.searchParams.delete(key);
+		this.replaceUrl(url);
 	}
 
 	// ######################## URL Utility Methods ########################
@@ -321,20 +322,11 @@ class ModuleFE_Routing_Class
 
 	// ######################## Navigation Methods ########################
 
-	/**
-	 * Convert location descriptor to URL string using composeUrl
-	 */
 	private locationToUrl(location: { pathname: string; search?: string; hash?: string }): string {
-		// Parse search params if provided as string
-		const params: { [key: string]: string } = {};
-		if (location.search) {
-			const searchParams = new URLSearchParams(location.search.startsWith('?') ? location.search.substring(1) : location.search);
-			searchParams.forEach((value, key) => {
-				params[key] = value;
-			});
-		}
-		const hash = location.hash?.startsWith('#') ? location.hash.substring(1) : location.hash;
-		return composeUrl(location.pathname, params, hash);
+		const url = new URL(location.pathname, window.location.origin);
+		url.search = location.search ?? '';
+		url.hash = location.hash ?? '';
+		return `${url.pathname}${url.search}${url.hash}`;
 	}
 
 	/**
@@ -357,57 +349,8 @@ class ModuleFE_Routing_Class
 
 	// ######################## Private Helper Methods ########################
 
-	private getEncodedQueryParams(): UrlQueryParams {
-		const queryParams: UrlQueryParams = {};
-		let queryAsString = window.location.search;
-		if (!queryAsString || queryAsString.length === 0)
-			return {};
-
-		while (queryAsString.startsWith('?') || queryAsString.startsWith('/?')) {
-			if (queryAsString.startsWith('?'))
-				queryAsString = queryAsString.substring(1);
-			else if (queryAsString.startsWith('/?'))
-				queryAsString = queryAsString.substring(2);
-			else
-				break;
-		}
-
-		const query = queryAsString.split('&');
-		return query.map(param => {
-			const parts = param.split('=');
-			return {key: parts[0], value: parts[1]?.length === 0 ? undefined : parts[1]};
-		}).reduce((toRet, param) => {
-			toRet[param.key] = param.value;
-			return toRet;
-		}, queryParams);
-	}
-
-	private composeQuery(queryParams?: UrlQueryParams): string {
-		const queryAsString = composeQueryParams(queryParams);
-		if (queryAsString.length === 0)
-			return '';
-
-		return queryAsString;
-	}
-
-	private encodeUrlParams(queryParams?: UrlQueryParams): UrlQueryParams {
-		const encodedQueryParams = {...queryParams};
-		_keys(encodedQueryParams).forEach(key => {
-			const value = encodedQueryParams[key];
-			if (!value) {
-				delete encodedQueryParams[key];
-				return;
-			}
-
-			encodedQueryParams[key] = encodeURIComponent(value);
-		});
-		return encodedQueryParams;
-	}
-
-	private updateQueryParams(encodedQueryParams: UrlQueryParams) {
-		const search = this.composeQuery(encodedQueryParams);
-		const url = `${window.location.pathname}${search ? `?${search}` : ''}${window.location.hash}`;
-		this.navigateIfChanged(url, 'replace');
+	private replaceUrl(url: URL) {
+		this.navigateIfChanged(`${url.pathname}${url.search}${url.hash}`, 'replace');
 	}
 
 	private getCurrentLocationUrl(): string {
