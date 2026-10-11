@@ -3,6 +3,7 @@ import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes, useLocati
 import {TS_Route} from './types.js';
 import {TS_RoutePage} from './TS_RoutePage.js';
 import {UrlQueryParams} from '@nu-art/api-types';
+import {addQueryParamOnUrl, readQueryParameter, readQueryParams, removeQueryParamOnUrl, setQueryOnUrl, toLocationUrl} from './query-url.js';
 import {
 	BadImplementationException,
 	composeQueryParams,
@@ -231,11 +232,7 @@ class ModuleFE_Routing_Class
 	 * Get all query parameters from the current URL (decoded)
 	 */
 	getQueryParams(): UrlQueryParams {
-		const params: UrlQueryParams = {};
-		new URL(window.location.href).searchParams.forEach((value, key) => {
-			params[key] = value.length === 0 ? undefined : value;
-		});
-		return params;
+		return readQueryParams(window.location.href);
 	}
 
 	/**
@@ -244,12 +241,7 @@ class ModuleFE_Routing_Class
 	 * @returns The decoded value, null if key exists but value is empty, or undefined if key doesn't exist
 	 */
 	getQueryParameter(key: string): string | null | undefined {
-		const queryParams = this.getQueryParams();
-		const value = queryParams[key];
-		if (value === undefined && Object.keys(queryParams).includes(key))
-			return null;
-
-		return value;
+		return readQueryParameter(window.location.href, key);
 	}
 
 	/**
@@ -257,16 +249,7 @@ class ModuleFE_Routing_Class
 	 * @param queryParams - The query parameters to set
 	 */
 	setQuery(queryParams: UrlQueryParams) {
-		const url = new URL(window.location.href);
-		url.search = '';
-		Object.keys(queryParams).forEach(key => {
-			const value = queryParams[key];
-			if (!value)
-				return;
-
-			url.searchParams.set(key, value);
-		});
-		this.replaceUrl(url);
+		this.navigateIfChanged(setQueryOnUrl(window.location.href, queryParams), 'replace');
 	}
 
 	/**
@@ -275,9 +258,7 @@ class ModuleFE_Routing_Class
 	 * @param value - The query parameter value
 	 */
 	addQueryParam(key: string, value: string) {
-		const url = new URL(window.location.href);
-		url.searchParams.set(key, value);
-		this.replaceUrl(url);
+		this.navigateIfChanged(addQueryParamOnUrl(window.location.href, key, value), 'replace');
 	}
 
 	/**
@@ -285,9 +266,7 @@ class ModuleFE_Routing_Class
 	 * @param key - The query parameter key to remove
 	 */
 	removeQueryParam(key: string) {
-		const url = new URL(window.location.href);
-		url.searchParams.delete(key);
-		this.replaceUrl(url);
+		this.navigateIfChanged(removeQueryParamOnUrl(window.location.href, key), 'replace');
 	}
 
 	// ######################## URL Utility Methods ########################
@@ -323,10 +302,7 @@ class ModuleFE_Routing_Class
 	// ######################## Navigation Methods ########################
 
 	private locationToUrl(location: { pathname: string; search?: string; hash?: string }): string {
-		const url = new URL(location.pathname, window.location.origin);
-		url.search = location.search ?? '';
-		url.hash = location.hash ?? '';
-		return `${url.pathname}${url.search}${url.hash}`;
+		return toLocationUrl(window.location.origin, location);
 	}
 
 	/**
@@ -348,10 +324,6 @@ class ModuleFE_Routing_Class
 	}
 
 	// ######################## Private Helper Methods ########################
-
-	private replaceUrl(url: URL) {
-		this.navigateIfChanged(`${url.pathname}${url.search}${url.hash}`, 'replace');
-	}
 
 	private getCurrentLocationUrl(): string {
 		return `${window.location.pathname}${window.location.search}${window.location.hash}`;
