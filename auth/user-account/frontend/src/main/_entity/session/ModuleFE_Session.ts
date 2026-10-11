@@ -163,7 +163,7 @@ class ModuleFE_Session_Class
 	}
 
 	public hasSession() {
-		return !!this.StorageKey_SessionId.get();
+		return !!this.StorageKey_SessionId?.get();
 	}
 
 	/** Drop this origin's stored JWT without calling logout. */

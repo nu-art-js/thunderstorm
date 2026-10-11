@@ -284,9 +284,9 @@ class ModuleFE_Routing_Class
 	 * @param key - The query parameter key to remove
 	 */
 	removeQueryParam(key: string) {
-		const encodedQueryParams = this.getEncodedQueryParams();
-		delete encodedQueryParams[key];
-		this.updateQueryParams(encodedQueryParams);
+		const queryParams = this.getQueryParams();
+		delete queryParams[key];
+		this.setQuery(queryParams);
 	}
 
 	// ######################## URL Utility Methods ########################
