@@ -286,7 +286,7 @@ class ModuleFE_Routing_Class
 	removeQueryParam(key: string) {
 		const queryParams = this.getQueryParams();
 		delete queryParams[key];
-		this.setQuery(queryParams);
+		this.updateQueryParams(queryParams);
 	}
 
 	// ######################## URL Utility Methods ########################
