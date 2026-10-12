@@ -11,7 +11,7 @@ export type ParsedIdpMetadata = {
 
 export type API_SAML = {
 	loginSaml: QueryApi<{ loginUrl: string }, { email: string, [QueryParam_RedirectUrl]: string, deviceId: string }>;
-	assertSAML: BodyApi<void, { RelayState: string }>;
+	assertSAML: BodyApi<void, { SAMLResponse: string; RelayState?: string }>;
 	previewMetadata: BodyApi<ParsedIdpMetadata, { metadataUrl: string }>;
 	refreshMetadata: BodyApi<DB_SamlProvider, { _id: string }>;
 }

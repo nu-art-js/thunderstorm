@@ -8,7 +8,7 @@ import {expect} from 'chai';
 import {ApiDef_SAML} from '@nu-art/saml-shared';
 import {QueryParam_Email, QueryParam_RedirectUrl, QueryParam_SessionId} from '@nu-art/user-account-shared';
 import {decode} from '@nu-art/ts-common';
-import {resolveAssertion, samlProviderDomainFromRelayState} from '../main/ModuleBE_SAML.js';
+import {issuerFromSamlResponse, resolveAssertion, samlProviderDomainFromRelayState} from '../main/ModuleBE_SAML.js';
 import type {SamlIdpResponse} from '../main/ModuleBE_SAML.js';
 
 describe('ApiDef_SAML contract', () => {
@@ -103,6 +103,12 @@ describe('samlProviderDomainFromRelayState', () => {
 
 	it('refuses empty relay', () => {
 		expect(() => samlProviderDomainFromRelayState('')).to.throw(/missing/i);
+	});
+
+	it('reads the issuer from a Google assertion', () => {
+		const xml = '<saml2p:Response><saml2:Issuer>https://accounts.google.com/o/saml2?idpid=C03qyi3bp</saml2:Issuer></saml2p:Response>';
+		expect(issuerFromSamlResponse(Buffer.from(xml).toString('base64')))
+			.to.equal('https://accounts.google.com/o/saml2?idpid=C03qyi3bp');
 	});
 });
 

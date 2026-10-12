@@ -51,6 +51,7 @@ export type SamlAssertResponse = {
 	fullResponse: SamlIdpResponse
 	userId: string
 	loginContext: API_SAML['loginSaml']['Params']
+	providerDomain: string
 }
 
 export function resolveAssertion(response: SamlIdpResponse, relayState: string | undefined): SamlAssertResponse {
@@ -94,6 +95,19 @@ export function samlProviderDomainFromRelayState(relayState: string): string {
 	throw HttpCodes._4XX.BAD_REQUEST('SAML relay state has no provider domain');
 }
 
+/** Issuer on a still-unverified response. Signature check happens after the provider is loaded. */
+export function issuerFromSamlResponse(samlResponse: string | undefined): string {
+	if (!samlResponse)
+		throw HttpCodes._4XX.BAD_REQUEST('SAML response is missing');
+
+	const xml = Buffer.from(samlResponse, 'base64').toString('utf8');
+	const match = xml.match(/<(?:[A-Za-z0-9]+:)?Issuer\b[^>]*>([^<]+)<\/(?:[A-Za-z0-9]+:)?Issuer>/);
+	const issuer = match?.[1]?.trim();
+	if (!issuer)
+		throw HttpCodes._4XX.BAD_REQUEST('SAML response has no issuer');
+	return issuer;
+}
+
 function createIdentityProvider(provider: DB_SamlProvider): IdentityProvider {
 	const options: any = {
 		sso_login_url: provider.ssoLoginUrl,
@@ -109,7 +123,7 @@ function createIdentityProvider(provider: DB_SamlProvider): IdentityProvider {
 export class ModuleBE_SAML_Class
 	extends Module<SamlSpConfig> {
 
-	private assertionHandoff?: (email: string, relayState: string) => Promise<string>;
+	private assertionHandoff?: (email: string, relayState: string | undefined, providerDomain: string) => Promise<string>;
 	private signingCertificates?: (provider: DB_SamlProvider) => Promise<string[]>;
 
 	constructor() {
@@ -118,7 +132,7 @@ export class ModuleBE_SAML_Class
 	}
 
 	/** When set, a verified assertion redirects to the returned URL and does not create an account. */
-	setAssertionHandoff(handoff: (email: string, relayState: string) => Promise<string>) {
+	setAssertionHandoff(handoff: (email: string, relayState: string | undefined, providerDomain: string) => Promise<string>) {
 		this.assertionHandoff = handoff;
 	}
 
@@ -160,7 +174,27 @@ export class ModuleBE_SAML_Class
 	/** Verifies the assertion and returns the email plus relay state. Does not create an account. */
 	async readAssertion(body: API_SAML['assertSAML']['Body']): Promise<{email: string; relayState: string}> {
 		const data = await this.assertImpl(body);
-		return {email: data.userId.toLowerCase(), relayState: body.RelayState};
+		return {email: data.userId.toLowerCase(), relayState: body.RelayState ?? ''};
+	}
+
+	private async providerForAssertion(body: API_SAML['assertSAML']['Body']): Promise<DB_SamlProvider> {
+		if (this.isOurRelay(body.RelayState))
+			return this.loadProvider(samlProviderDomainFromRelayState(body.RelayState));
+
+
+		const issuer = issuerFromSamlResponse(body.SAMLResponse);
+		const rows = await ModuleBE_SamlProviderDB.query.custom({where: {idpEntityId: issuer}, limit: 2});
+		if (rows.length !== 1)
+			throw HttpCodes._4XX.BAD_REQUEST('No SAML provider matches this Google sign-in');
+		return rows[0];
+	}
+
+	/** Signature verification still applies. Enabled is enforced by the handoff, so a test can run first. */
+	private async loadProvider(domain: string): Promise<DB_SamlProvider> {
+		const providers = await ModuleBE_SamlProviderDB.query.custom({where: {domain}, limit: 1});
+		if (providers.length === 0)
+			throw HttpCodes._4XX.UNAUTHORIZED(`No SAML provider configured for domain '${domain}'`);
+		return providers[0];
 	}
 
 	private async resolveProvider(domain: string): Promise<DB_SamlProvider> {
@@ -182,7 +216,7 @@ export class ModuleBE_SAML_Class
 			MemKey_AccountEmail.set(email);
 
 			if (this.assertionHandoff) {
-				const url = await this.assertionHandoff(email, body.RelayState);
+				const url = await this.assertionHandoff(email, body.RelayState, data.providerDomain);
 				MemKey_HttpResponse.get().redirect(302, url);
 				return;
 			}
@@ -258,10 +292,13 @@ export class ModuleBE_SAML_Class
 			allow_unencrypted_assertion?: boolean;
 		}
 
+		if (!this.config.spConfig)
+			throw new ImplementationMissingException('SAML spConfig is not configured');
+
 		const assertBody: RequestBody_SamlAssertOptions = {request_body};
-		const sp = new ServiceProvider(this.config.spConfig);
-		const provider = await this.resolveProvider(samlProviderDomainFromRelayState(request_body.RelayState));
+		const provider = await this.providerForAssertion(request_body);
 		const idp = await this.identityProvider(provider);
+		const sp = new ServiceProvider(this.config.spConfig);
 
 		return new Promise<SamlAssertResponse>((resolve, reject) => {
 			sp.post_assert(idp, assertBody, (error, response: SamlIdpResponse) => {
@@ -269,12 +306,34 @@ export class ModuleBE_SAML_Class
 					return reject(error);
 
 				try {
-					resolve(resolveAssertion(response, assertBody.request_body.RelayState));
+					const parsed = this.isOurRelay(request_body.RelayState)
+						? resolveAssertion(response, request_body.RelayState)
+						: {
+							fullResponse: response,
+							userId: response.user.name_id,
+							loginContext: {
+								email: response.user.name_id,
+								[QueryParam_RedirectUrl]: '',
+								deviceId: '',
+							},
+						};
+					resolve({...parsed, providerDomain: provider.domain});
 				} catch (e) {
 					reject(e);
 				}
 			});
 		});
+	}
+
+	private isOurRelay(relayState: string | undefined): relayState is string {
+		if (!relayState)
+			return false;
+		try {
+			samlProviderDomainFromRelayState(relayState);
+			return true;
+		} catch {
+			return false;
+		}
 	};
 }
 
