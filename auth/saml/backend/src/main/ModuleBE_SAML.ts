@@ -54,7 +54,7 @@ export type SamlAssertResponse = {
 	providerDomain: string
 }
 
-export function resolveAssertion(response: SamlIdpResponse, relayState: string | undefined): SamlAssertResponse {
+export function resolveAssertion(response: SamlIdpResponse, relayState: string | undefined): Omit<SamlAssertResponse, 'providerDomain'> {
 	if (!relayState)
 		throw new MUSTNeverHappenException('LoginContext lost along the way');
 
