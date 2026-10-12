@@ -12,6 +12,8 @@ export type AuthEntryConfig = {
 	credentials: JWT_Input | string;
 	mongo?: {
 		mongoUrl?: string;
+		/** Secret Manager secret name or resource. Preferred over `mongoUrl` when set. */
+		mongoUrlSecret?: string;
 		firestoreMongo?: {
 			firestoreUid: string;
 			firestoreLocation: string;
