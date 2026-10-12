@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {tsValidateResult} from '@nu-art/ts-common';
 import {i18nBrand} from '../main/brand.js';
 import {getI18nRegistration, i18nRegister} from '../main/register.js';
-import {resolveI18n} from '../main/resolve.js';
+import {createI18nTranslator, overlayPlainText, resolveI18n} from '../main/resolve.js';
 import {DBDef_Locale} from '../main/_entity/locale/db-def.js';
 import {DBDef_I18nOverlay} from '../main/_entity/overlay/db-def.js';
 import {localeIdFromCode} from '../main/_entity/locale/locale-code.js';
@@ -61,6 +61,28 @@ describe('resolveI18n', () => {
 
 	it('leaves unknown placeholders in place', () => {
 		expect(resolveI18n({id: i18n_WHO_AM_I, localeCode: 'en', defaultText: 'Hi {name}'})).to.equal('Hi {name}');
+	});
+});
+
+describe('createI18nTranslator', () => {
+	it('returns an override as plain text, without interpolation or plural selection', () => {
+		const translator = createI18nTranslator('en', {
+			overrides: {[i18n_INBOX_UNREAD]: '{count} <b>unread</b>'},
+			defaults: {[i18n_INBOX_UNREAD]: inboxDefault},
+		});
+		expect(translator.localeCode).to.equal('en');
+		expect(translator.t(i18n_INBOX_UNREAD, {count: 3})).to.equal('{count} <b>unread</b>');
+	});
+
+	it('uses the default path when there is no override string', () => {
+		const translator = createI18nTranslator('en_US', {overrides: {}, defaults: {[i18n_INBOX_UNREAD]: inboxDefault}});
+		expect(translator.t(i18n_INBOX_UNREAD, {count: 1})).to.equal('1 new message');
+	});
+
+	it('reads the other form, else the first form, as the plain string', () => {
+		expect(overlayPlainText({one: 'one', other: 'other <x>'})).to.equal('other <x>');
+		expect(overlayPlainText({one: 'only'})).to.equal('only');
+		expect(overlayPlainText(undefined)).to.equal(undefined);
 	});
 });
 
