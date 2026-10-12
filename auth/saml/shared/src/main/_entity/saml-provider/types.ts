@@ -20,6 +20,8 @@ export type DB_SamlProvider = DB_Object<DBKey> & {
 	certificates: string[];
 	lastMetadataFetchAt?: number;
 	metadataFetchError?: string;
+	/** Set when a probe sign-in for this metadata succeeds. Cleared when the IdP changes. */
+	testedAt?: number;
 };
 
 export type DatabaseDef_SamlProvider = DB_Prototype<DB_ProtoSeed<DB_SamlProvider, DBKey, GeneratedKeys, Versions, UniqueKeys, Dependencies>>;

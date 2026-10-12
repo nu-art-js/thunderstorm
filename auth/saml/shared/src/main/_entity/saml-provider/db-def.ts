@@ -11,6 +11,7 @@ const modifiablePropsValidator: DatabaseDef_SamlProvider['modifiablePropsValidat
 	ssoLoginUrl: tsValidateString(),
 	ssoLogoutUrl: tsValidateString(undefined, false),
 	certificates: tsValidateArray(tsValidateString()),
+	testedAt: tsValidateNumber(false),
 };
 
 const generatedPropsValidator: DatabaseDef_SamlProvider['generatedPropsValidator'] = {
