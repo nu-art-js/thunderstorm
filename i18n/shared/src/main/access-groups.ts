@@ -25,12 +25,17 @@ export const I18nAdminGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>
  * It reads and ensures through membership of every locale's groups.
  */
 export const ServiceAccountId_I18n = 'i18n-system';
-export const ServiceAccountConfig_I18n = {
+export const ServiceAccountConfig_I18n: {
+	scopes: string[];
+	enabled: boolean;
+	systemOnly: boolean;
+	accessIdCache: {ttlMs: number};
+} = {
 	scopes: ['i18n-ui:view', 'i18n-overlay:create', 'i18n-locale:create'],
 	enabled: true,
 	systemOnly: false,
 	accessIdCache: {ttlMs: 60_000},
-} as const;
+};
 /** Personal group id the permissions module gives a service account: hashToUniqueId(saId). */
 export const I18nServiceAccountGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(ServiceAccountId_I18n);
 
