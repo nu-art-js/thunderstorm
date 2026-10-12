@@ -1,0 +1,25 @@
+{
+  "name": "@nu-art/seo-shared",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "SEO shared: page and llms.txt definitions (structure in code), HTML shell and llms.txt rendering through the i18n resolution path, locale URL helpers",
+  "keywords": ["TacB0sS", "infra", "nu-art", "seo", "llms.txt", "i18n", "thunderstorm", "typescript"],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+  "repository": {"type": "git", "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git", "directory": "_thunderstorm/seo/shared"},
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "dependencies": {
+    "@nu-art/i18n-shared": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {"output": "dist", "type": "typescript-lib"},
+  "type": "module",
+  "exports": {
+    ".": {"types": "./index.d.ts", "import": "./index.js"},
+    "./*": {"types": "./*.d.ts", "import": "./*.js"}
+  }
+}
