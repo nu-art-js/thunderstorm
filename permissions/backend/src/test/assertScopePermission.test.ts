@@ -6,7 +6,7 @@
 
 import {expect} from 'chai';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
-import {definePermissionScope} from '@nu-art/permissions-shared';
+import {buildPermissionScope, definePermissionScope} from '@nu-art/permissions-shared';
 import {ModuleBE_PermissionsAssert} from '../main/modules/ModuleBE_PermissionsAssert.js';
 import {MemKey_UserScopePermissions} from '../main/consts.js';
 
@@ -33,6 +33,17 @@ describe('assertScopePermission', () => {
 		await new MemStorage().init(async () => {
 			MemKey_UserScopePermissions.set(['topics:admin']);
 			ModuleBE_PermissionsAssert.assertScopePermission(Scope_Topics, 'write');
+		});
+	});
+
+	it('uses the highest org value when a lower one is listed first', async () => {
+		const Scope_Org = buildPermissionScope('organization/abc', ['can-invite', 'manage-members', 'admin'] as const);
+		await new MemStorage().init(async () => {
+			MemKey_UserScopePermissions.set([
+				'organization/abc:can-invite',
+				'organization/abc:admin',
+			]);
+			ModuleBE_PermissionsAssert.assertScopePermission(Scope_Org, 'admin');
 		});
 	});
 

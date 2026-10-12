@@ -58,18 +58,29 @@ export class ModuleBE_PermissionsAssert_Class
 	assertScopePermission(scope: PermissionScope, requiredValue: string): void {
 		const userPerms = MemKey_UserScopePermissions.get();
 		const prefix = scope.key + ':';
-		const entry = userPerms.find(p => p.startsWith(prefix));
-		if (!entry)
-			throw HttpCodes._4XX.FORBIDDEN(`No access for scope: ${scope.key}`);
-
-		const userValue = entry.substring(prefix.length);
 		const requiredIdx = scope.values.indexOf(requiredValue);
 		if (requiredIdx === -1)
 			throw HttpCodes._5XX.SERVICE_UNAVAILABLE(`Unknown permission value '${requiredValue}' for scope '${scope.key}'`);
 
-		const userIdx = scope.values.indexOf(userValue);
-		if (userIdx === -1 || userIdx < requiredIdx) {
-			this.logErrorBold(`scope permission denied: ${scope.key} (has: ${userValue}, needs: ${requiredValue})`);
+		let bestIdx = -1;
+		let bestValue = '';
+		for (const entry of userPerms) {
+			if (!entry.startsWith(prefix))
+				continue;
+
+			const value = entry.substring(prefix.length);
+			const idx = scope.values.indexOf(value);
+			if (idx > bestIdx) {
+				bestIdx = idx;
+				bestValue = value;
+			}
+		}
+
+		if (bestIdx === -1)
+			throw HttpCodes._4XX.FORBIDDEN(`No access for scope: ${scope.key}`);
+
+		if (bestIdx < requiredIdx) {
+			this.logErrorBold(`scope permission denied: ${scope.key} (has: ${bestValue}, needs: ${requiredValue})`);
 			throw HttpCodes._4XX.FORBIDDEN(`Insufficient access for scope: ${scope.key}`);
 		}
 	}
