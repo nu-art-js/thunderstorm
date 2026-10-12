@@ -17,7 +17,7 @@
  */
 
 import {IdentityProvider, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
-import {__stringify, BadImplementationException, ImplementationMissingException, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {__stringify, ApiException, BadImplementationException, ImplementationMissingException, isErrorOfType, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/api-types';
 import {ApiHandler, MemKey_HttpResponse} from '@nu-art/http-server';
 import {MemKey_AccountEmail, ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
@@ -231,8 +231,11 @@ export class ModuleBE_SAML_Class
 			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), encodeURIComponent(email));
 
 			MemKey_HttpResponse.get().redirect(302, redirectUrl);
-		} catch (error: any) {
-			throw HttpCodes._4XX.UNAUTHORIZED('Error authenticating user', error.message, error);
+		} catch (error: unknown) {
+			if (isErrorOfType(error, ApiException))
+				throw error;
+			const detail = error instanceof Error && error.message ? error.message : 'Error authenticating user';
+			throw HttpCodes._4XX.UNAUTHORIZED(detail, detail, error instanceof Error ? error : undefined);
 		}
 	}
 
@@ -295,7 +298,7 @@ export class ModuleBE_SAML_Class
 		if (!this.config.spConfig)
 			throw new ImplementationMissingException('SAML spConfig is not configured');
 
-		const assertBody: RequestBody_SamlAssertOptions = {request_body};
+		const assertBody: RequestBody_SamlAssertOptions = {request_body, allow_unencrypted_assertion: true};
 		const provider = await this.providerForAssertion(request_body);
 		const idp = await this.identityProvider(provider);
 		const sp = new ServiceProvider(this.config.spConfig);
