@@ -14,6 +14,7 @@ import {
 import {ModuleBE_LocaleDB} from './_entity/locale/ModuleBE_LocaleDB.js';
 import {ModuleBE_I18nOverlayDB} from './_entity/overlay/ModuleBE_I18nOverlayDB.js';
 import {ModuleBE_I18nDefaults} from './ModuleBE_I18nDefaults.js';
+import {wireI18nDocumentAccess} from './i18n-access-wiring.js';
 
 export const DefaultLocaleCode = 'en_US';
 
@@ -24,6 +25,10 @@ export const DefaultLocaleCode = 'en_US';
  */
 export class ModuleBE_I18n_Class
 	extends Module {
+
+	protected init(): void {
+		wireI18nDocumentAccess();
+	}
 
 	async translator(localeCode: string = DefaultLocaleCode): Promise<I18nTranslator> {
 		const [overrides, defaults] = await Promise.all([

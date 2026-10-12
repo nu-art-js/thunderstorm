@@ -1,11 +1,13 @@
 import {Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '@nu-art/thunder-core';
 import {ApiCaller, HttpClient} from '@nu-art/http-client';
+import {ModuleFE_PermissionsAssert} from '@nu-art/permissions-frontend';
 import {
 	ApiDef_I18n,
 	detectLocale,
 	I18nLocaleParam,
 	matchSupportedLocale,
+	PermissionScope_I18nEdit,
 	textToForms,
 	type API_I18n,
 	type I18N_LocaleCatalog,
@@ -90,6 +92,9 @@ export class ModuleFE_I18n_Class
 
 	isEditMode = (): boolean => this.editMode;
 
+	/** Edit mode needs the i18n-edit scope; per-locale write rights are enforced by the backend. */
+	canEdit = (): boolean => ModuleFE_PermissionsAssert.hasScopeAccess(PermissionScope_I18nEdit, 'edit');
+
 	setLocale = (localeCode: string) => {
 		this.localeCode = localeCode;
 		if (typeof localStorage !== 'undefined')
@@ -100,6 +105,11 @@ export class ModuleFE_I18n_Class
 	};
 
 	setEditMode = (editMode: boolean) => {
+		if (editMode && !this.canEdit()) {
+			this.logWarning('Edit mode requires the i18n-edit scope');
+			return;
+		}
+
 		this.editMode = editMode;
 		dispatch_onI18nChanged.dispatchAll();
 	};

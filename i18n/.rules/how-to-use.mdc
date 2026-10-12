@@ -48,3 +48,11 @@ if (!report.ok) throw new Error(formatI18nCompletenessReport(report));
 
 - Never put text in `i18nRegister`, and never read defaults or overrides directly. Use `resolveI18n` or `createI18nTranslator`.
 - A locale `code` (`ll` or `ll_CC`) is its identity and cannot change.
+
+## ACL
+
+- On start, `ModuleBE_LocaleDB.ensureOnStart` (also the project-setup task) creates four `entity` groups per locale: readers, writers, deleters, owners. `creators` on the document is the writers group.
+- Locale docs and overlay docs are minted with that locale's groups. `wireI18nDocumentAccess()` runs from `ModuleBE_I18n.init`.
+- `i18n-system` is registered on the permissions module and is a member of every locale group. It reads and ensures through that membership. There is no unmanipulated read.
+- Writers carry `i18n-overlay:create` and `i18n-edit:edit`. The editor's `setEditMode(true)` requires `i18n-edit:edit`.
+- A new overlay create asserts the caller is in that locale's writers group. The framework does not check `creators` on create.
