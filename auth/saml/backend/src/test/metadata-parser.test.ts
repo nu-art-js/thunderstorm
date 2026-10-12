@@ -129,6 +129,26 @@ describe('parseSamlMetadataXml', () => {
 		expect(result.ssoLoginUrl).to.equal('https://example.com/sso');
 	});
 
+	it('reads Google metadata that uses namespace prefixes', () => {
+		const xml = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" entityID="https://accounts.google.com/o/saml2?idpid=C03qyi3bp">
+  <md:IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <md:KeyDescriptor use="signing">
+      <ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+        <ds:X509Data>
+          <ds:X509Certificate>MIIDdDCCAlygAwIBAgIGAXX1pWJzMA0GCSqGSIb3DQEBCwUA</ds:X509Certificate>
+        </ds:X509Data>
+      </ds:KeyInfo>
+    </md:KeyDescriptor>
+    <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://accounts.google.com/o/saml2/idp?idpid=C03qyi3bp"/>
+  </md:IDPSSODescriptor>
+</md:EntityDescriptor>`;
+		const result = parseSamlMetadataXml(xml);
+		expect(result.idpEntityId).to.equal('https://accounts.google.com/o/saml2?idpid=C03qyi3bp');
+		expect(result.ssoLoginUrl).to.equal('https://accounts.google.com/o/saml2/idp?idpid=C03qyi3bp');
+		expect(result.certificates[0]).to.equal('MIIDdDCCAlygAwIBAgIGAXX1pWJzMA0GCSqGSIb3DQEBCwUA');
+	});
+
 	it('returns undefined ssoLogoutUrl when not present', () => {
 		const xml = sampleMetadataXml.replace(/<SingleLogoutService[^>]*\/>/g, '');
 		const result = parseSamlMetadataXml(xml);

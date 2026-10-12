@@ -33,17 +33,17 @@ export function parseSamlMetadataXml(xml: string): ParsedIdpMetadata {
 
 	const idpEntityId = entityIdMatch[1];
 
-	const ssoLoginUrlMatch = xml.match(/<SingleSignOnService[^>]+Binding="urn:oasis:names:tc:SAML:2\.0:bindings:HTTP-Redirect"[^>]+Location="([^"]+)"/);
-	const ssoLoginUrlAlt = xml.match(/<SingleSignOnService[^>]+Location="([^"]+)"[^>]+Binding="urn:oasis:names:tc:SAML:2\.0:bindings:HTTP-Redirect"/);
+	const ssoLoginUrlMatch = xml.match(/<(?:[A-Za-z0-9]+:)?SingleSignOnService[^>]+Binding="urn:oasis:names:tc:SAML:2\.0:bindings:HTTP-Redirect"[^>]+Location="([^"]+)"/);
+	const ssoLoginUrlAlt = xml.match(/<(?:[A-Za-z0-9]+:)?SingleSignOnService[^>]+Location="([^"]+)"[^>]+Binding="urn:oasis:names:tc:SAML:2\.0:bindings:HTTP-Redirect"/);
 	const ssoLoginUrl = ssoLoginUrlMatch?.[1] ?? ssoLoginUrlAlt?.[1];
 	if (!ssoLoginUrl)
 		throw new MUSTNeverHappenException('Metadata XML missing SingleSignOnService with HTTP-Redirect binding');
 
-	const ssoLogoutUrlMatch = xml.match(/<SingleLogoutService[^>]+Binding="urn:oasis:names:tc:SAML:2\.0:bindings:HTTP-Redirect"[^>]+Location="([^"]+)"/);
-	const ssoLogoutUrlAlt = xml.match(/<SingleLogoutService[^>]+Location="([^"]+)"[^>]+Binding="urn:oasis:names:tc:SAML:2\.0:bindings:HTTP-Redirect"/);
+	const ssoLogoutUrlMatch = xml.match(/<(?:[A-Za-z0-9]+:)?SingleLogoutService[^>]+Binding="urn:oasis:names:tc:SAML:2\.0:bindings:HTTP-Redirect"[^>]+Location="([^"]+)"/);
+	const ssoLogoutUrlAlt = xml.match(/<(?:[A-Za-z0-9]+:)?SingleLogoutService[^>]+Location="([^"]+)"[^>]+Binding="urn:oasis:names:tc:SAML:2\.0:bindings:HTTP-Redirect"/);
 	const ssoLogoutUrl = ssoLogoutUrlMatch?.[1] ?? ssoLogoutUrlAlt?.[1];
 
-	const certMatches = [...xml.matchAll(/<X509Certificate>([^<]+)<\/X509Certificate>/g)];
+	const certMatches = [...xml.matchAll(/<(?:[A-Za-z0-9]+:)?X509Certificate>([^<]+)<\/(?:[A-Za-z0-9]+:)?X509Certificate>/g)];
 	if (certMatches.length === 0)
 		throw new MUSTNeverHappenException('Metadata XML contains no X509Certificate elements');
 
