@@ -55,12 +55,13 @@ function buildFirestoreMongoUrl(config: FirestoreMongoConfig, overrides?: TypedM
 /**
  * One Mongo connection for both config shapes.
  * `get()` resolves the URL (`mongoUrlSecret` when set, otherwise `mongoUrl`) and creates the client.
- * Callers share one in-flight promise. A failure drops that promise so the next `get()` tries again.
- * The URL is never logged.
+ * Callers share one in-flight promise. A failure, or `drop` of the client that this connection opened,
+ * clears that promise so the next `get()` reconnects. The URL is never logged.
  */
 export class LazyMongoConnection<Client> {
 
 	private connecting?: Promise<Client>;
+	private client?: Client;
 
 	public constructor(
 		private readonly resolveUrl: () => Promise<string>,
@@ -69,17 +70,69 @@ export class LazyMongoConnection<Client> {
 	}
 
 	public get(): Promise<Client> {
-		if (!this.connecting)
-			this.connecting = this.open().catch(err => {
-				this.connecting = undefined;
-				throw err;
-			});
+		if (this.connecting)
+			return this.connecting;
 
-		return this.connecting;
+		let flight!: Promise<Client>;
+		flight = this.open().then(client => {
+			if (this.connecting === flight)
+				this.client = client;
+
+			return client;
+		}).catch(err => {
+			if (this.connecting === flight) {
+				this.connecting = undefined;
+				this.client = undefined;
+			}
+
+			throw err;
+		});
+		this.connecting = flight;
+		return flight;
+	}
+
+	public current(): Client | undefined {
+		return this.client;
+	}
+
+	/** Records the client before drop listeners run, so a sync close still matches `drop`. */
+	public remember(client: Client): void {
+		if (this.client !== undefined && this.client !== client)
+			return;
+
+		this.client = client;
 	}
 
 	public clear(): void {
 		this.connecting = undefined;
+		this.client = undefined;
+	}
+
+	/**
+	 * Lost connection. Clears the cache only when `client` is the one this connection opened,
+	 * then closes it best-effort. A stale event for an older client does nothing.
+	 */
+	public drop(client: Client): void {
+		if (this.client !== client)
+			return;
+
+		this.client = undefined;
+		this.connecting = undefined;
+		this.closeBestEffort(client);
+	}
+
+	private closeBestEffort(client: Client): void {
+		const close = (client as {close?: unknown}).close;
+		if (typeof close !== 'function')
+			return;
+
+		try {
+			const result = (close as () => unknown).call(client);
+			if (result instanceof Promise)
+				void result.catch(() => undefined);
+		} catch {
+			// Already closed, or close failed. The cache is cleared either way.
+		}
 	}
 
 	private async open(): Promise<Client> {

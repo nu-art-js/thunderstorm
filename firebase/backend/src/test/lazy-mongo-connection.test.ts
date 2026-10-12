@@ -173,6 +173,95 @@ describe('LazyMongoConnection', () => {
 		expect(secretReads).to.deep.equal([]);
 	});
 
+	it('reconnects through get after the open client drops', async () => {
+		const closed: number[] = [];
+		let n = 0;
+		const connection = new LazyMongoConnection<{id: number; close: () => Promise<void>}>(
+			async () => 'mongodb://localhost:27017/app',
+			async () => {
+				const id = ++n;
+				return {
+					id,
+					close: () => {
+						closed.push(id);
+						return Promise.reject(new Error('mongodb://localhost:27017/app'));
+					},
+				};
+			},
+		);
+
+		const first = await connection.get();
+		connection.drop(first);
+		await Promise.resolve();
+		expect(closed).to.deep.equal([1]);
+		expect(connection.current()).to.equal(undefined);
+
+		const second = await connection.get();
+		const third = await connection.get();
+		expect(second).to.not.equal(first);
+		expect(third).to.equal(second);
+		expect(second.id).to.equal(2);
+		expect(closed).to.deep.equal([1]);
+	});
+
+	it('drops a client that closes while it is created, then the next get reconnects', async () => {
+		let n = 0;
+		let connection!: LazyMongoConnection<{id: number; close: () => void}>;
+		connection = new LazyMongoConnection(
+			async () => 'mongodb://localhost:27017/app',
+			() => {
+				const client = {
+					id: ++n,
+					close: () => {
+						throw new Error('mongodb://localhost:27017/app');
+					},
+				};
+				connection.remember(client);
+				if (client.id === 1)
+					connection.drop(client);
+
+				return client;
+			},
+		);
+
+		const first = await connection.get();
+		expect(first.id).to.equal(1);
+		expect(connection.current()).to.equal(undefined);
+
+		const second = await connection.get();
+		expect(second.id).to.equal(2);
+		expect(second).to.not.equal(first);
+		expect(connection.current()).to.equal(second);
+	});
+
+	it('ignores a drop from a client that is no longer the cached one', async () => {
+		const closed: number[] = [];
+		let n = 0;
+		const connection = new LazyMongoConnection<{id: number; close: () => void}>(
+			async () => 'mongodb://localhost:27017/app',
+			async () => {
+				const id = ++n;
+				return {
+					id,
+					close: () => {
+						closed.push(id);
+					},
+				};
+			},
+		);
+
+		const first = await connection.get();
+		connection.drop(first);
+		const second = await connection.get();
+		connection.drop(first);
+		const third = await connection.get();
+
+		expect(third).to.equal(second);
+		expect(second.id).to.equal(2);
+		expect(connection.current()).to.equal(second);
+		expect(closed).to.deep.equal([1]);
+	});
+
 	it('retries mongoUrl on the same path after the driver fails', async () => {
 		const {connection, created, secretReads, failDriver} = connectionFor(
 			{mongoUrl: 'mongodb://localhost:27017/app'},

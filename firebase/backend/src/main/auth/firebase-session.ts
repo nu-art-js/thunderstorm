@@ -175,14 +175,14 @@ export abstract class FirebaseSession<Config>
 		return this.mongos[dbName];
 	}
 
-	/** Shared lazy connect. Concurrent callers await one in-flight client. Failures clear the cache. */
+	/** Shared lazy connect. Concurrent callers await one in-flight client. Failures and drops clear the cache. */
 	public getMongoClient(): Promise<MongoClient> {
 		if (this.mongoClient)
 			return Promise.resolve(this.mongoClient);
 
 		const lazy = this.mongoConnection();
 		return lazy.get().then(client => {
-			if (this.mongoLazy === lazy)
+			if (this.mongoLazy === lazy && lazy.current() === client)
 				this.mongoClient = client;
 
 			return client;
@@ -205,12 +205,33 @@ export abstract class FirebaseSession<Config>
 
 	private createMongoClient(url: string): MongoClient {
 		const client = new MongoClient(url, {monitorCommands: true, serverMonitoringMode: 'poll'});
+		this.mongoLazy?.remember(client);
 		this.watchClient(client);
 		this.logInfo('Creating MongoClient');
 		return client;
 	}
 
+	/** `close`, `error`, and `topologyClosed` are the driver signals that this client is gone. */
+	private onMongoLost(client: MongoClient): void {
+		const cached = this.mongoClient === client;
+		const opened = this.mongoLazy?.current() === client;
+		if (!cached && !opened)
+			return;
+
+		if (cached)
+			this.mongoClient = undefined;
+
+		for (const key of Object.keys(this.mongos))
+			delete this.mongos[key];
+
+		this.mongoLazy?.drop(client);
+		this.logWarning('MongoDB connection lost');
+	}
+
 	private watchClient(client: MongoClient): void {
+			client.on('close', () => this.onMongoLost(client));
+			client.on('error', () => this.onMongoLost(client));
+
 			// --- Command monitoring ---
 			client.on('commandStarted', (event) => {
 				this.logDebug(`MongoDB >>> [${event.commandName}] reqId=${event.requestId} ns=${event.databaseName}.${(event.command as Record<string, unknown>)[event.commandName]}`);
@@ -265,6 +286,7 @@ export abstract class FirebaseSession<Config>
 
 			client.on('topologyClosed', () => {
 				this.logError(`MongoDB TOPOLOGY CLOSED — all connections lost`);
+				this.onMongoLost(client);
 			});
 
 			// --- Connection pool monitoring ---
