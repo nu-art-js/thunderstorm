@@ -48,6 +48,8 @@ const DefaultHttpServerConfig: HttpServerConfig = {
 	cors: {headers: [], responseHeaders: []}
 };
 
+const rawBodyRouteKey = (method: string, path: string) => `${method.toUpperCase()} ${path}`;
+
 export class HttpServer
 	extends Logger {
 
@@ -62,6 +64,8 @@ export class HttpServer
 	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
 	private readonly instanceMiddleware: ExpressRequestHandler[] = [];
 	private readonly apiMiddlewares: ApiDefMiddlewareConfig[] = [];
+	/** `METHOD /full/path` of routes registered with rawBody: the global body parsers skip them. */
+	private readonly rawBodyRoutes = new Set<string>();
 	private readonly routes: ServerApi<any>[] = [];
 	private readonly apiRouter: ExpressRouter = express.Router();
 	readonly express!: Express;
@@ -108,7 +112,7 @@ export class HttpServer
 		return this;
 	}
 
-	addRoute(api: ServerApi<any>): void {
+	addRoute(api: ServerApi<any>, options?: { rawBody?: boolean }): void {
 		this.logDebug(`Adding route: ${api.apiDef.method.toUpperCase().padEnd(7)} ${api.apiDef.path}`);
 		if (this.routes.some(r => r.apiDef.path === api.apiDef.path && r.apiDef.method === api.apiDef.method))
 			throw new Error(`Duplicate API route: ${api.apiDef.method.toUpperCase()} ${api.apiDef.path}`);
@@ -120,6 +124,8 @@ export class HttpServer
 		this.routes.push(api);
 		const pathPrefix = this.config.pathPrefix ?? '';
 		const baseUrl = this.getBaseUrl();
+		if (options?.rawBody)
+			this.rawBodyRoutes.add(rawBodyRouteKey(api.apiDef.method, `${pathPrefix}${api.apiDef.path.startsWith('/') ? '' : '/'}${api.apiDef.path}`));
 		api.route(this.apiRouter, pathPrefix, baseUrl);
 	}
 
@@ -226,7 +232,8 @@ export class HttpServer
 			this.getExpress().use((req, res, next) => {
 				const alreadyHasBody = (req as { body?: unknown }).body !== undefined;
 				const notReadable = !req.readable;
-				if (alreadyHasBody || notReadable)
+				const rawBodyRoute = this.rawBodyRoutes.has(rawBodyRouteKey(req.method, req.path));
+				if (alreadyHasBody || notReadable || rawBodyRoute)
 					return next();
 
 				const ct = (req.headers['content-type'] ?? '').split(';')[0].trim().toLowerCase();
