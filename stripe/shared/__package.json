@@ -1,0 +1,25 @@
+{
+  "name": "@nu-art/stripe-shared",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Stripe shared: checkout/portal/webhook API definitions and request types",
+  "keywords": ["TacB0sS", "infra", "nu-art", "stripe", "payments", "thunderstorm", "typescript"],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+  "repository": {"type": "git", "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git", "directory": "_thunderstorm/stripe/shared"},
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "dependencies": {
+    "@nu-art/api-types": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {"output": "dist", "type": "typescript-lib"},
+  "type": "module",
+  "exports": {
+    ".": {"types": "./index.d.ts", "import": "./index.js"},
+    "./*": {"types": "./*.d.ts", "import": "./*.js"}
+  }
+}
