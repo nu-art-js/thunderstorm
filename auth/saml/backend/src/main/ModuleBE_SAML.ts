@@ -298,7 +298,12 @@ export class ModuleBE_SAML_Class
 		if (!this.config.spConfig)
 			throw new ImplementationMissingException('SAML spConfig is not configured');
 
-		const assertBody: RequestBody_SamlAssertOptions = {request_body, allow_unencrypted_assertion: true};
+		const spConfig = this.config.spConfig;
+		const encryptionConfigured = Boolean(spConfig.private_key?.trim() && spConfig.certificate?.trim());
+		const assertBody: RequestBody_SamlAssertOptions = {
+			request_body,
+			allow_unencrypted_assertion: !encryptionConfigured,
+		};
 		const provider = await this.providerForAssertion(request_body);
 		const idp = await this.identityProvider(provider);
 		const sp = new ServiceProvider(this.config.spConfig);
