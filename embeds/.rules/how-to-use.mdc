@@ -1,0 +1,31 @@
+---
+description: How to use embeds (signed embed tokens, frame-ancestors, the /embed.js loader, first-party mounting)
+alwaysApply: false
+---
+# Embeds
+
+| Package | Purpose |
+|---|---|
+| `@nu-art/embeds-shared` | Token claims, origin rules, `frameAncestorsCsp`, frame sizing, `embedLoaderJs`, `embedSnippet`, `ApiDef_Embeds` |
+| `@nu-art/embeds-backend` | `ModuleBE_Embeds` (HS256 tokens, lazy Secret Manager key, `authorizeFrame`), `ModuleBE_EmbedsAPI` (`GET /embed.js`) |
+| `@nu-art/embeds-frontend` | `ModuleFE_Embeds` (mount registered components into placeholders; frame resize reporting) |
+
+## Model
+
+- **Subject:** whatever the app embeds. The library gives it no meaning.
+- **App-owned state:** the app keeps, per subject, its allowed origins and a `version`, in its own entity, read with permission-aware queries. It exposes them through `ModuleBE_Embeds.setSubjectResolver(subject => ...)`.
+- **Token:** `createToken({subject, origins, version})` signs an HS256 token. The key is `embed-signing-key` in Secret Manager, at least 32 characters, loaded on first use.
+- **Revoking:** bump the subject's version. Every older token stops working.
+- **Removing an origin:** remove it from the subject. Tokens keep working only on the origins still allowed.
+
+## Placing an embed
+
+- Paste `embedSnippet(origin, key, token)`, or add `<div data-ts-embed="key" data-embed-token="...">` plus the `/embed.js` script.
+- **First-party origins** (`loader.firstPartyOrigins`, with `loader.bundleUrl`): no iframe. The loader loads the app bundle once and `ModuleFE_Embeds` mounts the registered components into the placeholders, sharing modules and state.
+- **Any other origin:** the loader inserts an iframe to `loader.framePath?embed=<key>&token=<token>` and sizes it from resize messages. It only accepts messages from its own iframe and the embeds origin.
+
+## Framed page (the app's route)
+
+- `const {origins, frameAncestors} = await ModuleBE_Embeds.authorizeFrame(token)`.
+- Send the header `Content-Security-Policy: <frameAncestors>`. On 401 or 403, send `frame-ancestors 'none'`.
+- In the frame, call `ModuleFE_Embeds.startFrameResize({root, allowedOrigins: origins})`. It posts only to allowed origins, never `*`.

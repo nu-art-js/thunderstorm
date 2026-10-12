@@ -1,0 +1,28 @@
+{
+  "name": "@nu-art/embeds-backend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Embeds backend: ModuleBE_Embeds (HS256 embed tokens with a lazy Secret Manager key, frame authorization with frame-ancestors) and the /embed.js loader route",
+  "keywords": ["TacB0sS", "infra", "nu-art", "embed", "iframe", "thunderstorm", "typescript"],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
+  "repository": {"type": "git", "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git", "directory": "_thunderstorm/embeds/backend"},
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "dependencies": {
+    "@nu-art/embeds-shared": "?",
+    "@nu-art/api-types": "?",
+    "@nu-art/google-services-backend": "?",
+    "@nu-art/http-server": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@nu-art/testalot": "?"
+  },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {"output": "dist", "type": "typescript-lib"},
+  "type": "module",
+  "exports": {
+    ".": {"types": "./index.d.ts", "import": "./index.js"},
+    "./*": {"types": "./*.d.ts", "import": "./*.js"}
+  }
+}
