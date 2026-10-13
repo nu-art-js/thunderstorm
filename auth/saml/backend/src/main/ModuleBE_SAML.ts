@@ -183,10 +183,12 @@ export class ModuleBE_SAML_Class
 
 
 		const issuer = issuerFromSamlResponse(body.SAMLResponse);
-		const rows = await ModuleBE_SamlProviderDB.query.custom({where: {idpEntityId: issuer}, limit: 2});
-		if (rows.length !== 1)
+		const rows = await ModuleBE_SamlProviderDB.query.custom({where: {idpEntityId: issuer}});
+		const enabled = rows.filter(row => row.enabled);
+		const match = enabled[0] ?? rows[0];
+		if (!match)
 			throw HttpCodes._4XX.BAD_REQUEST('No SAML provider matches this Google sign-in');
-		return rows[0];
+		return match;
 	}
 
 	/** Signature verification still applies. Enabled is enforced by the handoff, so a test can run first. */
