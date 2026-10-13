@@ -1,5 +1,5 @@
 import {HttpCodes} from '@nu-art/api-types';
-import {ApiDef_I18n, isI18nLocaleCode, type API_I18n, type DB_Locale, type I18N_LocaleCatalog} from '@nu-art/i18n-shared';
+import {ApiDef_I18n, isI18nLocaleCode, type API_I18n, type DB_Locale, type I18N_LocaleCatalog, type I18nLocaleCode} from '@nu-art/i18n-shared';
 import {ApiHandler} from '@nu-art/http-server';
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_I18nDefaults} from './ModuleBE_I18nDefaults.js';
@@ -24,7 +24,7 @@ export class ModuleBE_I18nAPI_Class
 		return this.readCatalog(params.locale);
 	}
 
-	protected async findLocale(code: string): Promise<DB_Locale | undefined> {
+	protected async findLocale(code: I18nLocaleCode): Promise<DB_Locale | undefined> {
 		return (await ModuleBE_LocaleDB.query.custom({where: {code}}))[0];
 	}
 
