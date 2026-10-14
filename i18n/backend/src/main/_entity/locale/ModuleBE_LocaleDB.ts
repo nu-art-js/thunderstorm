@@ -8,6 +8,7 @@ import type {DB_AccessGroup, UI_AccessGroup} from '@nu-art/permissions-shared';
 import type {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {asArray, filterInstances} from '@nu-art/ts-common';
 
+export const SetupTaskKey_LocaleAccess = asSetupTaskKey('locale-access');
 export const SetupTaskKey_DefaultLocales = asSetupTaskKey('default-locales');
 
 /** Seeded once at project setup when missing. Override via the module config (`seedLocales`). */
@@ -58,7 +59,7 @@ export class ModuleBE_LocaleDB_Class
 			return;
 
 		await this.runAsI18n(() => this.ensureLocaleAccess(created.map(locale => locale.code))).catch((e: Error) =>
-			this.logWarning(`Access groups for ${created.map(locale => locale.code).join(', ')} not ensured (re-run on next start)`, e));
+			this.logWarning(`Access groups for ${created.map(locale => locale.code).join(', ')} not ensured (re-run project setup)`, e));
 	}
 
 	runAsI18n<R>(action: () => Promise<R>): Promise<R> {
@@ -110,22 +111,22 @@ export class ModuleBE_LocaleDB_Class
 		return ModuleBE_AccessGroupDB.query.all(ids as DB_AccessGroup['_id'][]);
 	}
 
+	/**
+	 * Locale access groups first (for the seed codes and every visible locale), then the seed locales,
+	 * which the i18n service account reads through the new memberships. Project setup only, never on start.
+	 */
 	__performProjectSetup(): SetupTask[] {
 		return [{
-			key: SetupTaskKey_DefaultLocales,
+			key: SetupTaskKey_LocaleAccess,
 			dependsOn: [SetupTaskKey_PermissionsGroups],
-			processor: () => this.ensureOnStart(),
+			processor: async () => {
+				await this.runAsI18n(() => this.ensureLocaleAccess(this.config.seedLocales.map(locale => locale.code)));
+			},
+		}, {
+			key: SetupTaskKey_DefaultLocales,
+			dependsOn: [SetupTaskKey_LocaleAccess],
+			processor: () => this.runAsI18n(() => this.ensureDefaultLocales()),
 		}];
-	}
-
-	/**
-	 * Groups first (for the seed codes and every visible locale), then the seed locales in a fresh
-	 * service-account context, which reads existing locales through the new memberships.
-	 */
-	async ensureOnStart(): Promise<void> {
-		const seedCodes = this.config.seedLocales.map(locale => locale.code!);
-		await this.runAsI18n(() => this.ensureLocaleAccess(seedCodes));
-		await this.runAsI18n(() => this.ensureDefaultLocales());
 	}
 
 	private async ensureDefaultLocales(): Promise<void> {
