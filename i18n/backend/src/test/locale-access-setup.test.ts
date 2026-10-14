@@ -1,7 +1,9 @@
 import {expect} from 'chai';
 import {ModuleBE_LocaleDB_Class} from '../main/_entity/locale/ModuleBE_LocaleDB.js';
 import {ModuleBE_I18n_Class} from '../main/ModuleBE_I18n.js';
-import {graph_I18nProjectSetup} from '../main/project-setup.js';
+import {graph_ProjectSetup} from '@nu-art/action-processor-backend';
+import {DispatchKey_PermissionsGroups} from '@nu-art/permissions-backend';
+import {DispatchKey_DefaultLocales} from '../main/project-setup.js';
 
 /** Records the service-account and DB steps instead of running them. Construction registers its @OnDispatch nodes. */
 class SpyLocaleDB_Class
@@ -18,18 +20,19 @@ class SpyLocaleDB_Class
 	}
 }
 
-describe('Locale access - i18n project setup graph, not start', () => {
-	beforeEach(() => graph_I18nProjectSetup.clear());
-	afterEach(() => graph_I18nProjectSetup.clear());
+describe('Locale access - project setup actions, not start', () => {
+	beforeEach(() => graph_ProjectSetup.clear());
+	afterEach(() => graph_ProjectSetup.clear());
 
-	it('dispatching the graph ensures locale access, then seeds the default locales', async () => {
+	it('from the default-locales action: permission groups, then locale access, then seeding', async () => {
 		const db = new SpyLocaleDB_Class();
+		graph_ProjectSetup.register({key: DispatchKey_PermissionsGroups, run: async () => db.calls.push('groups')});
 		(db as unknown as { ensureDefaultLocales: () => Promise<void> }).ensureDefaultLocales = async () => {
 			db.calls.push('seed');
 		};
 
-		await graph_I18nProjectSetup.dispatch();
-		expect(db.calls).to.deep.equal([`access:${db.config.seedLocales.map(locale => locale.code).join(',')}`, 'seed']);
+		await graph_ProjectSetup.dispatchFrom([DispatchKey_DefaultLocales]);
+		expect(db.calls).to.deep.equal(['groups', `access:${db.config.seedLocales.map(locale => locale.code).join(',')}`, 'seed']);
 	});
 
 	it('the locale module registers no SetupTask', () => {

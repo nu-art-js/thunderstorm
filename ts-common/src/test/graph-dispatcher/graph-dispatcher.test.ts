@@ -237,4 +237,35 @@ describe('GraphDispatcher', () => {
 			expect(endedKeys(trace)).to.deep.equal([Key_Locales, Key_Locales]);
 		});
 	});
+
+	describe('dispatchFrom - demand-driven closure', () => {
+		it('runs the root and its transitive prerequisites in order; unreferenced nodes do not run', async () => {
+			const graph = newSetupGraph();
+			const trace: Trace = [];
+			graph.register({key: Key_Permissions, run: traced(trace, Key_Permissions)});
+			graph.register({key: Key_Locales, runAfter: [Key_Permissions], run: traced(trace, Key_Locales)});
+			graph.register({key: Key_CapabilityGroups, runAfter: [Key_Locales], run: traced(trace, Key_CapabilityGroups)});
+			graph.register({key: Key_OrgBootstrap, runAfter: [Key_Permissions], run: traced(trace, Key_OrgBootstrap)});
+
+			await graph.dispatchFrom([Key_CapabilityGroups]);
+			expect(endedKeys(trace)).to.deep.equal([Key_Permissions, Key_Locales, Key_CapabilityGroups]);
+		});
+
+		it('includes a node that declared runBefore a needed node', async () => {
+			const graph = newSetupGraph();
+			const trace: Trace = [];
+			graph.register({key: Key_Locales, run: traced(trace, Key_Locales)});
+			graph.register({key: Key_Permissions, runBefore: [Key_Locales], run: traced(trace, Key_Permissions)});
+			await graph.dispatchFrom([Key_Locales]);
+			expect(endedKeys(trace)).to.deep.equal([Key_Permissions, Key_Locales]);
+		});
+
+		it('throws on an unknown root or dependency', async () => {
+			const graph = newSetupGraph();
+			graph.register({key: Key_Locales, runAfter: [Key_Permissions], run: async () => undefined});
+			let error: unknown;
+			await graph.dispatchFrom([Key_Locales]).catch(e => error = e);
+			expect(error).to.be.instanceOf(BadImplementationException);
+		});
+	});
 });

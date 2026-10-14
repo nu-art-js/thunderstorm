@@ -99,20 +99,52 @@ export class GraphDispatcher<T,
 	 * Empty graph is a no-op.
 	 */
 	public async dispatch(...p: P): Promise<void> {
-		const levels = this.topoLevels();
+		await this.runLevels(this.topoLevels(this.nodes), p);
+	}
+
+	/**
+	 * Demand-driven: runs only the roots and everything they transitively need (runAfter, and nodes
+	 * that declared runBefore one of them), in dependency order. Unreferenced nodes never run.
+	 */
+	public async dispatchFrom(roots: DispatchKey[], ...p: P): Promise<void> {
+		await this.runLevels(this.topoLevels(this.closureOf(roots)), p);
+	}
+
+	private async runLevels(levels: GraphNode<P>[][], p: P) {
 		for (const level of levels)
 			await Promise.all(level.map(node => node.run(...p)));
 	}
 
-	private topoLevels(): GraphNode<P>[][] {
-		if (this.nodes.length === 0)
+	private closureOf(roots: DispatchKey[]): GraphNode<P>[] {
+		const nodeByKey = new Map(this.nodes.map(node => [node.key, node]));
+		const needed = new Set<DispatchKey>();
+		const queue = [...roots];
+		while (queue.length) {
+			const key = queue.shift()!;
+			if (needed.has(key))
+				continue;
+
+			const node = nodeByKey.get(key);
+			if (!node)
+				throw new BadImplementationException(`Unknown DispatchKey '${key}'`);
+
+			needed.add(key);
+			queue.push(...node.runAfter);
+			queue.push(...this.nodes.filter(other => other.runBefore.includes(key)).map(other => other.key));
+		}
+
+		return this.nodes.filter(node => needed.has(node.key));
+	}
+
+	private topoLevels(nodes: GraphNode<P>[]): GraphNode<P>[][] {
+		if (nodes.length === 0)
 			return [];
 
 		const nodeByKey = new Map<DispatchKey, GraphNode<P>>();
 		const inDegree = new Map<DispatchKey, number>();
 		const outgoing = new Map<DispatchKey, DispatchKey[]>();
 
-		for (const node of this.nodes) {
+		for (const node of nodes) {
 			nodeByKey.set(node.key, node);
 			inDegree.set(node.key, 0);
 			outgoing.set(node.key, []);
@@ -129,16 +161,17 @@ export class GraphDispatcher<T,
 			inDegree.set(to, inDegree.get(to)! + 1);
 		};
 
-		for (const node of this.nodes) {
+		for (const node of nodes) {
 			for (const prerequisite of node.runAfter)
 				addEdge(prerequisite, node.key, node.key);
 
 			for (const successor of node.runBefore)
-				addEdge(node.key, successor, node.key);
+				if (nodeByKey.has(successor) || nodes === this.nodes)
+					addEdge(node.key, successor, node.key);
 		}
 
 		const levels: GraphNode<P>[][] = [];
-		let ready = this.nodes.filter(node => inDegree.get(node.key) === 0);
+		let ready = nodes.filter(node => inDegree.get(node.key) === 0);
 		let processed = 0;
 
 		while (ready.length > 0) {
@@ -158,7 +191,7 @@ export class GraphDispatcher<T,
 			ready = nextReady;
 		}
 
-		if (processed !== this.nodes.length)
+		if (processed !== nodes.length)
 			throw new BadImplementationException('Cycle detected in GraphDispatcher');
 
 		return levels;

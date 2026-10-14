@@ -8,13 +8,13 @@ import {
 	localeIdFromCode,
 	type DB_I18nOverlay,
 } from '@nu-art/i18n-shared';
-import {GroupId_EveryoneReaders} from '@nu-art/permissions-shared';
+import {GroupId_ReadBucket} from '@nu-art/permissions-shared';
 import {deriveEntityAccessFields, deriveEntityGroupId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '@nu-art/permissions-backend';
 import type {DB_AccessGroup, UI_AccessGroup} from '@nu-art/permissions-shared';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_LocaleDB_Class} from '../main/_entity/locale/ModuleBE_LocaleDB.js';
 import {ModuleBE_I18nOverlayDB_Class} from '../main/_entity/overlay/ModuleBE_I18nOverlayDB.js';
-import {graph_I18nProjectSetup} from '../main/project-setup.js';
+import {graph_ProjectSetup} from '@nu-art/action-processor-backend';
 
 type Group = { _id: string; key: string; members: string[]; scopeEntries?: string[] };
 
@@ -64,7 +64,7 @@ class FakeGroupsLocaleDB_Class
 
 describe('i18n ACL - four groups per locale', () => {
 	// Each locale module instance registers its @OnDispatch setup nodes; start every test from an empty graph.
-	beforeEach(() => graph_I18nProjectSetup.clear());
+	beforeEach(() => graph_ProjectSetup.clear());
 
 	it('group ids are the framework entity-group ids of the locale document', () => {
 		for (const key of ['readers', 'writers', 'deleters', 'owners'] as const)
@@ -108,10 +108,10 @@ describe('i18n ACL - four groups per locale', () => {
 });
 
 describe('i18n ACL - documents minted with their locale groups', () => {
-	it('locale and override docs carry the four groups plus everyone-readers, creators = writers', () => {
+	it('locale and override docs carry the four groups plus read bucket, creators = writers', () => {
 		const access = i18nLocaleAccess('nl_NL').__access;
 		const derived = deriveEntityAccessFields(localeIdFromCode('nl_NL')).__access;
-		expect(access.readers).to.deep.equal([...derived.readers, GroupId_EveryoneReaders]);
+		expect(access.readers).to.deep.equal([...derived.readers, GroupId_ReadBucket]);
 		expect(access.writers).to.deep.equal(derived.writers);
 		expect(access.deleters).to.deep.equal(derived.deleters);
 		expect(access.owners).to.deep.equal(derived.owners);
@@ -124,7 +124,7 @@ describe('i18n ACL - access through membership', () => {
 	const nlDoc = i18nLocaleAccess('nl_NL').__access;
 	const deDoc = i18nLocaleAccess('de_DE').__access;
 	before(async () => {
-		graph_I18nProjectSetup.clear();
+		graph_ProjectSetup.clear();
 		db = new FakeGroupsLocaleDB_Class();
 		db.locales = ['nl_NL', 'de_DE'];
 		await db.ensureLocaleAccess();
@@ -151,8 +151,8 @@ describe('i18n ACL - access through membership', () => {
 		expect(canCreateInLocale(anna, 'de_DE')).to.equal(false);
 	});
 
-	it('every account reads every locale through everyone-readers, and writes none', () => {
-		const user = ['user-bob', GroupId_EveryoneReaders];
+	it('every account reads every locale through read bucket, and writes none', () => {
+		const user = ['user-bob', GroupId_ReadBucket];
 		for (const doc of [nlDoc, deDoc]) {
 			expect(allowed(doc, user, 'readers')).to.equal(true);
 			expect(allowed(doc, user, 'writers', 'owners', 'deleters')).to.equal(false);

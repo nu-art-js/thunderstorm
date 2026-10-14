@@ -5,7 +5,7 @@
  */
 
 import {ActionDeclaration} from './types.js';
-import {BadImplementationException, Brand, Dispatcher, flatArray, Logger} from '@nu-art/ts-common';
+import {BadImplementationException, Brand, Dispatcher, flatArray, GraphDispatcher, Logger, type DispatchKey} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 export type SetupTaskKey = Brand<string, 'SetupTaskKey'>;
@@ -22,20 +22,24 @@ export interface PerformProjectSetup {
 	__performProjectSetup(): SetupTask[];
 }
 
-/** A setup graph (a GraphDispatcher with no dispatch params). Packages declare their own. */
-export type ProjectSetupGraph = {
-	dispatch: () => Promise<void>;
-};
-
-const projectSetupGraphs: ProjectSetupGraph[] = [];
+export interface OnProjectSetupAction {
+	__onProjectSetupAction(): Promise<void>;
+}
 
 /**
- * The app composes the setup graphs that take part in project setup, in order. Each runs after
- * every SetupTask level has completed (so nodes may rely on e.g. SetupTaskKey_PermissionsGroups).
- * Nothing is dispatched unless the app composes it. Replaces any previous composition.
+ * The shared project-setup action graph. Packages register actions with @OnDispatch(graph_ProjectSetup,
+ * {key, runAfter}), depending on other packages' action keys. Nodes bind by key (any method name).
  */
-export const composeProjectSetup = (...graphs: ProjectSetupGraph[]) => {
-	projectSetupGraphs.splice(0, projectSetupGraphs.length, ...graphs);
+export const graph_ProjectSetup = new GraphDispatcher<OnProjectSetupAction, '__onProjectSetupAction'>('__onProjectSetupAction', {bindByKey: true});
+
+const projectSetupRoots: DispatchKey[] = [];
+
+/**
+ * The app's root setup action(s). Project setup runs only these and their transitive dependencies,
+ * after the SetupTask levels. An action nothing reaches never runs. Replaces previous roots.
+ */
+export const setProjectSetupRoots = (...roots: DispatchKey[]) => {
+	projectSetupRoots.splice(0, projectSetupRoots.length, ...roots);
 };
 
 const dispatcher_ProjectSetup = new Dispatcher<PerformProjectSetup, '__performProjectSetup'>('__performProjectSetup');
@@ -104,9 +108,9 @@ const Action_SetupProject = async (logger: Logger) => {
 			await Promise.all(level.map(task => task.processor()));
 		}
 
-		for (let i = 0; i < projectSetupGraphs.length; i++) {
-			logger.logInfoBold(`SetupProject graph ${i}`);
-			await projectSetupGraphs[i].dispatch();
+		if (projectSetupRoots.length) {
+			logger.logInfoBold(`SetupProject actions from: [${projectSetupRoots.join(', ')}]`);
+			await graph_ProjectSetup.dispatchFrom(projectSetupRoots);
 		}
 
 		logger.logInfo('Project Setup Completed!');

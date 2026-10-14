@@ -2,11 +2,12 @@ import {ModuleBE_BaseDB, type PostWriteProcessingDataShape} from '@nu-art/db-api
 import {DatabaseDef_Locale, DBDef_Locale, localeIdFromCode, planLocaleAccess, ServiceAccountConfig_I18n, ServiceAccountId_I18n, splitLocaleCode} from '@nu-art/i18n-shared';
 import {HttpCodes} from '@nu-art/api-types';
 import type {I18nLocaleCode, UI_Locale} from '@nu-art/i18n-shared';
-import {ModuleBE_AccessGroupDB, ModuleBE_Permissions} from '@nu-art/permissions-backend';
+import {DispatchKey_PermissionsGroups, ModuleBE_AccessGroupDB, ModuleBE_Permissions} from '@nu-art/permissions-backend';
 import type {DB_AccessGroup, UI_AccessGroup} from '@nu-art/permissions-shared';
 import type {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
 import {asArray, filterInstances, OnDispatch} from '@nu-art/ts-common';
-import {DispatchKey_DefaultLocales, DispatchKey_LocaleAccess, graph_I18nProjectSetup} from '../../project-setup.js';
+import {DispatchKey_DefaultLocales, DispatchKey_LocaleAccess} from '../../project-setup.js';
+import {graph_ProjectSetup} from '@nu-art/action-processor-backend';
 
 
 /** Seeded once at project setup when missing. Override via the module config (`seedLocales`). */
@@ -109,13 +110,13 @@ export class ModuleBE_LocaleDB_Class
 	}
 
 	/** Graph node DispatchKey_LocaleAccess: groups for the seed codes and every visible locale. */
-	@OnDispatch(graph_I18nProjectSetup, {key: DispatchKey_LocaleAccess})
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_LocaleAccess, runAfter: [DispatchKey_PermissionsGroups]})
 	async ensureSeedLocaleAccess(): Promise<void> {
 		await this.runAsI18n(() => this.ensureLocaleAccess(this.config.seedLocales.map(locale => locale.code)));
 	}
 
 	/** Graph node DispatchKey_DefaultLocales: seeds missing locales, read through the new memberships. */
-	@OnDispatch(graph_I18nProjectSetup, {key: DispatchKey_DefaultLocales, runAfter: [DispatchKey_LocaleAccess]})
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_DefaultLocales, runAfter: [DispatchKey_LocaleAccess]})
 	seedDefaultLocales(): Promise<void> {
 		return this.runAsI18n(() => this.ensureDefaultLocales());
 	}

@@ -1,4 +1,4 @@
-import {_keys, ApiException, BadImplementationException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, OnDispatch, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, asDispatchKey, BadImplementationException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, OnDispatch, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
@@ -21,12 +21,12 @@ import {
 	getAllRegisteredScopes,
 	getPermissionScopeValues,
 	getRegisteredGroupDefinitions,
-	GroupId_EveryoneReaders,
+	GroupId_ReadBucket,
 	PermissionScope_ServiceAccount,
 	permissionScopeId,
 	type PermissionScope,
 } from '@nu-art/permissions-shared';
-import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
+import {asSetupTaskKey, graph_ProjectSetup, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
 import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
@@ -114,6 +114,8 @@ const dispatcher_resolveAdditionalGroupMemberships = new Dispatcher<ResolveAddit
 const dispatcher_collectDefaultScopeValues = new Dispatcher<CollectDefaultScopeValues, '__collectDefaultScopeValues'>('__collectDefaultScopeValues');
 
 export const SetupTaskKey_PermissionsGroups = asSetupTaskKey('permissions-groups');
+export const DispatchKey_PermissionsGroups = asDispatchKey('setup.permissions-groups');
+export const DispatchKey_PermissionsReadBucket = asDispatchKey('setup.permissions-read-bucket');
 
 const PreCloseKey_PermissionsRematerialize = 'permissions.rematerialize';
 
@@ -151,7 +153,7 @@ class ModuleBE_Permissions_Class
 	}
 
 	private readonly permissionsAccessResolver = (item: any): DocumentAccessFields => {
-		if (item._id === GroupId_EveryoneReaders)
+		if (item._id === GroupId_ReadBucket)
 			return {
 				__access: {
 					readers: [GroupId_PermissionsAdmin, GroupId_BootstrapServiceAccount],
@@ -340,7 +342,6 @@ class ModuleBE_Permissions_Class
 			await this.ensurePermissionsAdminGroup();
 			await this.ensureAppDefinedGroups();
 			await this.syncPersonalGroupsForExistingAccounts();
-			await this.ensureEveryoneReadersGroup();
 			await this.recomputePermissionsForAllUsers();
 			this.logInfoBold('Recomputed UserPermissions for all users');
 			this.logDebug('[FIRST_USER] bootstrap: ensureDefinedGroups complete');
@@ -353,14 +354,14 @@ class ModuleBE_Permissions_Class
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			await this.ensurePersonalAccessGroup(account);
 			await this.addToDefaultGroup(account);
-			await this.addToEveryoneReaders(account);
+			await this.addToReadBucket(account);
 		});
 	}
 
 	async __onNewUserRegistered(account: DB_Account) {
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			await this.ensurePersonalAccessGroup(account);
-			await this.addToEveryoneReaders(account);
+			await this.addToReadBucket(account);
 		});
 	}
 
@@ -371,7 +372,7 @@ class ModuleBE_Permissions_Class
 			this.logDebug(`__onUserLogin: ensurePersonalAccessGroup done`);
 			await this.addToDefaultGroup(account);
 			this.logDebug(`__onUserLogin: addToDefaultGroup done`);
-			await this.addToEveryoneReaders(account);
+			await this.addToReadBucket(account);
 			await this.promoteIfNoAdmin(account);
 			this.logDebug(`__onUserLogin: promoteIfNoAdmin done`);
 			await this.checkAdminGrantFlag(account);
@@ -438,9 +439,9 @@ class ModuleBE_Permissions_Class
 		this.logDebug(`[FIRST_USER] addToDefaultGroup: user added, members now=${defaultGroup.members.length}`);
 	}
 
-	private async addToEveryoneReaders(account: DB_Account) {
+	private async addToReadBucket(account: DB_Account) {
 		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
-		const group = await ModuleBE_AccessGroupDB.query.unique(GroupId_EveryoneReaders);
+		const group = await ModuleBE_AccessGroupDB.query.unique(GroupId_ReadBucket);
 		if (!group || group.members.includes(personalGroupId))
 			return;
 
@@ -1062,9 +1063,20 @@ class ModuleBE_Permissions_Class
 
 	// --- Bootstrap: sync personal groups for existing accounts ---
 
-	/** The 'everyone can read' bucket, with every existing account as a member (union, never removes). */
-	private async ensureEveryoneReadersGroup() {
-		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_EveryoneReaders);
+	/** Setup action: the groups SetupTaskKey_PermissionsGroups ensures, for apps that use the action graph. Idempotent. */
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_PermissionsGroups})
+	async setupPermissionsGroups(): Promise<void> {
+		await this.ensureDefinedGroups();
+	}
+
+	/** Setup action: the read bucket, with every existing account as a member (union, never removes). */
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_PermissionsReadBucket, runAfter: [DispatchKey_PermissionsGroups]})
+	async setupReadBucket(): Promise<void> {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.ensureReadBucketGroup());
+	}
+
+	private async ensureReadBucketGroup() {
+		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_ReadBucket);
 		const accounts = await ModuleBE_AccountDB.query.where({});
 		const members = filterDuplicates([
 			...(existing?.members ?? []),
@@ -1072,13 +1084,13 @@ class ModuleBE_Permissions_Class
 		]);
 
 		await ModuleBE_AccessGroupDB.set.item({
-			_id: GroupId_EveryoneReaders,
+			_id: GroupId_ReadBucket,
 			type: 'entity' as const,
-			key: 'everyone-readers',
-			label: 'Everyone (read)',
+			key: 'read-bucket',
+			label: 'Read bucket',
 			members,
 		});
-		this.logInfoBold(`Everyone-readers group ensured with ${members.length} members`);
+		this.logInfoBold(`Read bucket ensured with ${members.length} members`);
 	}
 
 	private async syncPersonalGroupsForExistingAccounts() {

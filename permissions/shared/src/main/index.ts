@@ -29,4 +29,4 @@ export * from './group-definition.js';
 export * from './_entity/access-group/types.js';
 export * from './_entity/access-group/db-def.js';
 export * from './document-access.js';
-export * from './everyone-readers.js';
+export * from './read-bucket.js';
