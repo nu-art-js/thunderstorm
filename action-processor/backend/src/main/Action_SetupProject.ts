@@ -5,7 +5,7 @@
  */
 
 import {ActionDeclaration} from './types.js';
-import {BadImplementationException, Brand, Dispatcher, flatArray, Logger} from '@nu-art/ts-common';
+import {BadImplementationException, Brand, Dispatcher, flatArray, GraphDispatcher, Logger} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 export type SetupTaskKey = Brand<string, 'SetupTaskKey'>;
@@ -21,6 +21,17 @@ export type SetupTask = {
 export interface PerformProjectSetup {
 	__performProjectSetup(): SetupTask[];
 }
+
+export interface OnProjectSetup {
+	__onProjectSetup(): Promise<void>;
+}
+
+/**
+ * Ordered project-setup graph (GraphDispatcher nodes with runAfter / runBefore).
+ * Dispatched once after every SetupTask level has completed, so a node may rely on SetupTask results
+ * such as SetupTaskKey_PermissionsGroups.
+ */
+export const graph_OnProjectSetup = new GraphDispatcher<OnProjectSetup, '__onProjectSetup'>('__onProjectSetup');
 
 const dispatcher_ProjectSetup = new Dispatcher<PerformProjectSetup, '__performProjectSetup'>('__performProjectSetup');
 
@@ -87,6 +98,9 @@ const Action_SetupProject = async (logger: Logger) => {
 			logger.logInfoBold(`SetupProject level ${i}: [${keys}]`);
 			await Promise.all(level.map(task => task.processor()));
 		}
+
+		logger.logInfoBold('SetupProject graph');
+		await graph_OnProjectSetup.dispatch();
 
 		logger.logInfo('Project Setup Completed!');
 	});
