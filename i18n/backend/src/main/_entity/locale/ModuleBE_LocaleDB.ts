@@ -1,14 +1,14 @@
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {DatabaseDef_Locale, DBDef_Locale, localeIdFromCode, splitLocaleCode} from '@nu-art/i18n-shared';
 import {HttpCodes} from '@nu-art/api-types';
-import type {UI_Locale} from '@nu-art/i18n-shared';
+import type {I18nLocaleCode, UI_Locale} from '@nu-art/i18n-shared';
 import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
 import {ModuleBE_Permissions, ServiceAccountId_Bootstrap, SetupTaskKey_PermissionsGroups} from '@nu-art/permissions-backend';
 
 export const SetupTaskKey_DefaultLocales = asSetupTaskKey('default-locales');
 
 /** Seeded once at project setup when missing. Override via the module config (`seedLocales`). */
-export const DefaultSeedLocales: Pick<UI_Locale, 'code' | 'displayName' | 'enabled' | 'register'>[] = [
+export const DefaultSeedLocales: (Pick<UI_Locale, 'displayName' | 'enabled' | 'register'> & {code: I18nLocaleCode})[] = [
 	{code: 'en_US', displayName: 'English — United States', enabled: true},
 	{code: 'he_IL', displayName: 'Hebrew — Israel', enabled: true},
 	{code: 'ar_SA', displayName: 'Arabic — Saudi Arabia', enabled: true},
@@ -17,7 +17,7 @@ export const DefaultSeedLocales: Pick<UI_Locale, 'code' | 'displayName' | 'enabl
 ];
 
 type Config = {
-	seedLocales: Pick<UI_Locale, 'code' | 'displayName' | 'enabled' | 'register'>[];
+	seedLocales: (Pick<UI_Locale, 'displayName' | 'enabled' | 'register'> & {code: I18nLocaleCode})[];
 };
 
 export class ModuleBE_LocaleDB_Class

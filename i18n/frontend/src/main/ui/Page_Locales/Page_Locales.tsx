@@ -1,6 +1,6 @@
 import {AwaitModules} from '@nu-art/sync-manager-frontend';
 import {ComponentSync, LL_H_C, LL_V_L, TS_PropRenderer} from '@nu-art/thunder-widgets';
-import {DB_Locale, DatabaseDef_Locale, LocaleRegisters, UI_Locale, type LocaleRegister} from '@nu-art/i18n-shared';
+import {DB_Locale, DatabaseDef_Locale, LocaleRegisters, UI_Locale, type I18nLocaleCode, type LocaleRegister} from '@nu-art/i18n-shared';
 import {ModuleFE_Locale, OnLocalesUpdated} from '../../_entity/locale/ModuleFE_Locale.js';
 import {EditableDBItem} from '@nu-art/editable-item';
 import type {ApiCallerEventType} from '@nu-art/db-api-shared';
@@ -91,7 +91,7 @@ class Page_Locales
 					placeholder={'e.g. en_US, nl, he_IL'}
 					disabled={!!editable.item._id}
 					value={String(editable.item.code ?? '')}
-					onChange={e => void editable.updateObj({code: e.target.value})}
+					onChange={e => void editable.updateObj({code: e.target.value as I18nLocaleCode})}
 				/>
 			</TS_PropRenderer.Vertical>
 

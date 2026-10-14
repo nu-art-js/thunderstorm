@@ -2,6 +2,7 @@ import {Module} from '@nu-art/ts-common';
 import {
 	asI18nKey,
 	createI18nTranslator,
+	isI18nLocaleCode,
 	overlayPlainText,
 	resolveI18n,
 	resolveRequestLocale,
@@ -56,6 +57,9 @@ export class ModuleBE_I18n_Class
 
 	/** Overlay rows for one locale, as raw strings. One permission-aware query, not cached. */
 	protected async loadOverrideStrings(localeCode: string): Promise<Record<string, string>> {
+		if (!isI18nLocaleCode(localeCode))
+			return {};
+
 		const locale = (await ModuleBE_LocaleDB.query.custom({where: {code: localeCode}}))[0];
 		if (!locale)
 			return {};
@@ -73,6 +77,9 @@ export class ModuleBE_I18n_Class
 
 	// Forms for resolve(): the editor and plural path. Not cached.
 	private async loadOverride(id: I18N_Brand, localeCode: string) {
+		if (!isI18nLocaleCode(localeCode))
+			return undefined;
+
 		const locale = (await ModuleBE_LocaleDB.query.custom({where: {code: localeCode}}))[0];
 		if (!locale)
 			return undefined;

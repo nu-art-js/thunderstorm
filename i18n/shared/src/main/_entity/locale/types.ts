@@ -1,4 +1,5 @@
 import type {LocaleRegister} from './locale-code.js';
+import type {I18nLocaleCode} from '../../locales.js';
 import {DB_Object, DB_ProtoSeed, DB_Prototype, VersionsDeclaration} from '@nu-art/db-api-shared';
 
 export const Locale_DbKey = 'i18n--locales';
@@ -12,7 +13,7 @@ type Dependencies = {};
 
 export type DB_Locale = DB_Object<DBKey> & {
 	/** Unique identity of the locale (`ll` or `ll_CC`); the document id is derived from it and it cannot change. */
-	code: string;
+	code: I18nLocaleCode;
 	displayName: string;
 	enabled: boolean;
 	/** Register this locale's texts are written in. Metadata for translators and agents; not used in resolution. */

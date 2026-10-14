@@ -10,5 +10,6 @@ export * from './permission-scope.js';
 export * from './_entity/locale/types.js';
 export * from './_entity/locale/db-def.js';
 export * from './_entity/locale/locale-code.js';
+export * from './locales.js';
 export * from './_entity/overlay/types.js';
 export * from './_entity/overlay/db-def.js';
