@@ -52,3 +52,41 @@ export const resolveI18n = (input: ResolveI18nInput): string => {
 	const template = fromOverride ?? fromDefault ?? input.id;
 	return interpolateI18n(template, input.params);
 };
+
+/**
+ * The overlay form shown as one raw string: `other` when present, otherwise the first form.
+ * The translator renders that string as plain text.
+ */
+export const overlayPlainText = (forms: I18N_Forms | undefined): string | undefined => {
+	if (!forms)
+		return undefined;
+
+	if (typeof forms.other === 'string')
+		return forms.other;
+
+	return Object.values(forms).find((value): value is string => typeof value === 'string');
+};
+
+/** One locale's texts. Overrides are raw strings; defaults stay the RTDB catalog. */
+export type I18nLocaleTexts = {
+	overrides: Record<string, string | undefined>;
+	defaults: Record<string, I18N_Text | undefined>;
+};
+
+export type I18nTranslator = {
+	localeCode: string;
+	/** Synchronous. An override is returned as plain text; otherwise resolveI18n. */
+	t: (id: I18N_Brand, params?: I18N_Params) => string;
+};
+
+/** Binds a locale's loaded texts. Override strings are not interpolated and not plural-selected. */
+export const createI18nTranslator = (localeCode: string, texts: I18nLocaleTexts): I18nTranslator => ({
+	localeCode,
+	t: (id, params) => {
+		const override = texts.overrides[id];
+		if (override !== undefined)
+			return override;
+
+		return resolveI18n({id, params, localeCode, defaultText: texts.defaults[id]});
+	},
+});
