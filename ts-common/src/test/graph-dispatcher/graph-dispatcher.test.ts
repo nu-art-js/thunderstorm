@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {BadImplementationException} from '../../main/core/exceptions/exceptions.js';
 import {Dispatcher} from '../../main/core/dispatcher.js';
-import {OnDispatch} from '../../main/core/graph-dispatcher.js';
+import {GraphDispatcher, OnDispatch} from '../../main/core/graph-dispatcher.js';
 import {
 	constructDeleteDummies_RunAfter,
 	constructDeleteDummies_RunBefore,
@@ -202,6 +202,39 @@ describe('GraphDispatcher', () => {
 			} finally {
 				Dispatcher.modulesResolver = previousResolver;
 			}
+		});
+	});
+
+	describe('bindByKey, unregister and clear', () => {
+		it('a bindByKey graph accepts any method name and binds the call by key', async () => {
+			const graph = new GraphDispatcher<PerformProjectSetup, '__performProjectSetup'>('__performProjectSetup', {bindByKey: true});
+			const trace: Trace = [];
+
+			class ModuleBE_AnyName_Class {
+				@OnDispatch(graph, {key: Key_Locales})
+				async seedLocales(): Promise<void> {
+					await traced(trace, Key_Locales)();
+				}
+			}
+
+			new ModuleBE_AnyName_Class();
+			await graph.dispatch();
+			expect(endedKeys(trace)).to.deep.equal([Key_Locales]);
+		});
+
+		it('unregister removes one node and clear removes all, so a key can be registered again', async () => {
+			const graph = newSetupGraph();
+			const trace: Trace = [];
+			graph.register({key: Key_Permissions, run: traced(trace, Key_Permissions)});
+			graph.register({key: Key_Locales, run: traced(trace, Key_Locales)});
+			graph.unregister(Key_Permissions);
+			await graph.dispatch();
+			expect(endedKeys(trace)).to.deep.equal([Key_Locales]);
+
+			graph.clear();
+			graph.register({key: Key_Locales, run: traced(trace, Key_Locales)});
+			await graph.dispatch();
+			expect(endedKeys(trace)).to.deep.equal([Key_Locales, Key_Locales]);
 		});
 	});
 });

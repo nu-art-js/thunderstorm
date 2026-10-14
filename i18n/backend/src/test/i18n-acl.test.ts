@@ -8,11 +8,13 @@ import {
 	localeIdFromCode,
 	type DB_I18nOverlay,
 } from '@nu-art/i18n-shared';
+import {GroupId_EveryoneReaders} from '@nu-art/permissions-shared';
 import {deriveEntityAccessFields, deriveEntityGroupId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '@nu-art/permissions-backend';
 import type {DB_AccessGroup, UI_AccessGroup} from '@nu-art/permissions-shared';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_LocaleDB_Class} from '../main/_entity/locale/ModuleBE_LocaleDB.js';
 import {ModuleBE_I18nOverlayDB_Class} from '../main/_entity/overlay/ModuleBE_I18nOverlayDB.js';
+import {graph_I18nProjectSetup} from '../main/project-setup.js';
 
 type Group = { _id: string; key: string; members: string[]; scopeEntries?: string[] };
 
@@ -61,6 +63,9 @@ class FakeGroupsLocaleDB_Class
 }
 
 describe('i18n ACL - four groups per locale', () => {
+	// Each locale module instance registers its @OnDispatch setup nodes; start every test from an empty graph.
+	beforeEach(() => graph_I18nProjectSetup.clear());
+
 	it('group ids are the framework entity-group ids of the locale document', () => {
 		for (const key of ['readers', 'writers', 'deleters', 'owners'] as const)
 			expect(i18nLocaleGroupId('nl_NL', key)).to.equal(deriveEntityGroupId(localeIdFromCode('nl_NL'), key));
@@ -103,10 +108,10 @@ describe('i18n ACL - four groups per locale', () => {
 });
 
 describe('i18n ACL - documents minted with their locale groups', () => {
-	it('locale and override docs carry the four groups, creators = writers', () => {
+	it('locale and override docs carry the four groups plus everyone-readers, creators = writers', () => {
 		const access = i18nLocaleAccess('nl_NL').__access;
 		const derived = deriveEntityAccessFields(localeIdFromCode('nl_NL')).__access;
-		expect(access.readers).to.deep.equal(derived.readers);
+		expect(access.readers).to.deep.equal([...derived.readers, GroupId_EveryoneReaders]);
 		expect(access.writers).to.deep.equal(derived.writers);
 		expect(access.deleters).to.deep.equal(derived.deleters);
 		expect(access.owners).to.deep.equal(derived.owners);
@@ -115,10 +120,12 @@ describe('i18n ACL - documents minted with their locale groups', () => {
 });
 
 describe('i18n ACL - access through membership', () => {
-	const db = new FakeGroupsLocaleDB_Class();
+	let db: FakeGroupsLocaleDB_Class;
 	const nlDoc = i18nLocaleAccess('nl_NL').__access;
 	const deDoc = i18nLocaleAccess('de_DE').__access;
 	before(async () => {
+		graph_I18nProjectSetup.clear();
+		db = new FakeGroupsLocaleDB_Class();
 		db.locales = ['nl_NL', 'de_DE'];
 		await db.ensureLocaleAccess();
 		db.groups.find(group => group._id === i18nLocaleGroupId('nl_NL', 'writers'))!.members.push('translator-anna');
@@ -142,6 +149,15 @@ describe('i18n ACL - access through membership', () => {
 		expect(allowed(deDoc, anna, 'readers')).to.equal(false);
 		expect(canCreateInLocale(anna, 'nl_NL')).to.equal(true);
 		expect(canCreateInLocale(anna, 'de_DE')).to.equal(false);
+	});
+
+	it('every account reads every locale through everyone-readers, and writes none', () => {
+		const user = ['user-bob', GroupId_EveryoneReaders];
+		for (const doc of [nlDoc, deDoc]) {
+			expect(allowed(doc, user, 'readers')).to.equal(true);
+			expect(allowed(doc, user, 'writers', 'owners', 'deleters')).to.equal(false);
+		}
+		expect(canCreateInLocale(user, 'nl_NL')).to.equal(false);
 	});
 
 	it('an i18n admin reaches every locale through the owners chain', () => {

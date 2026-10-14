@@ -7,3 +7,4 @@ export * from './i18n-access-wiring.js';
 export * from './ModuleBE_I18nDefaults.js';
 export * from './ModuleBE_I18nAPI.js';
 export * from './module-pack.js';
+export * from './project-setup.js';

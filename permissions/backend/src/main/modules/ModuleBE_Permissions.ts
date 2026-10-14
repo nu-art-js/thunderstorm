@@ -21,6 +21,7 @@ import {
 	getAllRegisteredScopes,
 	getPermissionScopeValues,
 	getRegisteredGroupDefinitions,
+	GroupId_EveryoneReaders,
 	PermissionScope_ServiceAccount,
 	permissionScopeId,
 	type PermissionScope,
@@ -40,7 +41,7 @@ import {
 } from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
-import {DispatchKey_AccountPermissions, graph_OnAccountDeleted, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
+import {DispatchKey_AccountPermissions, graph_OnAccountDeleted, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {DB_Account, DatabaseDef_Account, DatabaseDef_Session} from '@nu-art/user-account-shared';
 import {HttpCodes} from '@nu-art/api-types';
 
@@ -123,7 +124,7 @@ type PermissionsTxDirty = {
 
 class ModuleBE_Permissions_Class
 	extends Module<Config>
-	implements PerformProjectSetup, OnAccessGroupChanged, OnUserLogin, OnAccountDeleted {
+	implements PerformProjectSetup, OnAccessGroupChanged, OnNewUserRegistered, OnUserLogin, OnAccountDeleted {
 
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
 	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
@@ -150,6 +151,17 @@ class ModuleBE_Permissions_Class
 	}
 
 	private readonly permissionsAccessResolver = (item: any): DocumentAccessFields => {
+		if (item._id === GroupId_EveryoneReaders)
+			return {
+				__access: {
+					readers: [GroupId_PermissionsAdmin, GroupId_BootstrapServiceAccount],
+					writers: [GroupId_BootstrapServiceAccount],
+					creators: [],
+					deleters: [],
+					owners: [],
+				}
+			};
+
 		if (item._id === GroupId_BootstrapServiceAccount)
 			return {
 				__access: {
@@ -328,6 +340,7 @@ class ModuleBE_Permissions_Class
 			await this.ensurePermissionsAdminGroup();
 			await this.ensureAppDefinedGroups();
 			await this.syncPersonalGroupsForExistingAccounts();
+			await this.ensureEveryoneReadersGroup();
 			await this.recomputePermissionsForAllUsers();
 			this.logInfoBold('Recomputed UserPermissions for all users');
 			this.logDebug('[FIRST_USER] bootstrap: ensureDefinedGroups complete');
@@ -340,6 +353,14 @@ class ModuleBE_Permissions_Class
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			await this.ensurePersonalAccessGroup(account);
 			await this.addToDefaultGroup(account);
+			await this.addToEveryoneReaders(account);
+		});
+	}
+
+	async __onNewUserRegistered(account: DB_Account) {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+			await this.ensurePersonalAccessGroup(account);
+			await this.addToEveryoneReaders(account);
 		});
 	}
 
@@ -350,6 +371,7 @@ class ModuleBE_Permissions_Class
 			this.logDebug(`__onUserLogin: ensurePersonalAccessGroup done`);
 			await this.addToDefaultGroup(account);
 			this.logDebug(`__onUserLogin: addToDefaultGroup done`);
+			await this.addToEveryoneReaders(account);
 			await this.promoteIfNoAdmin(account);
 			this.logDebug(`__onUserLogin: promoteIfNoAdmin done`);
 			await this.checkAdminGrantFlag(account);
@@ -414,6 +436,16 @@ class ModuleBE_Permissions_Class
 		defaultGroup.members.push(personalGroupId);
 		await ModuleBE_AccessGroupDB.set.item(defaultGroup);
 		this.logDebug(`[FIRST_USER] addToDefaultGroup: user added, members now=${defaultGroup.members.length}`);
+	}
+
+	private async addToEveryoneReaders(account: DB_Account) {
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		const group = await ModuleBE_AccessGroupDB.query.unique(GroupId_EveryoneReaders);
+		if (!group || group.members.includes(personalGroupId))
+			return;
+
+		group.members.push(personalGroupId);
+		await ModuleBE_AccessGroupDB.set.item(group);
 	}
 
 	private async promoteIfNoAdmin(account: DB_Account) {
@@ -1029,6 +1061,25 @@ class ModuleBE_Permissions_Class
 	}
 
 	// --- Bootstrap: sync personal groups for existing accounts ---
+
+	/** The 'everyone can read' bucket, with every existing account as a member (union, never removes). */
+	private async ensureEveryoneReadersGroup() {
+		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_EveryoneReaders);
+		const accounts = await ModuleBE_AccountDB.query.where({});
+		const members = filterDuplicates([
+			...(existing?.members ?? []),
+			...accounts.map(account => stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id)),
+		]);
+
+		await ModuleBE_AccessGroupDB.set.item({
+			_id: GroupId_EveryoneReaders,
+			type: 'entity' as const,
+			key: 'everyone-readers',
+			label: 'Everyone (read)',
+			members,
+		});
+		this.logInfoBold(`Everyone-readers group ensured with ${members.length} members`);
+	}
 
 	private async syncPersonalGroupsForExistingAccounts() {
 		const accounts = await ModuleBE_AccountDB.query.where({});

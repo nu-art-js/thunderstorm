@@ -1,47 +1,44 @@
 import {expect} from 'chai';
-import {graph_OnProjectSetup} from '@nu-art/action-processor-backend';
-import {ModuleBE_LocaleDB} from '../main/_entity/locale/ModuleBE_LocaleDB.js';
+import {ModuleBE_LocaleDB_Class} from '../main/_entity/locale/ModuleBE_LocaleDB.js';
 import {ModuleBE_I18n_Class} from '../main/ModuleBE_I18n.js';
+import {graph_I18nProjectSetup} from '../main/project-setup.js';
 
-type Stubbable = {
-	runAsI18n: <R>(action: () => Promise<R>) => Promise<R>;
-	ensureLocaleAccess: (codes?: string[]) => Promise<{ created: number; updated: number }>;
-	ensureDefaultLocales: () => Promise<void>;
-};
+/** Records the service-account and DB steps instead of running them. Construction registers its @OnDispatch nodes. */
+class SpyLocaleDB_Class
+	extends ModuleBE_LocaleDB_Class {
+	calls: string[] = [];
 
-/** Replaces the singleton's i18n service-account and DB steps with a call log for one test. */
-const withStubs = async (test: (calls: string[]) => Promise<void>) => {
-	const db = ModuleBE_LocaleDB as unknown as Stubbable;
-	const original = {runAsI18n: db.runAsI18n, ensureLocaleAccess: db.ensureLocaleAccess, ensureDefaultLocales: db.ensureDefaultLocales};
-	const calls: string[] = [];
-	db.runAsI18n = action => action();
-	db.ensureLocaleAccess = async (codes = []) => {
-		calls.push(`access:${codes.join(',')}`);
-		return {created: 0, updated: 0};
-	};
-	db.ensureDefaultLocales = async () => {
-		calls.push('seed');
-	};
-	try {
-		await test(calls);
-	} finally {
-		Object.assign(db, original);
+	runAsI18n<R>(action: () => Promise<R>): Promise<R> {
+		return action();
 	}
-};
 
-describe('Locale access - project setup graph, not start', () => {
-	it('the setup graph ensures locale access, then seeds the default locales', () => withStubs(async calls => {
-		await graph_OnProjectSetup.dispatch();
-		const seedCodes = ModuleBE_LocaleDB.config.seedLocales.map(locale => locale.code).join(',');
-		expect(calls).to.deep.equal([`access:${seedCodes}`, 'seed']);
-	}));
+	async ensureLocaleAccess(codes: string[] = []) {
+		this.calls.push(`access:${codes.join(',')}`);
+		return {created: 0, updated: 0};
+	}
+}
 
-	it('the locale module no longer registers a SetupTask', () => {
-		expect((ModuleBE_LocaleDB as unknown as Record<string, unknown>).__performProjectSetup).to.equal(undefined);
+describe('Locale access - i18n project setup graph, not start', () => {
+	beforeEach(() => graph_I18nProjectSetup.clear());
+	afterEach(() => graph_I18nProjectSetup.clear());
+
+	it('dispatching the graph ensures locale access, then seeds the default locales', async () => {
+		const db = new SpyLocaleDB_Class();
+		(db as unknown as { ensureDefaultLocales: () => Promise<void> }).ensureDefaultLocales = async () => {
+			db.calls.push('seed');
+		};
+
+		await graph_I18nProjectSetup.dispatch();
+		expect(db.calls).to.deep.equal([`access:${db.config.seedLocales.map(locale => locale.code).join(',')}`, 'seed']);
 	});
 
-	it('module init does not ensure locale access', () => withStubs(async calls => {
+	it('the locale module registers no SetupTask', () => {
+		expect((new SpyLocaleDB_Class() as unknown as Record<string, unknown>).__performProjectSetup).to.equal(undefined);
+	});
+
+	it('module init does not ensure locale access', async () => {
+		const db = new SpyLocaleDB_Class();
 		(new ModuleBE_I18n_Class() as unknown as { init: () => void }).init();
-		expect(calls).to.deep.equal([]);
-	}));
+		expect(db.calls).to.deep.equal([]);
+	});
 });

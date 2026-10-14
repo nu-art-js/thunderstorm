@@ -2,15 +2,12 @@ import {ModuleBE_BaseDB, type PostWriteProcessingDataShape} from '@nu-art/db-api
 import {DatabaseDef_Locale, DBDef_Locale, localeIdFromCode, planLocaleAccess, ServiceAccountConfig_I18n, ServiceAccountId_I18n, splitLocaleCode} from '@nu-art/i18n-shared';
 import {HttpCodes} from '@nu-art/api-types';
 import type {I18nLocaleCode, UI_Locale} from '@nu-art/i18n-shared';
-import {graph_OnProjectSetup} from '@nu-art/action-processor-backend';
 import {ModuleBE_AccessGroupDB, ModuleBE_Permissions} from '@nu-art/permissions-backend';
 import type {DB_AccessGroup, UI_AccessGroup} from '@nu-art/permissions-shared';
 import type {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
-import {asArray, asDispatchKey, filterInstances} from '@nu-art/ts-common';
+import {asArray, filterInstances, OnDispatch} from '@nu-art/ts-common';
+import {DispatchKey_DefaultLocales, DispatchKey_LocaleAccess, graph_I18nProjectSetup} from '../../project-setup.js';
 
-/** Project-setup graph nodes. The graph runs after the SetupTask levels, so permission groups already exist. */
-export const DispatchKey_LocaleAccess = asDispatchKey('setup.locale-access');
-export const DispatchKey_DefaultLocales = asDispatchKey('setup.default-locales');
 
 /** Seeded once at project setup when missing. Override via the module config (`seedLocales`). */
 export const DefaultSeedLocales: (Pick<UI_Locale, 'displayName' | 'enabled' | 'register'> & {code: I18nLocaleCode})[] = [
@@ -112,11 +109,13 @@ export class ModuleBE_LocaleDB_Class
 	}
 
 	/** Graph node DispatchKey_LocaleAccess: groups for the seed codes and every visible locale. */
-	ensureSeedLocaleAccess(): Promise<{ created: number; updated: number }> {
-		return this.runAsI18n(() => this.ensureLocaleAccess(this.config.seedLocales.map(locale => locale.code)));
+	@OnDispatch(graph_I18nProjectSetup, {key: DispatchKey_LocaleAccess})
+	async ensureSeedLocaleAccess(): Promise<void> {
+		await this.runAsI18n(() => this.ensureLocaleAccess(this.config.seedLocales.map(locale => locale.code)));
 	}
 
 	/** Graph node DispatchKey_DefaultLocales: seeds missing locales, read through the new memberships. */
+	@OnDispatch(graph_I18nProjectSetup, {key: DispatchKey_DefaultLocales, runAfter: [DispatchKey_LocaleAccess]})
 	seedDefaultLocales(): Promise<void> {
 		return this.runAsI18n(() => this.ensureDefaultLocales());
 	}
@@ -140,6 +139,3 @@ export class ModuleBE_LocaleDB_Class
 
 export const ModuleBE_LocaleDB = new ModuleBE_LocaleDB_Class();
 
-// Registered on the singleton only: test subclasses construct freely without duplicate graph keys.
-graph_OnProjectSetup.register({key: DispatchKey_LocaleAccess, run: () => ModuleBE_LocaleDB.ensureSeedLocaleAccess()});
-graph_OnProjectSetup.register({key: DispatchKey_DefaultLocales, runAfter: [DispatchKey_LocaleAccess], run: () => ModuleBE_LocaleDB.seedDefaultLocales()});

@@ -1,5 +1,5 @@
 import {hashToUniqueId} from '@nu-art/db-api-shared';
-import {defineAccessGroup, permissionScopeId, type DatabaseDef_AccessGroup, type DocumentAccessFields} from '@nu-art/permissions-shared';
+import {defineAccessGroup, GroupId_EveryoneReaders, permissionScopeId, type DatabaseDef_AccessGroup, type DocumentAccessFields} from '@nu-art/permissions-shared';
 import {PermissionScope_I18nEdit, PermissionScope_I18nLocale, PermissionScope_I18nOverlay, PermissionScope_I18nUI} from './permission-scope.js';
 import {localeIdFromCode} from './_entity/locale/locale-code.js';
 
@@ -50,12 +50,15 @@ const entityGroupId = (entityId: string, key: I18nLocaleAccessKey) =>
 export const i18nLocaleGroupId = (code: string, key: I18nLocaleAccessKey) => entityGroupId(localeIdFromCode(code), key);
 export const i18nLocaleGroupKey = (code: string, key: I18nLocaleAccessKey) => `i18n-locale--${code}--${key}`;
 
-/** __access for a locale document (by code) or an overlay (by the locale document id). */
+/**
+ * __access for a locale document (by code) or an overlay (by the locale document id).
+ * Public read: every account reads through GroupId_EveryoneReaders; the locale readers group serves the role chain.
+ */
 export const i18nEntityAccess = (entityId: string): DocumentAccessFields => {
 	const writers = [entityGroupId(entityId, 'writers')];
 	return {
 		__access: {
-			readers: [entityGroupId(entityId, 'readers')],
+			readers: [entityGroupId(entityId, 'readers'), GroupId_EveryoneReaders],
 			writers,
 			creators: writers,
 			deleters: [entityGroupId(entityId, 'deleters')],

@@ -49,8 +49,13 @@ type GraphNode<P extends any[] = any[]> = {
  * this class never scans RuntimeModules; Dispatcher never reads these nodes.
  *
  * @OnDispatch(graph, spec) registers on instance construct (ApiHandler pattern).
- * Method name must be the graph's __xxxxx.
+ * The decorator binds the call by key. Method name must be the graph's __xxxxx unless the graph is
+ * created with {bindByKey: true}, in which case any method name is accepted.
  */
+export type GraphDispatcherOptions = {
+	bindByKey?: boolean;
+};
+
 export class GraphDispatcher<T,
 	K extends FunctionKeys<T>,
 	P extends GraphParamResolver<T, K> = GraphParamResolver<T, K>>
@@ -58,8 +63,11 @@ export class GraphDispatcher<T,
 
 	private readonly nodes: GraphNode<P>[] = [];
 
-	public constructor(readonly method: K) {
+	public readonly bindByKey: boolean;
+
+	public constructor(readonly method: K, options: GraphDispatcherOptions = {}) {
 		super(String(method));
+		this.bindByKey = options.bindByKey ?? false;
 	}
 
 	public register(spec: GraphNodeSpec<P>): void {
@@ -72,6 +80,18 @@ export class GraphDispatcher<T,
 			runBefore: [...(spec.runBefore ?? [])],
 			run: spec.run,
 		});
+	}
+
+	/** Removes one node; unknown keys are ignored. */
+	public unregister(key: DispatchKey): void {
+		const index = this.nodes.findIndex(node => node.key === key);
+		if (index !== -1)
+			this.nodes.splice(index, 1);
+	}
+
+	/** Removes every node (test isolation). */
+	public clear(): void {
+		this.nodes.length = 0;
 	}
 
 	/**
@@ -163,7 +183,7 @@ export function OnDispatch<T, K extends FunctionKeys<T>, Module>(
 		originalMethod: (this: This, ...args: GraphParamResolver<T, K>) => Return,
 		context: ClassMethodDecoratorContext<This>,
 	): (this: This, ...args: GraphParamResolver<T, K>) => Return {
-		if (context.name !== dispatcher.method)
+		if (!dispatcher.bindByKey && context.name !== dispatcher.method)
 			throw new BadImplementationException(
 				`OnDispatch(${String(dispatcher.method)}): method must be named ${String(dispatcher.method)}`,
 			);

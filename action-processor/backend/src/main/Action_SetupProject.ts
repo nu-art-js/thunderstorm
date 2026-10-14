@@ -5,7 +5,7 @@
  */
 
 import {ActionDeclaration} from './types.js';
-import {BadImplementationException, Brand, Dispatcher, flatArray, GraphDispatcher, Logger} from '@nu-art/ts-common';
+import {BadImplementationException, Brand, Dispatcher, flatArray, Logger} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 export type SetupTaskKey = Brand<string, 'SetupTaskKey'>;
@@ -22,16 +22,21 @@ export interface PerformProjectSetup {
 	__performProjectSetup(): SetupTask[];
 }
 
-export interface OnProjectSetup {
-	__onProjectSetup(): Promise<void>;
-}
+/** A setup graph (a GraphDispatcher with no dispatch params). Packages declare their own. */
+export type ProjectSetupGraph = {
+	dispatch: () => Promise<void>;
+};
+
+const projectSetupGraphs: ProjectSetupGraph[] = [];
 
 /**
- * Ordered project-setup graph (GraphDispatcher nodes with runAfter / runBefore).
- * Dispatched once after every SetupTask level has completed, so a node may rely on SetupTask results
- * such as SetupTaskKey_PermissionsGroups.
+ * The app composes the setup graphs that take part in project setup, in order. Each runs after
+ * every SetupTask level has completed (so nodes may rely on e.g. SetupTaskKey_PermissionsGroups).
+ * Nothing is dispatched unless the app composes it. Replaces any previous composition.
  */
-export const graph_OnProjectSetup = new GraphDispatcher<OnProjectSetup, '__onProjectSetup'>('__onProjectSetup');
+export const composeProjectSetup = (...graphs: ProjectSetupGraph[]) => {
+	projectSetupGraphs.splice(0, projectSetupGraphs.length, ...graphs);
+};
 
 const dispatcher_ProjectSetup = new Dispatcher<PerformProjectSetup, '__performProjectSetup'>('__performProjectSetup');
 
@@ -99,8 +104,10 @@ const Action_SetupProject = async (logger: Logger) => {
 			await Promise.all(level.map(task => task.processor()));
 		}
 
-		logger.logInfoBold('SetupProject graph');
-		await graph_OnProjectSetup.dispatch();
+		for (let i = 0; i < projectSetupGraphs.length; i++) {
+			logger.logInfoBold(`SetupProject graph ${i}`);
+			await projectSetupGraphs[i].dispatch();
+		}
 
 		logger.logInfo('Project Setup Completed!');
 	});
