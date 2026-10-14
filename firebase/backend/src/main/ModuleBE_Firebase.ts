@@ -20,25 +20,16 @@
  * Created by tacb0ss on 25/08/2018.
  */
 
-import {composeUrl, ImplementationMissingException, merge, Module, TypedMap} from '@nu-art/ts-common';
+import {ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin.js';
 import {FirebaseSession} from './auth/firebase-session.js';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword.js";
 import {readFileSync} from 'fs';
-import {ModuleBE_Auth} from '@nu-art/google-services-backend';
+import {ModuleBE_Auth, ModuleBE_SecretManager} from '@nu-art/google-services-backend';
 import {deleteApp, getApps} from 'firebase-admin/app';
+import {LazyMongoConnection, type MongoConnectionConfig} from './LazyMongoConnection.js';
 
-
-export type FirestoreMongoConfig = {
-	firestoreUid: string;
-	firestoreLocation: string;
-};
-
-export type MongoConnectionConfig = {
-	mongoUrl?: string;
-	firestoreMongo?: FirestoreMongoConfig;
-	params?: TypedMap<string | number>;
-};
+export type {FirestoreMongoConfig, MongoConnectionConfig} from './LazyMongoConnection.js';
 
 type ConfigType = {
 	isEmulator?: boolean
@@ -46,6 +37,29 @@ type ConfigType = {
 };
 
 export const FIREBASE_DEFAULT_PROJECT_ID = 'local';
+
+/** Secret Manager may store the URL raw or as a JSON string. The value is never logged. */
+function normalizeMongoUrlSecret(raw: string | undefined): string {
+	const trimmed = raw?.trim() ?? '';
+	if (!trimmed)
+		throw new ImplementationMissingException('MongoDB url secret is empty');
+
+	if (!trimmed.startsWith('"'))
+		return trimmed;
+
+	try {
+		const parsed: unknown = JSON.parse(trimmed);
+		if (typeof parsed !== 'string' || !parsed.trim())
+			throw new ImplementationMissingException('MongoDB url secret must be a string');
+
+		return parsed.trim();
+	} catch (err: unknown) {
+		if (err instanceof ImplementationMissingException)
+			throw err;
+
+		throw new ImplementationMissingException('MongoDB url secret is not valid JSON text');
+	}
+}
 
 export class ModuleBE_Firebase_Class
 	extends Module<ConfigType> {
@@ -68,8 +82,9 @@ export class ModuleBE_Firebase_Class
 		await Promise.all(Object.values(this.adminSessions).map(async session => {
 			try {
 				await session.closeMongo();
-			} catch (e) {
-				this.logWarning(`Error closing mongo during reset: ${e}`);
+			} catch (e: unknown) {
+				const name = e instanceof Error ? e.name : 'Error';
+				this.logWarning(`Error closing mongo during reset — ${name}`);
 			}
 		}));
 
@@ -100,22 +115,33 @@ export class ModuleBE_Firebase_Class
 		return this.adminSessions[authKey] = new FirebaseSession_Admin(authKey, serviceAccount).connect();
 	}
 
-	public resolveMongoUrl(authKey?: string): string {
-		const emulatorHost = process.env.MONGODB_EMULATOR_HOST;
-		if (emulatorHost)
-			return emulatorHost.includes('://') ? emulatorHost : `mongodb://${emulatorHost}/?directConnection=true`;
+	public resolveMongoUrl(authKey?: string): Promise<string> {
+		return LazyMongoConnection.resolveUrl(
+			this.resolveMongoConfig(authKey),
+			secret => this.readMongoUrlSecret(secret),
+			authKey ?? 'default',
+		);
+	}
 
-		const mongoConfig = this.resolveMongoConfig(authKey);
+	/** Raw Secret Manager read. Accepts a secret name or a `projects/...` resource. Never logs the value. */
+	private async readMongoUrlSecret(secret: string): Promise<string> {
+		const name = secret.trim();
+		if (!name)
+			throw new ImplementationMissingException('mongoUrlSecret is empty');
 
-		if (mongoConfig?.mongoUrl)
-			return composeUrl(mongoConfig.mongoUrl, mongoConfig.params);
+		const raw = name.startsWith('projects/')
+			? await ModuleBE_SecretManager.getSecretValueImpl(name.includes('/versions/') ? name : `${name}/versions/latest`)
+			: await this.readNamedMongoSecret(name);
 
-		if (mongoConfig?.firestoreMongo)
-			return ModuleBE_Firebase_Class.buildFirestoreMongoUrl(mongoConfig.firestoreMongo, mongoConfig.params);
+		return normalizeMongoUrlSecret(raw);
+	}
 
-		throw new ImplementationMissingException(
-			`No MongoDB connection configured for session '${authKey ?? 'default'}'. ` +
-			'Set mongo.mongoUrl or mongo.firestoreMongo in ModuleBE_Firebase config (default), or in auth config (keyed).');
+	private async readNamedMongoSecret(name: string): Promise<string | undefined> {
+		const projectId = process.env.GCP_PROJECT_ID ?? process.env.GCLOUD_PROJECT;
+		if (!projectId)
+			throw new ImplementationMissingException('Missing GCP_PROJECT_ID / GCLOUD_PROJECT to read mongoUrlSecret');
+
+		return ModuleBE_SecretManager.tryGetSecretValue({key: name, projectId, version: 'latest'});
 	}
 
 	private resolveMongoConfig(authKey?: string): MongoConnectionConfig | undefined {
@@ -130,22 +156,6 @@ export class ModuleBE_Firebase_Class
 		}
 
 		return undefined;
-	}
-
-	private static readonly firestoreMongoDefaults: TypedMap<string | number> = {
-		loadBalanced: 'true',
-		tls: 'true',
-		retryWrites: 'false',
-		connectTimeoutMS: 30000,
-		socketTimeoutMS: 60000,
-		authMechanism: 'MONGODB-OIDC',
-		authMechanismProperties: 'ENVIRONMENT:gcp,TOKEN_RESOURCE:FIRESTORE',
-	};
-
-	private static buildFirestoreMongoUrl(config: FirestoreMongoConfig, overrides?: TypedMap<string | number>): string {
-		const {firestoreUid, firestoreLocation} = config;
-		const baseUrl = `mongodb://${firestoreUid}.${firestoreLocation}.firestore.goog:443/default`;
-		return composeUrl(baseUrl, merge(ModuleBE_Firebase_Class.firestoreMongoDefaults, overrides));
 	}
 
 	createModuleStateFirebaseRef<T>(module: Module, _relativePath: string) {

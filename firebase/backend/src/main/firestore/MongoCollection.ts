@@ -78,24 +78,76 @@ const getDbDefValidator = <Proto extends DB_Prototype>(dbDef: Database<Proto>) =
 export class MongoCollection<Proto extends DB_Prototype>
 	extends Logger {
 
-	readonly db: MongoDriverDb;
-	readonly mongoCollection: MongoDriverCollection<Proto['dbType']>;
+	db!: MongoDriverDb;
+	mongoCollection!: MongoDriverCollection<Proto['dbType']>;
+	private readonly resolveDb: () => Promise<MongoDriverDb>;
+	private pendingReady?: Promise<void>;
+	private driverReady = false;
 	readonly dbDef: Database<Proto>;
 	readonly uniqueKeys: Proto['uniqueKeys'];
 	private readonly validator;
 	readonly hooks?: FirestoreCollectionHooks<Proto['dbType']>;
 
-	constructor(db: MongoDriverDb, _dbDef: Database<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
+	constructor(resolveDb: () => Promise<MongoDriverDb>, _dbDef: Database<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
 		super();
-		this.db = db;
+		this.resolveDb = resolveDb;
 		if (!/[a-z-]{3,}/.test(_dbDef.backend.name))
 			StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
 
-		this.mongoCollection = db.collection<Proto['dbType']>(_dbDef.backend.name);
 		this.dbDef = _dbDef;
 		this.uniqueKeys = (this.dbDef.uniqueKeys || Const_UniqueKeys) as Proto['uniqueKeys'];
 		this.validator = getDbDefValidator(_dbDef);
 		this.hooks = hooks;
+		this.query = this.gateApi(this.query);
+		this.create = this.gateApi(this.create);
+		this.set = this.gateApi(this.set);
+		this.update = this.gateApi(this.update);
+		this.delete = this.gateApi(this.delete);
+		this.ensureIndices = this.gateFn(this.ensureIndices);
+		this.runTransaction = this.gateFn(this.runTransaction);
+		this.runTransactionInChunks = this.gateFn(this.runTransactionInChunks);
+	}
+
+	/** Opens the shared client once, then retries the open after a failure. */
+	private whenReady(): Promise<void> {
+		if (this.driverReady)
+			return Promise.resolve();
+
+		if (!this.pendingReady) {
+			this.pendingReady = this.resolveDb().then(db => {
+				this.db = db;
+				this.mongoCollection = db.collection<Proto['dbType']>(this.dbDef.backend.name);
+				this.driverReady = true;
+			}).catch(err => {
+				this.pendingReady = undefined;
+				throw err;
+			});
+		}
+
+		return this.pendingReady;
+	}
+
+	private gateFn<Fn extends (...args: any[]) => Promise<any>>(fn: Fn): Fn {
+		const gated = async (...args: Parameters<Fn>): Promise<Awaited<ReturnType<Fn>>> => {
+			await this.whenReady();
+			return fn(...args);
+		};
+		// The wrapper is the same call shape; TS cannot see that through the generic.
+		return gated as Fn;
+	}
+
+	private gateApi<T>(api: T): T {
+		if (typeof api === 'function')
+			return this.gateFn(api as (...args: any[]) => Promise<any>) as T;
+
+		if (!api || typeof api !== 'object')
+			return api;
+
+		const gated: Record<string, unknown> = {};
+		for (const key of Object.keys(api))
+			gated[key] = this.gateApi((api as Record<string, unknown>)[key]);
+
+		return gated as T;
 	}
 
 	private getSession(): ClientSession | undefined {

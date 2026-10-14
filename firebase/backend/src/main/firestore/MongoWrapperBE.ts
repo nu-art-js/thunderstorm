@@ -17,7 +17,7 @@
  */
 
 import {Database, DB_Prototype} from '@nu-art/db-api-shared';
-import {Logger, Promise_all_sequentially, TypedMap} from '@nu-art/ts-common';
+import {ImplementationMissingException, Logger, Promise_all_sequentially, TypedMap} from '@nu-art/ts-common';
 import {MongoCollection} from './MongoCollection.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
 import {drainTransactionPreClose, getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
@@ -44,14 +44,47 @@ export class MongoWrapperBE
 		return this.instances[key] = new MongoWrapperBE(client, dbName);
 	}
 
-	readonly client: MongoClient;
-	readonly db: MongoDriverDb;
+	client?: MongoClient;
+	db?: MongoDriverDb;
+	private readonly dbName: string;
+	private readonly openClient?: () => Promise<MongoClient>;
+	private opening?: Promise<MongoClient>;
 	private readonly collections: { [collectionName: string]: MongoCollection<any> } = {};
 
-	constructor(client: MongoClient, dbName: string) {
+	constructor(client: MongoClient | (() => Promise<MongoClient>), dbName: string) {
 		super();
+		this.dbName = dbName;
+		if (typeof client === 'function') {
+			this.openClient = client;
+			return;
+		}
+
 		this.client = client;
 		this.db = client.db(dbName);
+	}
+
+	private clientReady(): Promise<MongoClient> {
+		if (this.client)
+			return Promise.resolve(this.client);
+
+		if (!this.opening) {
+			this.opening = this.open().catch(err => {
+				this.opening = undefined;
+				throw err;
+			});
+		}
+
+		return this.opening;
+	}
+
+	private async open(): Promise<MongoClient> {
+		if (!this.openClient)
+			throw new ImplementationMissingException('Mongo client is not open');
+
+		const client = await this.openClient();
+		this.client = client;
+		this.db = client.db(this.dbName);
+		return client;
 	}
 
 	runTransaction = async <ReturnType>(processor: () => Promise<ReturnType>, label?: string): Promise<ReturnType> => {
@@ -60,7 +93,8 @@ export class MongoWrapperBE
 
 		const tag = label ?? 'MongoWrapper';
 		const postTransactionActions: (() => Promise<any>)[] = [];
-		const session = this.client.startSession();
+		const client = await this.clientReady();
+		const session = client.startSession();
 		this.logDebug(`TX-START [${tag}]`);
 		try {
 			let result: ReturnType;
@@ -108,11 +142,12 @@ export class MongoWrapperBE
 		if (existing)
 			return existing;
 
-		return this.collections[dbDef.dbKey] = new MongoCollection<Proto>(this.db, dbDef, hooks);
+		return this.collections[dbDef.dbKey] = new MongoCollection<Proto>(() => this.clientReady().then(ready => ready.db(this.dbName)), dbDef, hooks);
 	}
 
 	public async listCollections(): Promise<string[]> {
-		const collections = await this.db.listCollections().toArray();
+		const client = await this.clientReady();
+		const collections = await client.db(this.dbName).listCollections().toArray();
 		return collections.map(c => c.name);
 	}
 }

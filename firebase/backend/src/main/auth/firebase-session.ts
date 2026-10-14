@@ -28,6 +28,7 @@ import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE.js';
 import {MongoWrapperBE} from '../firestore/MongoWrapperBE.js';
 import {FirebaseConfig} from '@nu-art/firebase-shared';
 import {MongoClient} from 'mongodb';
+import {LazyMongoConnection} from '../LazyMongoConnection.js';
 
 
 /**
@@ -46,7 +47,7 @@ export type Firebase_UserCredential = {
 /**
  * An abstract class that serves as a base for Firebase session classes.
  */
-export type MongoUrlResolver = (authKey?: string) => string;
+export type MongoUrlResolver = (authKey?: string) => string | Promise<string>;
 
 export abstract class FirebaseSession<Config>
 	extends Logger {
@@ -63,6 +64,7 @@ export abstract class FirebaseSession<Config>
 	protected firestores: TypedMap<FirestoreWrapperBE> = {};
 	protected mongos: TypedMap<MongoWrapperBE> = {};
 	protected mongoClient?: MongoClient;
+	private mongoLazy?: LazyMongoConnection<MongoClient>;
 	protected messaging?: PushMessagesWrapperBE;
 
 
@@ -116,6 +118,7 @@ export abstract class FirebaseSession<Config>
 	}
 
 	public setMongoClient(client: MongoClient) {
+		this.mongoLazy = undefined;
 		this.mongoClient = client;
 	}
 
@@ -125,21 +128,35 @@ export abstract class FirebaseSession<Config>
 	 * so mocha never exits and `firebase emulators:exec` hangs after the suite.
 	 */
 	public async closeMongo(): Promise<void> {
-		if (!this.mongoClient)
-			return;
-
-		try {
-			await this.mongoClient.close();
-		} catch (e) {
-			this.logWarning(`Error closing MongoDB client: ${e}`);
-		}
+		const lazy = this.mongoLazy;
+		this.mongoLazy = undefined;
+		let client = this.mongoClient;
 		this.mongoClient = undefined;
 		for (const key of Object.keys(this.mongos))
 			delete this.mongos[key];
+
+		if (!client && lazy) {
+			try {
+				client = await lazy.get();
+			} catch (e: unknown) {
+				const name = e instanceof Error ? e.name : 'Error';
+				this.logWarning(`MongoDB connection failed before close — ${name}`);
+			}
+		}
+
+		if (!client)
+			return;
+
+		try {
+			await client.close();
+		} catch (e: unknown) {
+			const name = e instanceof Error ? e.name : 'Error';
+			this.logWarning(`Error closing MongoDB client — ${name}`);
+		}
 	}
 
 	public async reconnectMongo(): Promise<void> {
-		if (!this.mongoClient)
+		if (!this.mongoClient && !this.mongoLazy)
 			return;
 
 		this.logWarning('Reconnecting MongoDB — closing existing client');
@@ -147,25 +164,84 @@ export abstract class FirebaseSession<Config>
 	}
 
 	public getMongo(dbName: string): MongoWrapperBE {
-		if (!this.mongoClient) {
-			if (!FirebaseSession.mongoUrlResolver)
-				throw new ImplementationMissingException('MongoUrlResolver not set — call FirebaseSession.setMongoUrlResolver() during module init');
+		if (!this.mongos[dbName]) {
+			this.mongos[dbName] = new MongoWrapperBE(() => this.getMongoClient(), dbName);
+			void this.getMongoClient().catch((err: unknown) => {
+				const name = err instanceof Error ? err.name : 'Error';
+				this.logError(`MongoDB connection failed — ${name}`);
+			});
+		}
 
-			const url = FirebaseSession.mongoUrlResolver(this.firebaseAppName);
-			this.logInfo(`Creating MongoClient: ${url}`);
+		return this.mongos[dbName];
+	}
 
-			this.mongoClient = new MongoClient(url, {monitorCommands: true, serverMonitoringMode: 'poll'});
+	/** Shared lazy connect. Concurrent callers await one in-flight client. Failures and drops clear the cache. */
+	public getMongoClient(): Promise<MongoClient> {
+		if (this.mongoClient)
+			return Promise.resolve(this.mongoClient);
+
+		const lazy = this.mongoConnection();
+		return lazy.get().then(client => {
+			if (this.mongoLazy === lazy && lazy.current() === client)
+				this.mongoClient = client;
+
+			return client;
+		});
+	}
+
+	private mongoConnection(): LazyMongoConnection<MongoClient> {
+		if (!this.mongoLazy)
+			this.mongoLazy = new LazyMongoConnection(() => this.resolveMongoUrl(), url => this.createMongoClient(url));
+
+		return this.mongoLazy;
+	}
+
+	private async resolveMongoUrl(): Promise<string> {
+		if (!FirebaseSession.mongoUrlResolver)
+			throw new ImplementationMissingException('MongoUrlResolver not set — call FirebaseSession.setMongoUrlResolver() during module init');
+
+		return FirebaseSession.mongoUrlResolver(this.firebaseAppName);
+	}
+
+	private createMongoClient(url: string): MongoClient {
+		const client = new MongoClient(url, {monitorCommands: true, serverMonitoringMode: 'poll'});
+		this.mongoLazy?.remember(client);
+		this.watchClient(client);
+		this.logInfo('Creating MongoClient');
+		return client;
+	}
+
+	/** `close`, `error`, and `topologyClosed` are the driver signals that this client is gone. */
+	private onMongoLost(client: MongoClient): void {
+		const cached = this.mongoClient === client;
+		const opened = this.mongoLazy?.current() === client;
+		if (!cached && !opened)
+			return;
+
+		if (cached)
+			this.mongoClient = undefined;
+
+		for (const key of Object.keys(this.mongos))
+			delete this.mongos[key];
+
+		this.mongoLazy?.drop(client);
+		this.logWarning('MongoDB connection lost');
+	}
+
+	private watchClient(client: MongoClient): void {
+			client.on('close', () => this.onMongoLost(client));
+			client.on('error', () => this.onMongoLost(client));
 
 			// --- Command monitoring ---
-			this.mongoClient.on('commandStarted', (event) => {
+			client.on('commandStarted', (event) => {
 				this.logDebug(`MongoDB >>> [${event.commandName}] reqId=${event.requestId} ns=${event.databaseName}.${(event.command as Record<string, unknown>)[event.commandName]}`);
 			});
 
-			this.mongoClient.on('commandFailed', (event) => {
+			client.on('commandFailed', (event) => {
 				this.logError(`MongoDB commandFailed [${event.commandName}] reqId=${event.requestId}: ${event.failure.message}`);
 			});
 
-			this.mongoClient.on('commandSucceeded', (event) => {
+			client.on('commandSucceeded', (event) => {
 				const reply = event.reply as Record<string, unknown>;
 				if (event.commandName === 'find' && !reply?.cursor) {
 					this.logError(`MongoDB <<< [${event.commandName}] reqId=${event.requestId} MISSING CURSOR — reply=${JSON.stringify(reply)}`);
@@ -175,16 +251,16 @@ export abstract class FirebaseSession<Config>
 			});
 
 			// --- Server heartbeat monitoring ---
-			this.mongoClient.on('serverHeartbeatSucceeded', (event) => {
+			client.on('serverHeartbeatSucceeded', (event) => {
 				this.logDebug(`MongoDB heartbeat OK: ${event.connectionId} duration=${event.duration}ms`);
 			});
 
-			this.mongoClient.on('serverHeartbeatFailed', (event) => {
+			client.on('serverHeartbeatFailed', (event) => {
 				this.logError(`MongoDB HEARTBEAT FAILED: ${event.connectionId} duration=${event.duration}ms failure=${event.failure?.message}`);
 			});
 
 			// --- Topology monitoring ---
-			this.mongoClient.on('topologyDescriptionChanged', (event) => {
+			client.on('topologyDescriptionChanged', (event) => {
 				const prev = event.previousDescription.type;
 				const next = event.newDescription.type;
 				const servers = Array.from(event.newDescription.servers.entries())
@@ -196,7 +272,7 @@ export abstract class FirebaseSession<Config>
 				}
 			});
 
-			this.mongoClient.on('serverDescriptionChanged', (event) => {
+			client.on('serverDescriptionChanged', (event) => {
 				const prev = event.previousDescription.type;
 				const next = event.newDescription.type;
 				if (prev !== next) {
@@ -204,36 +280,31 @@ export abstract class FirebaseSession<Config>
 				}
 			});
 
-			this.mongoClient.on('serverClosed', (event) => {
+			client.on('serverClosed', (event) => {
 				this.logError(`MongoDB SERVER CLOSED: ${event.address}`);
 			});
 
-			this.mongoClient.on('topologyClosed', () => {
+			client.on('topologyClosed', () => {
 				this.logError(`MongoDB TOPOLOGY CLOSED — all connections lost`);
+				this.onMongoLost(client);
 			});
 
 			// --- Connection pool monitoring ---
-			this.mongoClient.on('connectionPoolCleared', (event) => {
+			client.on('connectionPoolCleared', (event) => {
 				this.logWarning(`MongoDB POOL CLEARED: ${event.address}`);
 			});
 
-			this.mongoClient.on('connectionPoolClosed', (event) => {
+			client.on('connectionPoolClosed', (event) => {
 				this.logError(`MongoDB POOL CLOSED: ${event.address}`);
 			});
 
-			this.mongoClient.on('connectionClosed', (event) => {
+			client.on('connectionClosed', (event) => {
 				this.logDebug(`MongoDB connection closed: ${event.address} connId=${event.connectionId} reason=${event.reason}`);
 			});
 
-			this.mongoClient.on('connectionCheckOutFailed', (event) => {
+			client.on('connectionCheckOutFailed', (event) => {
 				this.logError(`MongoDB CONNECTION CHECKOUT FAILED: ${event.address} reason=${event.reason}`);
 			});
-		}
-
-		if (!this.mongos[dbName])
-			this.mongos[dbName] = new MongoWrapperBE(this.mongoClient, dbName);
-
-		return this.mongos[dbName];
 	}
 
 	/**
