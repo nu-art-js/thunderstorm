@@ -44,6 +44,8 @@ Setup is a graph of **actions** on the shared `graph_ProjectSetup` (`@nu-art/act
 ## Rules
 
 - **No module-specific setup endpoints or post-build actions.** All setup is graph actions run by `runProjectSetup`.
+- **The app root is a registered module.** The root action is an `@OnDispatch` method on a `Module` subclass singleton listed in the app's module list, never an ad-hoc class.
+- **Roots are mandatory.** Project setup throws when the app never called `setProjectSetupRoots`.
 - **Actions are idempotent.** Setup may be re-run.
 - **One key per action**, globally unique. Unknown keys (root or `runAfter`) throw at dispatch.
 - **Export your key** so other packages and apps can depend on it.

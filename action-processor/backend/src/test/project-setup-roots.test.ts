@@ -64,8 +64,14 @@ describe('Project setup - demand-driven from the app root', () => {
 		expect(calls).to.deep.equal(['low', 'mid', 'app']);
 	});
 
-	it('runs no action without an app root', async () => {
-		await runProjectSetup();
+	it('fails loudly without an app root and runs no action', async () => {
+		let error: Error | undefined;
+		try {
+			await runProjectSetup();
+		} catch (e: any) {
+			error = e;
+		}
+		expect(error?.message).to.contain('No project setup roots');
 		expect(calls).to.deep.equal([]);
 	});
 });

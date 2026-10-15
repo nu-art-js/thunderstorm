@@ -5,7 +5,7 @@
  */
 
 import {ActionDeclaration} from './types.js';
-import {GraphDispatcher, Logger, type DispatchKey} from '@nu-art/ts-common';
+import {BadImplementationException, GraphDispatcher, Logger, type DispatchKey} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 export interface OnProjectSetupAction {
@@ -35,11 +35,10 @@ const Action_SetupProject = async (logger: Logger) => {
 	return new MemStorage().init(async () => {
 		logger.logInfo('Setting up Project');
 		if (!projectSetupRoots.length)
-			logger.logWarning('No project setup roots: nothing to run (setProjectSetupRoots)');
-		else {
-			logger.logInfoBold(`SetupProject actions from: [${projectSetupRoots.join(', ')}]`);
-			await graph_ProjectSetup.dispatchFrom(projectSetupRoots);
-		}
+			throw new BadImplementationException('No project setup roots: the app must call setProjectSetupRoots(...) with its root setup action before project setup runs');
+
+		logger.logInfoBold(`SetupProject actions from: [${projectSetupRoots.join(', ')}]`);
+		await graph_ProjectSetup.dispatchFrom(projectSetupRoots);
 
 		logger.logInfo('Project Setup Completed!');
 	});
