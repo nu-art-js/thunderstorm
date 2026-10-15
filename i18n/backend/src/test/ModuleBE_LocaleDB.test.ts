@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 import {localeIdFromCode, type DB_Locale, type UI_Locale} from '@nu-art/i18n-shared';
 import {DefaultSeedLocales, ModuleBE_LocaleDB_Class} from '../main/_entity/locale/ModuleBE_LocaleDB.js';
+import {graph_ProjectSetup} from '@nu-art/action-processor-backend';
 
 class TestLocaleDB_Class
 	extends ModuleBE_LocaleDB_Class {
@@ -12,7 +13,12 @@ class TestLocaleDB_Class
 const locale = (overrides: Partial<UI_Locale> = {}) => ({code: 'nl_BE', displayName: 'Nederlands — België', enabled: true, ...overrides}) as UI_Locale;
 
 describe('ModuleBE_LocaleDB - locale model', () => {
-	const db = new TestLocaleDB_Class();
+	let db: TestLocaleDB_Class;
+	// The instance registers its @OnDispatch setup nodes; start from an empty graph.
+	before(() => {
+		graph_ProjectSetup.clear();
+		db = new TestLocaleDB_Class();
+	});
 
 	it('derives _id, _language and _country from the code on create', async () => {
 		const instance = locale();

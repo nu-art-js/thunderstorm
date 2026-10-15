@@ -1,4 +1,4 @@
-import {_keys, ApiException, BadImplementationException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, OnDispatch, UniqueId} from '@nu-art/ts-common';
+import {_keys, ApiException, asDispatchKey, BadImplementationException, batchActionParallel, Dispatcher, filterDuplicates, filterInstances, flatArray, Module, OnDispatch, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import type {DB_Prototype} from '@nu-art/db-api-shared';
 import {hashToUniqueId, stringToUniqueId} from '@nu-art/db-api-shared';
@@ -21,11 +21,12 @@ import {
 	getAllRegisteredScopes,
 	getPermissionScopeValues,
 	getRegisteredGroupDefinitions,
+	GroupId_ReadBucket,
 	PermissionScope_ServiceAccount,
 	permissionScopeId,
 	type PermissionScope,
 } from '@nu-art/permissions-shared';
-import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
+import {graph_ProjectSetup, projectSetupReaches} from '@nu-art/action-processor-backend';
 import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
@@ -40,7 +41,7 @@ import {
 } from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
 import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
-import {DispatchKey_AccountPermissions, graph_OnAccountDeleted, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnUserLogin} from '@nu-art/user-account-backend';
+import {DispatchKey_AccountPermissions, graph_OnAccountDeleted, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {DB_Account, DatabaseDef_Account, DatabaseDef_Session} from '@nu-art/user-account-shared';
 import {HttpCodes} from '@nu-art/api-types';
 
@@ -112,7 +113,8 @@ export const PermissionsInfraGroupIds: Record<keyof DocumentAccessInner, Databas
 const dispatcher_resolveAdditionalGroupMemberships = new Dispatcher<ResolveAdditionalGroupMemberships, '__resolveAdditionalGroupMemberships'>('__resolveAdditionalGroupMemberships');
 const dispatcher_collectDefaultScopeValues = new Dispatcher<CollectDefaultScopeValues, '__collectDefaultScopeValues'>('__collectDefaultScopeValues');
 
-export const SetupTaskKey_PermissionsGroups = asSetupTaskKey('permissions-groups');
+export const DispatchKey_PermissionsGroups = asDispatchKey('setup.permissions-groups');
+export const DispatchKey_PermissionsReadBucket = asDispatchKey('setup.permissions-read-bucket');
 
 const PreCloseKey_PermissionsRematerialize = 'permissions.rematerialize';
 
@@ -123,7 +125,7 @@ type PermissionsTxDirty = {
 
 class ModuleBE_Permissions_Class
 	extends Module<Config>
-	implements PerformProjectSetup, OnAccessGroupChanged, OnUserLogin, OnAccountDeleted {
+	implements OnAccessGroupChanged, OnNewUserRegistered, OnUserLogin, OnAccountDeleted {
 
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
 	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
@@ -150,6 +152,17 @@ class ModuleBE_Permissions_Class
 	}
 
 	private readonly permissionsAccessResolver = (item: any): DocumentAccessFields => {
+		if (item._id === GroupId_ReadBucket)
+			return {
+				__access: {
+					readers: [GroupId_PermissionsAdmin, GroupId_BootstrapServiceAccount],
+					writers: [GroupId_BootstrapServiceAccount],
+					creators: [],
+					deleters: [],
+					owners: [],
+				}
+			};
+
 		if (item._id === GroupId_BootstrapServiceAccount)
 			return {
 				__access: {
@@ -309,14 +322,6 @@ class ModuleBE_Permissions_Class
 
 	// --- Project setup ---
 
-	__performProjectSetup(): SetupTask[] {
-		return [{
-			key: SetupTaskKey_PermissionsGroups,
-			dependsOn: [],
-			processor: () => this.ensureDefinedGroups()
-		}];
-	}
-
 	async ensureDefinedGroups() {
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			this.logDebug('[FIRST_USER] bootstrap: starting ensureDefinedGroups');
@@ -340,7 +345,25 @@ class ModuleBE_Permissions_Class
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			await this.ensurePersonalAccessGroup(account);
 			await this.addToDefaultGroup(account);
+			await this.addToReadBucket(account);
 		});
+	}
+
+	/** Read-bucket membership only; never fails the registration. */
+	async __onNewUserRegistered(account: DB_Account) {
+		if (!this.usesReadBucket())
+			return;
+
+		try {
+			await this.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.addToReadBucket(account));
+		} catch (e: any) {
+			this.logWarning(`Read bucket membership for '${account._id}' not added at registration (next login retries)`, e);
+		}
+	}
+
+	/** The read bucket exists only where the app's setup roots reach its action. */
+	private usesReadBucket(): boolean {
+		return projectSetupReaches(DispatchKey_PermissionsReadBucket);
 	}
 
 	async __onUserLogin(account: DB_Account) {
@@ -350,6 +373,7 @@ class ModuleBE_Permissions_Class
 			this.logDebug(`__onUserLogin: ensurePersonalAccessGroup done`);
 			await this.addToDefaultGroup(account);
 			this.logDebug(`__onUserLogin: addToDefaultGroup done`);
+			await this.addToReadBucket(account);
 			await this.promoteIfNoAdmin(account);
 			this.logDebug(`__onUserLogin: promoteIfNoAdmin done`);
 			await this.checkAdminGrantFlag(account);
@@ -414,6 +438,19 @@ class ModuleBE_Permissions_Class
 		defaultGroup.members.push(personalGroupId);
 		await ModuleBE_AccessGroupDB.set.item(defaultGroup);
 		this.logDebug(`[FIRST_USER] addToDefaultGroup: user added, members now=${defaultGroup.members.length}`);
+	}
+
+	private async addToReadBucket(account: DB_Account) {
+		if (!this.usesReadBucket())
+			return;
+
+		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
+		const group = await ModuleBE_AccessGroupDB.query.unique(GroupId_ReadBucket);
+		if (!group || group.members.includes(personalGroupId))
+			return;
+
+		group.members.push(personalGroupId);
+		await ModuleBE_AccessGroupDB.set.item(group);
 	}
 
 	private async promoteIfNoAdmin(account: DB_Account) {
@@ -1029,6 +1066,36 @@ class ModuleBE_Permissions_Class
 	}
 
 	// --- Bootstrap: sync personal groups for existing accounts ---
+
+	/** Setup action: bootstrap SA, infra, scope, default, admin and app-defined groups; personal groups; recompute. Idempotent. */
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_PermissionsGroups})
+	async setupPermissionsGroups(): Promise<void> {
+		await this.ensureDefinedGroups();
+	}
+
+	/** Setup action: the read bucket, with every existing account as a member (union, never removes). */
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_PermissionsReadBucket, runAfter: [DispatchKey_PermissionsGroups]})
+	async setupReadBucket(): Promise<void> {
+		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.ensureReadBucketGroup());
+	}
+
+	private async ensureReadBucketGroup() {
+		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_ReadBucket);
+		const accounts = await ModuleBE_AccountDB.query.where({});
+		const members = filterDuplicates([
+			...(existing?.members ?? []),
+			...accounts.map(account => stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id)),
+		]);
+
+		await ModuleBE_AccessGroupDB.set.item({
+			_id: GroupId_ReadBucket,
+			type: 'entity' as const,
+			key: 'read-bucket',
+			label: 'Read bucket',
+			members,
+		});
+		this.logInfoBold(`Read bucket ensured with ${members.length} members`);
+	}
 
 	private async syncPersonalGroupsForExistingAccounts() {
 		const accounts = await ModuleBE_AccountDB.query.where({});

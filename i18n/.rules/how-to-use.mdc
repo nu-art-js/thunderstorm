@@ -51,7 +51,7 @@ if (!report.ok) throw new Error(formatI18nCompletenessReport(report));
 
 ## ACL
 
-- The project-setup task `SetupTaskKey_LocaleAccess` (dispatched by the setup graph, never on start) calls `ModuleBE_LocaleDB.ensureLocaleAccess`, which creates four `entity` groups per locale: readers, writers, deleters, owners. `creators` on the document is the writers group.
+- The setup action `DispatchKey_LocaleAccess` on `graph_ProjectSetup` (after `DispatchKey_PermissionsGroups`; runs only when an app root action depends on it, never on start) calls `ModuleBE_LocaleDB.ensureLocaleAccess`, which creates four `entity` groups per locale: readers, writers, deleters, owners. `creators` on the document is the writers group.
 - Locale docs and overlay docs are minted with that locale's groups. `wireI18nDocumentAccess()` runs from `ModuleBE_I18n.init`.
 - `i18n-system` is registered on the permissions module and is a member of every locale group. It reads and ensures through that membership. There is no unmanipulated read.
 - Writers carry `i18n-overlay:create` and `i18n-edit:edit`. The editor's `setEditMode(true)` requires `i18n-edit:edit`.

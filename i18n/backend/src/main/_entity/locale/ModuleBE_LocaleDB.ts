@@ -2,14 +2,13 @@ import {ModuleBE_BaseDB, type PostWriteProcessingDataShape} from '@nu-art/db-api
 import {DatabaseDef_Locale, DBDef_Locale, localeIdFromCode, planLocaleAccess, ServiceAccountConfig_I18n, ServiceAccountId_I18n, splitLocaleCode} from '@nu-art/i18n-shared';
 import {HttpCodes} from '@nu-art/api-types';
 import type {I18nLocaleCode, UI_Locale} from '@nu-art/i18n-shared';
-import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
-import {ModuleBE_AccessGroupDB, ModuleBE_Permissions, SetupTaskKey_PermissionsGroups} from '@nu-art/permissions-backend';
+import {DispatchKey_PermissionsGroups, ModuleBE_AccessGroupDB, ModuleBE_Permissions} from '@nu-art/permissions-backend';
 import type {DB_AccessGroup, UI_AccessGroup} from '@nu-art/permissions-shared';
 import type {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
-import {asArray, filterInstances} from '@nu-art/ts-common';
+import {asArray, filterInstances, OnDispatch} from '@nu-art/ts-common';
+import {DispatchKey_DefaultLocales, DispatchKey_LocaleAccess} from '../../project-setup.js';
+import {graph_ProjectSetup} from '@nu-art/action-processor-backend';
 
-export const SetupTaskKey_LocaleAccess = asSetupTaskKey('locale-access');
-export const SetupTaskKey_DefaultLocales = asSetupTaskKey('default-locales');
 
 /** Seeded once at project setup when missing. Override via the module config (`seedLocales`). */
 export const DefaultSeedLocales: (Pick<UI_Locale, 'displayName' | 'enabled' | 'register'> & {code: I18nLocaleCode})[] = [
@@ -25,8 +24,7 @@ type Config = {
 };
 
 export class ModuleBE_LocaleDB_Class
-	extends ModuleBE_BaseDB<DatabaseDef_Locale, Config>
-	implements PerformProjectSetup {
+	extends ModuleBE_BaseDB<DatabaseDef_Locale, Config> {
 
 	constructor() {
 		super(DBDef_Locale);
@@ -111,22 +109,16 @@ export class ModuleBE_LocaleDB_Class
 		return ModuleBE_AccessGroupDB.query.all(ids as DB_AccessGroup['_id'][]);
 	}
 
-	/**
-	 * Locale access groups first (for the seed codes and every visible locale), then the seed locales,
-	 * which the i18n service account reads through the new memberships. Project setup only, never on start.
-	 */
-	__performProjectSetup(): SetupTask[] {
-		return [{
-			key: SetupTaskKey_LocaleAccess,
-			dependsOn: [SetupTaskKey_PermissionsGroups],
-			processor: async () => {
-				await this.runAsI18n(() => this.ensureLocaleAccess(this.config.seedLocales.map(locale => locale.code)));
-			},
-		}, {
-			key: SetupTaskKey_DefaultLocales,
-			dependsOn: [SetupTaskKey_LocaleAccess],
-			processor: () => this.runAsI18n(() => this.ensureDefaultLocales()),
-		}];
+	/** Graph node DispatchKey_LocaleAccess: groups for the seed codes and every visible locale. */
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_LocaleAccess, runAfter: [DispatchKey_PermissionsGroups]})
+	async ensureSeedLocaleAccess(): Promise<void> {
+		await this.runAsI18n(() => this.ensureLocaleAccess(this.config.seedLocales.map(locale => locale.code)));
+	}
+
+	/** Graph node DispatchKey_DefaultLocales: seeds missing locales, read through the new memberships. */
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_DefaultLocales, runAfter: [DispatchKey_LocaleAccess]})
+	seedDefaultLocales(): Promise<void> {
+		return this.runAsI18n(() => this.ensureDefaultLocales());
 	}
 
 	private async ensureDefaultLocales(): Promise<void> {
@@ -147,3 +139,4 @@ export class ModuleBE_LocaleDB_Class
 }
 
 export const ModuleBE_LocaleDB = new ModuleBE_LocaleDB_Class();
+

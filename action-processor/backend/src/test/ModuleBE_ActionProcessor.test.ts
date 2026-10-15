@@ -5,9 +5,9 @@
  */
 
 import {expect} from 'chai';
-import {ApiException, BadImplementationException, Dispatcher} from '@nu-art/ts-common';
+import {ApiException, asDispatchKey, BadImplementationException, Dispatcher, OnDispatch} from '@nu-art/ts-common';
 import {ModuleBE_ActionProcessor} from '../main/ModuleBE_ActionProcessor.js';
-import {RAD_SetupProject} from '../main/Action_SetupProject.js';
+import {graph_ProjectSetup, RAD_SetupProject, setProjectSetupRoots} from '../main/Action_SetupProject.js';
 
 describe('ModuleBE_ActionProcessor', () => {
 	describe('registerAction', () => {
@@ -49,12 +49,25 @@ describe('ModuleBE_ActionProcessor', () => {
 			}
 		});
 
-		it('resolves when action key exists (setup-project)', async () => {
+		it('resolves when action key exists (setup-project with an app root)', async () => {
+			const Key_TestRoot = asDispatchKey('test.action-processor-root');
+
+			class Module_TestRoot {
+				@OnDispatch(graph_ProjectSetup, {key: Key_TestRoot})
+				async root() {
+				}
+			}
+
 			const previous = Dispatcher.modulesResolver;
 			try {
 				Dispatcher.modulesResolver = () => [];
+				graph_ProjectSetup.clear();
+				new Module_TestRoot();
+				setProjectSetupRoots(Key_TestRoot);
 				await ModuleBE_ActionProcessor.execute({key: 'setup-project'});
 			} finally {
+				setProjectSetupRoots();
+				graph_ProjectSetup.clear();
 				Dispatcher.modulesResolver = previous;
 			}
 		});

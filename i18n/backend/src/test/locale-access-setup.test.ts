@@ -1,8 +1,11 @@
 import {expect} from 'chai';
-import {SetupTaskKey_PermissionsGroups} from '@nu-art/permissions-backend';
-import {ModuleBE_LocaleDB, ModuleBE_LocaleDB_Class, SetupTaskKey_DefaultLocales, SetupTaskKey_LocaleAccess} from '../main/_entity/locale/ModuleBE_LocaleDB.js';
+import {ModuleBE_LocaleDB_Class} from '../main/_entity/locale/ModuleBE_LocaleDB.js';
 import {ModuleBE_I18n_Class} from '../main/ModuleBE_I18n.js';
+import {graph_ProjectSetup} from '@nu-art/action-processor-backend';
+import {DispatchKey_PermissionsGroups} from '@nu-art/permissions-backend';
+import {DispatchKey_DefaultLocales} from '../main/project-setup.js';
 
+/** Records the service-account and DB steps instead of running them. Construction registers its @OnDispatch nodes. */
 class SpyLocaleDB_Class
 	extends ModuleBE_LocaleDB_Class {
 	calls: string[] = [];
@@ -15,40 +18,30 @@ class SpyLocaleDB_Class
 		this.calls.push(`access:${codes.join(',')}`);
 		return {created: 0, updated: 0};
 	}
-
-	protected async visibleLocaleCodes() {
-		return [];
-	}
 }
 
-describe('Locale access - project setup dispatch, not start', () => {
-	it('exposes locale access as its own setup task, before the default locales', () => {
-		const tasks = new SpyLocaleDB_Class().__performProjectSetup();
-		const access = tasks.find(task => task.key === SetupTaskKey_LocaleAccess)!;
-		const defaults = tasks.find(task => task.key === SetupTaskKey_DefaultLocales)!;
-		expect(access.dependsOn).to.deep.equal([SetupTaskKey_PermissionsGroups]);
-		expect(defaults.dependsOn).to.deep.equal([SetupTaskKey_LocaleAccess]);
-	});
+describe('Locale access - project setup actions, not start', () => {
+	beforeEach(() => graph_ProjectSetup.clear());
+	afterEach(() => graph_ProjectSetup.clear());
 
-	it('the locale access task runs ensureLocaleAccess with the seed codes', async () => {
+	it('from the default-locales action: permission groups, then locale access, then seeding', async () => {
 		const db = new SpyLocaleDB_Class();
-		const access = db.__performProjectSetup().find(task => task.key === SetupTaskKey_LocaleAccess)!;
-		await access.processor();
-		expect(db.calls).to.deep.equal([`access:${db.config.seedLocales.map(locale => locale.code).join(',')}`]);
+		graph_ProjectSetup.register({key: DispatchKey_PermissionsGroups, run: async () => db.calls.push('groups')});
+		(db as unknown as { ensureDefaultLocales: () => Promise<void> }).ensureDefaultLocales = async () => {
+			db.calls.push('seed');
+		};
+
+		await graph_ProjectSetup.dispatchFrom([DispatchKey_DefaultLocales]);
+		expect(db.calls).to.deep.equal(['groups', `access:${db.config.seedLocales.map(locale => locale.code).join(',')}`, 'seed']);
 	});
 
-	it('module init does not ensure locale access', () => {
-		const original = ModuleBE_LocaleDB.ensureLocaleAccess;
-		let called = false;
-		ModuleBE_LocaleDB.ensureLocaleAccess = async () => {
-			called = true;
-			return {created: 0, updated: 0};
-		};
-		try {
-			(new ModuleBE_I18n_Class() as unknown as { init: () => void }).init();
-		} finally {
-			ModuleBE_LocaleDB.ensureLocaleAccess = original;
-		}
-		expect(called).to.equal(false);
+	it('the locale module has no legacy setup task method', () => {
+		expect((new SpyLocaleDB_Class() as unknown as Record<string, unknown>).__performProjectSetup).to.equal(undefined);
+	});
+
+	it('module init does not ensure locale access', async () => {
+		const db = new SpyLocaleDB_Class();
+		(new ModuleBE_I18n_Class() as unknown as { init: () => void }).init();
+		expect(db.calls).to.deep.equal([]);
 	});
 });

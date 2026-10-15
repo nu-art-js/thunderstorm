@@ -49,8 +49,13 @@ type GraphNode<P extends any[] = any[]> = {
  * this class never scans RuntimeModules; Dispatcher never reads these nodes.
  *
  * @OnDispatch(graph, spec) registers on instance construct (ApiHandler pattern).
- * Method name must be the graph's __xxxxx.
+ * The decorator binds the call by key. Method name must be the graph's __xxxxx unless the graph is
+ * created with {bindByKey: true}, in which case any method name is accepted.
  */
+export type GraphDispatcherOptions = {
+	bindByKey?: boolean;
+};
+
 export class GraphDispatcher<T,
 	K extends FunctionKeys<T>,
 	P extends GraphParamResolver<T, K> = GraphParamResolver<T, K>>
@@ -58,8 +63,11 @@ export class GraphDispatcher<T,
 
 	private readonly nodes: GraphNode<P>[] = [];
 
-	public constructor(readonly method: K) {
+	public readonly bindByKey: boolean;
+
+	public constructor(readonly method: K, options: GraphDispatcherOptions = {}) {
 		super(String(method));
+		this.bindByKey = options.bindByKey ?? false;
 	}
 
 	public register(spec: GraphNodeSpec<P>): void {
@@ -74,25 +82,77 @@ export class GraphDispatcher<T,
 		});
 	}
 
+	/** Removes one node; unknown keys are ignored. */
+	public unregister(key: DispatchKey): void {
+		const index = this.nodes.findIndex(node => node.key === key);
+		if (index !== -1)
+			this.nodes.splice(index, 1);
+	}
+
+	/** Removes every node (test isolation). */
+	public clear(): void {
+		this.nodes.length = 0;
+	}
+
 	/**
 	 * Kahn levels from runAfter / runBefore. Same level runs in parallel.
 	 * Empty graph is a no-op.
 	 */
 	public async dispatch(...p: P): Promise<void> {
-		const levels = this.topoLevels();
+		await this.runLevels(this.topoLevels(this.nodes), p);
+	}
+
+	/**
+	 * Demand-driven: runs only the roots and everything they transitively need (runAfter, and nodes
+	 * that declared runBefore one of them), in dependency order. Unreferenced nodes never run.
+	 */
+	public async dispatchFrom(roots: DispatchKey[], ...p: P): Promise<void> {
+		await this.runLevels(this.topoLevels(this.closureOf(roots)), p);
+	}
+
+	/** Whether the closure of the roots (as dispatchFrom computes it) contains the key. */
+	public reaches(roots: DispatchKey[], key: DispatchKey): boolean {
+		if (!roots.length)
+			return false;
+
+		return this.closureOf(roots).some(node => node.key === key);
+	}
+
+	private async runLevels(levels: GraphNode<P>[][], p: P) {
 		for (const level of levels)
 			await Promise.all(level.map(node => node.run(...p)));
 	}
 
-	private topoLevels(): GraphNode<P>[][] {
-		if (this.nodes.length === 0)
+	private closureOf(roots: DispatchKey[]): GraphNode<P>[] {
+		const nodeByKey = new Map(this.nodes.map(node => [node.key, node]));
+		const needed = new Set<DispatchKey>();
+		const queue = [...roots];
+		while (queue.length) {
+			const key = queue.shift()!;
+			if (needed.has(key))
+				continue;
+
+			const node = nodeByKey.get(key);
+			if (!node)
+				throw new BadImplementationException(`Unknown DispatchKey '${key}'`);
+
+			needed.add(key);
+			queue.push(...node.runAfter);
+			queue.push(...this.nodes.filter(other => other.runBefore.includes(key)).map(other => other.key));
+		}
+
+		return this.nodes.filter(node => needed.has(node.key));
+	}
+
+	private topoLevels(nodes: GraphNode<P>[]): GraphNode<P>[][] {
+		if (nodes.length === 0)
 			return [];
 
 		const nodeByKey = new Map<DispatchKey, GraphNode<P>>();
 		const inDegree = new Map<DispatchKey, number>();
 		const outgoing = new Map<DispatchKey, DispatchKey[]>();
 
-		for (const node of this.nodes) {
+		for (const node of nodes) {
 			nodeByKey.set(node.key, node);
 			inDegree.set(node.key, 0);
 			outgoing.set(node.key, []);
@@ -109,16 +169,17 @@ export class GraphDispatcher<T,
 			inDegree.set(to, inDegree.get(to)! + 1);
 		};
 
-		for (const node of this.nodes) {
+		for (const node of nodes) {
 			for (const prerequisite of node.runAfter)
 				addEdge(prerequisite, node.key, node.key);
 
 			for (const successor of node.runBefore)
-				addEdge(node.key, successor, node.key);
+				if (nodeByKey.has(successor) || nodes === this.nodes)
+					addEdge(node.key, successor, node.key);
 		}
 
 		const levels: GraphNode<P>[][] = [];
-		let ready = this.nodes.filter(node => inDegree.get(node.key) === 0);
+		let ready = nodes.filter(node => inDegree.get(node.key) === 0);
 		let processed = 0;
 
 		while (ready.length > 0) {
@@ -138,7 +199,7 @@ export class GraphDispatcher<T,
 			ready = nextReady;
 		}
 
-		if (processed !== this.nodes.length)
+		if (processed !== nodes.length)
 			throw new BadImplementationException('Cycle detected in GraphDispatcher');
 
 		return levels;
@@ -163,7 +224,7 @@ export function OnDispatch<T, K extends FunctionKeys<T>, Module>(
 		originalMethod: (this: This, ...args: GraphParamResolver<T, K>) => Return,
 		context: ClassMethodDecoratorContext<This>,
 	): (this: This, ...args: GraphParamResolver<T, K>) => Return {
-		if (context.name !== dispatcher.method)
+		if (!dispatcher.bindByKey && context.name !== dispatcher.method)
 			throw new BadImplementationException(
 				`OnDispatch(${String(dispatcher.method)}): method must be named ${String(dispatcher.method)}`,
 			);
