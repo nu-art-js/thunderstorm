@@ -28,12 +28,12 @@ describe('locale validator', () => {
 	const validate = (locale: object) => tsValidateResult(locale, DBDef_Locale.modifiablePropsValidator);
 
 	it('accepts a register', () => {
-		expect(validate({code: 'nl', displayName: 'Nederlands', enabled: true, register: 'formal'})).to.be.undefined;
-		expect(validate({code: 'nl', displayName: 'Nederlands', enabled: true, register: 'informal'})).to.be.undefined;
+		expect(validate({code: 'nl_NL', displayName: 'Nederlands', enabled: true, register: 'formal'})).to.be.undefined;
+		expect(validate({code: 'nl_NL', displayName: 'Nederlands', enabled: true, register: 'informal'})).to.be.undefined;
 	});
 
 	it('rejects an unknown register', () => {
-		expect(validate({code: 'nl', displayName: 'Nederlands', enabled: true, register: 'casual'})).to.not.be.undefined;
+		expect(validate({code: 'nl_NL', displayName: 'Nederlands', enabled: true, register: 'casual'})).to.not.be.undefined;
 	});
 
 	it('rejects a malformed code', () => {

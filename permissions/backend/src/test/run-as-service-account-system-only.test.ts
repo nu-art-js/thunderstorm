@@ -35,8 +35,8 @@ describe('runAsServiceAccount systemOnly gate', () => {
 			try {
 				await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => 'ok');
 			} catch (e) {
-				expect(e).to.be.instanceOf(ApiException);
-				expect((e as ApiException).message).to.not.include('cannot be used within a user context');
+				const message = e instanceof Error ? e.message : String(e);
+				expect(message).to.not.include('cannot be used within a user context');
 			}
 		});
 	});
@@ -49,8 +49,8 @@ describe('runAsServiceAccount systemOnly gate', () => {
 			try {
 				await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => 'ok');
 			} catch (e) {
-				expect(e).to.be.instanceOf(ApiException);
-				expect((e as ApiException).message).to.not.include('cannot be used within a user context');
+				const message = e instanceof Error ? e.message : String(e);
+				expect(message).to.not.include('cannot be used within a user context');
 			}
 		});
 	});

@@ -18,6 +18,10 @@ class SpyLocaleDB_Class
 		this.calls.push(`access:${codes.join(',')}`);
 		return {created: 0, updated: 0};
 	}
+
+	seedCodes(): string {
+		return this.config.seedLocales.map(locale => locale.code).join(',');
+	}
 }
 
 describe('Locale access - project setup actions, not start', () => {
@@ -32,7 +36,7 @@ describe('Locale access - project setup actions, not start', () => {
 		};
 
 		await graph_ProjectSetup.dispatchFrom([DispatchKey_DefaultLocales]);
-		expect(db.calls).to.deep.equal(['groups', `access:${db.config.seedLocales.map(locale => locale.code).join(',')}`, 'seed']);
+		expect(db.calls).to.deep.equal(['groups', `access:${db.seedCodes()}`, 'seed']);
 	});
 
 	it('the locale module has no legacy setup task method', () => {
