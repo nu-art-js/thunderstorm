@@ -1,8 +1,8 @@
 {
   "name": "@nu-art/seo-backend",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "SEO backend: ModuleBE_SEO serves per-locale HTML shells and llms.txt through the i18n translator",
-  "keywords": ["TacB0sS", "infra", "nu-art", "seo", "llms.txt", "i18n", "thunderstorm", "typescript"],
+  "description": "SEO backend: ModuleBE_SEO serves per-locale HTML shells, robots.txt, sitemap.xml, site.webmanifest, and llms.txt through the i18n translator",
+  "keywords": ["TacB0sS", "infra", "nu-art", "seo", "open-graph", "sitemap", "robots", "llms.txt", "i18n", "thunderstorm", "typescript"],
   "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
   "repository": {"type": "git", "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git", "directory": "_thunderstorm/seo/backend"},
