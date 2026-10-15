@@ -1,91 +1,50 @@
 ---
-description: When implementing project setup tasks or working with PerformProjectSetup — how the setup action works and how to add tasks
+description: When implementing project setup actions — the project setup action graph, app roots, and how to add actions
 alwaysApply: false
 ---
 # Project Setup Action
 
 ## Overview
 
-There is **one** setup entry point for the entire project: the action-processor's `setup-project` action (`RAD_SetupProject`). No module should expose its own setup API endpoint.
+There is **one** setup entry point for the entire project: the action-processor's `setup-project` action (`RAD_SetupProject`), also run by `runProjectSetup()`. No module exposes its own setup API endpoint.
 
-Modules participate by implementing the `PerformProjectSetup` interface from `@nu-art/action-processor-backend` and returning an array of `SetupTask` items. The executor collects all tasks, validates the dependency graph, and runs them in topological order.
+Setup is a graph of **actions** on the shared `graph_ProjectSetup` (`@nu-art/action-processor-backend`, a `GraphDispatcher` with `bindByKey`). Each package registers its actions and their dependencies by key; higher-order packages depend on lower ones (cross-package edges are normal). The app defines a **root action** and sets it with `setProjectSetupRoots`. Setup runs only the transitive closure of the roots, in dependency order (same level in parallel). An action nothing reaches never runs.
 
-## Interface
+## Adding an action
 
-```typescript
-import {Brand} from '@nu-art/ts-common';
-
-type SetupTaskKey = Brand<string, 'SetupTaskKey'>;
-const asSetupTaskKey = (key: string) => key as SetupTaskKey;
-
-type SetupTask = {
-	key: SetupTaskKey;
-	dependsOn: SetupTaskKey[];
-	processor: () => Promise<void>;
-};
-
-interface PerformProjectSetup {
-	__performProjectSetup(): SetupTask[];
-}
-```
-
-## How to add a setup task
-
-1. **Add the dependency** — ensure your package depends on `@nu-art/action-processor-backend`.
-2. **Define a key constant** — export a branded constant following the `SetupTaskKey_{What}` pattern:
+1. **Key constant** — `DispatchKey_{What}`, `asDispatchKey('setup.<package>-<what>')`, exported by the owning package.
+2. **Decorate the method** on the module singleton:
    ```typescript
-   import {asSetupTaskKey} from '@nu-art/action-processor-backend';
-   export const SetupTaskKey_MyFeatureInit = asSetupTaskKey('my-feature-init');
-   ```
-3. **Implement the interface** — your module class implements `PerformProjectSetup` and returns `SetupTask[]`:
-   ```typescript
-   import {type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
+   import {graph_ProjectSetup} from '@nu-art/action-processor-backend';
+   import {asDispatchKey, OnDispatch} from '@nu-art/ts-common';
+   import {DispatchKey_PermissionsGroups} from '@nu-art/permissions-backend';
 
-   class MyModule_Class
-       extends Module
-       implements PerformProjectSetup {
+   export const DispatchKey_MyFeatureInit = asDispatchKey('setup.my-feature-init');
 
-       __performProjectSetup(): SetupTask[] {
-           return [{
-               key: SetupTaskKey_MyFeatureInit,
-               dependsOn: [],
-               processor: async () => { /* ... */ }
-           }];
-       }
+   @OnDispatch(graph_ProjectSetup, {key: DispatchKey_MyFeatureInit, runAfter: [DispatchKey_PermissionsGroups]})
+   async initMyFeature(): Promise<void> {
+       // idempotent setup
    }
    ```
-4. **Declare dependencies** — if your task must run after another, import that task's key constant and add it to `dependsOn`:
+3. **The app root** depends on everything the app needs:
    ```typescript
-   import {SetupTaskKey_PermissionsGroups} from '@nu-art/permissions-backend';
+   export const DispatchKey_MyAppSetup = asDispatchKey('setup.my-app');
 
-   dependsOn: [SetupTaskKey_PermissionsGroups]
+   @OnDispatch(graph_ProjectSetup, {key: DispatchKey_MyAppSetup, runAfter: [DispatchKey_MyFeatureInit]})
+   async setupMyApp(): Promise<void> {}
+
+   // backend entry point, before Storm.build()
+   setProjectSetupRoots(DispatchKey_MyAppSetup);
    ```
 
-## Key naming convention
+## Runtime gating
 
-- Type: `SetupTaskKey` (branded `string`)
-- Branding util: `asSetupTaskKey(key)` — from `@nu-art/action-processor-backend`
-- Constants: `SetupTaskKey_{What}` — exported from the module that owns the task (e.g. `SetupTaskKey_PermissionsGroups`, `SetupTaskKey_PermissionsUsers`)
-- Values: kebab-case describing the task (e.g. `'permissions-groups'`, `'permissions-users'`)
-
-## Execution model
-
-1. The dispatcher collects `SetupTask[]` from every module implementing `PerformProjectSetup`.
-2. Validation (fail-fast): duplicate keys, missing dependencies, and cycles all throw `BadImplementationException`.
-3. Tasks are topologically sorted into depth levels — tasks whose dependencies are all satisfied at the same depth run in parallel via `Promise.all`.
-4. Levels execute sequentially, each level completing before the next begins.
-
-## Startup integration
-
-The app backend wires `runProjectSetup` as a post-build action on `Storm` — see [project-backend-setup.mdc](project-backend-setup.mdc) for where it goes in the entry point.
-
-`runProjectSetup()` triggers the same dispatcher and topological executor as the `setup-project` action. **Do not add per-module post-build actions for setup/seed work** — implement `PerformProjectSetup` instead and the unified hook runs everything.
-
-The `setup-project` action remains available for manual re-runs (e.g. via the action-processor API).
+`projectSetupReaches(key)` tells whether the app's roots reach an action. Runtime behavior that depends on setup-created data gates on it (e.g. permissions' read-bucket membership on login/registration runs only when the roots reach `DispatchKey_PermissionsReadBucket`).
 
 ## Rules
 
-- **No module-specific setup endpoints or post-build actions.** All setup flows through `PerformProjectSetup` and the single `runProjectSetup` post-build hook.
-- **One key per task.** Keys must be globally unique across the project.
-- **Export your key constant** so downstream modules can declare dependencies on it.
-- **A module may return multiple tasks** if it has independent setup steps with different dependency chains.
+- **No module-specific setup endpoints or post-build actions.** All setup is graph actions run by `runProjectSetup`.
+- **Actions are idempotent.** Setup may be re-run.
+- **One key per action**, globally unique. Unknown keys (root or `runAfter`) throw at dispatch.
+- **Export your key** so other packages and apps can depend on it.
+- **Tests** that construct decorated modules clear the graph between tests (`graph_ProjectSetup.clear()`), since construction registers nodes.

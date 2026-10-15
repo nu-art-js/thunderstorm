@@ -1,6 +1,6 @@
 # @nu-art/action-processor-backend
 
-Backend module for registering and executing refactoring/setup actions over HTTP. Registers routes with `@nu-art/http-server` (ApiHandler). Includes PerformProjectSetup contract and setup-project action.
+Backend module for registering and executing refactoring/setup actions over HTTP. Registers routes with `@nu-art/http-server` (ApiHandler). Includes the project setup action graph (`graph_ProjectSetup`, `setProjectSetupRoots`, `projectSetupReaches`) and the setup-project action.
 
 ## Deps
 

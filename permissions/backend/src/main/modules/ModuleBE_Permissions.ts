@@ -26,7 +26,7 @@ import {
 	permissionScopeId,
 	type PermissionScope,
 } from '@nu-art/permissions-shared';
-import {asSetupTaskKey, graph_ProjectSetup, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
+import {graph_ProjectSetup, projectSetupReaches} from '@nu-art/action-processor-backend';
 import {ModuleBE_PermissionScopeDB} from '../_entity/permission-scope/ModuleBE_PermissionScopeDB.js';
 import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_UserPermissionsDB.js';
 import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
@@ -113,7 +113,6 @@ export const PermissionsInfraGroupIds: Record<keyof DocumentAccessInner, Databas
 const dispatcher_resolveAdditionalGroupMemberships = new Dispatcher<ResolveAdditionalGroupMemberships, '__resolveAdditionalGroupMemberships'>('__resolveAdditionalGroupMemberships');
 const dispatcher_collectDefaultScopeValues = new Dispatcher<CollectDefaultScopeValues, '__collectDefaultScopeValues'>('__collectDefaultScopeValues');
 
-export const SetupTaskKey_PermissionsGroups = asSetupTaskKey('permissions-groups');
 export const DispatchKey_PermissionsGroups = asDispatchKey('setup.permissions-groups');
 export const DispatchKey_PermissionsReadBucket = asDispatchKey('setup.permissions-read-bucket');
 
@@ -126,7 +125,7 @@ type PermissionsTxDirty = {
 
 class ModuleBE_Permissions_Class
 	extends Module<Config>
-	implements PerformProjectSetup, OnAccessGroupChanged, OnNewUserRegistered, OnUserLogin, OnAccountDeleted {
+	implements OnAccessGroupChanged, OnNewUserRegistered, OnUserLogin, OnAccountDeleted {
 
 	private adminGrantFlagRef!: FirebaseRef<boolean>;
 	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
@@ -323,14 +322,6 @@ class ModuleBE_Permissions_Class
 
 	// --- Project setup ---
 
-	__performProjectSetup(): SetupTask[] {
-		return [{
-			key: SetupTaskKey_PermissionsGroups,
-			dependsOn: [],
-			processor: () => this.ensureDefinedGroups()
-		}];
-	}
-
 	async ensureDefinedGroups() {
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			this.logDebug('[FIRST_USER] bootstrap: starting ensureDefinedGroups');
@@ -358,11 +349,21 @@ class ModuleBE_Permissions_Class
 		});
 	}
 
+	/** Read-bucket membership only; never fails the registration. */
 	async __onNewUserRegistered(account: DB_Account) {
-		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
-			await this.ensurePersonalAccessGroup(account);
-			await this.addToReadBucket(account);
-		});
+		if (!this.usesReadBucket())
+			return;
+
+		try {
+			await this.runAsServiceAccount(ServiceAccountId_Bootstrap, () => this.addToReadBucket(account));
+		} catch (e: any) {
+			this.logWarning(`Read bucket membership for '${account._id}' not added at registration (next login retries)`, e);
+		}
+	}
+
+	/** The read bucket exists only where the app's setup roots reach its action. */
+	private usesReadBucket(): boolean {
+		return projectSetupReaches(DispatchKey_PermissionsReadBucket);
 	}
 
 	async __onUserLogin(account: DB_Account) {
@@ -440,6 +441,9 @@ class ModuleBE_Permissions_Class
 	}
 
 	private async addToReadBucket(account: DB_Account) {
+		if (!this.usesReadBucket())
+			return;
+
 		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
 		const group = await ModuleBE_AccessGroupDB.query.unique(GroupId_ReadBucket);
 		if (!group || group.members.includes(personalGroupId))
@@ -1063,7 +1067,7 @@ class ModuleBE_Permissions_Class
 
 	// --- Bootstrap: sync personal groups for existing accounts ---
 
-	/** Setup action: the groups SetupTaskKey_PermissionsGroups ensures, for apps that use the action graph. Idempotent. */
+	/** Setup action: bootstrap SA, infra, scope, default, admin and app-defined groups; personal groups; recompute. Idempotent. */
 	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_PermissionsGroups})
 	async setupPermissionsGroups(): Promise<void> {
 		await this.ensureDefinedGroups();

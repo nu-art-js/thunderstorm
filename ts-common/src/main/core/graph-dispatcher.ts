@@ -110,6 +110,14 @@ export class GraphDispatcher<T,
 		await this.runLevels(this.topoLevels(this.closureOf(roots)), p);
 	}
 
+	/** Whether the closure of the roots (as dispatchFrom computes it) contains the key. */
+	public reaches(roots: DispatchKey[], key: DispatchKey): boolean {
+		if (!roots.length)
+			return false;
+
+		return this.closureOf(roots).some(node => node.key === key);
+	}
+
 	private async runLevels(levels: GraphNode<P>[][], p: P) {
 		for (const level of levels)
 			await Promise.all(level.map(node => node.run(...p)));

@@ -268,4 +268,16 @@ describe('GraphDispatcher', () => {
 			expect(error).to.be.instanceOf(BadImplementationException);
 		});
 	});
+
+	describe('reaches', () => {
+		it('tells whether the closure of the roots contains a key', () => {
+			const graph = newSetupGraph();
+			graph.register({key: Key_Permissions, run: async () => undefined});
+			graph.register({key: Key_Locales, runAfter: [Key_Permissions], run: async () => undefined});
+			graph.register({key: Key_OrgBootstrap, run: async () => undefined});
+			expect(graph.reaches([Key_Locales], Key_Permissions)).to.equal(true);
+			expect(graph.reaches([Key_Locales], Key_OrgBootstrap)).to.equal(false);
+			expect(graph.reaches([], Key_Permissions)).to.equal(false);
+		});
+	});
 });

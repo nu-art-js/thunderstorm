@@ -35,7 +35,7 @@ describe('Locale access - project setup actions, not start', () => {
 		expect(db.calls).to.deep.equal(['groups', `access:${db.config.seedLocales.map(locale => locale.code).join(',')}`, 'seed']);
 	});
 
-	it('the locale module registers no SetupTask', () => {
+	it('the locale module has no legacy setup task method', () => {
 		expect((new SpyLocaleDB_Class() as unknown as Record<string, unknown>).__performProjectSetup).to.equal(undefined);
 	});
 

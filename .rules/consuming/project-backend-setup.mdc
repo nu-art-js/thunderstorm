@@ -163,7 +163,7 @@ let _exposedFunctions = new Storm(Environment)
 - Infrastructure packs (accounts, permissions, focused-object) next.
 - Domain packs in any order.
 - App-specific modules (`modules` array) last.
-- `.addPostBuildAction(runProjectSetup)` runs the unified project setup after all modules are initialized — see [setup-action.mdc](setup-action.mdc) for how modules declare setup tasks via `PerformProjectSetup`.
+- `.addPostBuildAction(runProjectSetup)` runs the unified project setup after all modules are initialized — it runs only the closure of the app's root actions (`setProjectSetupRoots`); see [setup-action.mdc](setup-action.mdc).
 
 ---
 
@@ -239,4 +239,4 @@ export const api = _exposedFunctions['api'];
 - **Do not register middleware after `Storm.build()`** — routes are finalized during build; late middleware is ignored.
 - **Do not hand-edit `config.ts`** — BAI regenerates it on every prepare phase.
 - **Do not pass an empty module pack** (`const pack: Module[] = []; .addModulePack(pack)`) — it's dead code.
-- **Do not add per-module setup endpoints or post-build actions** — use `PerformProjectSetup` (see [setup-action.mdc](setup-action.mdc)).
+- **Do not add per-module setup endpoints or post-build actions** — register setup actions on `graph_ProjectSetup` (see [setup-action.mdc](setup-action.mdc)).

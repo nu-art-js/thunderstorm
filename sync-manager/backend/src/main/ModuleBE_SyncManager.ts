@@ -27,6 +27,7 @@ import {
 	__stringify,
 	arrayToMap,
 	asArray,
+	asDispatchKey,
 	currentTimeMillis,
 	DB_Object,
 	dispatch_onApplicationException,
@@ -35,13 +36,14 @@ import {
 	filterInstances,
 	LogLevel,
 	Module,
+	OnDispatch,
 	PreDB,
 	ResolvableContent,
 	resolveContent,
 	TypedMap
 } from '@nu-art/ts-common';
 import {ModuleBE_BaseDB, RuntimeBE_ModulesDB, type PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
-import {asSetupTaskKey, type PerformProjectSetup, type SetupTask} from '@nu-art/action-processor-backend';
+import {graph_ProjectSetup} from '@nu-art/action-processor-backend';
 import {
 	ApiDef_SyncManager,
 	DeltaSyncModule,
@@ -83,11 +85,11 @@ export type SyncManagerBEConfig = {
  * }
  * ```
  */
-export const SetupTaskKey_SyncBackfill = asSetupTaskKey('sync-manager-backfill');
+export const DispatchKey_SyncBackfill = asDispatchKey('setup.sync-manager-backfill');
 
 export class ModuleBE_SyncManager_Class
 	extends Module<SyncManagerBEConfig>
-	implements OnModuleCleanupV2, OnSyncEnvCompleted, PerformProjectSetup {
+	implements OnModuleCleanupV2, OnSyncEnvCompleted {
 
 	public collection!: FirestoreCollection<DatabaseDef_DeletedDoc> | MongoCollection<DatabaseDef_DeletedDoc>;
 
@@ -120,15 +122,9 @@ export class ModuleBE_SyncManager_Class
 		}
 	}
 
-	__performProjectSetup(): SetupTask[] {
-		return [{
-			key: SetupTaskKey_SyncBackfill,
-			dependsOn: [],
-			processor: () => this.backfillStaleSyncTimestamps()
-		}];
-	}
-
-	private async backfillStaleSyncTimestamps() {
+	/** Setup action: stamps lastUpdated for synced modules that have none. */
+	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_SyncBackfill})
+	async backfillStaleSyncTimestamps() {
 		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
 		const rtdbSyncData = await syncDataRef.get({});
 
