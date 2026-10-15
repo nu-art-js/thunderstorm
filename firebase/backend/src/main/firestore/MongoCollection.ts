@@ -78,11 +78,10 @@ const getDbDefValidator = <Proto extends DB_Prototype>(dbDef: Database<Proto>) =
 export class MongoCollection<Proto extends DB_Prototype>
 	extends Logger {
 
-	db!: MongoDriverDb;
+	private db?: MongoDriverDb;
 	mongoCollection!: MongoDriverCollection<Proto['dbType']>;
 	private readonly resolveDb: () => Promise<MongoDriverDb>;
-	private pendingReady?: Promise<void>;
-	private driverReady = false;
+	private pendingDb?: Promise<MongoDriverDb>;
 	readonly dbDef: Database<Proto>;
 	readonly uniqueKeys: Proto['uniqueKeys'];
 	private readonly validator;
@@ -108,28 +107,28 @@ export class MongoCollection<Proto extends DB_Prototype>
 		this.runTransactionInChunks = this.gateFn(this.runTransactionInChunks);
 	}
 
-	/** Opens the shared client once, then retries the open after a failure. */
-	private whenReady(): Promise<void> {
-		if (this.driverReady)
-			return Promise.resolve();
+	/** Returns the open driver. One in-flight connect is shared. A failed connect can be retried. */
+	async getDb(): Promise<MongoDriverDb> {
+		if (this.db)
+			return this.db;
 
-		if (!this.pendingReady) {
-			this.pendingReady = this.resolveDb().then(db => {
+		if (!this.pendingDb) {
+			this.pendingDb = this.resolveDb().then(db => {
 				this.db = db;
 				this.mongoCollection = db.collection<Proto['dbType']>(this.dbDef.backend.name);
-				this.driverReady = true;
+				return db;
 			}).catch(err => {
-				this.pendingReady = undefined;
+				this.pendingDb = undefined;
 				throw err;
 			});
 		}
 
-		return this.pendingReady;
+		return this.pendingDb;
 	}
 
 	private gateFn<Fn extends (...args: any[]) => Promise<any>>(fn: Fn): Fn {
 		const gated = async (...args: Parameters<Fn>): Promise<Awaited<ReturnType<Fn>>> => {
-			await this.whenReady();
+			await this.getDb();
 			return fn(...args);
 		};
 		// The wrapper is the same call shape; TS cannot see that through the generic.
@@ -639,7 +638,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 			return processor();
 
 		const tag = label ? `${this.dbDef.dbKey}:${label}` : this.dbDef.dbKey;
-		const client = this.db.client;
+		const client = (await this.getDb()).client;
 		const session = client.startSession();
 		this.logDebug(`TX-START [${tag}]`);
 		try {

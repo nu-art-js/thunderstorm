@@ -317,10 +317,11 @@ export class ModuleBE_SyncManager_Class
 			return;
 		if (this.collection instanceof MongoCollection) {
 			const name = DBDef_DeletedDoc.backend.name;
-			const exists = await this.collection.db.listCollections({name}).hasNext();
+			const db = await this.collection.getDb();
+			const exists = await db.listCollections({name}).hasNext();
 			if (!exists) {
 				try {
-					await this.collection.db.createCollection(name);
+					await db.createCollection(name);
 				} catch (e: any) {
 					if (e?.code !== 48 && e?.codeName !== 'NamespaceExists')
 						throw e;
