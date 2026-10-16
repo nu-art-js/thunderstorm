@@ -35,9 +35,12 @@ class TestStripe_Class
 	portalArgs: unknown[] = [];
 	customerArgs: unknown[] = [];
 	couponArgs: unknown[] = [];
+	couponLists: unknown[] = [];
 	couponDeletes: string[] = [];
+	couponRetrieves: string[] = [];
 	promotionCreates: unknown[] = [];
 	promotionLists: unknown[] = [];
+	promotionRetrieves: unknown[] = [];
 	promotionUpdates: unknown[] = [];
 	handled: string[] = [];
 	failNext = false;
@@ -59,9 +62,16 @@ class TestStripe_Class
 
 	protected createClient(): StripeClient {
 		const coupon = {id: 'coupon_1', name: 'Ten', percent_off: 10, amount_off: null, currency: null, duration: 'once', duration_in_months: null, valid: true};
-		const promotion = (active: boolean) => ({
+		const catalog = [
+			{...coupon, id: 'c1', metadata: {app: 'booking'}, times_redeemed: 2, max_redemptions: 10, redeem_by: 1_700_000_000, applies_to: {products: ['prod_1']}},
+			{...coupon, id: 'c2', metadata: {app: 'other'}},
+			{...coupon, id: 'c3', metadata: {app: 'booking', campaign: 'spring'}},
+			{...coupon, id: 'c4', metadata: {app: 'other'}},
+			{...coupon, id: 'c5', metadata: {app: 'booking'}},
+		];
+		const promotion = (active: boolean, first = false) => ({
 			id: 'promo_1', code: 'SAVE', active, promotion: {type: 'coupon', coupon: 'coupon_1'},
-			expires_at: null, max_redemptions: null, times_redeemed: 0,
+			expires_at: null, max_redemptions: null, times_redeemed: 0, restrictions: {first_time_transaction: first},
 		});
 		return {
 			checkout: {sessions: {create: async (args: unknown) => (this.checkoutArgs.push(args), {id: 'cs_1', url: 'https://checkout.stripe.com/c/cs_1'})}},
@@ -71,10 +81,25 @@ class TestStripe_Class
 			coupons: {
 				create: async (args: unknown) => (this.couponArgs.push(args), coupon),
 				del: async (id: string) => (this.couponDeletes.push(id), {id, object: 'coupon', deleted: true}),
+				retrieve: async (id: string) => (this.couponRetrieves.push(id), {...coupon, id, metadata: {app: 'booking'}}),
+				list: async (args: { limit?: number; starting_after?: string; ending_before?: string }) => {
+					this.couponLists.push(args);
+					const start = args.starting_after ? catalog.findIndex(item => item.id === args.starting_after) + 1 : 0;
+					const end = args.ending_before ? catalog.findIndex(item => item.id === args.ending_before) : catalog.length;
+					const pageSize = args.limit === 100 ? 2 : args.limit ?? catalog.length;
+					const data = catalog.slice(Math.max(start, 0), end < 0 ? catalog.length : end).slice(0, pageSize);
+					const scanned = Math.max(start, 0) + data.length;
+					return {data, has_more: scanned < (end < 0 ? catalog.length : end)};
+				},
 			},
 			promotionCodes: {
-				create: async (args: { active?: boolean }) => (this.promotionCreates.push(args), promotion(args.active !== false)),
-				list: async (args: unknown) => (this.promotionLists.push(args), {data: [{...promotion(true), promotion: {type: 'coupon', coupon: {id: 'coupon_1'}}}], has_more: false}),
+				create: async (args: { active?: boolean; restrictions?: { first_time_transaction?: boolean } }) => (this.promotionCreates.push(args), promotion(args.active !== false, args.restrictions?.first_time_transaction === true)),
+				list: async (args: unknown) => (this.promotionLists.push(args), {data: [{...promotion(true, true), promotion: {type: 'coupon', coupon: {id: 'coupon_1'}}}], has_more: false}),
+				retrieve: async (id: string, args: unknown) => {
+					this.promotionRetrieves.push({id, args});
+					const referenced = id === 'promo_ref' ? 'coupon_1' : {id: 'coupon_1', metadata: {app: id === 'promo_other' ? 'other' : 'booking'}};
+					return {...promotion(true), id, promotion: {type: 'coupon', coupon: referenced}};
+				},
 				update: async (id: string, args: { active?: boolean }) => (this.promotionUpdates.push({id, args}), promotion(args.active === true)),
 			},
 		} as unknown as StripeClient;
@@ -175,12 +200,43 @@ describe('ModuleBE_Stripe - customer, coupons, promotion codes', () => {
 
 	it('creates a percent coupon and deletes it', async () => {
 		const stripe = new TestStripe_Class();
-		expect((await stripe.createCoupon({percentOff: 10, name: 'Ten'})).id).to.equal('coupon_1');
-		expect(stripe.couponArgs[0]).to.deep.equal({percent_off: 10, name: 'Ten'});
+		expect(await stripe.createCoupon({percentOff: 10, name: 'Ten'})).to.deep.equal({
+			id: 'coupon_1', name: 'Ten', percentOff: 10, amountOff: null, currency: null, duration: 'once', durationInMonths: null, valid: true,
+			timesRedeemed: 0, metadata: {}, maxRedemptions: null, redeemBy: null, appliesToProducts: [],
+		});
+		expect(stripe.couponArgs[0]).to.deep.equal({percent_off: 10, name: 'Ten', expand: ['applies_to']});
 		await stripe.createCoupon({amountOff: 500, currency: 'eur', duration: 'repeating', durationInMonths: 3});
-		expect(stripe.couponArgs[1]).to.deep.equal({amount_off: 500, currency: 'eur', duration: 'repeating', duration_in_months: 3});
+		expect(stripe.couponArgs[1]).to.deep.equal({amount_off: 500, currency: 'eur', duration: 'repeating', duration_in_months: 3, expand: ['applies_to']});
 		expect(await stripe.deleteCoupon('coupon_1')).to.deep.equal({id: 'coupon_1', deleted: true});
 		expect(stripe.couponDeletes).to.deep.equal(['coupon_1']);
+	});
+
+	it('creates a coupon with metadata and applicable products', async () => {
+		const stripe = new TestStripe_Class();
+		await stripe.createCoupon({percentOff: 15, metadata: {app: 'booking'}, appliesToProducts: ['prod_1', 'prod_2']});
+		expect(stripe.couponArgs[0]).to.deep.equal({
+			percent_off: 15, metadata: {app: 'booking'}, applies_to: {products: ['prod_1', 'prod_2']}, expand: ['applies_to'],
+		});
+	});
+
+	it('lists coupons for an app with a forward cursor', async () => {
+		const stripe = new TestStripe_Class();
+		const first = await stripe.listCoupons({metadata: {app: 'booking'}, limit: 2});
+		expect(first.coupons.map(coupon => coupon.id)).to.deep.equal(['c1', 'c3']);
+		expect(first.hasMore).to.equal(true);
+		expect(first.coupons[0]).to.deep.include({
+			timesRedeemed: 2, metadata: {app: 'booking'}, maxRedemptions: 10, redeemBy: 1_700_000_000, appliesToProducts: ['prod_1'],
+		});
+		expect(stripe.couponLists[0]).to.deep.equal({limit: 100, expand: ['data.applies_to']});
+		const second = await stripe.listCoupons({metadata: {app: 'booking', campaign: 'spring'}, startingAfter: 'c1', limit: 2});
+		expect(second.coupons.map(coupon => coupon.id)).to.deep.equal(['c3']);
+		expect(second.hasMore).to.equal(false);
+		const page = await stripe.listCoupons({limit: 2, startingAfter: 'c1', endingBefore: 'c4'});
+		expect(page.coupons.map(coupon => coupon.id)).to.deep.equal(['c2', 'c3']);
+		expect(page.hasMore).to.equal(false);
+		expect(stripe.couponLists.at(-1)).to.deep.equal({limit: 2, starting_after: 'c1', ending_before: 'c4', expand: ['data.applies_to']});
+		expect(await stripe.listCoupons({metadata: {app: 'booking'}, endingBefore: 'c4'}).then(() => 'ok', () => 'refused')).to.equal('refused');
+		expect(await stripe.listCoupons({metadata: {app: 'booking'}, limit: 0}).then(() => 'ok', () => 'refused')).to.equal('refused');
 	});
 
 	it('refuses a coupon that sets both discounts or a repeating duration without months', async () => {
@@ -200,17 +256,29 @@ describe('ModuleBE_Stripe - customer, coupons, promotion codes', () => {
 	it('creates, lists and activates promotion codes through the coupon promotion', async () => {
 		const stripe = new TestStripe_Class();
 		const created = await stripe.createPromotionCode({couponId: 'coupon_1', code: 'SAVE', active: false, firstTimeTransaction: true});
-		expect(created).to.deep.include({id: 'promo_1', code: 'SAVE', couponId: 'coupon_1', active: false});
+		expect(created).to.deep.include({id: 'promo_1', code: 'SAVE', couponId: 'coupon_1', active: false, firstTimeTransaction: true});
 		expect(stripe.promotionCreates[0]).to.deep.equal({
 			promotion: {type: 'coupon', coupon: 'coupon_1'}, code: 'SAVE', active: false, restrictions: {first_time_transaction: true},
 		});
 		expect(stripe.promotionCreates[0]).to.not.have.property('coupon');
-		const page = await stripe.listPromotionCodes({couponId: 'coupon_1', active: true});
-		expect(page.codes[0].couponId).to.equal('coupon_1');
+		const page = await stripe.listPromotionCodes({couponId: 'coupon_1', active: true, limit: 5, startingAfter: 'promo_0', endingBefore: 'promo_9'});
+		expect(page.codes[0]).to.deep.include({couponId: 'coupon_1', firstTimeTransaction: true});
 		expect(page.hasMore).to.equal(false);
-		expect(stripe.promotionLists[0]).to.deep.equal({coupon: 'coupon_1', active: true});
+		expect(stripe.promotionLists[0]).to.deep.equal({coupon: 'coupon_1', active: true, limit: 5, starting_after: 'promo_0', ending_before: 'promo_9'});
 		expect((await stripe.updatePromotionCode({id: 'promo_1', active: false})).active).to.equal(false);
 		expect(stripe.promotionUpdates[0]).to.deep.equal({id: 'promo_1', args: {active: false}});
+		expect(stripe.promotionRetrieves).to.have.length(0);
+	});
+
+	it('refuses to deactivate a promotion code whose coupon belongs to another app', async () => {
+		const stripe = new TestStripe_Class();
+		expect((await stripe.updatePromotionCode({id: 'promo_1', active: false, couponMetadata: {app: 'booking'}})).active).to.equal(false);
+		expect(stripe.promotionRetrieves[0]).to.deep.equal({id: 'promo_1', args: {expand: ['promotion.coupon']}});
+		expect(await stripe.updatePromotionCode({id: 'promo_other', active: false, couponMetadata: {app: 'booking'}}).then(() => 'ok', () => 'refused')).to.equal('refused');
+		expect(stripe.promotionUpdates.map(update => (update as { id: string }).id)).to.deep.equal(['promo_1']);
+		await stripe.updatePromotionCode({id: 'promo_ref', active: false, couponMetadata: {app: 'booking'}});
+		expect(stripe.couponRetrieves).to.deep.equal(['coupon_1']);
+		expect(stripe.promotionUpdates).to.have.length(2);
 	});
 });
 

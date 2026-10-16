@@ -54,6 +54,11 @@ export class ModuleBE_StripeAPI_Class
 		return ModuleBE_Stripe.createCoupon(body);
 	}
 
+	@ApiHandler(ApiDef_StripeAdmin.listCoupons)
+	async listCoupons(body: API_StripeAdmin['listCoupons']['Body']): Promise<API_StripeAdmin['listCoupons']['Response']> {
+		return ModuleBE_Stripe.listCoupons(body);
+	}
+
 	@ApiHandler(ApiDef_StripeAdmin.deleteCoupon)
 	async deleteCoupon(params: API_StripeAdmin['deleteCoupon']['Params']): Promise<API_StripeAdmin['deleteCoupon']['Response']> {
 		return ModuleBE_Stripe.deleteCoupon(params.id);

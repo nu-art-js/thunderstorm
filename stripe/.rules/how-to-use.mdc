@@ -40,7 +40,8 @@ alwaysApply: false
 
 Admin routes, same auth as the rest of the API (do not add them to openApis):
 
-- `createCoupon` / `deleteCoupon` — a coupon is either `percentOff` or `amountOff` plus `currency`.
-- `createPromotionCode` / `listPromotionCodes` / `updatePromotionCode` — a promotion code points at a coupon with `{promotion: {type: 'coupon', coupon}}`. `updatePromotionCode` sets `active`.
+- `createCoupon` / `listCoupons` / `deleteCoupon` — a coupon is either `percentOff` or `amountOff` plus `currency`. `metadata` and `appliesToProducts` are optional on create (`applies_to.products`). The coupon view includes `timesRedeemed`, `metadata`, `maxRedemptions`, `redeemBy` and `appliesToProducts`.
+- `listCoupons` pages with `limit`, `startingAfter` and `endingBefore`. `metadata` (for example `{app: 'booking'}`) keeps only coupons whose metadata contains those pairs. Stripe's list has no metadata filter, so the module scans forward and the next cursor is the last returned coupon id. `hasMore` is true when another match exists. A metadata filter cannot be combined with `endingBefore`.
+- `createPromotionCode` / `listPromotionCodes` / `updatePromotionCode` — a promotion code points at a coupon with `{promotion: {type: 'coupon', coupon}}`. The view includes `firstTimeTransaction`. `listPromotionCodes` pages with `startingAfter` and `endingBefore`. `updatePromotionCode` sets `active`. Pass `couponMetadata` to refuse the update unless the coupon metadata matches, which is how a deactivate checks that the coupon belongs to an app.
 
 Direct module methods take the same shared types.
