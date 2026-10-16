@@ -7,6 +7,9 @@ import {
 	type StripeCouponCreate,
 	type StripeCouponDeleted,
 	type StripeCouponDuration,
+	type StripeCouponList,
+	type StripeCouponPage,
+	type StripeMetadata,
 	type StripeCustomer,
 	type StripeCustomerUpdate,
 	type StripePortalRequest,
@@ -157,6 +160,48 @@ export class ModuleBE_Stripe_Class
 		return this.coupon(coupon);
 	}
 
+	async listCoupons(request: StripeCouponList = {}): Promise<StripeCouponPage> {
+		const metadata = request.metadata;
+		if (!metadata || Object.keys(metadata).length === 0) {
+			const page = await (await this.billingClient()).coupons.list(this.couponListParams(request));
+			return {coupons: page.data.map(coupon => this.coupon(coupon)), hasMore: page.has_more};
+		}
+
+		if (request.endingBefore)
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid coupon page', 'metadata filter uses startingAfter');
+
+		const limit = this.couponPageLimit(request.limit);
+		const coupons: StripeCoupon[] = [];
+		let startingAfter = request.startingAfter;
+		for (;;) {
+			const page = await (await this.billingClient()).coupons.list({
+				limit: 100,
+				...(startingAfter ? {starting_after: startingAfter} : {}),
+				expand: ['data.applies_to'],
+			});
+			if (page.data.length === 0)
+				break;
+
+			for (const coupon of page.data) {
+				if (!this.metadataMatches(coupon.metadata, metadata))
+					continue;
+
+				if (coupons.length === limit)
+					return {coupons, hasMore: true};
+
+				coupons.push(this.coupon(coupon));
+			}
+
+			const last = page.data[page.data.length - 1].id;
+			if (!page.has_more || last === startingAfter)
+				break;
+
+			startingAfter = last;
+		}
+
+		return {coupons, hasMore: false};
+	}
+
 	async deleteCoupon(id: string): Promise<StripeCouponDeleted> {
 		if (!id)
 			throw HttpCodes._4XX.BAD_REQUEST('Missing coupon', 'id');
@@ -190,6 +235,8 @@ export class ModuleBE_Stripe_Class
 			...(request.active !== undefined ? {active: request.active} : {}),
 			...(request.customerId ? {customer: request.customerId} : {}),
 			...(request.limit !== undefined ? {limit: request.limit} : {}),
+			...(request.startingAfter ? {starting_after: request.startingAfter} : {}),
+			...(request.endingBefore ? {ending_before: request.endingBefore} : {}),
 		});
 		return {codes: page.data.map(code => this.promotionCode(code)), hasMore: page.has_more};
 	}
@@ -197,6 +244,9 @@ export class ModuleBE_Stripe_Class
 	async updatePromotionCode(request: StripePromotionCodeUpdate): Promise<StripePromotionCode> {
 		if (!request.id)
 			throw HttpCodes._4XX.BAD_REQUEST('Missing promotion code', 'id');
+
+		if (request.couponMetadata !== undefined)
+			await this.assertCouponMetadata(request.id, request.couponMetadata);
 
 		const updated = await (await this.billingClient()).promotionCodes.update(request.id, {active: request.active});
 		this.logInfo(`promotion_code=${updated.id} active=${updated.active}`);
@@ -260,6 +310,9 @@ export class ModuleBE_Stripe_Class
 			...(request.name ? {name: request.name} : {}),
 			...(request.maxRedemptions !== undefined ? {max_redemptions: request.maxRedemptions} : {}),
 			...(request.redeemBy !== undefined ? {redeem_by: request.redeemBy} : {}),
+			...(request.metadata ? {metadata: {...request.metadata}} : {}),
+			...(request.appliesToProducts?.length ? {applies_to: {products: [...request.appliesToProducts]}} : {}),
+			expand: ['applies_to'],
 		};
 		const percentOff = request.percentOff;
 		const amountOff = request.amountOff;
@@ -284,6 +337,39 @@ export class ModuleBE_Stripe_Class
 		};
 	}
 
+	private couponListParams(request: StripeCouponList): Stripe.CouponListParams {
+		return {
+			...(request.limit !== undefined ? {limit: request.limit} : {}),
+			...(request.startingAfter ? {starting_after: request.startingAfter} : {}),
+			...(request.endingBefore ? {ending_before: request.endingBefore} : {}),
+			expand: ['data.applies_to'],
+		};
+	}
+
+	private couponPageLimit(limit: number | undefined) {
+		if (limit === undefined)
+			return 10;
+
+		if (!Number.isInteger(limit) || limit < 1 || limit > 100)
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid limit', 'limit');
+
+		return limit;
+	}
+
+	private metadataMatches(metadata: Stripe.Metadata | null | undefined, expected: StripeMetadata) {
+		const data = metadata ?? {};
+		return Object.entries(expected).every(([key, value]) => data[key] === value);
+	}
+
+	private async assertCouponMetadata(id: string, expected: StripeMetadata) {
+		const client = await this.billingClient();
+		const code = await client.promotionCodes.retrieve(id, {expand: ['promotion.coupon']});
+		const referenced = code.promotion.coupon;
+		const coupon = typeof referenced === 'string' ? await client.coupons.retrieve(referenced) : referenced;
+		if (!coupon || !this.metadataMatches(coupon.metadata, expected))
+			throw HttpCodes._4XX.FORBIDDEN('Coupon metadata mismatch', id);
+	}
+
 	private coupon(coupon: Stripe.Coupon): StripeCoupon {
 		return {
 			id: coupon.id,
@@ -294,6 +380,11 @@ export class ModuleBE_Stripe_Class
 			duration: this.couponDuration(coupon.duration),
 			durationInMonths: coupon.duration_in_months,
 			valid: coupon.valid,
+			timesRedeemed: coupon.times_redeemed ?? 0,
+			metadata: {...(coupon.metadata ?? {})},
+			maxRedemptions: coupon.max_redemptions ?? null,
+			redeemBy: coupon.redeem_by ?? null,
+			appliesToProducts: [...(coupon.applies_to?.products ?? [])],
 		};
 	}
 
@@ -320,6 +411,7 @@ export class ModuleBE_Stripe_Class
 			expiresAt: code.expires_at,
 			maxRedemptions: code.max_redemptions,
 			timesRedeemed: code.times_redeemed,
+			firstTimeTransaction: code.restrictions?.first_time_transaction ?? false,
 		};
 	}
 

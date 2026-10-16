@@ -5,6 +5,8 @@ import type {
 	StripeCouponCreate,
 	StripeCouponDeleted,
 	StripeCouponId,
+	StripeCouponList,
+	StripeCouponPage,
 	StripeCustomer,
 	StripeCustomerUpdate,
 	StripePortalRequest,
@@ -32,6 +34,7 @@ export const ApiDef_Stripe: ApiDefResolver<API_Stripe> = {
 export type API_StripeAdmin = {
 	updateCustomer: BodyApi<StripeCustomer, StripeCustomerUpdate>;
 	createCoupon: BodyApi<StripeCoupon, StripeCouponCreate>;
+	listCoupons: BodyApi<StripeCouponPage, StripeCouponList>;
 	deleteCoupon: QueryApi<StripeCouponDeleted, StripeCouponId, ResponseError, HttpMethod.DELETE>;
 	createPromotionCode: BodyApi<StripePromotionCode, StripePromotionCodeCreate>;
 	listPromotionCodes: QueryApi<StripePromotionCodePage, StripePromotionCodeList>;
@@ -41,6 +44,7 @@ export type API_StripeAdmin = {
 export const ApiDef_StripeAdmin: ApiDefResolver<API_StripeAdmin> = {
 	updateCustomer: {method: HttpMethod.POST, path: '/v1/stripe/admin/customer'},
 	createCoupon: {method: HttpMethod.POST, path: '/v1/stripe/admin/coupon'},
+	listCoupons: {method: HttpMethod.POST, path: '/v1/stripe/admin/coupon/list'},
 	deleteCoupon: {method: HttpMethod.DELETE, path: '/v1/stripe/admin/coupon'},
 	createPromotionCode: {method: HttpMethod.POST, path: '/v1/stripe/admin/promotion-code'},
 	listPromotionCodes: {method: HttpMethod.GET, path: '/v1/stripe/admin/promotion-code'},

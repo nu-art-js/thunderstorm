@@ -49,7 +49,11 @@ export type StripeCouponCreate = {
 	durationInMonths?: number;
 	maxRedemptions?: number;
 	redeemBy?: number;
+	metadata?: StripeMetadata;
+	appliesToProducts?: string[];
 };
+
+export type StripeMetadata = { [key: string]: string };
 
 export type StripeCoupon = {
 	id: string;
@@ -60,6 +64,23 @@ export type StripeCoupon = {
 	duration: StripeCouponDuration;
 	durationInMonths: number | null;
 	valid: boolean;
+	timesRedeemed: number;
+	metadata: StripeMetadata;
+	maxRedemptions: number | null;
+	redeemBy: number | null;
+	appliesToProducts: string[];
+};
+
+export type StripeCouponList = {
+	metadata?: StripeMetadata;
+	limit?: number;
+	startingAfter?: string;
+	endingBefore?: string;
+};
+
+export type StripeCouponPage = {
+	coupons: StripeCoupon[];
+	hasMore: boolean;
 };
 
 export type StripeCouponId = { id: string };
@@ -84,6 +105,7 @@ export type StripePromotionCode = {
 	expiresAt: number | null;
 	maxRedemptions: number | null;
 	timesRedeemed: number;
+	firstTimeTransaction: boolean;
 };
 
 export type StripePromotionCodeList = {
@@ -92,6 +114,8 @@ export type StripePromotionCodeList = {
 	active?: boolean;
 	customerId?: string;
 	limit?: number;
+	startingAfter?: string;
+	endingBefore?: string;
 };
 
 export type StripePromotionCodePage = {
@@ -102,4 +126,5 @@ export type StripePromotionCodePage = {
 export type StripePromotionCodeUpdate = {
 	id: string;
 	active: boolean;
+	couponMetadata?: StripeMetadata;
 };

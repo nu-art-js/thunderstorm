@@ -42,6 +42,12 @@ export class ModuleFE_Stripe_Class
 		return undefined as unknown as API_StripeAdmin['createCoupon']['Response'];
 	}
 
+	@ApiCaller(ApiDef_StripeAdmin.listCoupons, {httpClient: () => HttpClient.default})
+	async listCoupons(body: API_StripeAdmin['listCoupons']['Body']): Promise<API_StripeAdmin['listCoupons']['Response']> {
+		void body;
+		return undefined as unknown as API_StripeAdmin['listCoupons']['Response'];
+	}
+
 	@ApiCaller(ApiDef_StripeAdmin.deleteCoupon, {httpClient: () => HttpClient.default})
 	async deleteCoupon(params: API_StripeAdmin['deleteCoupon']['Params']): Promise<API_StripeAdmin['deleteCoupon']['Response']> {
 		void params;
