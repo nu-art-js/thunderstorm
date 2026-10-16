@@ -6,9 +6,9 @@ alwaysApply: false
 
 | Package | Purpose |
 |---|---|
-| `@nu-art/stripe-shared` | `ApiDef_Stripe` (checkout, portal, webhook), request types, `appUrl` |
+| `@nu-art/stripe-shared` | `ApiDef_Stripe` (checkout, portal, webhook), `ApiDef_StripeAdmin` (customer, coupons, promotion codes), request types, `appUrl` |
 | `@nu-art/stripe-backend` | `ModuleBE_Stripe`, `ModuleBE_StripeAPI`, `RtdbStripeEventLedger`, hooks |
-| `@nu-art/stripe-frontend` | `ModuleFE_Stripe.startCheckout()` / `openPortal()` |
+| `@nu-art/stripe-frontend` | `ModuleFE_Stripe.startCheckout()` / `openPortal()`, admin callers |
 
 ## Backend setup
 
@@ -27,3 +27,20 @@ alwaysApply: false
   - `OnStripeCheckoutCompleted.__onStripeCheckoutCompleted(session, event)`.
   - `OnStripeSubscriptionChanged.__onStripeSubscriptionChanged(subscription, event)`: created, updated and deleted.
 - Hooks must be idempotent per object state (Stripe can deliver events out of order). Read `subscription.status` rather than counting events.
+
+## Checkout options
+
+`StripeCheckoutRequest.allowPromotionCodes` and `paymentMethodCollection` (`always` | `if_required`) are optional. Omitted, they are not sent, so Stripe keeps its own defaults. When set, checkout passes them as `allow_promotion_codes` and `payment_method_collection`.
+
+## Customer
+
+`ModuleBE_Stripe.updateCustomer({customerId, email?, invoiceEmail?})` updates the Stripe customer. `email` is the customer email. `invoiceEmail.locales` is the ordered locale list Stripe uses for invoice and receipt emails (`preferred_locales`). At least one of those two must be set. The same call is `ApiDef_StripeAdmin.updateCustomer`.
+
+## Coupons and promotion codes
+
+Admin routes, same auth as the rest of the API (do not add them to openApis):
+
+- `createCoupon` / `deleteCoupon` — a coupon is either `percentOff` or `amountOff` plus `currency`.
+- `createPromotionCode` / `listPromotionCodes` / `updatePromotionCode` — a promotion code points at a coupon with `{promotion: {type: 'coupon', coupon}}`. `updatePromotionCode` sets `active`.
+
+Direct module methods take the same shared types.

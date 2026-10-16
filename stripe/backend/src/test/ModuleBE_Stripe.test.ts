@@ -33,6 +33,12 @@ class TestStripe_Class
 	secretsRead: string[] = [];
 	checkoutArgs: unknown[] = [];
 	portalArgs: unknown[] = [];
+	customerArgs: unknown[] = [];
+	couponArgs: unknown[] = [];
+	couponDeletes: string[] = [];
+	promotionCreates: unknown[] = [];
+	promotionLists: unknown[] = [];
+	promotionUpdates: unknown[] = [];
 	handled: string[] = [];
 	failNext = false;
 	memoryLedger = new MemoryLedger();
@@ -52,10 +58,25 @@ class TestStripe_Class
 	}
 
 	protected createClient(): StripeClient {
+		const coupon = {id: 'coupon_1', name: 'Ten', percent_off: 10, amount_off: null, currency: null, duration: 'once', duration_in_months: null, valid: true};
+		const promotion = (active: boolean) => ({
+			id: 'promo_1', code: 'SAVE', active, promotion: {type: 'coupon', coupon: 'coupon_1'},
+			expires_at: null, max_redemptions: null, times_redeemed: 0,
+		});
 		return {
 			checkout: {sessions: {create: async (args: unknown) => (this.checkoutArgs.push(args), {id: 'cs_1', url: 'https://checkout.stripe.com/c/cs_1'})}},
 			billingPortal: {sessions: {create: async (args: unknown) => (this.portalArgs.push(args), {url: 'https://billing.stripe.com/p/1'})}},
 			webhooks: realWebhooks,
+			customers: {update: async (id: string, args: unknown) => (this.customerArgs.push({id, args}), {id, email: 'a@b.nl', preferred_locales: ['nl']})},
+			coupons: {
+				create: async (args: unknown) => (this.couponArgs.push(args), coupon),
+				del: async (id: string) => (this.couponDeletes.push(id), {id, object: 'coupon', deleted: true}),
+			},
+			promotionCodes: {
+				create: async (args: { active?: boolean }) => (this.promotionCreates.push(args), promotion(args.active !== false)),
+				list: async (args: unknown) => (this.promotionLists.push(args), {data: [{...promotion(true), promotion: {type: 'coupon', coupon: {id: 'coupon_1'}}}], has_more: false}),
+				update: async (id: string, args: { active?: boolean }) => (this.promotionUpdates.push({id, args}), promotion(args.active === true)),
+			},
 		} as unknown as StripeClient;
 	}
 
@@ -94,6 +115,18 @@ describe('ModuleBE_Stripe - checkout and portal', () => {
 			mode: 'subscription', success_url: 'https://app.example.com/billing/ok', cancel_url: 'https://app.example.com/billing',
 			customer_email: 'a@b.nl', client_reference_id: 'acc-1',
 		});
+		expect(stripe.checkoutArgs[0]).to.not.have.property('allow_promotion_codes');
+		expect(stripe.checkoutArgs[0]).to.not.have.property('payment_method_collection');
+	});
+
+	it('passes promotion codes and payment method collection through when set', async () => {
+		const stripe = new TestStripe_Class();
+		stripe.setCustomerResolver(async () => ({customerId: 'cus_1'}));
+		await stripe.createCheckoutSession({
+			priceId: 'price_basic', mode: 'subscription', successPath: '/ok', cancelPath: '/no',
+			allowPromotionCodes: false, paymentMethodCollection: 'if_required',
+		});
+		expect(stripe.checkoutArgs[0]).to.deep.include({allow_promotion_codes: false, payment_method_collection: 'if_required', customer: 'cus_1'});
 	});
 
 	it('refuses unknown prices, bad quantities and off-origin paths', async () => {
@@ -121,6 +154,63 @@ describe('ModuleBE_Stripe - checkout and portal', () => {
 	it('without a customer resolver, checkout fails loudly', async () => {
 		const stripe = new TestStripe_Class();
 		expect(await stripe.createCheckoutSession({priceId: 'price_basic', mode: 'payment', successPath: '/a', cancelPath: '/b'}).then(() => 'ok', e => e.constructor.name)).to.equal('ImplementationMissingException');
+	});
+});
+
+describe('ModuleBE_Stripe - customer, coupons, promotion codes', () => {
+	it('updates email and invoice email locales', async () => {
+		const stripe = new TestStripe_Class();
+		const customer = await stripe.updateCustomer({customerId: 'cus_1', email: 'a@b.nl', invoiceEmail: {locales: ['nl', 'en']}});
+		expect(customer).to.deep.equal({id: 'cus_1', email: 'a@b.nl', invoiceEmail: {locales: ['nl']}});
+		expect(stripe.customerArgs[0]).to.deep.equal({id: 'cus_1', args: {email: 'a@b.nl', preferred_locales: ['nl', 'en']}});
+		await stripe.updateCustomer({customerId: 'cus_1', invoiceEmail: {locales: []}});
+		expect(stripe.customerArgs[1]).to.deep.equal({id: 'cus_1', args: {preferred_locales: []}});
+	});
+
+	it('refuses a customer update with nothing to change', async () => {
+		const stripe = new TestStripe_Class();
+		expect(await stripe.updateCustomer({customerId: 'cus_1'}).then(() => 'ok', () => 'refused')).to.equal('refused');
+		expect(stripe.customerArgs).to.have.length(0);
+	});
+
+	it('creates a percent coupon and deletes it', async () => {
+		const stripe = new TestStripe_Class();
+		expect((await stripe.createCoupon({percentOff: 10, name: 'Ten'})).id).to.equal('coupon_1');
+		expect(stripe.couponArgs[0]).to.deep.equal({percent_off: 10, name: 'Ten'});
+		await stripe.createCoupon({amountOff: 500, currency: 'eur', duration: 'repeating', durationInMonths: 3});
+		expect(stripe.couponArgs[1]).to.deep.equal({amount_off: 500, currency: 'eur', duration: 'repeating', duration_in_months: 3});
+		expect(await stripe.deleteCoupon('coupon_1')).to.deep.equal({id: 'coupon_1', deleted: true});
+		expect(stripe.couponDeletes).to.deep.equal(['coupon_1']);
+	});
+
+	it('refuses a coupon that sets both discounts or a repeating duration without months', async () => {
+		const stripe = new TestStripe_Class();
+		const attempts = [
+			{percentOff: 10, amountOff: 500, currency: 'eur'},
+			{},
+			{percentOff: 10, duration: 'repeating' as const},
+			{amountOff: 500},
+			{percentOff: 10, duration: 'once' as const, durationInMonths: 2},
+		];
+		for (const attempt of attempts)
+			expect(await stripe.createCoupon(attempt).then(() => 'ok', () => 'refused'), JSON.stringify(attempt)).to.equal('refused');
+		expect(stripe.couponArgs).to.have.length(0);
+	});
+
+	it('creates, lists and activates promotion codes through the coupon promotion', async () => {
+		const stripe = new TestStripe_Class();
+		const created = await stripe.createPromotionCode({couponId: 'coupon_1', code: 'SAVE', active: false, firstTimeTransaction: true});
+		expect(created).to.deep.include({id: 'promo_1', code: 'SAVE', couponId: 'coupon_1', active: false});
+		expect(stripe.promotionCreates[0]).to.deep.equal({
+			promotion: {type: 'coupon', coupon: 'coupon_1'}, code: 'SAVE', active: false, restrictions: {first_time_transaction: true},
+		});
+		expect(stripe.promotionCreates[0]).to.not.have.property('coupon');
+		const page = await stripe.listPromotionCodes({couponId: 'coupon_1', active: true});
+		expect(page.codes[0].couponId).to.equal('coupon_1');
+		expect(page.hasMore).to.equal(false);
+		expect(stripe.promotionLists[0]).to.deep.equal({coupon: 'coupon_1', active: true});
+		expect((await stripe.updatePromotionCode({id: 'promo_1', active: false})).active).to.equal(false);
+		expect(stripe.promotionUpdates[0]).to.deep.equal({id: 'promo_1', args: {active: false}});
 	});
 });
 

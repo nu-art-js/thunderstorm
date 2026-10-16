@@ -1,7 +1,7 @@
 {
   "name": "@nu-art/stripe-backend",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "Stripe backend: ModuleBE_Stripe (lazy Secret Manager key, checkout and portal sessions, signed idempotent webhooks, app hooks) and ModuleBE_StripeAPI",
+  "description": "Stripe backend: ModuleBE_Stripe (lazy Secret Manager key, checkout and portal sessions, customer updates, coupons, promotion codes, signed idempotent webhooks, app hooks) and ModuleBE_StripeAPI",
   "keywords": ["TacB0sS", "infra", "nu-art", "stripe", "payments", "thunderstorm", "typescript"],
   "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},

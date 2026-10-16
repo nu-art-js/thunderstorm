@@ -1,7 +1,23 @@
 import {HttpCodes} from '@nu-art/api-types';
 import {ModuleBE_SecretManager} from '@nu-art/google-services-backend';
-import {appUrl, type StripeCheckoutRequest, type StripePortalRequest, type StripeRedirect} from '@nu-art/stripe-shared';
-import {Dispatcher, ImplementationMissingException, LogLevel, Minute, Module} from '@nu-art/ts-common';
+import {
+	appUrl,
+	type StripeCheckoutRequest,
+	type StripeCoupon,
+	type StripeCouponCreate,
+	type StripeCouponDeleted,
+	type StripeCouponDuration,
+	type StripeCustomer,
+	type StripeCustomerUpdate,
+	type StripePortalRequest,
+	type StripePromotionCode,
+	type StripePromotionCodeCreate,
+	type StripePromotionCodeList,
+	type StripePromotionCodePage,
+	type StripePromotionCodeUpdate,
+	type StripeRedirect,
+} from '@nu-art/stripe-shared';
+import {BadImplementationException, Dispatcher, ImplementationMissingException, LogLevel, Minute, Module} from '@nu-art/ts-common';
 import Stripe from 'stripe';
 import {RtdbStripeEventLedger, type StripeEventLedger} from './event-ledger.js';
 
@@ -51,6 +67,8 @@ const SubscriptionEvents = ['customer.subscription.created', 'customer.subscript
 
 export type StripeClient = Pick<Stripe, 'checkout' | 'billingPortal' | 'webhooks'>;
 
+type StripeBillingClient = StripeClient & Pick<Stripe, 'customers' | 'coupons' | 'promotionCodes'>;
+
 export type StripeWebhookResult = { status: 'processed' | 'duplicate'; eventId: string; type: string };
 
 export class ModuleBE_Stripe_Class
@@ -95,6 +113,8 @@ export class ModuleBE_Stripe_Class
 			cancel_url: this.appUrl(request.cancelPath),
 			...(customer.customerId ? {customer: customer.customerId} : customer.email ? {customer_email: customer.email} : {}),
 			...(customer.clientReferenceId ? {client_reference_id: customer.clientReferenceId} : {}),
+			...(request.allowPromotionCodes !== undefined ? {allow_promotion_codes: request.allowPromotionCodes} : {}),
+			...(request.paymentMethodCollection ? {payment_method_collection: request.paymentMethodCollection} : {}),
 		});
 		if (!session.url)
 			throw HttpCodes._5XX.SERVICE_UNAVAILABLE('Stripe returned no checkout url', `session ${session.id}`);
@@ -113,6 +133,74 @@ export class ModuleBE_Stripe_Class
 			return_url: this.appUrl(request.returnPath),
 		});
 		return {url: session.url};
+	}
+
+	async updateCustomer(request: StripeCustomerUpdate): Promise<StripeCustomer> {
+		if (!request.customerId)
+			throw HttpCodes._4XX.BAD_REQUEST('Missing customer', 'customerId');
+
+		const locales = request.invoiceEmail?.locales;
+		if (request.email === undefined && locales === undefined)
+			throw HttpCodes._4XX.BAD_REQUEST('Empty customer update', 'email or invoiceEmail.locales');
+
+		const customer = await (await this.billingClient()).customers.update(request.customerId, {
+			...(request.email !== undefined ? {email: request.email} : {}),
+			...(locales !== undefined ? {preferred_locales: [...locales]} : {}),
+		});
+		this.logInfo(`customer=${customer.id} action=update`);
+		return this.customer(customer);
+	}
+
+	async createCoupon(request: StripeCouponCreate): Promise<StripeCoupon> {
+		const coupon = await (await this.billingClient()).coupons.create(this.couponParams(request));
+		this.logInfo(`coupon=${coupon.id} action=create`);
+		return this.coupon(coupon);
+	}
+
+	async deleteCoupon(id: string): Promise<StripeCouponDeleted> {
+		if (!id)
+			throw HttpCodes._4XX.BAD_REQUEST('Missing coupon', 'id');
+
+		const deleted = await (await this.billingClient()).coupons.del(id);
+		this.logInfo(`coupon=${deleted.id} action=delete`);
+		return {id: deleted.id, deleted: true};
+	}
+
+	async createPromotionCode(request: StripePromotionCodeCreate): Promise<StripePromotionCode> {
+		if (!request.couponId)
+			throw HttpCodes._4XX.BAD_REQUEST('Missing coupon', 'couponId');
+
+		const created = await (await this.billingClient()).promotionCodes.create({
+			promotion: {type: 'coupon', coupon: request.couponId},
+			...(request.code !== undefined ? {code: request.code} : {}),
+			...(request.active !== undefined ? {active: request.active} : {}),
+			...(request.customerId ? {customer: request.customerId} : {}),
+			...(request.expiresAt !== undefined ? {expires_at: request.expiresAt} : {}),
+			...(request.maxRedemptions !== undefined ? {max_redemptions: request.maxRedemptions} : {}),
+			...(request.firstTimeTransaction !== undefined ? {restrictions: {first_time_transaction: request.firstTimeTransaction}} : {}),
+		});
+		this.logInfo(`promotion_code=${created.id} action=create`);
+		return this.promotionCode(created);
+	}
+
+	async listPromotionCodes(request: StripePromotionCodeList = {}): Promise<StripePromotionCodePage> {
+		const page = await (await this.billingClient()).promotionCodes.list({
+			...(request.couponId ? {coupon: request.couponId} : {}),
+			...(request.code ? {code: request.code} : {}),
+			...(request.active !== undefined ? {active: request.active} : {}),
+			...(request.customerId ? {customer: request.customerId} : {}),
+			...(request.limit !== undefined ? {limit: request.limit} : {}),
+		});
+		return {codes: page.data.map(code => this.promotionCode(code)), hasMore: page.has_more};
+	}
+
+	async updatePromotionCode(request: StripePromotionCodeUpdate): Promise<StripePromotionCode> {
+		if (!request.id)
+			throw HttpCodes._4XX.BAD_REQUEST('Missing promotion code', 'id');
+
+		const updated = await (await this.billingClient()).promotionCodes.update(request.id, {active: request.active});
+		this.logInfo(`promotion_code=${updated.id} active=${updated.active}`);
+		return this.promotionCode(updated);
 	}
 
 	/**
@@ -158,6 +246,83 @@ export class ModuleBE_Stripe_Class
 			await dispatch_onStripeSubscriptionChanged.dispatchModuleAsync(event.data.object as Stripe.Subscription, event);
 	}
 
+	private couponParams(request: StripeCouponCreate): Stripe.CouponCreateParams {
+		if (request.duration === 'repeating' && !(request.durationInMonths !== undefined && request.durationInMonths > 0))
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid coupon', 'repeating duration requires durationInMonths');
+
+		if (request.duration !== 'repeating' && request.durationInMonths !== undefined)
+			throw HttpCodes._4XX.BAD_REQUEST('Invalid coupon', 'durationInMonths requires duration repeating');
+
+		const common: Stripe.CouponCreateParams = {
+			...(request.duration ? {duration: request.duration} : {}),
+			...(request.durationInMonths !== undefined ? {duration_in_months: request.durationInMonths} : {}),
+			...(request.id ? {id: request.id} : {}),
+			...(request.name ? {name: request.name} : {}),
+			...(request.maxRedemptions !== undefined ? {max_redemptions: request.maxRedemptions} : {}),
+			...(request.redeemBy !== undefined ? {redeem_by: request.redeemBy} : {}),
+		};
+		const percentOff = request.percentOff;
+		const amountOff = request.amountOff;
+		if (percentOff !== undefined && amountOff === undefined)
+			return {...common, percent_off: percentOff};
+
+		if (amountOff !== undefined && percentOff === undefined) {
+			if (!request.currency)
+				throw HttpCodes._4XX.BAD_REQUEST('Invalid coupon', 'amountOff requires currency');
+
+			return {...common, amount_off: amountOff, currency: request.currency};
+		}
+
+		throw HttpCodes._4XX.BAD_REQUEST('Invalid coupon', 'Set percentOff or amountOff');
+	}
+
+	private customer(customer: Stripe.Customer): StripeCustomer {
+		return {
+			id: customer.id,
+			email: customer.email,
+			invoiceEmail: {locales: customer.preferred_locales ? [...customer.preferred_locales] : []},
+		};
+	}
+
+	private coupon(coupon: Stripe.Coupon): StripeCoupon {
+		return {
+			id: coupon.id,
+			name: coupon.name,
+			percentOff: coupon.percent_off,
+			amountOff: coupon.amount_off,
+			currency: coupon.currency,
+			duration: this.couponDuration(coupon.duration),
+			durationInMonths: coupon.duration_in_months,
+			valid: coupon.valid,
+		};
+	}
+
+	private couponDuration(duration: Stripe.Coupon.Duration): StripeCouponDuration {
+		if (duration === 'forever')
+			return 'forever';
+
+		if (duration === 'once')
+			return 'once';
+
+		if (duration === 'repeating')
+			return 'repeating';
+
+		throw new BadImplementationException(`coupon duration=${duration}`);
+	}
+
+	private promotionCode(code: Stripe.PromotionCode): StripePromotionCode {
+		const coupon = code.promotion.coupon;
+		return {
+			id: code.id,
+			code: code.code,
+			active: code.active,
+			couponId: typeof coupon === 'string' ? coupon : coupon?.id ?? null,
+			expiresAt: code.expires_at,
+			maxRedemptions: code.max_redemptions,
+			timesRedeemed: code.times_redeemed,
+		};
+	}
+
 	private async resolveCustomer(): Promise<StripeCustomerContext> {
 		if (!this.customerResolver)
 			throw new ImplementationMissingException('ModuleBE_Stripe needs setCustomerResolver() before checkout or portal');
@@ -191,6 +356,10 @@ export class ModuleBE_Stripe_Class
 
 	protected createClient(secretKey: string): StripeClient {
 		return new Stripe(secretKey);
+	}
+
+	private async billingClient(): Promise<StripeBillingClient> {
+		return await this.getClient() as StripeBillingClient;
 	}
 
 	private getClient(): Promise<StripeClient> {

@@ -1,6 +1,6 @@
 import {HttpCodes} from '@nu-art/api-types';
 import {ApiHandler, MemKey_HttpRequest} from '@nu-art/http-server';
-import {ApiDef_Stripe, type API_Stripe} from '@nu-art/stripe-shared';
+import {ApiDef_Stripe, ApiDef_StripeAdmin, type API_Stripe, type API_StripeAdmin} from '@nu-art/stripe-shared';
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_Stripe} from './ModuleBE_Stripe.js';
 
@@ -42,6 +42,36 @@ export class ModuleBE_StripeAPI_Class
 	@ApiHandler(ApiDef_Stripe.portal)
 	async portal(body: API_Stripe['portal']['Body']): Promise<API_Stripe['portal']['Response']> {
 		return ModuleBE_Stripe.createPortalSession(body);
+	}
+
+	@ApiHandler(ApiDef_StripeAdmin.updateCustomer)
+	async updateCustomer(body: API_StripeAdmin['updateCustomer']['Body']): Promise<API_StripeAdmin['updateCustomer']['Response']> {
+		return ModuleBE_Stripe.updateCustomer(body);
+	}
+
+	@ApiHandler(ApiDef_StripeAdmin.createCoupon)
+	async createCoupon(body: API_StripeAdmin['createCoupon']['Body']): Promise<API_StripeAdmin['createCoupon']['Response']> {
+		return ModuleBE_Stripe.createCoupon(body);
+	}
+
+	@ApiHandler(ApiDef_StripeAdmin.deleteCoupon)
+	async deleteCoupon(params: API_StripeAdmin['deleteCoupon']['Params']): Promise<API_StripeAdmin['deleteCoupon']['Response']> {
+		return ModuleBE_Stripe.deleteCoupon(params.id);
+	}
+
+	@ApiHandler(ApiDef_StripeAdmin.createPromotionCode)
+	async createPromotionCode(body: API_StripeAdmin['createPromotionCode']['Body']): Promise<API_StripeAdmin['createPromotionCode']['Response']> {
+		return ModuleBE_Stripe.createPromotionCode(body);
+	}
+
+	@ApiHandler(ApiDef_StripeAdmin.listPromotionCodes)
+	async listPromotionCodes(params: API_StripeAdmin['listPromotionCodes']['Params']): Promise<API_StripeAdmin['listPromotionCodes']['Response']> {
+		return ModuleBE_Stripe.listPromotionCodes(params);
+	}
+
+	@ApiHandler(ApiDef_StripeAdmin.updatePromotionCode)
+	async updatePromotionCode(body: API_StripeAdmin['updatePromotionCode']['Body']): Promise<API_StripeAdmin['updatePromotionCode']['Response']> {
+		return ModuleBE_Stripe.updatePromotionCode(body);
 	}
 
 	/** rawBody: the global body parsers skip this route, so the signature is checked against the exact bytes. */

@@ -1,7 +1,7 @@
 {
   "name": "@nu-art/stripe-frontend",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "Stripe frontend: ModuleFE_Stripe (start checkout, open the customer portal)",
+  "description": "Stripe frontend: ModuleFE_Stripe (start checkout, open the customer portal, admin callers)",
   "keywords": ["TacB0sS", "infra", "nu-art", "stripe", "payments", "thunderstorm", "typescript"],
   "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
