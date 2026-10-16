@@ -5,7 +5,8 @@
  */
 
 import {useState} from 'react';
-import {Button} from '@nu-art/thunder-widgets/v3';
+import {Button, LL_V_L, TS_PropRenderer} from '@nu-art/thunder-widgets';
+import {TS_Input} from '@nu-art/thunder-widgets/v3';
 import {ModuleFE_PasskeyAuth} from '../../ModuleFE_PasskeyAuth.js';
 import {ModuleFE_PasskeyCredentialDB} from '../../_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
 import './Component_PasskeyRegister.scss';
@@ -23,9 +24,9 @@ export const Component_PasskeyRegister = (props: Props) => {
 	const [inProgress, setInProgress] = useState(false);
 
 	if (!ModuleFE_PasskeyAuth.browserSupportsPasskeys())
-		return <div className={'ts-passkey-register__unsupported'}>
-			Your browser does not support passkeys.
-		</div>;
+		return <LL_V_L className={'ts-passkey-register'}>
+			<div className={'ts-passkey-register__unsupported'}>Your browser does not support passkeys.</div>
+		</LL_V_L>;
 
 	const onRegister = async () => {
 		setError(undefined);
@@ -51,24 +52,27 @@ export const Component_PasskeyRegister = (props: Props) => {
 		}
 	};
 
-	return <div className={'ts-passkey-register'}>
-		<input
-			className={'ts-passkey-register__input'}
-			type={'text'}
-			value={label}
-			onChange={e => setLabel(e.target.value)}
-			placeholder={'Passkey name (e.g. "MacBook Pro")'}
-			disabled={inProgress}
-		/>
+	return <LL_V_L className={'ts-passkey-register'}>
+		<TS_PropRenderer.Vertical label={'Passkey name'}>
+			<TS_Input
+				id={'passkey-register-label'}
+				type={'text'}
+				value={label}
+				placeholder={'MacBook Pro'}
+				disabled={inProgress}
+				onChange={setLabel}
+			/>
+		</TS_PropRenderer.Vertical>
 		{error && <div className={'ts-passkey-register__error'}>{error}</div>}
-		{success && <div className={'ts-passkey-register__success'}>Passkey registered successfully!</div>}
+		{success && <div className={'ts-passkey-register__success'}>Passkey registered.</div>}
 		<Button
+			id={'passkey-register-add'}
 			variant={'primary'}
-			className={'ts-passkey-register__button'}
-			onClick={onRegister}
+			actionInProgress={inProgress}
 			disabled={inProgress}
+			onClick={() => void onRegister()}
 		>
-			{inProgress ? 'Registering...' : (props.text ?? 'Add passkey')}
+			{props.text ?? 'Add passkey'}
 		</Button>
-	</div>;
+	</LL_V_L>;
 };

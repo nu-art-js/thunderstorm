@@ -1,33 +1,32 @@
 .ts-passkey-register {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
+	gap: var(--space-sm);
 	width: 100%;
+	color: var(--color-text-primary);
+	font-size: var(--font-size-base);
 
-	&__input {
-		padding: 8px 12px;
-		border: 1px solid var(--color-border, #ccc);
-		border-radius: 4px;
-		font-size: 0.9rem;
+	.ts-prop-renderer {
+		width: 100%;
+		gap: var(--space-xs);
 	}
 
-	&__button {
-		width: 100%;
+	.ts-prop-renderer__label {
+		color: var(--color-text-primary);
+		font-size: var(--font-size-base);
+		font-weight: var(--font-weight-medium);
 	}
 
 	&__error {
-		color: var(--color-error, #d32f2f);
-		font-size: 0.85rem;
+		color: var(--color-state-danger);
+		font-size: var(--font-size-base);
 	}
 
 	&__success {
-		color: var(--color-success, #388e3c);
-		font-size: 0.85rem;
+		color: var(--color-state-success);
+		font-size: var(--font-size-base);
 	}
 
 	&__unsupported {
-		color: var(--color-text-muted, #888);
-		font-size: 0.85rem;
-		font-style: italic;
+		color: var(--color-text-muted);
+		font-size: var(--font-size-base);
 	}
 }

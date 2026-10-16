@@ -5,7 +5,7 @@
  */
 
 import {useState} from 'react';
-import {Button} from '@nu-art/thunder-widgets/v3';
+import {Button, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
 import type {DB_PasskeyCredential} from '@nu-art/passkey-shared';
 import {ModuleFE_PasskeyAuth} from '../../ModuleFE_PasskeyAuth.js';
 import {ModuleFE_PasskeyCredentialDB} from '../../_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
@@ -31,31 +31,32 @@ export const Component_PasskeyCredentials = (props: Props) => {
 	};
 
 	if (props.credentials.length === 0)
-		return <div className={'ts-passkey-credentials__empty'}>
-			No passkeys registered. Add one to enable passwordless login.
-		</div>;
+		return <LL_V_L className={'ts-passkey-credentials'}>
+			<div className={'ts-passkey-credentials__empty'}>No passkeys yet. Add one to sign in on the apex.</div>
+		</LL_V_L>;
 
-	return <div className={'ts-passkey-credentials'}>
+	return <LL_V_L className={'ts-passkey-credentials'}>
 		{props.credentials.map(credential => (
-			<div key={credential._id} className={'ts-passkey-credentials__item'}>
-				<div className={'ts-passkey-credentials__info'}>
-					<span className={'ts-passkey-credentials__label'}>{credential.label}</span>
-					<span className={'ts-passkey-credentials__meta'}>
+			<LL_H_C key={credential._id} className={'ts-passkey-credentials__item'}>
+				<LL_V_L className={'ts-passkey-credentials__info'}>
+					<div className={'ts-passkey-credentials__label'}>{credential.label}</div>
+					<div className={'ts-passkey-credentials__meta'}>
 						{credential.lastUsedAt
-							? `Last used: ${new Date(credential.lastUsedAt).toLocaleDateString()}`
+							? `Last used ${new Date(credential.lastUsedAt).toLocaleDateString()}`
 							: 'Never used'}
-						{credential.backedUp && ' • Synced'}
-					</span>
-				</div>
+						{credential.backedUp && ' · Synced'}
+					</div>
+				</LL_V_L>
 				<Button
-					variant={'danger'}
-					className={'ts-passkey-credentials__delete'}
-					onClick={() => onDelete(credential)}
+					id={`passkey-remove-${credential._id}`}
+					variant={'dangerous'}
+					actionInProgress={deletingId === credential.credentialId}
 					disabled={deletingId === credential.credentialId}
+					onClick={() => void onDelete(credential)}
 				>
-					{deletingId === credential.credentialId ? 'Removing...' : 'Remove'}
+					Remove
 				</Button>
-			</div>
+			</LL_H_C>
 		))}
-	</div>;
+	</LL_V_L>;
 };

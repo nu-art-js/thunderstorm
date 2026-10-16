@@ -5,7 +5,7 @@
  */
 
 import {useState} from 'react';
-import {Button} from '@nu-art/thunder-widgets/v3';
+import {Button, LL_V_L} from '@nu-art/thunder-widgets';
 import {ModuleFE_PasskeyAuth} from '../../ModuleFE_PasskeyAuth.js';
 import './Component_PasskeyLogin.scss';
 
@@ -37,15 +37,15 @@ export const Component_PasskeyLogin = (props: Props) => {
 		}
 	};
 
-	return <div className={'ts-passkey-login'}>
+	return <LL_V_L className={'ts-passkey-login'}>
 		{error && <div className={'ts-passkey-login__error'}>{error}</div>}
 		<Button
 			variant={'secondary'}
-			className={'ts-passkey-login__button'}
-			onClick={onLogin}
+			actionInProgress={inProgress}
 			disabled={inProgress}
+			onClick={() => void onLogin()}
 		>
-			{inProgress ? 'Authenticating...' : (props.text ?? 'Sign in with passkey')}
+			{props.text ?? 'Sign in with passkey'}
 		</Button>
-	</div>;
+	</LL_V_L>;
 };

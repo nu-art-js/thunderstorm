@@ -1,15 +1,11 @@
 .ts-passkey-login {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
+	gap: var(--space-sm);
 	width: 100%;
-
-	&__button {
-		width: 100%;
-	}
+	color: var(--color-text-primary);
+	font-size: var(--font-size-base);
 
 	&__error {
-		color: var(--color-error, #d32f2f);
-		font-size: 0.85rem;
+		color: var(--color-state-danger);
+		font-size: var(--font-size-base);
 	}
 }

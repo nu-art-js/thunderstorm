@@ -50,6 +50,14 @@ type PendingChallenge = {
 	challenge: string;
 	accountId?: string;
 	createdAt: number;
+	/** Page origin that requested the ceremony. Verification accepts only this origin. */
+	origin: string;
+	/** Relying-party id sent to the browser. Login and registration must share it. */
+	rpId: string;
+};
+
+export type PasskeyOriginBinding = {
+	rpId: string;
 };
 
 export class ModuleBE_PasskeyAuth_Class
@@ -58,6 +66,7 @@ export class ModuleBE_PasskeyAuth_Class
 
 	private readonly pendingChallenges = new Map<string, PendingChallenge>();
 	private lastCredentialGuard?: (accountId: string) => Promise<void>;
+	private originResolver?: (origin: string) => PasskeyOriginBinding | undefined;
 
 	constructor() {
 		super();
@@ -69,30 +78,35 @@ export class ModuleBE_PasskeyAuth_Class
 		this.lastCredentialGuard = guard;
 	}
 
-	protected init(): void {
-		if (!this.config.rpName || this.config.allowedDomains.length === 0)
-			this.logWarningBold('Passkey module requires rpName and at least one allowedDomains entry to be configured.');
+	/**
+	 * Maps a browser origin to the relying-party id for that ceremony.
+	 * When it returns a binding, that origin is allowed and its rpId wins over allowedDomains.
+	 */
+	setOriginResolver(resolver: (origin: string) => PasskeyOriginBinding | undefined) {
+		this.originResolver = resolver;
 	}
 
-	private resolveDomainForRequest(): AllowedDomain {
+	protected init(): void {
+		const hasDomains = !!this.originResolver || this.config.allowedDomains.length > 0;
+		if (!this.config.rpName || !hasDomains)
+			this.logWarningBold('Passkey module requires rpName and an origin resolver or at least one allowedDomains entry.');
+	}
+
+	private resolveDomainForRequest(): {rpId: string; origin: string} {
 		const headers = MemKey_HttpRequestHeaders.get();
 		const requestOrigin = headers.origin;
 		if (!requestOrigin)
 			throw HttpCodes._4XX.BAD_REQUEST('Missing Origin header — cannot determine passkey domain');
 
+		const resolved = this.originResolver?.(requestOrigin);
+		if (resolved)
+			return {rpId: resolved.rpId, origin: requestOrigin};
+
 		const domain = this.config.allowedDomains.find(d => d.origins.includes(requestOrigin));
 		if (!domain)
 			throw HttpCodes._4XX.BAD_REQUEST(`Origin "${requestOrigin}" is not in the allowed passkey domains`);
 
-		return domain;
-	}
-
-	private getAllOrigins(): string[] {
-		return this.config.allowedDomains.flatMap(d => d.origins);
-	}
-
-	private getAllRpIds(): string[] {
-		return this.config.allowedDomains.map(d => d.rpId);
+		return {rpId: domain.rpId, origin: requestOrigin};
 	}
 
 	__collectAuthMethodStatus() {
@@ -147,6 +161,8 @@ export class ModuleBE_PasskeyAuth_Class
 			challenge: options.challenge,
 			accountId,
 			createdAt: Date.now(),
+			origin: domain.origin,
+			rpId: domain.rpId,
 		});
 
 		return {options: options as any};
@@ -169,8 +185,8 @@ export class ModuleBE_PasskeyAuth_Class
 			verification = await verifyRegistrationResponse({
 				response: body.attestationResponse as any,
 				expectedChallenge: pending.challenge,
-				expectedOrigin: this.getAllOrigins(),
-				expectedRPID: this.getAllRpIds(),
+				expectedOrigin: pending.origin,
+				expectedRPID: pending.rpId,
 			});
 		} catch (error: any) {
 			this.pendingChallenges.delete(accountId);
@@ -225,6 +241,8 @@ export class ModuleBE_PasskeyAuth_Class
 		this.pendingChallenges.set(challengeId, {
 			challenge: options.challenge,
 			createdAt: Date.now(),
+			origin: domain.origin,
+			rpId: domain.rpId,
 		});
 
 		return {options: options as any, challengeId};
@@ -272,8 +290,8 @@ export class ModuleBE_PasskeyAuth_Class
 			verification = await verifyAuthenticationResponse({
 				response: body.assertionResponse as any,
 				expectedChallenge: pending.challenge,
-				expectedOrigin: this.getAllOrigins(),
-				expectedRPID: this.getAllRpIds(),
+				expectedOrigin: pending.origin,
+				expectedRPID: pending.rpId,
 				credential: {
 					id: credential.credentialId,
 					publicKey: Buffer.from(credential.publicKey, 'base64url'),
