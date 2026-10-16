@@ -14,7 +14,7 @@ alwaysApply: false
 
 - **Subject:** whatever the app embeds. The library gives it no meaning.
 - **App-owned state:** the app keeps, per subject, its allowed origins and a `version`, in its own entity, read with permission-aware queries. It exposes them through `ModuleBE_Embeds.setSubjectResolver(subject => ...)`.
-- **Token:** `createToken({subject, origins, version})` signs an HS256 token. The key is `embed-signing-key` in Secret Manager, at least 32 characters, loaded on first use.
+- **Token:** `createToken({subject, origins, version})` signs an HS256 token. The key is `embed-signing-key` in Secret Manager, at least 32 characters. It is loaded on first use and created there when it is missing (`GeneratedSecret`). Creating it needs `secretmanager.secrets.create` and `secretmanager.versions.add` on the project, plus `secretmanager.versions.access` to read it.
 - **Revoking:** bump the subject's version. Every older token stops working.
 - **Removing an origin:** remove it from the subject. Tokens keep working only on the origins still allowed.
 

@@ -5,7 +5,11 @@ alwaysApply: false
 
 # How to use secrets (google-services)
 
-The `@nu-art/google-services` backend package provides `ModuleBE_SecretManager` and the `SecretKey` abstraction for managing secrets in GCP Secret Manager.
+The `@nu-art/google-services` backend package provides `ModuleBE_SecretManager`, `SecretKey`, and `GeneratedSecret`.
+
+A secret that is only a random value is a `GeneratedSecret`. The first `get()` creates it when it is missing and caches the value. Declare it at the use site; do not generate it from module `init`. Externally provided secrets (API keys) stay on `SecretKey` and fail when missing.
+
+The runtime service account needs `secretmanager.versions.access` (role `roles/secretmanager.secretAccessor`), plus `secretmanager.secrets.create` and `secretmanager.versions.add` on the project. `roles/secretmanager.editor` includes create and add but not `versions.access`, and it also includes delete. A 403 is not a missing secret.
 
 ---
 

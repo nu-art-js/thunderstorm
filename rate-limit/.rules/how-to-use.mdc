@@ -16,17 +16,14 @@ alwaysApply: false
 
 - A **policy** is defined in code: `{key, windowMs, limit}`. The key is stable and domain-agnostic (`'auth.login.ip'`), never a product noun.
 - A **subject** is what the policy counts against: an IP, an email, an account id. The app resolves it.
-- One bucket per (policy, subject), stored in the Realtime Database at `/state/RateLimit/buckets/<bucketId>` (module state via `ModuleBE_Firebase.createModuleStateFirebaseRef`). The id is a keyed digest (HMAC-SHA256 with a Secret Manager pepper), so no subject is stored in clear.
+- One bucket per (policy, subject), stored in the Realtime Database at `/state/RateLimit/buckets/<bucketId>` (module state via `ModuleBE_Firebase.createModuleStateFirebaseRef`). The id is a keyed digest (HMAC-SHA256 with a Secret Manager pepper), so no subject is stored in clear. The pepper is a `GeneratedSecret` (`rate-limit--pepper`): the first hit creates it when it is missing. An existing JSON-string payload is still accepted.
 - A hit is decided and written inside an RTDB transaction, so concurrent instances cannot both take the last slot. Refused hits are not recorded.
 - A bucket whose window has passed is rewritten (cleaned up) the next time its key is touched.
 
 ## Setup
 
 1. Add `ModulePackBE_RateLimit` to Storm (infra packs before app modules).
-2. Create the pepper secret (a JSON string, read through `SecretKey`). Default name `rate-limit--pepper`:
-   ```bash
-   printf '"%s"' "$(openssl rand -hex 32)" | gcloud secrets create rate-limit--pepper --data-file=-
-   ```
+2. The pepper secret (`rate-limit--pepper`) is created on the first rate-limit hit when it is missing. The runtime service account needs `secretmanager.secrets.create` and `secretmanager.versions.add` on the project, plus `secretmanager.versions.access` to read it. A permission error fails the request; it is not treated as a missing secret.
 3. Optional RTDB `_config/<plane>/ModuleBE_RateLimit`:
    ```json
    {"pepperSecretName": "rate-limit--pepper", "policies": {"auth.login.ip": {"limit": 20}}, "rejectMessage": "Too many requests. Please try again later."}

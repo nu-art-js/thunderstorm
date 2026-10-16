@@ -33,7 +33,8 @@
     "googleapis": "?"
   },
   "devDependencies": {
-    "@google-cloud/resource-manager": "^6.2.0"
+    "@google-cloud/resource-manager": "^6.2.0",
+    "@nu-art/testalot": "?"
   },
   "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {
