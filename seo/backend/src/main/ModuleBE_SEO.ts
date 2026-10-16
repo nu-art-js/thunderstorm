@@ -1,48 +1,81 @@
+/*
+ * @nu-art/seo-backend - Per-locale HTML shells and SEO files through the i18n translator
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import {_ServerQueryApi, HttpServer, MemKey_HttpRequest, MemKey_HttpResponse} from '@nu-art/http-server';
-import {detectLocale, resolveRequestLocale} from '@nu-art/i18n-shared';
+import {detectLocale, resolveRequestLocale, type I18N_Params} from '@nu-art/i18n-shared';
 import {
+	assertSeoHosting,
+	assertSeoLinks,
+	assertSeoPages,
+	assertSeoSite,
+	collectSitemapPaths,
+	fillSeoPath,
+	isConcreteSeoPath,
 	localeFromUrlSegment,
 	localeLanguageTag,
 	localizedPath,
-	type LlmsTxtDef,
+	matchSeoPage,
 	renderLlmsTxt,
+	renderRobotsTxt,
 	renderSeoShell,
+	renderSitemapXml,
+	renderWebManifest,
+	requestHostFromHeaders,
+	resolveSiteOrigin,
+	selectSeoSite,
+	SeoShareImageSize,
+	splitLocalizedRequest,
 	type SeoBundle,
-	type SeoPageDef
+	type SeoPageDef,
+	type SeoPageResolution,
+	type SeoSiteDef,
 } from '@nu-art/seo-shared';
 import {BadImplementationException, ImplementationMissingException, Module} from '@nu-art/ts-common';
 import type {SeoTextsSource} from './texts-source.js';
 
 type Config = {
-	/** Public origin (`https://example.com`): canonical and hreflang URLs. */
-	baseUrl: string;
-	/** x-default and the fallback when nothing matches. */
-	defaultLocale: string;
-	bundle: SeoBundle;
-	siteName?: string;
-	/** Seconds browsers and the CDN may cache a shell or llms.txt. */
+	/** Env key whose origin the site def declares (`local`, `dev`, `prod`). */
+	env: string;
+	/**
+	 * Frontend assets per site key. Hashes change per hosting build, so this stays on the
+	 * module config (RTDB) rather than the site def.
+	 */
+	bundles: Record<string, SeoBundle>;
+	/** Seconds browsers and the CDN may cache a shell or SEO file. */
 	cacheMaxAgeSec: number;
-	/** Serve `/` as a redirect to the visitor's locale (lang param, then Accept-Language, then default). */
+	/** Serve `/` as a redirect to the visitor's locale (lang param, then Accept-Language, then the site default). */
 	rootRedirect: boolean;
 };
 
-export type SeoResponse = { status: number; body: string; contentType: string; headers: Record<string, string> };
+export type SeoResponse = {status: number; body: string; contentType: string; headers: Record<string, string>};
+
+type Active = {site: SeoSiteDef; pages: SeoPageDef[]; origin: string};
 
 /**
- * Per-locale HTML shells (`/<locale><path>`) and llms.txt (`/llms.txt?lang=`, `/<locale>/llms.txt`),
- * rendered through the i18n translator (overrides as plain text, permission-aware reads).
+ * HTML shells and SEO files for every registered site.
+ * The request host selects the site (`x-fh-requested-host`, then `x-forwarded-host`, then `host`).
+ * One site may omit `hosts` and then answers every host. Locales are the site's `enabledLocales`.
+ * Nothing is read from or written to the database, and locale is never stored in a cookie.
+ *
+ * Register each site and its pages before init. Routes:
+ * `/<locale><path>`, `/robots.txt`, `/sitemap.xml`, `/site.webmanifest`,
+ * `/llms.txt?lang=` and `/<locale>/llms.txt`,
+ * and `/` when `rootRedirect` is on.
  */
 export class ModuleBE_SEO_Class
 	extends Module<Config> {
 
-	private readonly pages: SeoPageDef[] = [];
-	private llms?: LlmsTxtDef;
+	private readonly sites = new Map<string, SeoSiteDef>();
+	private readonly pages = new Map<string, SeoPageDef[]>();
 	private texts?: SeoTextsSource;
 	private server: () => HttpServer = () => HttpServer.getDefault();
 
 	constructor() {
 		super();
-		this.setDefaultConfig({defaultLocale: 'en_US', bundle: {scripts: [], styles: []}, cacheMaxAgeSec: 300, rootRedirect: false});
+		this.setDefaultConfig({env: 'local', bundles: {}, cacheMaxAgeSec: 300, rootRedirect: false});
 	}
 
 	setTextsSource(texts: SeoTextsSource) {
@@ -53,79 +86,164 @@ export class ModuleBE_SEO_Class
 		this.server = server;
 	}
 
-	/** Register before init. Paths are locale-less and unique. */
-	registerPages(...pages: SeoPageDef[]) {
-		for (const page of pages) {
-			if (this.pages.some(existing => existing.key === page.key || existing.path === page.path))
-				throw new BadImplementationException(`Duplicate SEO page '${page.key}' (${page.path})`);
+	/** Register before init. Host selects which site a request renders. */
+	registerSite(site: SeoSiteDef, pages: readonly SeoPageDef[]) {
+		assertSeoSite(site);
+		assertSeoPages(pages);
+		assertSeoLinks(site, pages);
+		if (this.sites.has(site.key))
+			throw new BadImplementationException(`Duplicate SEO site '${site.key}'`);
 
-			this.pages.push(page);
-		}
-	}
-
-	setLlmsTxt(def: LlmsTxtDef) {
-		this.llms = def;
+		assertSeoHosting([...this.sites.values(), site]);
+		this.sites.set(site.key, site);
+		this.pages.set(site.key, [...pages]);
 	}
 
 	protected init() {
 		const server = this.server();
-		// Fixed paths first: `/:locale` would otherwise also match `/llms.txt`.
-		if (this.llms) {
-			this.route(server, '/llms.txt', () => this.renderLlms(undefined, this.query('lang')));
-			this.route(server, '/:locale/llms.txt', () => this.renderLlms(this.param('locale')));
-		}
-
+		// Fixed paths first: `/:locale` would otherwise also match `/llms.txt` and `/robots.txt`.
+		this.route(server, '/robots.txt', () => this.renderRobots());
+		this.route(server, '/sitemap.xml', () => this.renderSitemap());
+		this.route(server, '/site.webmanifest', () => this.renderManifest());
+		this.route(server, '/llms.txt', () => this.renderLlms(undefined, this.query('lang')));
+		this.route(server, '/:locale/llms.txt', () => this.renderLlms(this.param('locale')));
 		if (this.config.rootRedirect)
 			this.route(server, '/', () => this.redirectToLocale(this.query('lang'), this.header('accept-language')));
 
-		for (const page of this.pages)
-			this.route(server, `/:locale${page.path === '/' ? '' : page.path}`, () => this.renderPage(this.param('locale'), page.key));
+		this.route(server, '/:locale', () => this.renderFromRequest());
+		this.route(server, '/:locale/*', () => this.renderFromRequest());
 	}
 
-	async renderPage(localeSegment: string, pageKey: string): Promise<SeoResponse> {
-		const page = this.pages.find(candidate => candidate.key === pageKey);
-		if (!page)
-			throw new BadImplementationException(`Unknown SEO page '${pageKey}'`);
+	async renderPage(localeSegment: string, pagePath: string, host?: string, query: Readonly<Record<string, string>> = {}): Promise<SeoResponse> {
+		const active = this.active(host);
+		if (!active)
+			return this.notFound();
 
-		const locales = await this.textsSource().enabledLocales();
-		const locale = localeFromUrlSegment(localeSegment, locales);
+		const {site, pages, origin} = active;
+		const locale = localeFromUrlSegment(localeSegment, site.enabledLocales);
 		if (!locale)
 			return this.notFound();
 
-		const t = await this.textsSource().translator(locale);
+		const matched = matchSeoPage(pages, pagePath);
+		if (!matched)
+			return this.notFound();
+
+		const requestHost = host ?? this.requestHost();
+		const resolution = matched.page.resolve
+			? await matched.page.resolve({host: requestHost, path: pagePath, pathParams: matched.pathParams, query})
+			: {};
+		if (!resolution)
+			return this.notFound();
+
+		const rendered = this.concrete(matched.page, matched.pathParams, resolution);
+		const params: I18N_Params = {...rendered.pathParams, ...resolution.params};
 		const body = renderSeoShell({
-			page, t, locale, locales,
-			defaultLocale: locales.includes(this.config.defaultLocale) ? this.config.defaultLocale : locales[0],
-			baseUrl: this.baseUrl(), bundle: this.config.bundle, siteName: this.config.siteName,
+			site, page: matched.page, locale, origin, params,
+			path: rendered.path,
+			image: resolution.image,
+			noindex: resolution.noindex,
+			t: await this.textsSource().translator(locale),
+			bundle: this.bundle(site.key),
 		});
 		return this.ok(body, 'text/html; charset=utf-8', {'content-language': localeLanguageTag(locale)});
 	}
 
-	/** `/llms.txt?lang=` (explicit choice or default) or `/<locale>/llms.txt`. */
-	async renderLlms(localeSegment?: string, lang?: string): Promise<SeoResponse> {
-		if (!this.llms)
+	renderRobots(host?: string): SeoResponse {
+		const active = this.active(host);
+		if (!active)
 			return this.notFound();
 
-		const locales = await this.textsSource().enabledLocales();
+		return this.ok(renderRobotsTxt(active.site, active.origin, active.pages), 'text/plain; charset=utf-8');
+	}
+
+	async renderSitemap(host?: string): Promise<SeoResponse> {
+		const active = this.active(host);
+		if (!active)
+			return this.notFound();
+
+		const paths = await collectSitemapPaths(active.pages);
+		return this.ok(renderSitemapXml(active.site, active.origin, paths), 'application/xml; charset=utf-8');
+	}
+
+	async renderManifest(host?: string): Promise<SeoResponse> {
+		const active = this.active(host);
+		if (!active)
+			return this.notFound();
+
+		const body = renderWebManifest(active.site, await this.textsSource().translator(active.site.defaultLocale));
+		return this.ok(body, 'application/manifest+json; charset=utf-8', {'content-language': localeLanguageTag(active.site.defaultLocale)});
+	}
+
+	/** `/llms.txt?lang=` (explicit choice or default) or `/<locale>/llms.txt`. */
+	async renderLlms(localeSegment?: string, lang?: string, host?: string): Promise<SeoResponse> {
+		const active = this.active(host);
+		const llms = active?.site.llms;
+		if (!active || !llms)
+			return this.notFound();
+
+		const {site, pages, origin} = active;
 		const locale = localeSegment !== undefined
-			? localeFromUrlSegment(localeSegment, locales)
-			: resolveRequestLocale(lang, locales, this.fallbackLocale(locales));
+			? localeFromUrlSegment(localeSegment, site.enabledLocales)
+			: resolveRequestLocale(lang, site.enabledLocales, site.defaultLocale);
 		if (!locale)
 			return this.notFound();
 
-		const body = renderLlmsTxt({def: this.llms, t: await this.textsSource().translator(locale), locale, baseUrl: this.baseUrl(), pages: this.pages});
+		const body = renderLlmsTxt({def: llms, t: await this.textsSource().translator(locale), locale, origin, pages});
 		return this.ok(body, 'text/plain; charset=utf-8', {'content-language': localeLanguageTag(locale)});
 	}
 
-	/** `/` → `/<locale>/`: explicit lang, then Accept-Language, then the default. No cookies. */
-	async redirectToLocale(lang?: string, acceptLanguage?: string): Promise<SeoResponse> {
-		const locales = await this.textsSource().enabledLocales();
-		const detected = detectLocale({supported: locales, browserLanguages: parseAcceptLanguage(acceptLanguage), appDefault: this.fallbackLocale(locales)});
-		const locale = resolveRequestLocale(lang, locales, detected);
-		return {status: 302, body: '', contentType: 'text/plain', headers: {location: localizedPath(locale, '/'), vary: 'Accept-Language', 'cache-control': 'no-store'}};
+	/** `/` → `/<locale>/`: explicit lang, then Accept-Language, then the site default. No cookies. */
+	async redirectToLocale(lang?: string, acceptLanguage?: string, host?: string): Promise<SeoResponse> {
+		const active = this.active(host);
+		if (!active)
+			return this.notFound();
+
+		const {site} = active;
+		const detected = detectLocale({supported: site.enabledLocales, browserLanguages: parseAcceptLanguage(acceptLanguage), appDefault: site.defaultLocale});
+		const locale = resolveRequestLocale(lang, site.enabledLocales, detected);
+		const vary = ['Accept-Language', ...this.hostVaryNames()];
+		return {status: 302, body: '', contentType: 'text/plain', headers: {location: localizedPath(locale, '/'), vary: vary.join(', '), 'cache-control': 'no-store'}};
 	}
 
-	private route(server: HttpServer, path: string, render: () => Promise<SeoResponse>) {
+	private async renderFromRequest(): Promise<SeoResponse> {
+		const split = splitLocalizedRequest(MemKey_HttpRequest.get().path);
+		if (!split)
+			return this.notFound();
+
+		return this.renderPage(split.locale, split.pagePath, this.requestHost(), this.queryMap());
+	}
+
+	private concrete(page: SeoPageDef, pathParams: Readonly<Record<string, string>>, resolution: SeoPageResolution): {path: string; pathParams: Record<string, string>} {
+		const merged = {...pathParams, ...resolution.pathParams};
+		const path = resolution.path ?? fillSeoPath(page.path, merged);
+		if (!isConcreteSeoPath(path))
+			throw new BadImplementationException(`SEO page '${page.key}' resolved path '${path}' is not concrete`);
+
+		const image = resolution.image;
+		if (image && (image.width !== SeoShareImageSize.width || image.height !== SeoShareImageSize.height))
+			throw new BadImplementationException(`SEO page '${page.key}' image must be ${SeoShareImageSize.width}x${SeoShareImageSize.height}`);
+
+		return {path, pathParams: merged};
+	}
+
+	private active(host?: string): Active | undefined {
+		const name = (host ?? this.requestHost()).toLowerCase();
+		const site = selectSeoSite([...this.sites.values()], name);
+		if (!site)
+			return undefined;
+
+		return {site, pages: this.pages.get(site.key) ?? [], origin: resolveSiteOrigin(site, this.config.env, name)};
+	}
+
+	private bundle(siteKey: string): SeoBundle {
+		const bundle = this.config.bundles[siteKey];
+		if (!bundle)
+			throw new ImplementationMissingException(`SEO site '${siteKey}' has no bundle`);
+
+		return bundle;
+	}
+
+	private route(server: HttpServer, path: string, render: () => SeoResponse | Promise<SeoResponse>) {
 		server.addRoute(new _ServerQueryApi({method: 'get', path} as never, async () => {
 			const response = await render();
 			const http = MemKey_HttpResponse.get();
@@ -136,23 +254,20 @@ export class ModuleBE_SEO_Class
 		}));
 	}
 
-	private ok(body: string, contentType: string, headers: Record<string, string>): SeoResponse {
-		return {status: 200, body, contentType, headers: {'cache-control': `public, max-age=${this.config.cacheMaxAgeSec}`, ...headers}};
+	private hostVaryNames(): string[] {
+		return this.sites.size > 1 ? ['X-Forwarded-Host', 'X-FH-Requested-Host'] : [];
+	}
+
+	private ok(body: string, contentType: string, headers: Record<string, string> = {}): SeoResponse {
+		const vary = this.hostVaryNames();
+		return {
+			status: 200, body, contentType,
+			headers: {'cache-control': `public, max-age=${this.config.cacheMaxAgeSec}`, ...(vary.length ? {vary: vary.join(', ')} : {}), ...headers},
+		};
 	}
 
 	private notFound(): SeoResponse {
-		return {status: 404, body: 'Not found', contentType: 'text/plain; charset=utf-8', headers: {'cache-control': 'no-store'}};
-	}
-
-	private fallbackLocale(locales: readonly string[]) {
-		return locales.includes(this.config.defaultLocale) ? this.config.defaultLocale : (locales[0] ?? this.config.defaultLocale);
-	}
-
-	private baseUrl() {
-		if (!this.config.baseUrl)
-			throw new ImplementationMissingException('ModuleBE_SEO config is missing baseUrl');
-
-		return this.config.baseUrl;
+		return {status: 404, body: '', contentType: 'text/plain; charset=utf-8', headers: {'cache-control': 'no-store'}};
 	}
 
 	private textsSource(): SeoTextsSource {
@@ -162,13 +277,29 @@ export class ModuleBE_SEO_Class
 		return this.texts;
 	}
 
+	private requestHost(): string {
+		return requestHostFromHeaders(MemKey_HttpRequest.get().headers);
+	}
+
 	private param(name: string): string {
 		return String((MemKey_HttpRequest.get().params as Record<string, string>)[name] ?? '');
 	}
 
 	private query(name: string): string | undefined {
-		const value = MemKey_HttpRequest.get().query[name];
-		return typeof value === 'string' ? value : undefined;
+		return this.queryMap()[name];
+	}
+
+	private queryMap(): Record<string, string> {
+		const query = MemKey_HttpRequest.get().query as Record<string, unknown>;
+		const out: Record<string, string> = {};
+		for (const [key, value] of Object.entries(query ?? {})) {
+			if (typeof value === 'string')
+				out[key] = value;
+			else if (Array.isArray(value) && typeof value[0] === 'string')
+				out[key] = value[0];
+		}
+
+		return out;
 	}
 
 	private header(name: string): string | undefined {
