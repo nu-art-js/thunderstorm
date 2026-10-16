@@ -6,6 +6,7 @@
 
 export * from './types.js';
 export * from './locale-url.js';
+export * from './match.js';
 export * from './validate.js';
 export * from './json-ld.js';
 export * from './render.js';

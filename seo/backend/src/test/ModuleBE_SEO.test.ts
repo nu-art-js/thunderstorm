@@ -25,6 +25,7 @@ const image = {src: '/og.png', type: 'image/png' as const, width: 1200, height: 
 
 const site: SeoSiteDef = {
 	key: 'calendar-booking',
+	hosts: ['example.com'],
 	siteName,
 	origins: {local: 'http://localhost:5173', prod: 'https://example.com'},
 	publisher: {name: publisher},
@@ -42,7 +43,7 @@ const site: SeoSiteDef = {
 	llms: {title: llmsTitle, summary: llmsSummary, sections: [{title: llmsSection, links: [{page: 'home'}, {page: 'about'}]}]},
 };
 
-const other: SeoSiteDef = {...site, key: 'other', llms: undefined};
+const other: SeoSiteDef = {...site, key: 'other', hosts: ['*.other.example'], llms: undefined};
 
 class FakeTexts
 	implements SeoTextsSource {
@@ -63,13 +64,24 @@ const home: SeoPageDef = {key: 'home', path: '/', title, description};
 const about: SeoPageDef = {key: 'about', path: '/about', title, description};
 const secret: SeoPageDef = {key: 'secret', path: '/secret', title, description, noindex: true};
 const quiet: SeoPageDef = {key: 'quiet', path: '/quiet', title, description, sitemap: false};
+const booking: SeoPageDef = {
+	key: 'booking', path: '/book', title, description,
+	resolve: request => request.query.slug ? {path: `/book?slug=${request.query.slug}`, params: {host: request.query.slug}} : undefined,
+};
+const hostPage: SeoPageDef = {key: 'host', path: '/h/:slug', title, description};
 
 const createSeo = () => {
 	const seo = new ModuleBE_SEO_Class();
 	const texts = new FakeTexts();
 	seo.setTextsSource(texts);
-	seo.setDefaultConfig({env: 'prod', site: 'calendar-booking', bundle: {scripts: ['/app.js'], styles: []}, cacheMaxAgeSec: 300, rootRedirect: true});
-	seo.registerSite(site, [home, about, secret, quiet]);
+	seo.setDefaultConfig({
+		env: 'prod', cacheMaxAgeSec: 300, rootRedirect: true,
+		bundles: {
+			'calendar-booking': {scripts: ['/app.js'], styles: []},
+			other: {scripts: [], styles: []},
+		},
+	});
+	seo.registerSite(site, [home, about, secret, quiet, booking, hostPage]);
 	seo.registerSite(other, [{key: 'other-home', path: '/', title, description}]);
 	return {seo, texts};
 };
@@ -77,63 +89,61 @@ const createSeo = () => {
 describe('ModuleBE_SEO - rendering', () => {
 	it('renders a page in the URL locale; unknown or disabled locales are 404', async () => {
 		const {seo, texts} = createSeo();
-		const page = await seo.renderPage('nl-nl', 'about');
+		const page = await seo.renderPage('nl-nl', '/about', 'example.com');
 		expect(page.status).to.equal(200);
 		expect(page.body).to.contain('<title>Welkom</title>');
 		expect(page.body).to.contain('<link rel="canonical" href="https://example.com/nl-nl/about">');
 		expect(page.body).to.contain('og:image:secure_url');
 		expect(page.headers['content-language']).to.equal('nl-NL');
 		expect(texts.reads).to.deep.equal(['nl_NL']);
-		expect((await seo.renderPage('de-de', 'about')).status).to.equal(404);
-		expect((await seo.renderPage('nl', 'about')).status).to.equal(404);
+		expect((await seo.renderPage('de-de', '/about', 'example.com')).status).to.equal(404);
+		expect((await seo.renderPage('nl', '/about', 'example.com')).status).to.equal(404);
 	});
 
 	it('serves robots, sitemap, and the manifest for the active site', async () => {
 		const {seo, texts} = createSeo();
-		const robots = seo.renderRobots();
+		const robots = seo.renderRobots('example.com');
 		expect(robots.body).to.contain('Disallow: /nl-nl/secret');
 		expect(robots.body).to.contain('Sitemap: https://example.com/sitemap.xml');
 		expect(robots.body).to.not.contain('/quiet');
-		const sitemap = seo.renderSitemap();
+		const sitemap = await seo.renderSitemap('example.com');
 		expect(sitemap.body).to.contain('<loc>https://example.com/en-us/about</loc>');
 		expect(sitemap.body).to.contain('hreflang="nl-NL"');
 		expect(sitemap.body).to.contain('hreflang="x-default"');
 		expect(sitemap.body).to.not.contain('/secret');
 		expect(sitemap.body).to.not.contain('/quiet');
-		const manifest = await seo.renderManifest();
+		const manifest = await seo.renderManifest('example.com');
 		expect(JSON.parse(manifest.body)).to.include({name: 'Example', lang: 'en-US', theme_color: '#0f766e'});
 		expect(texts.reads).to.deep.equal(['en_US']);
 	});
 
 	it('llms.txt per locale, via lang param, default otherwise', async () => {
 		const {seo} = createSeo();
-		expect((await seo.renderLlms('nl-nl')).body).to.contain('# Voorbeeld');
-		expect((await seo.renderLlms(undefined, 'nl-NL')).body).to.contain('- [Welkom](https://example.com/nl-nl/about)');
-		expect((await seo.renderLlms(undefined, 'xx')).body).to.contain('# Example');
-		expect((await seo.renderLlms('fr-fr')).status).to.equal(404);
+		expect((await seo.renderLlms('nl-nl', undefined, 'example.com')).body).to.contain('# Voorbeeld');
+		expect((await seo.renderLlms(undefined, 'nl-NL', 'example.com')).body).to.contain('- [Welkom](https://example.com/nl-nl/about)');
+		expect((await seo.renderLlms(undefined, 'xx', 'example.com')).body).to.contain('# Example');
+		expect((await seo.renderLlms('fr-fr', undefined, 'example.com')).status).to.equal(404);
+		expect((await seo.renderLlms(undefined, 'en', 'acme.other.example')).status).to.equal(404);
 	});
 
 	it('root redirect uses lang, then Accept-Language, then the default, and sets no cookie', async () => {
 		const {seo} = createSeo();
-		const chosen = await seo.redirectToLocale('nl-NL');
+		const chosen = await seo.redirectToLocale('nl-NL', undefined, 'example.com');
 		expect(chosen.headers.location).to.equal('/nl-nl/');
 		expect(chosen.headers).to.not.have.property('set-cookie');
-		expect((await seo.redirectToLocale(undefined, 'de;q=1,nl;q=0.8')).headers.location).to.equal('/nl-nl/');
-		expect((await seo.redirectToLocale(undefined, 'fr')).headers.location).to.equal('/en-us/');
+		expect((await seo.redirectToLocale(undefined, 'de;q=1,nl;q=0.8', 'example.com')).headers.location).to.equal('/nl-nl/');
+		expect((await seo.redirectToLocale(undefined, 'fr', 'example.com')).headers.location).to.equal('/en-us/');
 	});
 
 	it('refuses a duplicate site, a page on another site, and a missing origin', async () => {
 		const {seo} = createSeo();
 		expect(() => seo.registerSite(site, [home, about, secret, quiet])).to.throw(/Duplicate/);
-		expect(() => seo.registerSite({...site, key: 'bad-links', llms: site.llms}, [])).to.throw(/unknown page/);
-		try {
-			await seo.renderPage('en-us', 'other-home');
-			expect.fail('page from another site must not render');
-		} catch (e) {
-			expect((e as Error).message).to.match(/Unknown SEO page/);
-		}
+		expect(() => seo.registerSite({...site, key: 'bad-links', hosts: ['bad.example'], llms: site.llms}, [])).to.throw(/unknown page/);
+		expect((await seo.renderPage('en-us', '/', 'acme.other.example')).body).to.contain('<title>Welcome</title>');
+		expect((await seo.renderPage('en-us', '/about', 'acme.other.example')).status).to.equal(404);
+		expect((await seo.renderPage('en-us', '/', 'missing.example')).status).to.equal(404);
 		seo.setDefaultConfig({env: 'staging'});
-		expect(() => seo.renderRobots()).to.throw(/staging/);
+		expect(() => seo.renderRobots('example.com')).to.throw(/staging/);
 	});
 
 	it('parses Accept-Language by q', () => {
@@ -151,36 +161,48 @@ describe('ModuleBE_SEO - routes', () => {
 		(seo as unknown as {init(): void}).init();
 		const app = server.getExpress();
 
-		const shell = await request(app).get('/nl-nl/about').expect(200);
+		const shell = await request(app).get('/nl-nl/about').set('X-Forwarded-Host', 'example.com').expect(200);
 		expect(shell.headers['content-type']).to.contain('text/html');
 		expect(shell.headers['set-cookie']).to.equal(undefined);
 		expect(shell.text).to.contain('<link rel="canonical" href="https://example.com/nl-nl/about">');
 
-		const root = await request(app).get('/en-us').expect(200);
+		const root = await request(app).get('/en-us').set('X-Forwarded-Host', 'example.com').expect(200);
 		expect(root.text).to.contain('<title>Welcome</title>');
 		expect(root.text).to.contain('<link rel="manifest" href="/site.webmanifest">');
 
-		await request(app).get('/de-de/about').expect(404);
+		await request(app).get('/de-de/about').set('X-Forwarded-Host', 'example.com').expect(404);
+		await request(app).get('/en-us/about').set('X-Forwarded-Host', 'nope.example').expect(404);
 
-		const robots = await request(app).get('/robots.txt').expect(200);
+		const robots = await request(app).get('/robots.txt').set('X-Forwarded-Host', 'example.com').expect(200);
 		expect(robots.headers['content-type']).to.contain('text/plain');
 		expect(robots.text).to.contain('Sitemap: https://example.com/sitemap.xml');
 
-		const sitemap = await request(app).get('/sitemap.xml').expect(200);
+		const sitemap = await request(app).get('/sitemap.xml').set('X-Forwarded-Host', 'example.com').expect(200);
 		expect(sitemap.headers['content-type']).to.contain('application/xml');
 		expect(sitemap.text).to.contain('hreflang="x-default"');
 
-		const manifest = await request(app).get('/site.webmanifest').expect(200);
+		const manifest = await request(app).get('/site.webmanifest').set('X-Forwarded-Host', 'example.com').expect(200);
 		expect(manifest.headers['content-type']).to.contain('application/manifest+json');
 		expect(JSON.parse(manifest.text).name).to.equal('Example');
 
-		const llms = await request(app).get('/llms.txt?lang=nl').expect(200);
+		const llms = await request(app).get('/llms.txt?lang=nl').set('X-Forwarded-Host', 'example.com').expect(200);
 		expect(llms.headers['content-type']).to.contain('text/plain');
 		expect(llms.text).to.contain('# Voorbeeld');
-		expect((await request(app).get('/nl-nl/llms.txt').expect(200)).text).to.contain('## Pagina\'s');
+		expect((await request(app).get('/nl-nl/llms.txt').set('X-Forwarded-Host', 'example.com').expect(200)).text).to.contain('## Pagina\'s');
 
-		const redirect = await request(app).get('/').set('Accept-Language', 'nl').expect(302);
+		const redirect = await request(app).get('/').set('X-Forwarded-Host', 'example.com').set('Accept-Language', 'nl').expect(302);
 		expect(redirect.headers.location).to.equal('/nl-nl/');
 		expect(redirect.headers['set-cookie']).to.equal(undefined);
+		expect(shell.headers.vary).to.contain('X-Forwarded-Host');
+
+		const booked = await request(app).get('/en-us/book?slug=ada').set('X-Forwarded-Host', 'example.com').expect(200);
+		expect(booked.text).to.contain('<link rel="canonical" href="https://example.com/en-us/book?slug=ada">');
+		expect(booked.text).to.contain('<meta property="og:image:width" content="1200">');
+		expect(booked.text).to.contain('<meta property="og:image:height" content="630">');
+		await request(app).get('/en-us/book').set('X-Forwarded-Host', 'example.com').expect(404);
+
+		const host = await request(app).get('/en-us/h/ada').set('X-Forwarded-Host', 'example.com').expect(200);
+		expect(host.text).to.contain('<link rel="canonical" href="https://example.com/en-us/h/ada">');
+		expect(host.headers['set-cookie']).to.equal(undefined);
 	});
 });

@@ -7,6 +7,7 @@
 import {I18nLocaleCodes, isI18nLocaleCode, type I18N_Brand} from '@nu-art/i18n-shared';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {isSiteOrigin, localeUrlSegment} from './locale-url.js';
+import {seoPathSegments, seoPathsOverlap} from './match.js';
 import {
 	SeoColorSchemes,
 	SeoImageTypes,
@@ -23,9 +24,14 @@ import {
 
 const KeyPattern = /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/;
 const SiteKeyPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const PagePathPattern = /^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*)?$/;
+const Segment = '(?:[a-z0-9]+(?:-[a-z0-9]+)*|:[a-z][a-z0-9]*)';
+const PagePathPattern = new RegExp(`^\\/(?:${Segment}(?:\\/${Segment})*)?$`);
+const HostLabel = '[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?';
+const ExactHost = new RegExp(`^(?:${HostLabel}\\.)*(?:${HostLabel})$`);
+const WildHost = new RegExp(`^\\*\\.(?:${HostLabel}\\.)*(?:${HostLabel})$`);
 const ThemeColorPattern = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 const HandlePattern = /^@[A-Za-z0-9_]{1,15}$/;
+const ReservedPaths = new Set(['/llms.txt', '/robots.txt', '/sitemap.xml', '/site.webmanifest']);
 
 const fail = (message: string): never => {
 	throw new BadImplementationException(message);
@@ -69,6 +75,14 @@ export const assertSeoSite = (site: SeoSiteDef): void => {
 	assertKey(site.publisher.name, `SEO site '${site.key}' publisher name`);
 	if (!Object.keys(site.origins).length)
 		fail(`SEO site '${site.key}' needs an origin per env`);
+
+	for (const host of site.hosts ?? []) {
+		if (!ExactHost.test(host) && !WildHost.test(host))
+			fail(`SEO site '${site.key}' host '${host}' must be a hostname or a one-label wildcard`);
+	}
+
+	if (site.hosts && new Set(site.hosts).size !== site.hosts.length)
+		fail(`SEO site '${site.key}' lists a host twice`);
 
 	for (const [env, origin] of Object.entries(site.origins)) {
 		if (!isSiteOrigin(origin))
@@ -138,41 +152,81 @@ const assertLlms = (site: SeoSiteDef) => {
 	}
 };
 
-/** Throws when llms.txt points at a page that was not registered. */
-export const assertSeoLinks = (site: SeoSiteDef, pages: readonly SeoPageDef[]): void => {
-	const keys = new Set(pages.map(page => page.key));
-	for (const section of site.llms?.sections ?? []) {
-		for (const link of section.links) {
-			if ('page' in link && !keys.has(link.page))
-				fail(`llms.txt links to unknown page '${link.page}'`);
+/**
+ * Two or more sites each list hosts, and no two sites share a host pattern.
+ * One site may omit hosts and then answers every host.
+ */
+export const assertSeoHosting = (sites: readonly SeoSiteDef[]): void => {
+	if (sites.length < 2)
+		return;
+
+	const seen = new Map<string, string>();
+	for (const site of sites) {
+		if (!site.hosts?.length)
+			fail(`SEO site '${site.key}' needs hosts when more than one site is registered`);
+
+		for (const host of site.hosts ?? []) {
+			const owner = seen.get(host);
+			if (owner)
+				fail(`SEO host '${host}' is listed by '${owner}' and '${site.key}'`);
+
+			seen.set(host, site.key);
 		}
 	}
 };
 
-/** Throws when two pages share a key or a path, or a path is not a static locale-less route. */
+/** Throws when llms.txt points at a page that was not registered, or at a path pattern. */
+export const assertSeoLinks = (site: SeoSiteDef, pages: readonly SeoPageDef[]): void => {
+	const byKey = new Map(pages.map(page => [page.key, page]));
+	for (const section of site.llms?.sections ?? []) {
+		for (const link of section.links) {
+			if (!('page' in link))
+				continue;
+
+			const page = byKey.get(link.page);
+			if (!page)
+				throw new BadImplementationException(`llms.txt links to unknown page '${link.page}'`);
+
+			if (page.path.includes(':'))
+				fail(`llms.txt cannot link to parameterized page '${link.page}'`);
+		}
+	}
+};
+
+/** Throws when two pages share a key or can match the same path, or a path is not a locale-less route. */
 export const assertSeoPages = (pages: readonly SeoPageDef[]): void => {
 	const keys = new Set<string>();
-	const paths = new Set<string>();
+	const paths: string[] = [];
 	for (const page of pages) {
 		if (!SiteKeyPattern.test(page.key))
 			fail(`SEO page key '${page.key}' must be kebab-case`);
 
 		if (!PagePathPattern.test(page.path))
-			fail(`SEO page '${page.key}' path '${page.path}' must be a static locale-less path`);
+			fail(`SEO page '${page.key}' path '${page.path}' must be a locale-less path`);
 
-		const head = page.path.split('/')[1];
-		if (head && I18nLocaleCodes.some(code => localeUrlSegment(code) === head))
+		if (ReservedPaths.has(page.path))
+			fail(`SEO page '${page.key}' path '${page.path}' is reserved`);
+
+		const segments = seoPathSegments(page.path);
+		const head = segments[0];
+		if (head && !head.startsWith(':') && I18nLocaleCodes.some(code => localeUrlSegment(code) === head))
 			fail(`SEO page '${page.key}' path '${page.path}' must not start with a locale segment`);
 
-		if (keys.has(page.key) || paths.has(page.path))
+		if (segments.some(segment => segment === ':locale'))
+			fail(`SEO page '${page.key}' path param 'locale' is reserved`);
+
+		if (page.noindex && head?.startsWith(':'))
+			fail(`SEO page '${page.key}' cannot noindex a path that starts with a parameter`);
+
+		if (keys.has(page.key) || paths.some(existing => seoPathsOverlap(existing, page.path)))
 			fail(`Duplicate SEO page '${page.key}' (${page.path})`);
 
 		keys.add(page.key);
-		paths.add(page.path);
+		paths.push(page.path);
 		assertKey(page.title, `SEO page '${page.key}' title`);
 		assertKey(page.description, `SEO page '${page.key}' description`);
 		if (page.image)
-			assertImage(page.image, `SEO page '${page.key}' image`, false);
+			assertImage(page.image, `SEO page '${page.key}' image`, true);
 
 		if (page.ogType !== undefined && !isOgType(page.ogType))
 			fail(`SEO page '${page.key}' og:type is not supported`);

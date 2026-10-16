@@ -4,8 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {I18N_Brand, I18N_Params} from '@nu-art/i18n-shared';
-import type {I18nLocaleCode} from '@nu-art/i18n-shared';
+import type {I18N_Brand, I18N_Params, I18nLocaleCode} from '@nu-art/i18n-shared';
 
 /** Resolves a key through the single i18n resolution path, for one locale. */
 export type SeoTranslate = (id: I18N_Brand, params?: I18N_Params) => string;
@@ -80,13 +79,16 @@ export type LlmsTxtDef = {
 /**
  * One site. Human text is i18n keys. `enabledLocales` is a subset of the i18n locale enum.
  * `origins` is the public origin per env key (`local`, `dev`, `prod`), with no path.
+ * `hosts` names the public hosts this site answers: exact (`beamz.dev`) or one label
+ * (`*.beamz.dev`). Omit `hosts` only when this is the only registered site.
  */
 export type SeoSiteDef = {
 	key: string;
 	siteName: I18N_Brand;
 	origins: Readonly<Record<string, string>>;
+	hosts?: readonly string[];
 	publisher: SeoPublisher;
-	/** Default share image. Must be 1200×630. */
+	/** Default share image. Must be 1200×630. Page images must be the same size. */
 	image: SeoImage;
 	themeColor: string;
 	colorScheme: SeoColorScheme;
@@ -95,6 +97,31 @@ export type SeoSiteDef = {
 	enabledLocales: readonly I18nLocaleCode[];
 	defaultLocale: I18nLocaleCode;
 	llms?: LlmsTxtDef;
+};
+
+/** The request a page `resolve` sees. Paths are locale-less. */
+export type SeoPageRequest = {
+	host: string;
+	path: string;
+	pathParams: Readonly<Record<string, string>>;
+	query: Readonly<Record<string, string>>;
+};
+
+/** What `resolve` returns for one request. Undefined means this request is not the page. */
+export type SeoPageResolution = {
+	/** Concrete locale-less path, query allowed (`/book?slug=ada`). Defaults to the pattern filled with path params. */
+	path?: string;
+	pathParams?: Readonly<Record<string, string>>;
+	/** Values for `{name}` in this page's i18n keys. Path params are included when omitted. */
+	params?: I18N_Params;
+	image?: SeoImage;
+	noindex?: boolean;
+};
+
+/** One concrete URL a dynamic page contributes to the sitemap. */
+export type SeoSitemapEntry = {
+	path?: string;
+	pathParams?: Readonly<Record<string, string>>;
 };
 
 /** JSON-LD node. Field names and structure in code; every human string comes from `t`. */
@@ -106,6 +133,9 @@ export type SeoRenderContext = {
 	/** Absolute canonical URL of this page in this locale. */
 	url: string;
 	origin: string;
+	/** Concrete locale-less path for this response. */
+	path: string;
+	params: I18N_Params;
 	site: SeoSiteDef;
 	page: SeoPageDef;
 };
@@ -114,9 +144,12 @@ export type SeoRenderContext = {
 export type SeoJsonLdBuilder = (context: SeoRenderContext) => JsonLdNode;
 
 /**
- * One public route. `path` is locale-less (`/`, `/pricing`) and is served as `/<locale><path>`.
+ * One public route, served as `/<locale><path>`.
+ * `path` is locale-less: `/`, `/pricing`, or a pattern with `:param` segments (`/book/:slug`).
+ * `resolve` fills i18n params and the canonical path for a request (a host slug in the query, a tenant host).
  * `noindex` emits `noindex,nofollow` and drops the route from the sitemap.
- * `sitemap: false` omits an indexable route from the sitemap only.
+ * `sitemap: false` omits the route from the sitemap only.
+ * A pattern is omitted from the sitemap unless `sitemapEntries` lists concrete paths.
  */
 export type SeoPageDef = {
 	key: string;
@@ -124,9 +157,12 @@ export type SeoPageDef = {
 	title: I18N_Brand;
 	description: I18N_Brand;
 	ogType?: SeoOgType;
+	/** Share image for this page. Must be 1200×630. Falls back to the site image. */
 	image?: SeoImage;
 	noindex?: boolean;
 	sitemap?: boolean;
+	resolve?: (request: SeoPageRequest) => SeoPageResolution | undefined | Promise<SeoPageResolution | undefined>;
+	sitemapEntries?: () => readonly SeoSitemapEntry[] | Promise<readonly SeoSitemapEntry[]>;
 	jsonLd?: readonly SeoJsonLdBuilder[];
 	/** Crawler-visible copy. The SPA may replace the mounts. */
 	sections?: readonly {heading?: I18N_Brand; body: I18N_Brand}[];

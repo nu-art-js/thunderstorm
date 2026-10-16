@@ -13,11 +13,15 @@ import {
 	jsonForScript,
 	localeFromUrlSegment,
 	localizedPath,
+	collectSitemapPaths,
 	renderLlmsTxt,
 	renderRobotsTxt,
 	renderSeoShell,
 	renderSitemapXml,
 	renderWebManifest,
+	requestHostFromHeaders,
+	resolveSiteOrigin,
+	selectSeoSite,
 	seoJsonLdBreadcrumb,
 	seoJsonLdOrganization,
 	seoJsonLdWebPage,
@@ -132,7 +136,21 @@ describe('seo - site config', () => {
 		expect(() => assertSeoSite({...site, origins: {prod: 'https://example.com/app'}})).to.throw(/origin/);
 		expect(() => assertSeoSite({...site, twitter: {card: 'summary_large_image', site: 'example'}})).to.throw(/@handle/);
 		expect(() => assertSeoPages([{...pricing, path: '/en-us/pricing'}])).to.throw(/locale segment/);
+		expect(() => assertSeoPages([{...pricing, path: '/:slug'}, {...pricing, key: 'book', path: '/book'}])).to.throw(/Duplicate/);
+		expect(() => assertSeoPages([{...pricing, image: {...image(k.pageImageAlt), width: 800, height: 400}}])).to.throw(/1200x630/);
 		expect(() => assertSeoLinks(site, [])).to.throw(/unknown page/);
+	});
+
+	it('fills a path param and a query slug into the share title', () => {
+		const booking: SeoPageDef = {...pricing, key: 'booking', path: '/book/:slug', title: k.description};
+		const named = renderSeoShell({
+			site, page: booking, t: texts('en_US'), locale: 'en_US', origin: 'https://example.com',
+			bundle: {scripts: [], styles: []}, path: '/book/ada', params: {who: 'Ada'},
+		});
+		expect(named).to.contain('<title>Plans for Ada</title>');
+		expect(named).to.contain('<link rel="canonical" href="https://example.com/en-us/book/ada">');
+		expect(named).to.contain('<meta property="og:image:width" content="1200">');
+		expect(named).to.contain('<meta property="og:image:height" content="630">');
 	});
 });
 
@@ -149,6 +167,8 @@ describe('seo - HTML shell', () => {
 		expect(html).to.contain('<link rel="alternate" hreflang="nl-NL" href="https://example.com/nl-nl/pricing">');
 		expect(html).to.contain('<link rel="alternate" hreflang="he-IL" href="https://example.com/he-il/pricing">');
 		expect(html).to.contain('<link rel="alternate" hreflang="x-default" href="https://example.com/en-us/pricing">');
+		expect(html).to.contain('<meta property="og:type" content="website">');
+		expect(html).to.contain('<meta property="og:url" content="https://example.com/en-us/pricing">');
 		expect(html).to.contain('<meta property="og:site_name" content="Example">');
 		expect(html).to.contain('<meta property="og:locale" content="en_US">');
 		expect(html).to.contain('<meta property="og:locale:alternate" content="nl_NL">');
@@ -159,6 +179,9 @@ describe('seo - HTML shell', () => {
 		expect(html).to.contain('<meta property="og:image:height" content="630">');
 		expect(html).to.contain('<meta property="og:image:alt" content="Share image">');
 		expect(html).to.contain('<meta name="twitter:card" content="summary_large_image">');
+		expect(html).to.contain('<meta name="twitter:title" content="Pricing">');
+		expect(html).to.contain('<meta name="twitter:description" content="Plans for {who}">');
+		expect(html).to.contain('<meta name="twitter:image" content="https://example.com/og.png">');
 		expect(html).to.contain('<meta name="twitter:site" content="@example">');
 		expect(html).to.contain('<link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="32x32">');
 		expect(html).to.contain('<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">');
@@ -196,7 +219,7 @@ describe('seo - HTML shell', () => {
 	});
 
 	it('builds a breadcrumb list and a website node from i18n keys', () => {
-		const context = {t: texts('en_US'), locale: 'en_US' as const, url: 'https://example.com/en-us/pricing', origin: 'https://example.com', site, page: pricing};
+		const context = {t: texts('en_US'), locale: 'en_US' as const, url: 'https://example.com/en-us/pricing', origin: 'https://example.com', path: '/pricing', params: {}, site, page: pricing};
 		const node = seoJsonLdBreadcrumb([{name: k.crumb, path: '/'}, {name: k.title, path: '/pricing'}])(context);
 		expect(node.itemListElement).to.deep.equal([
 			{'@type': 'ListItem', position: 1, name: 'Home', item: 'https://example.com/en-us/'},
@@ -217,8 +240,9 @@ describe('seo - files', () => {
 	const secret: SeoPageDef = {key: 'secret', path: '/secret', title: k.title, description: k.description, noindex: true};
 	const pages = [pricing, hidden, secret];
 
-	it('sitemap lists indexable pages with hreflang and x-default', () => {
-		const xml = renderSitemapXml(site, 'https://example.com', pages);
+	it('sitemap lists indexable pages with hreflang and x-default', async () => {
+		expect(await collectSitemapPaths(pages)).to.deep.equal(['/pricing']);
+		const xml = renderSitemapXml(site, 'https://example.com', ['/pricing']);
 		expect(xml).to.contain('<loc>https://example.com/nl-nl/pricing</loc>');
 		expect(xml).to.contain('hreflang="he-IL" href="https://example.com/he-il/pricing"');
 		expect(xml).to.contain('hreflang="x-default" href="https://example.com/en-us/pricing"');
@@ -242,6 +266,34 @@ describe('seo - files', () => {
 		expect(manifest).to.include({name: 'Example', theme_color: '#0f766e', lang: 'en-US', dir: 'ltr', start_url: '/en-us/'});
 		expect(manifest.icons).to.deep.equal([{src: '/icon-512.png', sizes: '512x512', type: 'image/png'}]);
 		expect(JSON.parse(renderWebManifest({...site, defaultLocale: 'he_IL'}, texts('he_IL'))).dir).to.equal('rtl');
+	});
+});
+
+describe('seo - hosts', () => {
+	const admin = {...site, key: 'admin', hosts: ['beamz.dev', 'beamz-staging.com'], origins: {prod: 'https://beamz.dev', local: 'http://localhost:5173'}};
+	const org = {...site, key: 'org', hosts: ['*.beamz.dev', '*.beamz-staging.com', '*.beamz-local.dev'], origins: {prod: 'https://beamz.dev', local: 'http://beamz-local.dev:8080'}};
+
+	it('picks an exact host over a wildcard and builds the tenant origin from the env origin', () => {
+		expect(selectSeoSite([admin, org], 'beamz.dev')?.key).to.equal('admin');
+		expect(selectSeoSite([org], 'acme.beamz.dev')?.key).to.equal('org');
+		expect(selectSeoSite([admin, org], 'other.example')).to.equal(undefined);
+		expect(selectSeoSite([site], 'preview.example.com')?.key).to.equal('calendar-booking');
+		expect(resolveSiteOrigin(org, 'prod', 'acme.beamz.dev')).to.equal('https://acme.beamz.dev');
+		expect(resolveSiteOrigin(org, 'local', 'acme.beamz-local.dev')).to.equal('http://acme.beamz-local.dev:8080');
+		expect(resolveSiteOrigin(admin, 'prod', 'beamz-staging.com')).to.equal('https://beamz.dev');
+		expect(requestHostFromHeaders({'x-fh-requested-host': 'Beamz.dev', host: 'api.run.app'})).to.equal('beamz.dev');
+		expect(requestHostFromHeaders({'x-forwarded-host': 'acme.beamz.dev:443, edge', host: 'api.run.app'})).to.equal('acme.beamz.dev');
+	});
+
+	it('lists concrete booking paths and skips a pattern that has no entries', async () => {
+		const booking: SeoPageDef = {
+			...pricing, key: 'booking', path: '/book/:slug',
+			sitemapEntries: () => [{pathParams: {slug: 'ada'}}, {path: '/book?slug=bea'}],
+		};
+		expect(await collectSitemapPaths([pricing, booking, {...pricing, key: 'open', path: '/open/:id'}])).to.deep.equal(['/pricing', '/book/ada', '/book?slug=bea']);
+		const xml = renderSitemapXml(site, 'https://example.com', await collectSitemapPaths([booking]));
+		expect(xml).to.contain('<loc>https://example.com/en-us/book/ada</loc>');
+		expect(xml).to.contain('<loc>https://example.com/nl-nl/book?slug=bea</loc>');
 	});
 });
 

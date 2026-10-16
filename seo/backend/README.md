@@ -1,6 +1,6 @@
 # @nu-art/seo-backend
 
-`ModuleBE_SEO` serves the share-meta HTML shell and the crawler files for one registered site.
+`ModuleBE_SEO` serves the share-meta HTML shell and the crawler files for every registered site. The request host selects the site.
 
 Locales come from the site's `enabledLocales`. Texts come from `ModuleBE_I18n.translator`. The module does not query locales, does not write, and does not set cookies.
 
@@ -12,12 +12,16 @@ Add `@nu-art/seo-backend` to the app backend `__package.json`. Add `ModulePackBE
 import {ModuleBE_SEO, ModulePackBE_SEO} from '@nu-art/seo-backend';
 
 ModuleBE_SEO.registerSite(bookingSite, bookingPages);
-ModuleBE_SEO.setDefaultConfig({env: 'local', site: 'calendar-booking', rootRedirect: true, bundle: {scripts: ['/app.js'], styles: ['/app.css']}});
+ModuleBE_SEO.setDefaultConfig({
+	env: 'local',
+	rootRedirect: true,
+	bundles: {'calendar-booking': {scripts: ['/app.js'], styles: ['/app.css']}},
+});
 ```
 
 `ModulePackBE_SEO` sets the i18n texts source. Call `setTextsSource` yourself only in tests.
 
-RTDB config key: `ModuleBE_SEO_Class`. Fields: `env`, `site`, `bundle`, `cacheMaxAgeSec`, `rootRedirect`. Override `env` per environment so the matching `origins` entry is used. None of these are secrets.
+RTDB config key: `ModuleBE_SEO_Class`. Fields: `env`, `bundles` (per site key), `cacheMaxAgeSec`, `rootRedirect`. Override `env` per environment so the matching `origins` entry is used. None of these are secrets. The public host is not config: it comes from `x-fh-requested-host`, then `x-forwarded-host`, then `host`.
 
 There is no frontend module. Do not put this config in the frontend bundle.
 
@@ -30,7 +34,7 @@ There is no frontend module. Do not put this config in the frontend bundle.
 
 ## API overview
 
-`registerSite(site, pages)` checks the site, the pages, and llms.txt links, then stores them in memory. `init` serves `config.site` at:
+`registerSite(site, pages)` checks the site, the pages, llms.txt links, and host overlap, then stores them in memory. `init` serves the site selected by the request host at:
 
 - `GET /<locale><path>` — HTML shell
 - `GET /robots.txt`

@@ -4,10 +4,11 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import {I18nLocales, type I18N_Brand} from '@nu-art/i18n-shared';
+import {I18nLocales, type I18N_Brand, type I18N_Params} from '@nu-art/i18n-shared';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {absoluteUrl, assetUrl, isHttpsUrl, localeLanguageTag, localizedPath, rootPath} from './locale-url.js';
-import type {LlmsTxtDef, SeoBundle, SeoPageDef, SeoSiteDef, SeoTranslate} from './types.js';
+import {isConcreteSeoPath, seoPathSegments} from './match.js';
+import type {LlmsTxtDef, SeoBundle, SeoImage, SeoPageDef, SeoSiteDef, SeoTranslate} from './types.js';
 
 export const escapeHtml = (value: string): string => value
 	.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -26,14 +27,18 @@ export type RenderSeoShellInput = {
 	locale: SeoSiteDef['defaultLocale'];
 	origin: string;
 	bundle: SeoBundle;
+	/** Concrete locale-less path. Defaults to `page.path`. */
+	path?: string;
+	params?: I18N_Params;
+	image?: SeoImage;
+	noindex?: boolean;
 };
 
 const meta = (attr: 'name' | 'property', key: string, content: string) => `<meta ${attr}="${key}" content="${escapeHtml(content)}">`;
 
-const shareImageTags = (site: SeoSiteDef, page: SeoPageDef, t: SeoTranslate, origin: string): string[] => {
-	const image = page.image ?? site.image;
+const shareImageTags = (image: SeoImage, t: SeoTranslate, origin: string, params: I18N_Params): string[] => {
 	const url = assetUrl(origin, image.src);
-	const alt = t(image.alt);
+	const alt = t(image.alt, params);
 	return [
 		meta('property', 'og:image', url),
 		isHttpsUrl(url) ? meta('property', 'og:image:secure_url', url) : '',
@@ -48,28 +53,36 @@ const shareImageTags = (site: SeoSiteDef, page: SeoPageDef, t: SeoTranslate, ori
 
 /** The HTML shell of one page in one locale. Every human string comes from `t`. */
 export const renderSeoShell = (input: RenderSeoShellInput): string => {
-	const {site, page, t, locale, origin, bundle} = input;
+	const {site, page, locale, origin, bundle} = input;
 	if (!site.enabledLocales.includes(locale))
 		throw new BadImplementationException(`Locale '${locale}' is not enabled`);
 
-	const url = absoluteUrl(origin, localizedPath(locale, page.path));
+	const path = input.path ?? page.path;
+	if (!isConcreteSeoPath(path))
+		throw new BadImplementationException(`SEO page '${page.key}' path '${path}' is not concrete`);
+
+	const params = input.params ?? {};
+	const t: SeoTranslate = (id, extra) => input.t(id, extra ? {...params, ...extra} : params);
+	const url = absoluteUrl(origin, localizedPath(locale, path));
 	const title = t(page.title);
 	const description = t(page.description);
 	const siteName = t(site.siteName);
 	const dir = I18nLocales[locale].dir;
-	const jsonLd = (page.jsonLd ?? []).map(build => build({t, locale, url, origin, site, page}));
+	const noindex = input.noindex ?? page.noindex;
+	const image = input.image ?? page.image ?? site.image;
+	const jsonLd = (page.jsonLd ?? []).map(build => build({t, locale, url, origin, path, params, site, page}));
 
 	const head = [
 		'<meta charset="utf-8">',
 		'<meta name="viewport" content="width=device-width, initial-scale=1">',
 		`<title>${escapeHtml(title)}</title>`,
 		meta('name', 'description', description),
-		meta('name', 'robots', page.noindex ? 'noindex,nofollow' : 'index,follow'),
+		meta('name', 'robots', noindex ? 'noindex,nofollow' : 'index,follow'),
 		meta('name', 'theme-color', site.themeColor),
 		meta('name', 'color-scheme', site.colorScheme),
 		`<link rel="canonical" href="${escapeHtml(url)}">`,
-		...site.enabledLocales.map(code => `<link rel="alternate" hreflang="${escapeHtml(localeLanguageTag(code))}" href="${escapeHtml(absoluteUrl(origin, localizedPath(code, page.path)))}">`),
-		`<link rel="alternate" hreflang="x-default" href="${escapeHtml(absoluteUrl(origin, localizedPath(site.defaultLocale, page.path)))}">`,
+		...site.enabledLocales.map(code => `<link rel="alternate" hreflang="${escapeHtml(localeLanguageTag(code))}" href="${escapeHtml(absoluteUrl(origin, localizedPath(code, path)))}">`),
+		`<link rel="alternate" hreflang="x-default" href="${escapeHtml(absoluteUrl(origin, localizedPath(site.defaultLocale, path)))}">`,
 		meta('property', 'og:type', page.ogType ?? 'website'),
 		meta('property', 'og:title', title),
 		meta('property', 'og:description', description),
@@ -77,7 +90,7 @@ export const renderSeoShell = (input: RenderSeoShellInput): string => {
 		meta('property', 'og:site_name', siteName),
 		meta('property', 'og:locale', locale),
 		...site.enabledLocales.filter(code => code !== locale).map(code => meta('property', 'og:locale:alternate', code)),
-		...shareImageTags(site, page, t, origin),
+		...shareImageTags(image, t, origin, params),
 		meta('name', 'twitter:card', site.twitter.card),
 		meta('name', 'twitter:title', title),
 		meta('name', 'twitter:description', description),
@@ -126,6 +139,9 @@ export const renderLlmsTxt = (input: RenderLlmsTxtInput): string => {
 				if (!page)
 					throw new BadImplementationException(`llms.txt links to unknown page '${link.page}'`);
 
+				if (page.path.includes(':'))
+					throw new BadImplementationException(`llms.txt cannot link to parameterized page '${link.page}'`);
+
 				title = t(page.title);
 				url = absoluteUrl(origin, localizedPath(locale, page.path));
 			} else {
@@ -142,7 +158,21 @@ export const renderLlmsTxt = (input: RenderLlmsTxtInput): string => {
 	return lines.join('\n');
 };
 
-const inSitemap = (page: SeoPageDef): boolean => page.sitemap !== false && !page.noindex;
+/** Static prefix of a pattern (`/book/:slug` → `/book/`). A leading param is not a prefix. */
+const robotsPath = (path: string): string => {
+	if (!path.includes(':'))
+		return path;
+
+	const prefix: string[] = [];
+	for (const segment of seoPathSegments(path)) {
+		if (segment.startsWith(':'))
+			break;
+
+		prefix.push(segment);
+	}
+
+	return `/${prefix.join('/')}/`;
+};
 
 /** robots.txt. noindex routes are disallowed in every enabled locale. No cookies, no prose. */
 export const renderRobotsTxt = (site: SeoSiteDef, origin: string, pages: readonly SeoPageDef[]): string => {
@@ -151,21 +181,22 @@ export const renderRobotsTxt = (site: SeoSiteDef, origin: string, pages: readonl
 		if (!page.noindex)
 			continue;
 
+		const path = robotsPath(page.path);
 		for (const locale of site.enabledLocales)
-			lines.push(`Disallow: ${localizedPath(locale, page.path).replace(/[\r\n]/g, '')}`);
+			lines.push(`Disallow: ${localizedPath(locale, path).replace(/[\r\n]/g, '')}`);
 	}
 
 	lines.push(`Sitemap: ${absoluteUrl(origin, '/sitemap.xml')}`, '');
 	return lines.join('\n');
 };
 
-/** sitemap.xml. One `<url>` per indexable page per enabled locale, with hreflang alternates and x-default. */
-export const renderSitemapXml = (site: SeoSiteDef, origin: string, pages: readonly SeoPageDef[]): string => {
-	const urls = pages.filter(inSitemap).flatMap(page => site.enabledLocales.map(locale => {
-		const loc = absoluteUrl(origin, localizedPath(locale, page.path));
+/** sitemap.xml. One `<url>` per concrete path per enabled locale, with hreflang alternates and x-default. */
+export const renderSitemapXml = (site: SeoSiteDef, origin: string, paths: readonly string[]): string => {
+	const urls = paths.flatMap(path => site.enabledLocales.map(locale => {
+		const loc = absoluteUrl(origin, localizedPath(locale, path));
 		const alternates = [
-			...site.enabledLocales.map(code => `<xhtml:link rel="alternate" hreflang="${escapeXml(localeLanguageTag(code))}" href="${escapeXml(absoluteUrl(origin, localizedPath(code, page.path)))}"/>`),
-			`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, localizedPath(site.defaultLocale, page.path)))}"/>`,
+			...site.enabledLocales.map(code => `<xhtml:link rel="alternate" hreflang="${escapeXml(localeLanguageTag(code))}" href="${escapeXml(absoluteUrl(origin, localizedPath(code, path)))}"/>`),
+			`<xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(absoluteUrl(origin, localizedPath(site.defaultLocale, path)))}"/>`,
 		];
 		return `  <url><loc>${escapeXml(loc)}</loc>${alternates.join('')}</url>`;
 	}));

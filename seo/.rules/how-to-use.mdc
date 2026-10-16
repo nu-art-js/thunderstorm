@@ -1,10 +1,10 @@
 ---
-description: How to use seo (per-locale share-meta shells, robots, sitemap, manifest, llms.txt)
+description: How to use seo (per-site share-meta shells, robots, sitemap, manifest, llms.txt)
 alwaysApply: false
 ---
 # SEO
 
-Share meta and crawler files for one site. Human text is i18n keys. The package does not read or write a database, and it does not set cookies.
+Share meta and crawler files for one or more sites. Human text is i18n keys. The package does not read or write a database, and it does not set cookies.
 
 ## Domain matrix
 
@@ -16,11 +16,13 @@ Share meta and crawler files for one site. Human text is i18n keys. The package 
 
 ## Shared
 
-- **Site** (`SeoSiteDef`), keyed by `key`: `siteName` (i18n key), `origins` (public origin per env, no path), `publisher` (Organization: name key, optional url, logo, `sameAs`), default share `image` (1200×630, alt key), `themeColor`, `colorScheme`, `icons` (favicon, apple touch, manifest), `twitter` (`summary_large_image`, optional `@handle`), `enabledLocales` (subset of `I18nLocaleCode`), `defaultLocale`, optional `llms`.
-- **Page** (`SeoPageDef`): locale-less static `path`, `title` and `description` keys, `ogType`, optional `image`, `noindex` (robots `noindex,nofollow` and omitted from the sitemap), `sitemap: false` (omit only from the sitemap), `jsonLd` builders, optional sections and `data-ts-embed` mounts.
+- **Site** (`SeoSiteDef`), keyed by `key`: `siteName` (i18n key), `origins` (public origin per env, no path), optional `hosts` (exact `beamz.dev` or one-label `*.beamz.dev`), `publisher` (Organization: name key, optional url, logo, `sameAs`), default share `image` (1200×630, alt key), `themeColor`, `colorScheme`, `icons` (favicon, apple touch, manifest), `twitter` (`summary_large_image`, optional `@handle`), `enabledLocales` (subset of `I18nLocaleCode`), `defaultLocale`, optional `llms`.
+- **Page** (`SeoPageDef`): locale-less `path` (`/`, `/pricing`, `/book/:slug`), `title` and `description` keys, `ogType`, optional 1200×630 `image`, `noindex` (robots `noindex,nofollow` and omitted from the sitemap), `sitemap: false` (omit only from the sitemap), optional `resolve` (canonical path and i18n params for this request), optional `sitemapEntries` (concrete paths for a pattern), `jsonLd` builders, optional sections and `data-ts-embed` mounts.
+- **Hosts**: the request host selects the site. With two or more sites, every site lists `hosts`. One site may omit `hosts` and then answers every host. An exact host beats a wildcard. A wildcard host's canonical origin keeps the env origin's scheme and port and uses the request hostname (`acme.beamz.dev`).
+- **Dynamic pages**: `:param` segments, or a static path whose `resolve` reads the query (calendar-booking `/book?slug=`). `resolve` returning undefined is a 404. Path params are i18n params unless `resolve` sets `params`. A pattern is left out of the sitemap until `sitemapEntries` lists concrete paths. `llms.txt` page links are static paths only.
 - **Builders:** `seoJsonLdWebPage`, `seoJsonLdWebSite`, `seoJsonLdOrganization`, `seoJsonLdBreadcrumb`.
 - **Render:** `renderSeoShell`, `renderRobotsTxt`, `renderSitemapXml`, `renderWebManifest`, `renderLlmsTxt`. `seoKeys(site, pages)` lists declared keys for the CI completeness check. Breadcrumb labels are closed over by the builder; register those keys at the call site.
-- **Check:** `assertSeoSite`, `assertSeoPages`, `assertSeoLinks`. `ModuleBE_SEO.registerSite` calls them.
+- **Check:** `assertSeoSite`, `assertSeoPages`, `assertSeoLinks`, `assertSeoHosting`. `ModuleBE_SEO.registerSite` calls them.
 
 ## Backend
 
@@ -28,17 +30,19 @@ Share meta and crawler files for one site. Human text is i18n keys. The package 
 
 ```typescript
 ModuleBE_SEO.registerSite(bookingSite, bookingPages);
+ModuleBE_SEO.registerSite(adminSite, adminPages);
 ```
 
 Config (`ModuleBE_SEO_Class`), no secrets:
 
-- `env` — which `origins` entry to use
-- `site` — site key to serve
-- `bundle` — `{scripts, styles}` the shell loads
+- `env` — which `origins` entry to use when the request host is not a wildcard tenant
+- `bundles` — `{[siteKey]: {scripts, styles}}` the shell loads. Asset hashes change per hosting build, so this stays here and not on the site def
 - `cacheMaxAgeSec`
 - `rootRedirect` — `GET /` → `/<locale>/` from `?lang=`, then `Accept-Language`, then `defaultLocale`
 
-Routes: `/<locale><path>`, `/robots.txt`, `/sitemap.xml`, `/site.webmanifest`, `/llms.txt?lang=` and `/<locale>/llms.txt` when `llms` is set, and `/` when `rootRedirect` is on.
+The host is `x-fh-requested-host`, then `x-forwarded-host`, then `host`, so a Cloud Run rewrite still sees the public host.
+
+Routes: `/<locale><path>` (patterns included), `/robots.txt`, `/sitemap.xml`, `/site.webmanifest`, `/llms.txt?lang=` and `/<locale>/llms.txt`, and `/` when `rootRedirect` is on. A site with no `llms` answers those two paths with 404.
 
 `init` only registers routes. It does not seed, and the module has no project-setup task because it stores nothing.
 
@@ -48,4 +52,6 @@ Routes: `/<locale><path>`, `/robots.txt`, `/sitemap.xml`, `/site.webmanifest`, `
 
 ## Hosting
 
-Rewrite `/`, `/robots.txt`, `/sitemap.xml`, `/site.webmanifest`, `/llms.txt`, and `/<locale>/**` to this service. Do not let static hosting shadow those paths.
+Rewrite `/`, `/robots.txt`, `/sitemap.xml`, `/site.webmanifest`, `/llms.txt`, and `/<locale>/**` to this service, ahead of the SPA `**` → `/index.html` rewrite. Do not ship a static `robots.txt`, `llms.txt`, `sitemap.xml`, or `site.webmanifest` in the hosting public dir; a static file wins over the rewrite. Forward the visitor host.
+
+Beamz has two hosting sites on one backend: admin (`beamz.dev`, `beamz-staging.com`) and org portal (`*.beamz.dev`, `*.beamz-staging.com`). Each site gets its own def, pages, and bundle. Calendar-booking is one site; its public page is `/book` with `resolve` reading `slug`.
