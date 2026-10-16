@@ -20,7 +20,7 @@ export const ModulePackBE_MyFeature: Module[] = [
   - `GCP_PROJECT_ID` environment variable
   - `GCLOUD_PROJECT` environment variable
   - Explicit `projectId` parameter in the constructor
-2. **IAM permissions**: the service account needs `roles/secretmanager.secretAccessor` (read) and optionally `roles/secretmanager.secretVersionManager` (write/create).
+2. **IAM permissions** for a secret that already exists: `roles/secretmanager.secretAccessor` (`secretmanager.versions.access`). Writing a new version of an existing secret also needs `secretmanager.versions.add` (`roles/secretmanager.secretVersionAdder`). Creating a secret that does not exist yet needs `secretmanager.secrets.create` on the project. See [Auto-generated secrets](#auto-generated-secrets).
 
 ## Creating a SecretKey
 
@@ -57,6 +57,45 @@ await apiToken.set('new-token-value');
 ```
 
 This creates a new version of the secret. Previous versions remain accessible.
+
+## Auto-generated secrets
+
+A secret that is only a random value is declared with `GeneratedSecret`. Construction does not call Secret Manager. The first `get()` reads the latest version and caches it. When the secret is missing, that call generates 32 random bytes (64 hex chars), creates the secret, and stores the value as version 1.
+
+If another instance creates the secret first, this call reads that value instead of writing a second one.
+
+```typescript
+import {GeneratedSecret} from '@nu-art/google-services-backend';
+
+const signingKey = new GeneratedSecret('embed-signing-key');
+
+// later, on the request that needs the key — not during module init
+const key = await signingKey.get();
+```
+
+Externally provided secrets (API keys, webhook secrets) stay on `SecretKey`. `get()` with no fallback returns `undefined` when the secret is missing, and a permission error is thrown. They are not created.
+
+```typescript
+const apiKey = await new SecretKey<string>('resend-api-key').get();
+if (!apiKey)
+	throw new ImplementationMissingException('Missing Resend API key');
+```
+
+An existing payload is kept. A raw string is returned as-is. A payload stored as a JSON string (the rate-limit pepper) is unwrapped. New values are stored raw.
+
+### IAM for auto-generated secrets
+
+The runtime service account needs, on the project:
+
+| Permission | Why |
+|---|---|
+| `secretmanager.versions.access` | Read the value. Already granted by `roles/secretmanager.secretAccessor`. |
+| `secretmanager.secrets.create` | Create the secret the first time it is used. |
+| `secretmanager.versions.add` | Store version 1. |
+
+`secretmanager.secrets.create` can only be granted on the project (the secret does not exist yet). `roles/secretmanager.secretVersionAdder` has `secretmanager.versions.add` but cannot create a secret. `roles/secretmanager.editor` has both create and add, and also delete and destroy, and it does **not** include `secretmanager.versions.access`.
+
+Grant `roles/secretmanager.secretAccessor` plus a custom role with `secretmanager.secrets.create` and `secretmanager.versions.add`. A permission error is not treated as "missing": the call fails and nothing is created.
 
 ## Lazy resolution pattern (recommended)
 

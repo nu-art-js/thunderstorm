@@ -5,7 +5,7 @@
  */
 
 import {HttpCodes} from '@nu-art/api-types';
-import {SecretKey} from '@nu-art/google-services-backend';
+import {GeneratedSecret} from '@nu-art/google-services-backend';
 import {MemKey_HttpRawResponse, type ServerApi_Middleware} from '@nu-art/http-server';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {
@@ -21,7 +21,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {deriveRateLimitBucketId} from './bucket-id.js';
 
 type Config = {
-	/** Secret Manager secret holding the HMAC pepper (a JSON string) used to derive bucket ids. */
+	/** Secret Manager secret holding the HMAC pepper used to derive bucket ids. Created on first use when missing. */
 	pepperSecretName: string;
 	/** Per policy key overrides of windowMs / limit (RTDB _config). Code defaults apply when absent. */
 	policies: TypedMap<RateLimitPolicyOverride>;
@@ -151,13 +151,9 @@ export class ModuleBE_RateLimit_Class
 		return ModuleBE_Firebase.createModuleStateFirebaseRef<RateLimitBucket>(this, `buckets/${bucketId}`);
 	}
 
-	/** Loads the pepper once from Secret Manager. Fails loudly when the secret is missing or empty. */
+	/** Loads the pepper on first use. Creates a random one when the secret does not exist yet. */
 	protected async loadPepper(): Promise<string> {
-		const pepper = await new SecretKey<string>(this.config.pepperSecretName).get();
-		if (!pepper)
-			throw new ImplementationMissingException(`Missing rate limit pepper secret '${this.config.pepperSecretName}'`);
-
-		return pepper;
+		return new GeneratedSecret(this.config.pepperSecretName).get();
 	}
 
 	private getPepper(): Promise<string> {

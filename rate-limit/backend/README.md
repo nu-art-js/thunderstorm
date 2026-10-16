@@ -12,7 +12,7 @@ Backend rate limiting for Thunderstorm: per (policy, subject) sliding-window cou
 
 | Field | Default | Meaning |
 |---|---|---|
-| `pepperSecretName` | `rate-limit--pepper` | Secret Manager secret (JSON string) used as the HMAC key for bucket ids |
+| `pepperSecretName` | `rate-limit--pepper` | Secret Manager secret used as the HMAC key for bucket ids. Created on first use when missing (`GeneratedSecret`) |
 | `policies` | `{}` | Per policy key overrides of `windowMs` / `limit` |
 | `rejectMessage` | `Too many requests. Please try again later.` | User message of the 429 |
 

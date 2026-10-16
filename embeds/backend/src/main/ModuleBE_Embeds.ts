@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {HttpCodes} from '@nu-art/api-types';
-import {ModuleBE_SecretManager} from '@nu-art/google-services-backend';
+import {GeneratedSecret} from '@nu-art/google-services-backend';
 import {
 	DefaultEmbedOriginLimit,
 	embedLoaderJs,
@@ -15,7 +15,7 @@ import {ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {signHs256, verifyHs256} from './hs256.js';
 
 type Config = {
-	/** Secret Manager secret holding the HMAC signing key, stored raw. */
+	/** Secret Manager secret holding the HMAC signing key. Created on first use when missing. */
 	signingKeySecretName: string;
 	/** Token lifetime. Long by default: a pasted snippet stays valid until the app bumps the subject version. */
 	tokenTtlSeconds: number;
@@ -130,14 +130,10 @@ export class ModuleBE_Embeds_Class
 		return embedLoaderJs(this.config.loader);
 	}
 
-	/** Reads the raw signing key from Secret Manager once. Fails loudly when it is missing. */
+	/** Reads the signing key on first use. Creates a random one when the secret does not exist yet. */
 	protected async loadSigningKey(): Promise<string> {
-		const projectId = process.env.GCP_PROJECT_ID ?? process.env.GCLOUD_PROJECT;
-		if (!projectId)
-			throw new ImplementationMissingException('Missing GCP_PROJECT_ID / GCLOUD_PROJECT to read the embed signing key');
-
-		const key = (await ModuleBE_SecretManager.tryGetSecretValue({key: this.config.signingKeySecretName, projectId, version: 'latest'}))?.trim();
-		if (!key || key.length < 32)
+		const key = await new GeneratedSecret(this.config.signingKeySecretName).get();
+		if (key.length < 32)
 			throw new ImplementationMissingException(`Missing or short (<32 chars) embed signing key '${this.config.signingKeySecretName}'`);
 
 		return key;
