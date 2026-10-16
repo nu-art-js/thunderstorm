@@ -1,7 +1,7 @@
 {
   "name": "@nu-art/stripe-shared",
   "version": "{{THUNDERSTORM_VERSION}}",
-  "description": "Stripe shared: checkout/portal/webhook API definitions and request types",
+  "description": "Stripe shared: checkout, portal, webhook and admin API definitions and request types",
   "keywords": ["TacB0sS", "infra", "nu-art", "stripe", "payments", "thunderstorm", "typescript"],
   "homepage": "https://github.com/nu-art-js/thunderstorm",
   "bugs": {"url": "https://github.com/nu-art-js/thunderstorm/issues"},
