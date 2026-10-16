@@ -8,7 +8,6 @@ import {useState} from 'react';
 import {Button, LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
 import type {DB_PasskeyCredential} from '@nu-art/passkey-shared';
 import {ModuleFE_PasskeyAuth} from '../../ModuleFE_PasskeyAuth.js';
-import {ModuleFE_PasskeyCredentialDB} from '../../_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
 import './Component_PasskeyCredentials.scss';
 
 type Props = {
@@ -22,7 +21,6 @@ export const Component_PasskeyCredentials = (props: Props) => {
 		setDeletingId(credential.credentialId);
 		try {
 			await ModuleFE_PasskeyAuth.deleteCredential({credentialId: credential.credentialId});
-			await ModuleFE_PasskeyCredentialDB.query();
 		} catch (e: any) {
 			// Error handled by dispatch
 		} finally {

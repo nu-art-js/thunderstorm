@@ -8,7 +8,6 @@ import {useState} from 'react';
 import {Button, LL_V_L, TS_PropRenderer} from '@nu-art/thunder-widgets';
 import {TS_Input} from '@nu-art/thunder-widgets/v3';
 import {ModuleFE_PasskeyAuth} from '../../ModuleFE_PasskeyAuth.js';
-import {ModuleFE_PasskeyCredentialDB} from '../../_entity/passkey-credential/ModuleFE_PasskeyCredentialDB.js';
 import './Component_PasskeyRegister.scss';
 
 type Props = {
@@ -39,7 +38,6 @@ export const Component_PasskeyRegister = (props: Props) => {
 			await ModuleFE_PasskeyAuth.register(credentialLabel);
 			setSuccess(true);
 			setLabel('');
-			await ModuleFE_PasskeyCredentialDB.query();
 			props.onSuccess?.();
 		} catch (e: any) {
 			const message = e.name === 'NotAllowedError'
