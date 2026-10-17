@@ -18,6 +18,8 @@ export type ApiHandlerOptions<Module> = {
 	middlewares?: ServerApi_Middleware[];
 	/** The global body parsers skip this route: the handler reads the untouched request stream (MemKey_HttpRequest). */
 	rawBody?: boolean;
+	/** Replaces the handler return value. The route action stays the method call. */
+	composeResponse?: (result: unknown) => unknown | Promise<unknown>;
 };
 
 /** Single shape for registering a route: apiDef (or getter+instance), handler, server, options. */
@@ -61,7 +63,10 @@ export function ApiHandler<API extends GeneralApi, Module = unknown>(_apiDef: Re
 					server,
 					apiDef,
 					enclosingClass,
-					handler: (payload: unknown) => originalMethod.call(enclosingClass, payload),
+					handler: async (payload: unknown) => {
+					const result = await originalMethod.call(enclosingClass, payload);
+					return options?.composeResponse ? await options.composeResponse(result) : result;
+				},
 					options
 				};
 				registerRoute(params);

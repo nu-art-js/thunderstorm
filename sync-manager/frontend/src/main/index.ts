@@ -5,6 +5,8 @@
  */
 
 export {ModuleFE_SyncManager_Class, ModuleFE_SyncManager, Default_SyncManagerNodePath} from './modules/ModuleFE_SyncManager.js';
+export {SyncApiCaller} from './SyncApiCaller.js';
+export type {SyncDelta} from '@nu-art/sync-manager-shared';
 export type {PermissibleModulesUpdated} from './modules/ModuleFE_SyncManager.js';
 export {ModuleFE_SyncManager_CSV_Class, ModuleFE_SyncManager_CSV} from './modules/ModuleFE_SyncManager_CSV.js';
 export {AwaitModules} from './components/AwaitModules/AwaitModules.js';

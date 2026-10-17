@@ -48,6 +48,7 @@ import {
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState,
 	SyncDbData,
+	SyncDelta,
 	SyncManagerAPI_SmartSync
 } from '@nu-art/sync-manager-shared';
 import {ThunderDispatcher, OnClearWebsiteData} from '@nu-art/thunder-core';
@@ -58,6 +59,7 @@ import {QueueV2} from '@nu-art/ts-common/utils/queue-v2';
 import {dispatch_QueryAwaitedModules, dispatch_onSyncStatusChanged} from '../components/AwaitModules/dispatchers.js';
 import {ModuleFE_ConnectivityModule, OnConnectivityChange} from '@nu-art/thunder-ui-modules';
 import {HttpClient, HttpRequest} from '@nu-art/http-client';
+import {applySyncDelta} from '../apply-sync-delta.js';
 import {ModuleFE_FirebaseListener, RefListenerFE} from '@nu-art/firebase-frontend';
 
 
@@ -305,6 +307,9 @@ export class ModuleFE_SyncManager_Class
 			removeFromArrayByIndex(this.currentlySyncingModules, indexOfModuleToRemove);
 		}
 	};
+
+	applyWrittenDelta = (delta: SyncDelta) => applySyncDelta(delta, dbKey =>
+		RuntimeModules().find<ModuleFE_BaseApi<any>>(module => module.config?.dbKey === dbKey));
 
 	private performDeltaSync = async (data: DeltaSyncModule) => {
 		const rtModule = RuntimeModules().find<ModuleFE_BaseApi<any>>(rtModule => rtModule.config?.dbKey === data.dbKey);
