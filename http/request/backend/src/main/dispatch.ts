@@ -16,7 +16,15 @@ import {Logger, type StringMap} from '@nu-art/ts-common';
 const ResponseBodyCap = 8_192;
 const DefaultTimeoutMs = 15_000;
 
-export type HttpRequestSend = (request: HttpRequestDef) => Promise<{status: number; body: unknown}>;
+export type HttpRequestDispatchResult = {
+	status: number;
+	body: unknown;
+	durationMs: number;
+	timedOut: boolean;
+	bodyTruncated: boolean;
+};
+
+export type HttpRequestSend = (request: HttpRequestDef) => Promise<{status: number; body: unknown; bodyTruncated?: boolean}>;
 
 export type HttpRequestDispatchDeps = {
 	resolveSecret: (name: string) => Promise<string | undefined>;
@@ -44,7 +52,8 @@ export const dispatchStoredHttpRequest = async (
 	request: HttpRequestDef,
 	params: StringMap,
 	deps: HttpRequestDispatchDeps,
-): Promise<{status: number; body: unknown}> => {
+): Promise<HttpRequestDispatchResult> => {
+	const started = Date.now();
 	const secretNames = listSecretNames(JSON.stringify(request));
 	const rendered = renderHttpRequest(request, params);
 	deps.logRequest(rendered);
@@ -62,15 +71,35 @@ export const dispatchStoredHttpRequest = async (
 		const response = await deps.send(resolved);
 		if (response.status < 200 || response.status >= 300)
 			deps.logFailure({status: response.status, body: response.body});
-		return response;
+		return {
+			status: response.status,
+			body: response.body,
+			durationMs: Date.now() - started,
+			timedOut: false,
+			bodyTruncated: response.bodyTruncated === true,
+		};
 	} catch (error) {
+		const durationMs = Date.now() - started;
+		if (isAbortError(error)) {
+			deps.logFailure({message: 'timeout'});
+			return {
+				status: 0,
+				body: `No response within ${request.timeout ?? DefaultTimeoutMs} ms. The request was not retried.`,
+				durationMs,
+				timedOut: true,
+				bodyTruncated: false,
+			};
+		}
 		const message = error instanceof Error ? error.message : String(error);
 		deps.logFailure({message});
 		throw error;
 	}
 };
 
-export const sendHttpRequest = async (request: HttpRequestDef): Promise<{status: number; body: unknown}> => {
+const isAbortError = (error: unknown): boolean =>
+	!!error && typeof error === 'object' && 'name' in error && (error as {name: string}).name === 'AbortError';
+
+export const sendHttpRequest = async (request: HttpRequestDef): Promise<{status: number; body: unknown; bodyTruncated: boolean}> => {
 	const controller = new AbortController();
 	const timer = setTimeout(() => controller.abort(), request.timeout ?? DefaultTimeoutMs);
 	try {
@@ -82,7 +111,8 @@ export const sendHttpRequest = async (request: HttpRequestDef): Promise<{status:
 			signal: controller.signal,
 		});
 		const text = await response.text();
-		const capped = text.length > ResponseBodyCap ? text.slice(0, ResponseBodyCap) : text;
+		const bodyTruncated = text.length > ResponseBodyCap;
+		const capped = bodyTruncated ? text.slice(0, ResponseBodyCap) : text;
 		let body: unknown = capped;
 		if (capped) {
 			try {
@@ -91,7 +121,7 @@ export const sendHttpRequest = async (request: HttpRequestDef): Promise<{status:
 				body = capped;
 			}
 		}
-		return {status: response.status, body};
+		return {status: response.status, body, bodyTruncated};
 	} finally {
 		clearTimeout(timer);
 	}
@@ -103,7 +133,7 @@ export const dispatchHttpRequest = (
 	request: HttpRequestDef,
 	params: StringMap,
 	resolveSecret: (name: string) => Promise<string | undefined>,
-): Promise<{status: number; body: unknown}> =>
+): Promise<HttpRequestDispatchResult> =>
 	dispatchStoredHttpRequest(request, params, {
 		resolveSecret,
 		send: sendHttpRequest,

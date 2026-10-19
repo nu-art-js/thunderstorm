@@ -75,7 +75,23 @@ describe('dispatchStoredHttpRequest', () => {
 			logFailure: failure => failures.push(failure),
 		});
 		expect(result.status).to.equal(401);
+		expect(result.timedOut).to.equal(false);
 		expect(JSON.stringify(failures)).to.include('Invalid API key');
 		expect(JSON.stringify(failures)).to.not.include('crsr_secret');
+	});
+
+	it('returns a timeout instead of throwing when the send aborts', async () => {
+		const result = await dispatchStoredHttpRequest(stored, {version: '1'}, {
+			resolveSecret: async () => 'crsr_secret',
+			send: async () => {
+				throw Object.assign(new Error('The operation was aborted'), {name: 'AbortError'});
+			},
+			logRequest: () => undefined,
+			logFailure: () => undefined,
+		});
+		expect(result.timedOut).to.equal(true);
+		expect(result.status).to.equal(0);
+		expect(result.bodyTruncated).to.equal(false);
+		expect(String(result.body)).to.include('not retried');
 	});
 });
