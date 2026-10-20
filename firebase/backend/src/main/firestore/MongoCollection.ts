@@ -20,7 +20,6 @@ import {Database, dbObjectToId, DB_Prototype, EntityNotFoundException, EntityOut
 import {
 	__stringify,
 	_keys,
-	asArray,
 	BadImplementationException,
 	batchActionParallel,
 	compare,
@@ -50,6 +49,7 @@ import {Clause_Where, FirestoreQuery} from '@nu-art/firebase-shared';
 import {composeDbObjectUniqueId, _EmptyQuery, maxBatch} from '@nu-art/firebase-shared';
 import {addDeletedToTransaction, drainTransactionPreClose, getActiveTransaction, markTransactionWrite, MemKey_FirestoreTransaction} from './consts.js';
 import {MongoInterface, type MqlCompiledQuery} from './MongoInterface.js';
+import {assertOneTextIndex, compileMongoIndex} from './mongo-index.js';
 import {FirestoreCollectionHooks} from './FirestoreCollection.js';
 import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb, Document, UpdateFilter} from 'mongodb';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
@@ -498,15 +498,10 @@ export class MongoCollection<Proto extends DB_Prototype>
 
 	ensureIndices = async (): Promise<void> => {
 		const indices = this.dbDef.indices ?? [];
+		assertOneTextIndex(indices);
 		for (const idx of indices) {
-			const spec = asArray(idx.keys).reduce<Record<string, 1>>((acc, key) => {
-				acc[String(key)] = 1;
-				return acc;
-			}, {});
-			await this.mongoCollection.createIndex(spec, {
-				name: idx.id,
-				unique: idx.params?.unique ?? false,
-			});
+			const compiled = compileMongoIndex(idx);
+			await this.mongoCollection.createIndex(compiled.spec, compiled.options);
 		}
 	};
 

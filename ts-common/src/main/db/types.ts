@@ -18,6 +18,26 @@ export type DB_RefId = {
 	}
 }
 
+/** Mongo `createIndex` direction. Omitted means ascending. */
+export type MongoIndexDirection = 1 | -1 | 'text';
+
+export type MongoIndexKey = {
+	/** Dotted paths are allowed (`target.id`). */
+	field: string;
+	direction?: MongoIndexDirection;
+};
+
+/**
+ * Mongo spec used instead of {@link DBIndex.keys} when present.
+ * IndexedDB does not read this.
+ */
+export type MongoIndexOptions = {
+	keys: readonly MongoIndexKey[];
+	/** Mongo text-index language. `none` disables stemming and stop-words. */
+	defaultLanguage?: string;
+	weights?: Readonly<Record<string, number>>;
+};
+
 /**
  * Database index definition.
  *
@@ -32,6 +52,11 @@ export type DBIndex<T extends DB_Object> = {
 	keys: keyof T | (keyof T)[],
 	/** Optional index parameters */
 	params?: { multiEntry: boolean, unique: boolean }
+	/**
+	 * When set, Mongo indexes these keys instead of `keys`.
+	 * `keys` stays the IndexedDB list.
+	 */
+	mongo?: MongoIndexOptions,
 };
 
 /** Default unique key name for database objects */
