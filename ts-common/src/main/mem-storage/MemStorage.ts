@@ -49,6 +49,14 @@ export class MemStorage {
 	}
 
 	/**
+	 * A new root request. Pass `null` as the parent so this store does not inherit the enclosing one.
+	 * Nested `init` inside the callback still links to this fresh store.
+	 */
+	static detached<R>(makeItContext: () => Promise<R>): Promise<R> {
+		return new MemStorage().init(makeItContext, null);
+	}
+
+	/**
 	 * Initializes a new async context with this MemStorage instance.
 	 *
 	 * Runs the provided function in a new async context where this MemStorage
@@ -62,11 +70,14 @@ export class MemStorage {
 	 *
 	 * @template R - Return type
 	 * @param makeItContext - Async function to run in the new context
-	 * @param enclosingContextStorage - Optional explicit parent context
+	 * @param enclosingContextStorage - Explicit parent. `null` starts a detached root (no inheritance).
+	 *   Omit to link the active store.
 	 * @returns Promise resolving to the function's return value
 	 */
-	async init<R>(makeItContext: () => Promise<R>, enclosingContextStorage?: MemStorage): Promise<R> {
-		const parentContext = enclosingContextStorage ?? asyncLocalStorage.getStore();
+	async init<R>(makeItContext: () => Promise<R>, enclosingContextStorage?: MemStorage | null): Promise<R> {
+		const parentContext = enclosingContextStorage === null
+			? undefined
+			: enclosingContextStorage ?? asyncLocalStorage.getStore();
 
 		if (parentContext === this)
 			return makeItContext();

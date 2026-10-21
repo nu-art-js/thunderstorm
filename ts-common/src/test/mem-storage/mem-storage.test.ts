@@ -106,6 +106,25 @@ describe('MemStorage parent chain', () => {
 		});
 	});
 
+	it('detached does not read the enclosing store, and a nested init reads the fresh one', async () => {
+		await new MemStorage().init(async () => {
+			Key_User.set('outer-request');
+
+			await MemStorage.detached(async () => {
+				expect(Key_User.peak()).to.equal(undefined);
+				Key_Role.set('fresh-request');
+
+				await new MemStorage().init(async () => {
+					expect(Key_User.peak()).to.equal(undefined);
+					expect(Key_Role.get()).to.equal('fresh-request');
+				});
+			});
+
+			expect(Key_User.get()).to.equal('outer-request');
+			expect(Key_Role.peak()).to.equal(undefined);
+		});
+	});
+
 	it('returns undefined from peak when key is absent in the full chain', async () => {
 		await new MemStorage().init(async () => {
 			await new MemStorage().init(async () => {
