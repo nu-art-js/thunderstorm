@@ -118,12 +118,39 @@ export class ModuleBE_Stripe_Class
 			...(customer.clientReferenceId ? {client_reference_id: customer.clientReferenceId} : {}),
 			...(request.allowPromotionCodes !== undefined ? {allow_promotion_codes: request.allowPromotionCodes} : {}),
 			...(request.paymentMethodCollection ? {payment_method_collection: request.paymentMethodCollection} : {}),
+			...this.taxParams(request, customer.customerId),
 		});
 		if (!session.url)
 			throw HttpCodes._5XX.SERVICE_UNAVAILABLE('Stripe returned no checkout url', `session ${session.id}`);
 
 		this.logInfo(`Checkout session ${session.id} created`);
 		return {url: session.url};
+	}
+
+	private taxParams(request: StripeCheckoutRequest, customerId?: string): Stripe.Checkout.SessionCreateParams {
+		const params: Stripe.Checkout.SessionCreateParams = {};
+		if (request.automaticTax) {
+			params.automatic_tax = {enabled: true};
+			params.billing_address_collection = 'required';
+		}
+
+		if (request.taxIdCollection)
+			params.tax_id_collection = {enabled: true};
+
+		if (!customerId)
+			return params;
+
+		const customerUpdate: Stripe.Checkout.SessionCreateParams.CustomerUpdate = {};
+		if (request.automaticTax)
+			customerUpdate.address = 'auto';
+
+		if (request.taxIdCollection)
+			customerUpdate.name = 'auto';
+
+		if (customerUpdate.address || customerUpdate.name)
+			params.customer_update = customerUpdate;
+
+		return params;
 	}
 
 	async createPortalSession(request: StripePortalRequest): Promise<StripeRedirect> {

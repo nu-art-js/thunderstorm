@@ -32,6 +32,8 @@ alwaysApply: false
 
 `StripeCheckoutRequest.allowPromotionCodes` and `paymentMethodCollection` (`always` | `if_required`) are optional. Omitted, they are not sent, so Stripe keeps its own defaults. When set, checkout passes them as `allow_promotion_codes` and `payment_method_collection`.
 
+`automaticTax` and `taxIdCollection` are optional. Omitted or false, they are not sent. `automaticTax: true` sends `automatic_tax: {enabled: true}` and `billing_address_collection: 'required'`. `taxIdCollection: true` sends `tax_id_collection: {enabled: true}`. When the resolver returns a `customerId`, checkout also sends `customer_update`: `address: 'auto'` for automatic tax and `name: 'auto'` for tax id collection. Stripe rejects those features on an existing customer without that update. A session that only has `customer_email` does not send `customer_update`.
+
 ## Customer
 
 `ModuleBE_Stripe.updateCustomer({customerId, email?, invoiceEmail?})` updates the Stripe customer. `email` is the customer email. `invoiceEmail.locales` is the ordered locale list Stripe uses for invoice and receipt emails (`preferred_locales`). At least one of those two must be set. The same call is `ApiDef_StripeAdmin.updateCustomer`.
