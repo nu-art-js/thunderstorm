@@ -142,6 +142,10 @@ describe('ModuleBE_Stripe - checkout and portal', () => {
 		});
 		expect(stripe.checkoutArgs[0]).to.not.have.property('allow_promotion_codes');
 		expect(stripe.checkoutArgs[0]).to.not.have.property('payment_method_collection');
+		expect(stripe.checkoutArgs[0]).to.not.have.property('automatic_tax');
+		expect(stripe.checkoutArgs[0]).to.not.have.property('billing_address_collection');
+		expect(stripe.checkoutArgs[0]).to.not.have.property('customer_update');
+		expect(stripe.checkoutArgs[0]).to.not.have.property('tax_id_collection');
 	});
 
 	it('passes promotion codes and payment method collection through when set', async () => {
@@ -152,6 +156,63 @@ describe('ModuleBE_Stripe - checkout and portal', () => {
 			allowPromotionCodes: false, paymentMethodCollection: 'if_required',
 		});
 		expect(stripe.checkoutArgs[0]).to.deep.include({allow_promotion_codes: false, payment_method_collection: 'if_required', customer: 'cus_1'});
+		expect(stripe.checkoutArgs[0]).to.not.have.property('customer_update');
+	});
+
+	it('enables automatic tax and saves the address only for an existing customer', async () => {
+		const stripe = new TestStripe_Class();
+		stripe.setCustomerResolver(async () => ({customerId: 'cus_1', email: 'a@b.nl'}));
+		await stripe.createCheckoutSession({
+			priceId: 'price_basic', mode: 'payment', successPath: '/ok', cancelPath: '/no', automaticTax: true,
+		});
+		expect(stripe.checkoutArgs[0]).to.deep.include({
+			customer: 'cus_1',
+			automatic_tax: {enabled: true},
+			billing_address_collection: 'required',
+			customer_update: {address: 'auto'},
+		});
+		expect(stripe.checkoutArgs[0]).to.not.have.property('customer_email');
+		expect(stripe.checkoutArgs[0]).to.not.have.property('tax_id_collection');
+
+		stripe.setCustomerResolver(async () => ({email: 'a@b.nl'}));
+		await stripe.createCheckoutSession({
+			priceId: 'price_basic', mode: 'payment', successPath: '/ok', cancelPath: '/no', automaticTax: true, taxIdCollection: false,
+		});
+		expect(stripe.checkoutArgs[1]).to.deep.include({
+			customer_email: 'a@b.nl',
+			automatic_tax: {enabled: true},
+			billing_address_collection: 'required',
+		});
+		expect(stripe.checkoutArgs[1]).to.not.have.property('customer_update');
+		expect(stripe.checkoutArgs[1]).to.not.have.property('tax_id_collection');
+	});
+
+	it('collects a tax id and saves the name only for an existing customer', async () => {
+		const stripe = new TestStripe_Class();
+		stripe.setCustomerResolver(async () => ({customerId: 'cus_1'}));
+		await stripe.createCheckoutSession({
+			priceId: 'price_basic', mode: 'subscription', successPath: '/ok', cancelPath: '/no',
+			automaticTax: true, taxIdCollection: true,
+		});
+		expect(stripe.checkoutArgs[0]).to.deep.include({
+			automatic_tax: {enabled: true},
+			billing_address_collection: 'required',
+			tax_id_collection: {enabled: true},
+			customer_update: {address: 'auto', name: 'auto'},
+			customer: 'cus_1',
+		});
+
+		stripe.setCustomerResolver(async () => ({email: 'a@b.nl'}));
+		await stripe.createCheckoutSession({
+			priceId: 'price_basic', mode: 'subscription', successPath: '/ok', cancelPath: '/no', taxIdCollection: true,
+		});
+		expect(stripe.checkoutArgs[1]).to.deep.include({
+			customer_email: 'a@b.nl',
+			tax_id_collection: {enabled: true},
+		});
+		expect(stripe.checkoutArgs[1]).to.not.have.property('automatic_tax');
+		expect(stripe.checkoutArgs[1]).to.not.have.property('billing_address_collection');
+		expect(stripe.checkoutArgs[1]).to.not.have.property('customer_update');
 	});
 
 	it('refuses unknown prices, bad quantities and off-origin paths', async () => {

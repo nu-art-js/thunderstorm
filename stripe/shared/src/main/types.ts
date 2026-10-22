@@ -12,6 +12,10 @@ export type StripeCheckoutRequest = {
 	cancelPath: string;
 	allowPromotionCodes?: boolean;
 	paymentMethodCollection?: StripePaymentMethodCollection;
+	/** Stripe Tax. Sends `automatic_tax: {enabled: true}` and requires a billing address. An existing customer also saves that address. */
+	automaticTax?: boolean;
+	/** Collect a tax ID. Sends `tax_id_collection: {enabled: true}`. An existing customer also saves the name entered with it. */
+	taxIdCollection?: boolean;
 };
 
 export type StripePortalRequest = {
