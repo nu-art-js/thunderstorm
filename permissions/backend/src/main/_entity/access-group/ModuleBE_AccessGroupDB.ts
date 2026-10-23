@@ -1,4 +1,5 @@
-import {Dispatcher, filterDuplicates, UniqueId} from '@nu-art/ts-common';
+import {currentTimeMillis, Dispatcher, filterDuplicates, UniqueId} from '@nu-art/ts-common';
+import {hashToUniqueId} from '@nu-art/db-api-shared';
 import {HttpCodes} from '@nu-art/api-types';
 import {ModuleBE_BaseDB, PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 import type {DatabaseDef_AccessGroup, DB_AccessGroup} from '@nu-art/permissions-shared';
@@ -17,6 +18,62 @@ export class ModuleBE_AccessGroupDB_Class
 
 	constructor() {
 		super(DBDef_AccessGroup);
+	}
+
+	/**
+	 * Insert or merge many custom groups in one bulkWrite.
+	 * Existing members stay. `members` are added. `excludeMembers` are removed.
+	 */
+	async mergeCustomGroups(groups: {
+		_id: DatabaseDef_AccessGroup['id'];
+		key: string;
+		label: string;
+		members: UniqueId[];
+		excludeMembers?: UniqueId[];
+	}[]): Promise<void> {
+		if (!groups.length)
+			return;
+
+		const collection = this.asMongoCollection();
+		const now = currentTimeMillis();
+		const version = collection.getVersion();
+		// Same insert stamp as the access-group resolver: permissions-admin can read the row.
+		const permissionsAdmin = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/permissions-admin');
+		await this.patch!.all(groups.map(group => ({
+			_id: group._id,
+			pipeline: [{
+				$set: {
+					type: {$ifNull: ['$type', 'custom']},
+					key: {$ifNull: ['$key', group.key]},
+					label: {$ifNull: ['$label', group.label]},
+					scopeEntries: {$ifNull: ['$scopeEntries', []]},
+					__created: {$ifNull: ['$__created', now]},
+					__updated: now,
+					_v: version,
+					__access: {
+						$ifNull: ['$__access', {
+							readers: [permissionsAdmin, group._id],
+							writers: [permissionsAdmin],
+							creators: [],
+							deleters: [],
+							owners: [],
+						}],
+					},
+					members: {
+						$filter: {
+							input: {
+								$setUnion: [
+									{$ifNull: ['$members', []]},
+									group.members,
+								],
+							},
+							as: 'member',
+							cond: {$not: [{$in: ['$$member', group.excludeMembers ?? []]}]},
+						},
+					},
+				},
+			}],
+		})));
 	}
 
 	protected async preWriteProcessing(instance: DB_AccessGroup, _original: DatabaseDef_AccessGroup['dbType']): Promise<void> {

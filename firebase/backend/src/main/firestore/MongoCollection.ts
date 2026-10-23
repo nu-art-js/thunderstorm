@@ -57,6 +57,11 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage';
 /** Firestore Mongo and DocumentDB reject getMore inside a transaction. One find must fit one batch. */
 const TxFindPageSize = 100;
 
+/** One pipeline upsert. `_id` selects the row. `pipeline` is the patch Mongo applies. */
+export type CollectionPatch = { _id: string, pipeline: Document[] };
+
+export type CollectionPatchItem<Proto extends DB_Prototype> = { item: Proto['uiType'], pipeline: Document[] };
+
 const getDbDefValidator = <Proto extends DB_Prototype>(dbDef: Database<Proto>) => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
@@ -101,6 +106,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 		this.create = this.gateApi(this.create);
 		this.set = this.gateApi(this.set);
 		this.update = this.gateApi(this.update);
+		this.patch = this.gateApi(this.patch);
 		this.delete = this.gateApi(this.delete);
 		this.ensureIndices = this.gateFn(this.ensureIndices);
 		this.runTransaction = this.gateFn(this.runTransaction);
@@ -453,6 +459,70 @@ export class MongoCollection<Proto extends DB_Prototype>
 
 		return preparedItems;
 	};
+
+	/**
+	 * One bulkWrite of aggregation-pipeline updateOne upserts.
+	 * Mongo inserts a missing row and patches an existing one. The caller does not read first.
+	 */
+	private _patchAll = async (updates: CollectionPatch[]): Promise<CollectionPatch[]> => {
+		if (!updates.length)
+			return [];
+
+		markTransactionWrite();
+		await this.mongoCollection.bulkWrite(updates.map(update => ({
+			updateOne: {
+				filter: {_id: update._id},
+				update: update.pipeline,
+				upsert: true,
+			},
+		})) as any[], this.sessionOpts());
+		await this.hooks?.postWriteProcessing?.({
+			updated: updates.map(update => ({_id: update._id} as Proto['dbType'])),
+		}, 'update');
+		return updates;
+	};
+
+	/**
+	 * Pipeline patch. Every call ends in {@link _patchAll}.
+	 * unique and item are one row. all and allItems are many, in a transaction.
+	 * multi skips the transaction.
+	 */
+	patch = Object.freeze({
+		unique: async (id: Proto['uniqueParam'], pipeline: Document[]): Promise<CollectionPatch[]> => {
+			const idStr = typeof id !== 'string' ? this.assertUniqueId(id) : id;
+			return this.patch.all([{_id: idStr, pipeline}]);
+		},
+		item: async (item: Proto['uiType'], pipeline: Document[]): Promise<CollectionPatch[]> => {
+			item._id = this.assertUniqueId(item);
+			return this.patch.unique(item._id as Proto['uniqueParam'], pipeline);
+		},
+		all: async (updates: CollectionPatch[]): Promise<CollectionPatch[]> => {
+			if (!updates.length)
+				return [];
+
+			if (!this.getSession())
+				return this.runTransactionInChunks(updates, (chunk) => this._patchAll(chunk));
+
+			return this._patchAll(updates);
+		},
+		allItems: async (items: CollectionPatchItem<Proto>[]): Promise<CollectionPatch[]> => {
+			const updates = items.map(({item, pipeline}) => {
+				item._id = this.assertUniqueId(item);
+				return {_id: item._id as string, pipeline};
+			});
+			return this.patch.all(updates);
+		},
+		multi: {
+			all: async (updates: CollectionPatch[]): Promise<CollectionPatch[]> => this._patchAll(updates),
+			items: async (items: CollectionPatchItem<Proto>[]): Promise<CollectionPatch[]> => {
+				const updates = items.map(({item, pipeline}) => {
+					item._id = this.assertUniqueId(item);
+					return {_id: item._id as string, pipeline};
+				});
+				return this.patch.multi.all(updates);
+			},
+		},
+	});
 
 	/** Access-asserted partial update — Mongo update operators only (e.g. `$inc`, `$set`). */
 	update = Object.freeze({

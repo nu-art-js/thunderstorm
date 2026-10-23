@@ -106,6 +106,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	public create!: FirestoreCollection<DatabaseProto>['create'];
 	public set!: FirestoreCollection<DatabaseProto>['set'];
 	public delete!: FirestoreCollection<DatabaseProto>['delete'];
+	/** Pipeline patch. Present when the collection is Mongo. */
+	public patch?: MongoCollection<DatabaseProto>['patch'];
 	public doc!: FirestoreCollection<DatabaseProto>['doc'];
 	public runTransaction!: FirestoreCollection<DatabaseProto>['runTransaction'];
 
@@ -266,6 +268,8 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 		this.create = wrapInTryCatch(this.collection.create, 'create');
 		this.set = wrapInTryCatch(this.collection.set, 'set');
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
+		if (this.collection instanceof MongoCollection)
+			this.patch = wrapInTryCatch(this.collection.patch as unknown as Callable, 'patch') as unknown as MongoCollection<DatabaseProto>['patch'];
 		if ('doc' in this.collection)
 			this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 
