@@ -69,6 +69,8 @@
   --color-icon-disabled: var(--color-text-disabled);
   --color-icon-button-bg-hover: var(--color-surface-overlay);
   --color-icon-button-bg-active: var(--color-action-primary-soft);
+  --color-icon-mat-dark: #141518;
+  --color-icon-mat-light: #f4f5f7;
 
   // Scrollbar colour tokens (themes remap THESE).
   --color-scrollbar-track: transparent;
@@ -104,6 +106,7 @@
   --font-size-base: 14px;
   --font-size-control: var(--font-size-base);
   --font-weight-medium: 500;
+  --font-weight-semibold: 600;
 
   // Motion (ease-out fast/default, ease-in-out slow).
   --motion-fast: 100ms ease-out;
@@ -445,6 +448,12 @@
   --ts-messaging--thread-header: var(--color-text-primary);
   --ts-messaging--parent-bg: var(--color-surface-input);
   --ts-messaging--parent-text: var(--color-text-muted-hi);
+}
+
+// Document text. Headings keep size and weight; color follows this so a page
+// does not restate --color-text-primary on every title.
+body {
+  color: var(--color-text-primary);
 }
 
 // Text selection — global; uses semantic tokens so themes remap automatically.
