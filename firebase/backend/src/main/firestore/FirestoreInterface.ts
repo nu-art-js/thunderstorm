@@ -44,6 +44,10 @@ export class FirestoreInterface {
 						throw new ImplementationMissingException(
 							`Firestore does not support $or — use the Mongo backend. Query: ${JSON.stringify(query)}`);
 
+					if (whereField === '$text')
+						throw new ImplementationMissingException(
+							`Firestore does not support $text — use the Mongo backend. Query: ${JSON.stringify(query)}`);
+
 					const processObject = (___query: FirestoreType_Query, whereKey: string, _whereValue: any): FirestoreType_Query => {
 						const valueType = typeof _whereValue;
 

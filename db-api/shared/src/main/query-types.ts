@@ -56,10 +56,14 @@ export type CrudWhereValue<Value> =
 	| CrudQueryComparator<Value>
 	| (Value extends DB_Object ? CrudClause_Where<Value> : Value | [Value]);
 
+/** Mongo text search. The collection’s text index decides which fields are searched. */
+export type CrudTextSearch = { $search: string };
+
 export type CrudClause_Where<T extends DB_Object> = {
 	[P in keyof T]?: CrudWhereValue<T[P]>
 } & {
 	$or?: CrudClause_Where<T>[]
+	$text?: CrudTextSearch
 };
 
 export type CrudClause_OrderBy<T extends DB_Object> = { key: keyof T; order: CrudOrderByDirection }[];

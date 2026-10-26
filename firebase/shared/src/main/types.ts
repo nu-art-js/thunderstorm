@@ -104,10 +104,14 @@ export type FirestoreType_OrderByDirection = 'desc' | 'asc';
 export type WhereValue<Value> =
 	QueryComparator<Value>
 	| (Value extends TS_Object ? Clause_Where<Value> : Value | [Value]);
+/** Mongo text search. The collection’s text index decides which fields are searched. */
+export type Clause_TextSearch = { $search: string };
+
 export type Clause_Where<T extends TS_Object> = {
 	[P in keyof T]?: WhereValue<T[P]>
 } & {
 	$or?: Clause_Where<T>[]
+	$text?: Clause_TextSearch
 }
 export type Clause_OrderBy<T extends TS_Object> = { key: keyof T; order: FirestoreType_OrderByDirection }[];
 export type Clause_Select<T extends TS_Object, K extends keyof T = keyof T> = K[];

@@ -157,6 +157,15 @@ export class MongoInterface {
 				continue;
 			}
 
+			if (field === '$text') {
+				const search = value?.$search;
+				if (typeof search !== 'string' || search.length === 0)
+					throw new BadImplementationException(`$text requires a non-empty $search string in filter: ${__stringify(where)}`);
+
+				filter.$text = {$search: search};
+				continue;
+			}
+
 			const key = prefix ? `${prefix}.${field}` : field;
 
 			if (Array.isArray(value)) {

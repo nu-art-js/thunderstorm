@@ -5,7 +5,7 @@
  */
 
 import {expect} from 'chai';
-import {ImplementationMissingException} from '@nu-art/ts-common';
+import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import {FirestoreInterface} from '../main/firestore/FirestoreInterface.js';
 import {MongoInterface} from '../main/firestore/MongoInterface.js';
 
@@ -53,6 +53,22 @@ describe('MongoInterface.buildQuery — $regex / $or', () => {
 				{label: {$regex: 'knowledge', $options: 'i'}},
 			],
 		});
+	});
+
+	it('compiles $text as a top-level search', () => {
+		const compiled = MongoInterface.buildQuery<DemoDoc>({
+			where: {active: true, $text: {$search: 'bug task'}},
+		});
+		expect(compiled.filter).to.deep.equal({
+			active: true,
+			$text: {$search: 'bug task'},
+		});
+	});
+
+	it('rejects an empty $text search', () => {
+		expect(() => MongoInterface.buildQuery<DemoDoc>({
+			where: {$text: {$search: ''}},
+		})).to.throw(BadImplementationException, /\$text/);
 	});
 
 	it('compiles compound range comparators on one field', () => {
@@ -133,6 +149,12 @@ describe('FirestoreInterface.buildQuery — $regex / $or fail-fast', () => {
 		expect(() => FirestoreInterface.buildQuery(collection, {
 			where: {$or: [{label: 'x'}]},
 		})).to.throw(ImplementationMissingException, /\$or/);
+	});
+
+	it('throws on $text', () => {
+		expect(() => FirestoreInterface.buildQuery(collection, {
+			where: {$text: {$search: 'bug'}},
+		})).to.throw(ImplementationMissingException, /\$text/);
 	});
 
 	it('throws on $regex', () => {
