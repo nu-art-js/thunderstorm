@@ -59,6 +59,8 @@ export * from './validator/validators.js';
 export * from './validator/type-validators.js';
 
 export * from './json-schema/json-schema.js';
+export * from './json-schema/validate-json-schema.js';
+export * from './json-schema/schema-as-type.js';
 
 export * from './consts/consts.js';
 
