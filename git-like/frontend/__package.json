@@ -1,0 +1,56 @@
+{
+  "name": "@nu-art/git-like-frontend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Git-like branching of live collections — frontend",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "git-like"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/git-like/frontend"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "test": "../../../node_modules/.bin/playwright test --config playwright.config.ts"
+  },
+  "dependencies": {
+    "@nu-art/git-like-shared": "?",
+    "react": "?",
+    "react-dom": "?"
+  },
+  "devDependencies": {
+    "@playwright/test": "?",
+    "@types/react": "?",
+    "@types/react-dom": "?"
+  },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {
+    "output": "dist",
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

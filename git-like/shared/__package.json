@@ -1,0 +1,48 @@
+{
+  "name": "@nu-art/git-like-shared",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Git-like branching of live collections — shared contracts",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "git-like"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/git-like/shared"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "dependencies": {
+    "@nu-art/db-api-shared": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {},
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {
+    "output": "dist",
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}

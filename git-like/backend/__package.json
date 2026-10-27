@@ -1,0 +1,58 @@
+{
+  "name": "@nu-art/git-like-backend",
+  "version": "{{THUNDERSTORM_VERSION}}",
+  "description": "Git-like branching of live collections — backend",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript",
+    "git-like"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/nu-art-js/thunderstorm.git",
+    "directory": "_thunderstorm/git-like/backend"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "test": "ts-mocha --timeout 10000 -p src/test/tsconfig.json src/test/git-like-branch.test.ts src/test/git-like-router.test.ts"
+  },
+  "dependencies": {
+    "@nu-art/api-types": "?",
+    "@nu-art/db-api-backend": "?",
+    "@nu-art/git-like-shared": "?",
+    "@nu-art/ts-common": "?"
+  },
+  "devDependencies": {
+    "@types/chai": "?",
+    "@types/mocha": "?",
+    "chai": "?",
+    "ts-mocha": "?"
+  },
+  "publishConfig": {"directory": "dist", "linkDirectory": true},
+  "unitConfig": {
+    "output": "dist",
+    "type": "typescript-lib"
+  },
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.js"
+    },
+    "./*": {
+      "types": "./*.d.ts",
+      "import": "./*.js"
+    }
+  }
+}
