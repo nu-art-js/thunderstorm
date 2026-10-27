@@ -31,7 +31,7 @@ const Super = MergeClass(BaseCommando, Commando_Programming, Commando_Basic, Com
  * Provides PNPM operations:
  * - Install PNPM
  * - Get PNPM version
- * - Install packages (with store prune and force flags)
+ * - Install packages (reuse the store; no prune, no --force)
  *
  * Extends Commando_NVM, Commando_Programming, and Commando_Basic (merged).
  * Requires NVM for Node.js version management.
@@ -42,14 +42,14 @@ export class Commando_PNPM
 	/**
 	 * Installs packages using PNPM.
 	 *
-	 * Prunes the store, then installs with force flag and no frozen lockfile.
+	 * Reuses the store. `--prefer-offline false` still checks registry metadata.
+	 * A version is downloaded only when that exact version is not already stored.
 	 *
 	 * @returns This instance for method chaining
 	 */
 	async installPackages() {
 		await this
-			.append(`pnpm store prune`)
-			.append(`pnpm install -f --no-frozen-lockfile --prefer-offline false`)
+			.append(`pnpm install --no-frozen-lockfile --prefer-offline false`)
 			.execute();
 
 		return this;

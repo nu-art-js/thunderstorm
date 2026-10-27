@@ -150,11 +150,14 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 		if (packages.length > 0)
 			await PNPM.createWorkspace(packages, this.config.fullPath);
 
+		// pnpm resolution-mode=highest (default since 8.7) selects the newest published
+		// match from registry metadata. The store is only the tarball cache, so a cached
+		// 1.0.0 does not block ~1.0.0 from resolving to 1.0.1. Do not prune or --force:
+		// both discard that cache and re-download every package.
 		const commando = this.allocateCommando(Commando_NVM, Commando_PNPM)
-			.cd(this.config.fullPath)
-			.append(`${this.pnpmCommand()} store prune`);
+			.cd(this.config.fullPath);
 
-		await this.executeAsyncCommando(commando, `${this.pnpmCommand()} install -f --no-frozen-lockfile --prefer-offline false`, (stdout, stderr, exitCode) => {
+		await this.executeAsyncCommando(commando, `${this.pnpmCommand()} install --no-frozen-lockfile --prefer-offline false`, (stdout, stderr, exitCode) => {
 			if (exitCode !== 0)
 				throw new CommandoException(`Error installing packages`, stdout, stderr, exitCode);
 		});
@@ -375,7 +378,7 @@ export class Unit_NodeProject<C extends Unit_TypescriptProject_Config = Unit_Typ
 
 	/**
 	 * The repo's pnpm (node_modules/.bin/pnpm when present, else the one the bootstrap put on PATH),
-	 * pinned to a repo-local store so `store prune` and install never touch the global store.
+	 * pinned to a repo-local store so install reuses it and never touches the global store.
 	 * BAI_PNPM_STORE_DIR overrides the store location.
 	 */
 	private pnpmCommand() {
