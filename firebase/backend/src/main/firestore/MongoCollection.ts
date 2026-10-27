@@ -132,6 +132,12 @@ export class MongoCollection<Proto extends DB_Prototype>
 		return this.pendingDb;
 	}
 
+	/** Drops the cached driver so the next operation opens a new client. */
+	release(): void {
+		this.db = undefined;
+		this.pendingDb = undefined;
+	}
+
 	private gateFn<Fn extends (...args: any[]) => Promise<any>>(fn: Fn): Fn {
 		const gated = async (...args: Parameters<Fn>): Promise<Awaited<ReturnType<Fn>>> => {
 			await this.getDb();

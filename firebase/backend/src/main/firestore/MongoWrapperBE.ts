@@ -145,6 +145,15 @@ export class MongoWrapperBE
 		return this.collections[dbDef.dbKey] = new MongoCollection<Proto>(() => this.clientReady().then(ready => ready.db(this.dbName)), dbDef, hooks);
 	}
 
+	/** Drops cached handles so the next operation opens a new client. */
+	invalidate(): void {
+		this.client = undefined;
+		this.db = undefined;
+		this.opening = undefined;
+		for (const collection of Object.values(this.collections))
+			collection.release();
+	}
+
 	public async listCollections(): Promise<string[]> {
 		const client = await this.clientReady();
 		const collections = await client.db(this.dbName).listCollections().toArray();

@@ -211,7 +211,7 @@ export abstract class FirebaseSession<Config>
 		return client;
 	}
 
-	/** `close`, `error`, and `topologyClosed` are the driver signals that this client is gone. */
+	/** `close`, `error`, `topologyClosed`, and a stale primary all mean this client is done. */
 	private onMongoLost(client: MongoClient): void {
 		const cached = this.mongoClient === client;
 		const opened = this.mongoLazy?.current() === client;
@@ -221,8 +221,10 @@ export abstract class FirebaseSession<Config>
 		if (cached)
 			this.mongoClient = undefined;
 
-		for (const key of Object.keys(this.mongos))
+		for (const key of Object.keys(this.mongos)) {
+			this.mongos[key].invalidate();
 			delete this.mongos[key];
+		}
 
 		this.mongoLazy?.drop(client);
 		this.logWarning('MongoDB connection lost');
@@ -277,6 +279,12 @@ export abstract class FirebaseSession<Config>
 				const next = event.newDescription.type;
 				if (prev !== next) {
 					this.logWarning(`MongoDB SERVER STATE CHANGED: ${event.address} ${prev} → ${next}`);
+				}
+
+				const error = event.newDescription.error;
+				if (error?.name === 'MongoStalePrimaryError' || error?.message?.includes('primary marked stale')) {
+					this.logError(`MongoDB stale primary ${event.address}: ${error.message}`);
+					this.onMongoLost(client);
 				}
 			});
 
