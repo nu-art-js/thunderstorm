@@ -33,7 +33,7 @@ const module = {
 	},
 };
 
-await installGitLikeCache(module, async () => deltas);
+await installGitLikeCache(module, async () => ({deltas}));
 await module.loadCache();
 
 declare global {

@@ -15,3 +15,4 @@ export * from './_entity/delta/validators.js';
 export * from './_entity/delta/db-def.js';
 export * from './compose.js';
 export * from './consent.js';
+export * from './delta-api.js';

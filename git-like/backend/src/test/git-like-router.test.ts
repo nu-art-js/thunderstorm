@@ -365,6 +365,59 @@ describe('GitLike router', () => {
 		expect((await router.listBindings(branchId)).map(row => row.callerKey)).to.deep.equal(['chat-a']);
 	});
 
+	it('returns the caller branch from the delta API and leaves an unreadable body out', async () => {
+		const {store, router, api} = harness(undefined, () => MemKey_GitLike_CallerKey.peak());
+		const collection = attachGitLike(api, router);
+		const otherId = 'c'.repeat(32) as DatabaseDef_GitLike_Branch['id'];
+		await router.createBranch({_id: branchId, label: 'design', reviewRequired: false}, 'account-a');
+		await router.createBranch({_id: otherId, label: 'other', reviewRequired: false}, 'account-a');
+		await router.bind('chat-a', branchId, 'account-a');
+		await router.bind('chat-b', otherId, 'account-a');
+		store.live.set('doc-1', doc('doc-1', 'live'));
+		store.live.set('doc-secret', doc('doc-secret', 'hidden'));
+
+		await new MemStorage().init(async () => {
+			MemKey_GitLike_CallerKey.set('chat-a');
+			await api.set.item(doc('doc-1', 'from-a'));
+			await api.set.item(doc('doc-secret', 'secret-body'));
+		});
+		await new MemStorage().init(async () => {
+			MemKey_GitLike_CallerKey.set('chat-b');
+			await api.set.item(doc('doc-1', 'from-b'));
+		});
+		store.live.delete('doc-secret');
+
+		await new MemStorage().init(async () => {
+			MemKey_GitLike_CallerKey.set('chat-a');
+			const response = await router.deltas(collection);
+			expect(response.branchId).to.equal(branchId);
+			expect(response.deltas.map(delta => delta.docId)).to.deep.equal(['doc-1']);
+			expect(response.deltas[0]?.document?.label).to.equal('from-a');
+			expect(JSON.stringify(response)).to.not.include('secret-body');
+		});
+		await new MemStorage().init(async () => {
+			MemKey_GitLike_CallerKey.set('chat-b');
+			const response = await router.deltas(collection);
+			expect(response.branchId).to.equal(otherId);
+			expect(response.deltas.map(delta => delta.document?.label)).to.deep.equal(['from-b']);
+		});
+		expect(store.liveWrites).to.equal(0);
+		expect(store.live.get('doc-1')?.label).to.equal('live');
+	});
+
+	it('returns no deltas when the caller is on the live collection', async () => {
+		const {store, router, api} = harness();
+		const collection = attachGitLike(api, router);
+		store.live.set('doc-1', doc('doc-1', 'live'));
+
+		await new MemStorage().init(async () => {
+			const response = await router.deltas(collection);
+			expect(response.branchId).to.equal(undefined);
+			expect(response.deltas).to.deep.equal([]);
+		});
+		expect(store.liveWrites).to.equal(0);
+	});
+
 	it('refuses to enroll accounts, sessions, permissions, and its own collections', () => {
 		const {router} = harness();
 		expect(() => attachGitLike({

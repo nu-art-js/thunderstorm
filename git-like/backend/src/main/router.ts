@@ -13,6 +13,7 @@ import {
 	GitLike_RefusedDbKeys,
 	withoutDomainAccess,
 } from '@nu-art/git-like-shared';
+import type {GitLike_DeltaApiResponse} from '@nu-art/git-like-shared';
 import type {
 	DatabaseDef_GitLike_Branch,
 	GitLike_Branch,
@@ -149,10 +150,31 @@ export class GitLike_Router {
 
 	async branchView(collection: GitLike_Collection, branchId: string): Promise<GitLike_LiveDoc[]> {
 		const live = await collection.queryAll();
-		const liveIds = new Set(live.map(doc => doc._id));
 		const deltas = await this.deps.listDeltas(branchId, collection.dbKey);
-		const visible = deltas.filter(delta => liveIds.has(delta.docId) || !delta.origin);
-		return composeGitLikeView(live, visible);
+		return composeGitLikeView(live, visibleDeltas(live, deltas));
+	}
+
+	/**
+	 * Deltas for the caller branch. No branch returns an empty list.
+	 * A delta whose live document the caller can no longer read is left out.
+	 */
+	async deltas(collection: GitLike_Collection): Promise<GitLike_DeltaApiResponse<GitLike_LiveDoc>> {
+		const branchId = await resolveCallerBranch(this.deps);
+		if (!branchId)
+			return {deltas: []};
+
+		const live = await collection.queryAll();
+		const stored = await this.deps.listDeltas(branchId, collection.dbKey);
+		const deltas = visibleDeltas(live, stored).map(delta => {
+			const view: GitLike_DeltaApiResponse<GitLike_LiveDoc>['deltas'][number] = {
+				docId: delta.docId,
+				tombstone: delta.tombstone,
+			};
+			if (!delta.tombstone && delta.document)
+				view.document = delta.document;
+			return view;
+		});
+		return {branchId, deltas};
 	}
 
 	async applyMerge(collection: GitLike_Collection, branchId: string): Promise<void> {
@@ -208,6 +230,11 @@ async function resolveCallerBranch(deps: GitLike_RouterDeps): Promise<string | u
 
 	MemKey_GitLike_BranchId.set(bound);
 	return bound;
+}
+
+function visibleDeltas(live: readonly GitLike_LiveDoc[], deltas: readonly GitLike_Delta[]): GitLike_Delta[] {
+	const liveIds = new Set(live.map(doc => doc._id));
+	return deltas.filter(delta => liveIds.has(delta.docId) || !delta.origin);
 }
 
 async function readLive(collection: GitLike_Collection, id: string): Promise<GitLike_LiveDoc | undefined> {
