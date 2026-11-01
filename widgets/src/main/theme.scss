@@ -23,9 +23,10 @@
   --color-text-primary: #dcdde0;
   --color-text-muted: #9a9ca3;
   --color-text-muted-hi: #b8bac0;
-  // Drag-selection highlight — accent tint; themes remap via the semantic colour layer.
-  --color-text-selection-bg: var(--color-action-primary-tint);
-  --color-text-selection-text: var(--color-text-primary);
+  // Drag-selection highlight — solid primary action so the range reads as selected.
+  // Themes remap these names. A tint is too close to the field fill.
+  --color-text-selection-bg: var(--color-action-primary-bg);
+  --color-text-selection-text: var(--color-action-primary-text);
 
   // Borders — default (hairline), strong (interactive), hi (hover/emphasis).
   --color-border: rgba(255, 255, 255, 0.08);
