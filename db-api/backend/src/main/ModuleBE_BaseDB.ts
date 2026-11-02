@@ -273,8 +273,12 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 		if ('doc' in this.collection)
 			this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 
-		if (this.collection instanceof MongoCollection)
+		if (this.collection instanceof MongoCollection) {
 			void this.collection.ensureIndices().catch((e: unknown) => this.logError(`ensureIndices failed: ${e}`));
+			const search = this.dbDef.atlasSearch;
+			if (search && search.length > 0)
+				void this.collection.ensureSearchIndices(search).catch((e: unknown) => this.logWarning(`ensureSearchIndices failed: ${e}`));
+		}
 	}
 
 	protected resolveCollection() {

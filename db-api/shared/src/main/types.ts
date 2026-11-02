@@ -145,6 +145,8 @@ export type Database<Proto extends DB_Prototype> = {
 	uniqueKeys?: Proto['uniqueKeys'];
 	versions: Proto['versions']['versions'];
 	indices?: Proto['indices'];
+	/** Atlas Search indexes. Startup creates each one when it is missing. `indices` stays the ordinary index list. */
+	atlasSearch?: readonly {name: string; paths: readonly string[]}[];
 	lockKeys?: Proto['lockKeys'];
 	dependencies?: Proto['dependencies'];
 } & (Proto['generatedProps'] extends never

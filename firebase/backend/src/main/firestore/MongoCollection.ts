@@ -62,6 +62,13 @@ export type CollectionPatch = { _id: string, pipeline: Document[] };
 
 export type CollectionPatchItem<Proto extends DB_Prototype> = { item: Proto['uiType'], pipeline: Document[] };
 
+const searchIndexDefinition = (paths: readonly string[]) => ({
+	mappings: {
+		dynamic: false,
+		fields: Object.fromEntries(paths.map(path => [path, {type: 'string'}])),
+	},
+});
+
 const getDbDefValidator = <Proto extends DB_Prototype>(dbDef: Database<Proto>) => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
 		return {...dbDef.generatedPropsValidator, ...dbDef.modifiablePropsValidator, ...DB_Object_validator};
@@ -109,6 +116,8 @@ export class MongoCollection<Proto extends DB_Prototype>
 		this.patch = this.gateApi(this.patch);
 		this.delete = this.gateApi(this.delete);
 		this.ensureIndices = this.gateFn(this.ensureIndices);
+		this.ensureSearchIndices = this.gateFn(this.ensureSearchIndices);
+		this.findSearchIds = this.gateFn(this.findSearchIds);
 		this.runTransaction = this.gateFn(this.runTransaction);
 		this.runTransactionInChunks = this.gateFn(this.runTransactionInChunks);
 	}
@@ -579,6 +588,54 @@ export class MongoCollection<Proto extends DB_Prototype>
 			const compiled = compileMongoIndex(idx);
 			await this.mongoCollection.createIndex(compiled.spec, compiled.options);
 		}
+	};
+
+	/**
+	 * Create each Atlas Search index when the name is missing.
+	 * A server without mongot logs and returns. Search calls then fail.
+	 */
+	ensureSearchIndices = async (indices: readonly {name: string; paths: readonly string[]}[]): Promise<void> => {
+		for (const index of indices) {
+			let existing: {name?: string}[];
+			try {
+				existing = await this.mongoCollection.listSearchIndexes(index.name).toArray();
+			} catch (e: unknown) {
+				this.logWarning(`Search index list failed on ${this.dbDef.backend.name}. ${e}`);
+				return;
+			}
+
+			if (existing.length > 0)
+				continue;
+
+			await this.mongoCollection.createSearchIndex({
+				name: index.name,
+				type: 'search',
+				definition: searchIndexDefinition(index.paths),
+			});
+			this.logInfo(`Created search index ${index.name} on ${this.dbDef.backend.name} (${index.paths.join(', ')})`);
+		}
+	};
+
+	/** Ids whose analyzed fields match any word. Throws when mongot or the index is not ready. */
+	findSearchIds = async (indexName: string, paths: readonly string[], words: readonly string[]): Promise<string[]> => {
+		if (words.length === 0)
+			return [];
+
+		const rows = await this.mongoCollection.aggregate<{_id: string}>([
+			{
+				$search: {
+					index: indexName,
+					text: {
+						query: [...words],
+						path: [...paths],
+						matchCriteria: 'any',
+					},
+				},
+			},
+			{$project: {_id: 1}},
+		]).toArray();
+
+		return rows.map(row => String(row._id));
 	};
 
 	private _deleteAll = async (ids: UniqueId[]): Promise<Proto['dbType'][]> => {

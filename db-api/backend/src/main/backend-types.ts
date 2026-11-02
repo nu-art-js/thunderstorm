@@ -58,6 +58,8 @@ export type BaseDBDefBE = {
 	lastUpdatedTTL?: number;
 	lockKeys?: readonly string[];
 	metadata?: object;
+	/** Atlas Search indexes. Startup creates each one when the name is missing. */
+	atlasSearch?: readonly {name: string; paths: readonly string[]}[];
 };
 
 /**

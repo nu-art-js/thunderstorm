@@ -173,3 +173,67 @@ describe('MongoCollection.ensureIndices — mongo spec', () => {
 		}
 	});
 });
+
+type SearchDesc = {name?: string; type?: string; definition: {mappings: {dynamic: boolean; fields: Record<string, {type: string}>}}};
+
+async function ensureSearch(opts: {
+	existing?: {name?: string}[];
+	listError?: Error;
+}): Promise<SearchDesc[]> {
+	const created: SearchDesc[] = [];
+	const db = {
+		collection: () => ({
+			listSearchIndexes: (name?: string) => ({
+				toArray: async () => {
+					if (opts.listError)
+						throw opts.listError;
+					return (opts.existing ?? []).filter(row => !name || row.name === name);
+				},
+			}),
+			createSearchIndex: async (desc: SearchDesc) => {
+				created.push(desc);
+				return desc.name ?? 'default';
+			},
+		}),
+	};
+	const collection = new MongoCollection(async () => db as never, {
+		dbKey: 'nodes',
+		entityName: 'node',
+		frontend: {name: 'nodes', group: 'knowledge'},
+		backend: {name: 'nodes'},
+		versions: ['1.0.0'],
+		generatedPropsValidator: {},
+		modifiablePropsValidator: {},
+	} as never);
+	await collection.ensureSearchIndices([{name: 'node-text', paths: ['label', '_path']}]);
+	return created;
+}
+
+describe('MongoCollection.ensureSearchIndices', () => {
+	it('creates a string search index when the name is missing', async () => {
+		const created = await ensureSearch({});
+		expect(created).to.deep.equal([{
+			name: 'node-text',
+			type: 'search',
+			definition: {
+				mappings: {
+					dynamic: false,
+					fields: {
+						label: {type: 'string'},
+						_path: {type: 'string'},
+					},
+				},
+			},
+		}]);
+	});
+
+	it('skips create when the name already exists', async () => {
+		const created = await ensureSearch({existing: [{name: 'node-text'}]});
+		expect(created).to.deep.equal([]);
+	});
+
+	it('returns without create when the server has no search command', async () => {
+		const created = await ensureSearch({listError: new Error('no mongot')});
+		expect(created).to.deep.equal([]);
+	});
+});
