@@ -16,3 +16,8 @@ auth/passkey/.rules/how-to-use.mdc
 ts-focused-object/.rules/how-to-use.mdc
 sync-manager/.rules/how-to-use.mdc
 .rules/consuming/ui-component-granularity.mdc
+.rules/consuming/project-backend-setup.mdc
+.rules/consuming/routing.mdc
+.rules/consuming/prewrite-and-migrations.mdc
+.rules/consuming/setup-action.mdc
+.rules/consuming/thunder-config-pipeline.mdc
