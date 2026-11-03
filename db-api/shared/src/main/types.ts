@@ -145,8 +145,12 @@ export type Database<Proto extends DB_Prototype> = {
 	uniqueKeys?: Proto['uniqueKeys'];
 	versions: Proto['versions']['versions'];
 	indices?: Proto['indices'];
-	/** Atlas Search indexes. Startup creates each one when it is missing. `indices` stays the ordinary index list. */
-	atlasSearch?: readonly {name: string; paths: readonly string[]}[];
+	/**
+	 * Atlas Search indexes. Startup creates each one when it is missing and updates it when the field list changes.
+	 * `paths` are analyzed strings. `sortField` is a number Atlas can sort. `tokens` are exact-match fields.
+	 * `indices` stays the ordinary index list.
+	 */
+	atlasSearch?: readonly {name: string; paths: readonly string[]; sortField?: string; tokens?: readonly string[]}[];
 	lockKeys?: Proto['lockKeys'];
 	dependencies?: Proto['dependencies'];
 } & (Proto['generatedProps'] extends never

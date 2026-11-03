@@ -62,12 +62,38 @@ export type CollectionPatch = { _id: string, pipeline: Document[] };
 
 export type CollectionPatchItem<Proto extends DB_Prototype> = { item: Proto['uiType'], pipeline: Document[] };
 
-const searchIndexDefinition = (paths: readonly string[]) => ({
+type SearchIndexSpec = {
+	name: string;
+	paths: readonly string[];
+	sortField?: string;
+	tokens?: readonly string[];
+};
+
+const searchIndexDefinition = (index: SearchIndexSpec) => ({
 	mappings: {
 		dynamic: false,
-		fields: Object.fromEntries(paths.map(path => [path, {type: 'string'}])),
+		fields: {
+			...Object.fromEntries(index.paths.map(path => [path, {type: 'string'}])),
+			...(index.sortField ? {[index.sortField]: {type: 'number'}} : {}),
+			...Object.fromEntries((index.tokens ?? []).map(path => [path, {type: 'token'}])),
+		},
 	},
 });
+
+const sameSearchFields = (
+	stored: {mappings?: {dynamic?: boolean; fields?: Record<string, {type?: string}>}},
+	wanted: {mappings: {dynamic: boolean; fields: Record<string, {type: string}>}},
+): boolean => {
+	if (stored.mappings?.dynamic !== false)
+		return false;
+	const left = stored.mappings.fields ?? {};
+	const right = wanted.mappings.fields;
+	const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+	for (const key of keys)
+		if (left[key]?.type !== right[key]?.type)
+			return false;
+	return true;
+};
 
 const getDbDefValidator = <Proto extends DB_Prototype>(dbDef: Database<Proto>) => {
 	if (typeof dbDef.modifiablePropsValidator === 'object' && typeof dbDef.generatedPropsValidator === 'object')
@@ -592,11 +618,12 @@ export class MongoCollection<Proto extends DB_Prototype>
 
 	/**
 	 * Create each Atlas Search index when the name is missing.
+	 * Update it when the stored field list differs.
 	 * A server without mongot logs and returns. Search calls then fail.
 	 */
-	ensureSearchIndices = async (indices: readonly {name: string; paths: readonly string[]}[]): Promise<void> => {
+	ensureSearchIndices = async (indices: readonly SearchIndexSpec[]): Promise<void> => {
 		for (const index of indices) {
-			let existing: {name?: string}[];
+			let existing: {name?: string; definition?: unknown; latestDefinition?: unknown}[];
 			try {
 				existing = await this.mongoCollection.listSearchIndexes(index.name).toArray();
 			} catch (e: unknown) {
@@ -604,16 +631,73 @@ export class MongoCollection<Proto extends DB_Prototype>
 				return;
 			}
 
-			if (existing.length > 0)
+			const definition = searchIndexDefinition(index);
+			const stored = existing[0];
+			if (stored) {
+				const storedDef = (stored.latestDefinition ?? stored.definition) as {mappings?: {dynamic?: boolean; fields?: Record<string, {type?: string}>}} | undefined;
+				if (storedDef && !sameSearchFields(storedDef, definition)) {
+					await this.mongoCollection.updateSearchIndex(index.name, definition);
+					this.logInfo(`Updated search index ${index.name} on ${this.dbDef.backend.name}`);
+				}
 				continue;
+			}
 
 			await this.mongoCollection.createSearchIndex({
 				name: index.name,
 				type: 'search',
-				definition: searchIndexDefinition(index.paths),
+				definition,
 			});
 			this.logInfo(`Created search index ${index.name} on ${this.dbDef.backend.name} (${index.paths.join(', ')})`);
 		}
+	};
+
+	/**
+	 * Newest matching ids, capped by `window.limit`.
+	 * Sort field is the number on the search document. Throws when mongot or the index is not ready.
+	 */
+	findNewestIds = async (
+		indexName: string,
+		paths: readonly string[],
+		words: readonly string[],
+		sortField: string,
+		window: {limit: number; searchAfter?: string; orgId?: string; from?: number; to?: number},
+	): Promise<{id: string; updated: number; token?: string}[]> => {
+		if (words.length === 0 || window.limit < 1)
+			return [];
+
+		const filter: Record<string, unknown>[] = [];
+		if (window.orgId)
+			filter.push({equals: {path: '_orgId', value: window.orgId}});
+		if (window.from !== undefined || window.to !== undefined) {
+			const range: {path: string; gte?: number; lt?: number} = {path: sortField};
+			if (window.from !== undefined)
+				range.gte = window.from;
+			if (window.to !== undefined)
+				range.lt = window.to;
+			filter.push({range});
+		}
+
+		const text = {query: [...words], path: [...paths], matchCriteria: 'any' as const};
+		const search: Record<string, unknown> = {
+			index: indexName,
+			sort: {[sortField]: -1},
+			...(window.searchAfter ? {searchAfter: window.searchAfter} : {}),
+			...(filter.length > 0
+				? {compound: {must: [{text}], filter}}
+				: {text}),
+		};
+
+		const rows = await this.mongoCollection.aggregate<{_id: string; updated?: number; token?: string}>([
+			{$search: search},
+			{$limit: window.limit},
+			{$project: {_id: 1, updated: `$${sortField}`, token: {$meta: 'searchSequenceToken'}}},
+		]).toArray();
+
+		return rows.map(row => ({
+			id: String(row._id),
+			updated: typeof row.updated === 'number' ? row.updated : 0,
+			...(row.token ? {token: row.token} : {}),
+		}));
 	};
 
 	/** Ids whose analyzed fields match any word. Throws when mongot or the index is not ready. */
