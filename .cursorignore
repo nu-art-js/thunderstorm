@@ -7,3 +7,4 @@ db-api/.rules/how-to-use.mdc
 permissions/.rules/how-to-use.mdc
 auth/user-account/.rules/how-to-use.mdc
 ts-messaging/.rules/how-to-use.mdc
+auth/password/.rules/how-to-use.mdc
