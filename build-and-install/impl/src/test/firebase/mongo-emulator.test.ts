@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval} from '../../main/units/implementations/firebase/mongo-emulator.js';
+import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval, mongoTestReplicaSetCommand} from '../../main/units/implementations/firebase/mongo-emulator.js';
 
 
 describe('mongo emulator naming', () => {
@@ -20,5 +20,21 @@ describe('mongoReplicaSetEnsureEval', () => {
 		expect(evalJs).to.include('rs.initiate');
 		expect(evalJs).to.not.include('\n');
 		expect(JSON.stringify(evalJs)).to.not.include('\\n');
+		expect(evalJs).to.include('sleep(2)');
+		expect(evalJs).to.not.include('sleep(200)');
+		expect(evalJs).to.include('Date.now()+30000');
+	});
+});
+
+describe('mongoTestReplicaSetCommand', () => {
+	it('polls every 2s, gives up at 30s, and prints the container log', () => {
+		const command = mongoTestReplicaSetCommand('mongo-test--app-knowledge-tree-backend', 27019);
+		expect(command).to.not.include('\n');
+		expect(command).to.include('sleep 2');
+		expect(command).to.include('SECONDS+30');
+		expect(command).to.include('docker logs');
+		expect(command).to.include('mongo-test--app-knowledge-tree-backend');
+		expect(command).to.include('localhost:27019');
+		expect(command).to.include('sleep(2)');
 	});
 });

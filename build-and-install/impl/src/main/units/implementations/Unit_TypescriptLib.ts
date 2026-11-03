@@ -36,6 +36,7 @@ import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils
 import path from 'node:path';
 import {ExportMapper} from '../../exports/ExportMapper.js';
 import {TsConfig} from '../base/types.js';
+import {mongoTestReplicaSetCommand} from './firebase/mongo-emulator.js';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
@@ -274,7 +275,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				});
 
 				const initCommando = this.allocateCommando();
-				await this.executeAsyncCommando(initCommando, `sleep 3 && docker exec ${containerName} mongosh --port ${mongoPort} --quiet --eval "rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:${mongoPort}'}]}); while(!rs.status().members.some(m=>m.stateStr==='PRIMARY')){sleep(200)} print('PRIMARY ready')"`, (stdout, stderr, exitCode) => {
+				await this.executeAsyncCommando(initCommando, mongoTestReplicaSetCommand(containerName, mongoPort), (stdout, stderr, exitCode) => {
 					if (exitCode !== 0)
 						throw new CommandoException('Failed to initiate MongoDB test replica set', stdout, stderr, exitCode);
 				});
