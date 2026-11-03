@@ -4,6 +4,8 @@ import {_className} from '@nu-art/thunder-core';
 import {addWindowResizeListener, OnWindowResized, removeWindowResizeListener} from '@nu-art/thunder-core';
 type Props = React.PropsWithChildren<{
 	tooltip?: React.ReactNode; //The content that will appear in the tooltip
+	/** Show the tooltip on hover even when the label text is not truncated. */
+	tooltipAlways?: boolean;
 	className?: string;
 	containerSelector?: string; //A container for the tooltip direction calculation
 	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -50,6 +52,14 @@ export class Label
 		const el = this.labelRef.current;
 		if (!el)
 			return;
+		if (this.props.tooltipAlways) {
+			el.classList.remove(this.activeTruncationClass);
+			if (this.state.tooltip)
+				el.classList.add(this.activeTooltipClass);
+			else
+				el.classList.remove(this.activeTooltipClass);
+			return;
+		}
 		const content = el.querySelector('.ts-label__content');
 		const measureEl = content instanceof HTMLElement ? content : el;
 		const overflowing = measureEl.scrollWidth > measureEl.clientWidth;
@@ -84,7 +94,7 @@ export class Label
 		}
 	};
 	private getProps = () => {
-		const {tooltip, className, containerSelector, onClick, ...rest} = this.props;
+		const {tooltip, tooltipAlways: _tooltipAlways, className, containerSelector, onClick, ...rest} = this.props;
 		return {
 			...rest,
 			className: _className('ts-label', className),

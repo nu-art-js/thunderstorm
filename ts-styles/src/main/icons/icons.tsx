@@ -28,6 +28,7 @@ import {ReactComponent as Crosshair} from './svgs/icon__crosshair.svg';
 import {ReactComponent as Pin} from './svgs/icon__pin.svg';
 import {ReactComponent as Pulse} from './svgs/icon__pulse.svg';
 import {ReactComponent as Undo} from './svgs/icon__undo.svg';
+import {ReactComponent as Lock} from './svgs/icon__lock.svg';
 
 export type IconStyle = {
 	color: string;
@@ -93,6 +94,7 @@ export const TS_Icons = {
 	pin: {component: genIcon(Pin)},
 	pulse: {component: genIcon(Pulse)},
 	undo: {component: genIcon(Undo)},
+	lock: {component: genIcon(Lock)},
 };
 
 export const tsIconKeys = (): TSIcons[] => {
