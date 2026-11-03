@@ -1,6 +1,359 @@
 ---
-description: HTTP how-to lives in Thunderstorm knowledge. This file does not restate it.
+description: How to use http lib: type-safe HTTP client and server for Thunderstorm APIs
 alwaysApply: false
 ---
 
-The http how-to is `/orgs/960ab4a204e116540f3329f974ad225d/projects/12517965bd4282e54d23d137938f01b9/rules/libraries/http`.
+# How to use http
+
+The http lib provides type-safe HTTP client (for calling APIs) and server (for exposing APIs). Three packages form the stack:
+
+| Package | Purpose |
+|---------|---------|
+| `@nu-art/api-types` | API type definitions, `ApiDef`, `ApiDefResolver`, `HttpMethod` |
+| `@nu-art/http-client` | Type-safe HTTP client, `@ApiCaller` decorator |
+| `@nu-art/http-server` | Express HTTP server, `@ApiHandler` decorator |
+
+api-types is always required. Client and server are independent of each other.
+
+---
+
+## api-types (`@nu-art/api-types`)
+
+### File structure
+
+API definitions live in the shared package of a library:
+
+```
+<lib>/shared/src/main/
+  api-def.ts          -- API_<Domain> type + ApiDef_<Domain> constant
+```
+
+For entity-scoped APIs, place under the entity directory:
+
+```
+<lib>/shared/src/main/_entity/<entity-name>/
+  api-def.ts
+```
+
+### Step 1 — Define the API struct
+
+The `API_<Domain>` type is the **source of truth** for all request/response types across the package. Use `BodyApi` for POST/PUT/PATCH and `QueryApi` for GET/DELETE:
+
+```typescript
+import {BodyApi, QueryApi, ApiDefResolver, HttpMethod} from '@nu-art/api-types';
+
+export type API_<Domain> = {
+	<actionA>: BodyApi<ResponseType, BodyType>;
+	<actionB>: QueryApi<ResponseType, ParamsType>;
+	<actionC>: QueryApi<ResponseType>;
+};
+```
+
+To reference any request or response type elsewhere in the codebase:
+
+```typescript
+API_<Domain>['<actionA>']['Body']
+API_<Domain>['<actionA>']['Response']
+API_<Domain>['<actionB>']['Params']
+```
+
+**Always use the full named keys** (`Response`, `Body`, `Params`, `Method`, `Error`). The single-letter aliases (`R`, `B`, `P`, `M`, `E`) are **deprecated**.
+
+### Step 2 — Define the API def resolver
+
+`ApiDefResolver` maps the API struct to `ApiDef` at each leaf — method, path, and optional timeout:
+
+```typescript
+export const ApiDef_<Domain>: ApiDefResolver<API_<Domain>> = {
+	<actionA>: {method: HttpMethod.POST, path: '/v1/<domain>/<action-a>'},
+	<actionB>: {method: HttpMethod.GET, path: '/v1/<domain>/<action-b>'},
+	<actionC>: {method: HttpMethod.GET, path: '/v1/<domain>/<action-c>'},
+};
+```
+
+Optional `timeout` field (in ms) overrides the default request timeout for that endpoint.
+
+### Nested API structs
+
+For versioned or grouped APIs, nest the struct:
+
+```typescript
+export type API_<Domain> = {
+	vv1: {
+		<actionA>: BodyApi<ResponseType, BodyType>;
+		<actionB>: QueryApi<ResponseType, ParamsType>;
+	};
+};
+
+export const ApiDef_<Domain>: ApiDefResolver<API_<Domain>> = {
+	vv1: {
+		<actionA>: {method: HttpMethod.POST, path: '/v1/<domain>/<action-a>'},
+		<actionB>: {method: HttpMethod.GET, path: '/v1/<domain>/<action-b>'},
+	},
+};
+```
+
+Reference nested defs: `ApiDef_<Domain>.vv1.<actionA>`, types: `API_<Domain>['vv1']['<actionA>']['Body']`.
+
+---
+
+## Server (`@nu-art/http-server`)
+
+### Dependency
+
+Add `@nu-art/http-server` and `@nu-art/api-types` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
+
+### @ApiHandler decorator (preferred)
+
+Decorate methods with `@ApiHandler` to register them as HTTP route handlers. The decorator handles route registration internally — no manual route wiring required. The endpoint is associated with the server provided in the decorator options, or the default server.
+
+**Direct ApiDef reference** (most common):
+
+```typescript
+@ApiHandler(ApiDef_<Domain>.<actionA>)
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	// implementation
+}
+```
+
+**Resolver form** (for generic/base classes where the apiDef is instance-specific):
+
+```typescript
+@ApiHandler(
+	(m: MyModule_Class) => m.apiDef.<actionA>,
+	{httpServer: m => resolveContent(m.httpServer)}
+)
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	// implementation
+}
+```
+
+**Options:**
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `httpServer` | `HttpServer.getDefault()` | Server instance to register the route on |
+| `middlewares` | `[]` | `ServerApi_Middleware[]` to run before the handler |
+
+- GET/DELETE → handler receives query params.
+- POST/PUT/PATCH → handler receives body.
+- Registration runs at instance creation via the decorator initializer.
+
+### HttpServer
+
+`HttpServer.getDefault()` returns (or creates) the default server instance. Configuration is done through the Module wrapper via `setDefaultConfig({port, ...})`. `init()` is called automatically by the module manager.
+
+- `addMiddleware(middleware)` — register global Express middleware, returns `this` for chaining.
+
+### Request context (inside handler)
+
+MemKeys from `consts.ts` provide access to the current request scope via `MemStorage` (Async Local Storage):
+
+| MemKey | Value |
+|--------|-------|
+| `MemKey_HttpRequest` | Express request object |
+| `MemKey_HttpResponse` | `ApiResponse` (see below) |
+| `MemKey_HttpRequestBody` | Parsed request body |
+| `MemKey_HttpRequestQuery` | Parsed query params |
+| `MemKey_HttpRequestHeaders` | Request headers |
+| `MemKey_HttpRequestUrl` | Full request URL |
+| `MemKey_HttpRequestPath` | Request path |
+| `MemKey_HttpRequestMethod` | HTTP method string |
+
+### HeaderKey
+
+Read and validate request headers with optional processing:
+
+```typescript
+new HeaderKey('<header-name>', 403)
+	.setProcessor((v) => v.trim())
+	.get()
+```
+
+Uses `MemKey_HttpRequest` internally. The response code (e.g. 403) is returned when the header is missing.
+
+### ApiResponse (sending responses)
+
+Use `MemKey_HttpResponse.get()` to access the `ApiResponse`. Send methods:
+
+- `.json(statusCode, body)` — JSON response
+- `.text(statusCode, text)` — plain text
+- `.html(statusCode, html)` — HTML
+- `.redirect(url)` — HTTP redirect
+- `.stream()` — streaming response
+- `.exception(apiException)` — structured error
+- `.serverError(error)` — 500 error
+
+Call exactly one send method per request (response is consumed).
+
+### Errors
+
+Throw `ApiException` (from `@nu-art/ts-common`) with status and body; the server turns it into a JSON response. Unhandled errors become 500.
+
+---
+
+## Client (`@nu-art/http-client`)
+
+### Dependency
+
+Add `@nu-art/http-client` and `@nu-art/api-types` in the consuming package's `__package.json` (and bai-config/package.json per workspace rules).
+
+### @ApiCaller decorator (preferred)
+
+Decorate methods with `@ApiCaller` to bind them to an HTTP call. The decorator performs the request and returns the typed result — the method body is a placeholder.
+
+**Direct ApiDef reference** (most common):
+
+```typescript
+@ApiCaller(ApiDef_<Domain>.<actionA>)
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	void body;
+	return undefined as unknown as API_<Domain>['<actionA>']['Response'];
+}
+```
+
+**With onComplete callback:**
+
+```typescript
+@ApiCaller(ApiDef_<Domain>.<actionA>, {
+	onComplete: (m: MyModule_Class, ctx: ApiCallContext<API_<Domain>['<actionA>']>) => m.onActionCompleted(ctx)
+})
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	void body;
+	return undefined as unknown as API_<Domain>['<actionA>']['Response'];
+}
+```
+
+**With onBeforeExecute hook** (edit the built request before it is sent — headers, timeout, body):
+
+```typescript
+@ApiCaller(ApiDef_<Domain>.<actionA>, {
+	onBeforeExecute: (m: MyModule_Class, req: HttpRequest<API_<Domain>['<actionA>']>) => m.attachContextHeader(req)
+})
+async <actionA>(body: API_<Domain>['<actionA>']['Body']): Promise<API_<Domain>['<actionA>']['Response']> {
+	void body;
+	return undefined as unknown as API_<Domain>['<actionA>']['Response'];
+}
+```
+
+Use this for a **per-endpoint** contextual header (e.g. a one-off token) — it scopes the header to that call. Reserve `addDefaultHeader` for headers that belong on **every** request (Authorization, DeviceId, TabId).
+
+**Resolver form** (for generic/base classes):
+
+```typescript
+@ApiCaller(
+	(m: MyModule_Class) => m.apiDef.<actionA>,
+	{httpClient: m => resolveContent(m.httpClient), onComplete: (m, ctx) => m.onCompleted(ctx)}
+)
+```
+
+**Options:**
+
+| Option | Default | Purpose |
+|--------|---------|---------|
+| `httpClient` | `HttpClient.default` | Client instance to use for the request |
+| `onBeforeExecute` | — | `(module, request) => void \| Promise<void>` — edit the built `HttpRequest` before execution (headers, timeout, body) |
+| `onComplete` | — | `(module, ctx) => void` callback after successful response |
+
+- GET/DELETE → decorator sends params.
+- POST/PUT/PATCH → decorator sends body.
+
+### HttpClient
+
+`HttpClient.default` is the shared client instance used by `@ApiCaller` when no client is specified. Configuration is done through the Module wrapper via `setDefaultConfig({origin, ...})`. `init()` is called automatically by the module manager.
+
+- `addDefaultHeader(key, value)` — set a header sent with every request (value can be a string or `() => string`).
+
+### HttpRequest (manual usage)
+
+When not using the decorator, create requests directly via the client:
+
+```typescript
+HttpClient.default.createRequest(ApiDef_<Domain>.<actionA>)
+	.setBodyAsJson(body)
+	.execute();
+```
+
+Fluent methods: `setUrlParams`, `setBodyAsJson`, `addHeader`, `setTimeout`, `setOnError`, `setOnCompleted`, `abort()`.
+
+### Errors
+
+Catch `HttpException`; it exposes `responseCode`, `errorResponse`, `request`.
+
+---
+
+## Forbidden patterns (non-negotiable)
+
+Every API endpoint **must** follow the full typed pipeline: `API_<Domain>` type → `ApiDefResolver<API_<Domain>>` constant → `@ApiHandler`/`@ApiCaller` consuming it. No shortcuts, no exceptions.
+
+### Raw `HttpClient.createRequest()` in application code
+
+**Forbidden.** Always use the `@ApiCaller` decorator for HTTP calls. `HttpClient.createRequest()` is never acceptable in application code — the decorator pipeline is the only valid calling pattern. The "HttpRequest (manual usage)" section above documents the API for framework-level code only. To customize a request (add a header, set a timeout, tweak the body), use the `onBeforeExecute` hook — never hand-build the request to do it.
+
+### External third-party API calls
+
+External API calls (e.g. Polymarket, YouTube Data API) get a **dedicated module** that:
+
+1. Creates its own `HttpClient` in the constructor with the external origin
+2. Exposes `@ApiCaller`-decorated methods using the resolver form, passing the client via `{httpClient: m => m.client}`
+3. Owns the external API type definitions (`ApiDef`, param types) in the backend package — they are a third-party contract, not a project API
+
+The project-facing module handles `@ApiHandler` and delegates to the external module for fetching. Both modules live in the same backend package — the external caller is an implementation detail, not its own library.
+
+### Raw `{ method, path }` objects
+
+**Forbidden.** Never define an API def as a plain object literal, with or without `as const`:
+
+```typescript
+// WRONG — untyped, no contract, no ApiDefResolver
+const ApiDef_Pipeline = {
+	runFullPipeline: {method: HttpMethod.GET, path: '/v1/pipeline/run'},
+} as const;
+```
+
+Every `ApiDef_*` constant **must** be typed as `ApiDefResolver<API_*>`. If there is no corresponding `API_*` type, create one first.
+
+### `ApiDef_*` without a corresponding `API_*` type
+
+**Forbidden.** The `API_<Domain>` type is the contract — it defines request body, response, params, and error types. The `ApiDef_<Domain>` resolver maps that contract to routes. One does not exist without the other. If you are writing `ApiDef_X`, there must be an `API_X` type that it resolves.
+
+### API definitions outside a shared package
+
+**Forbidden.** `API_*` types and `ApiDef_*` constants must **never** live in `app/backend`, `app/frontend`, or any domain-specific package. They belong in a **shared** package (`<lib>/shared/src/main/api-def.ts`) because they are the contract between client and server.
+
+- Backend-only endpoint with no frontend caller today? **Still goes in shared.** The contract is the contract — it must be importable by any domain that needs it, now or later.
+- Response types, request body types, param types referenced by the API struct also live in the shared package.
+
+### API spanning frontend and backend requires a library
+
+When an API is consumed by both backend (`@ApiHandler`) and frontend (`@ApiCaller`), the endpoint **must** live in a concept library with at minimum a `shared` package. The library structure:
+
+```
+<concept-lib>/
+  shared/    — API_<Domain> type, ApiDef_<Domain> constant, request/response types
+  backend/   — Module with @ApiHandler consuming ApiDef_<Domain>
+  frontend/  — Module with @ApiCaller consuming ApiDef_<Domain>
+```
+
+Both backend and frontend import the same `API_*` and `ApiDef_*` from `<concept-lib>/shared`. This is how type safety flows end-to-end: one shared contract, two consumers. If an API needs both a handler and a caller, it needs a library — there is no shortcut where the backend defines the route and the frontend "just knows" the path.
+
+### Summary: the only valid way to define an API
+
+1. `API_<Domain>` type (using `BodyApi`, `QueryApi`, or `EmptyApi`) — in shared.
+2. `ApiDef_<Domain>: ApiDefResolver<API_<Domain>>` constant — in shared, same file.
+3. Backend handler: `@ApiHandler(ApiDef_<Domain>.<action>)` — in backend package, imports from shared.
+4. Frontend caller: `@ApiCaller(ApiDef_<Domain>.<action>)` — in frontend package, imports from shared.
+
+Any other shape is wrong. Stop and fix it.
+
+---
+
+## Naming conventions
+
+| Artifact | Convention |
+|----------|-----------|
+| API struct type | `API_<Domain>` |
+| API def resolver constant | `ApiDef_<Domain>` |
+| Backend handler method | `<actionName>` (matches API struct key) |
+| Frontend caller method | `<actionName>` (matches API struct key) |
+| File name | `api-def.ts` |
