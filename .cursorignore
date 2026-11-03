@@ -21,3 +21,6 @@ sync-manager/.rules/how-to-use.mdc
 .rules/consuming/prewrite-and-migrations.mdc
 .rules/consuming/setup-action.mdc
 .rules/consuming/thunder-config-pipeline.mdc
+.rules/operational/project-structure.mdc
+.rules/operational/package-and-libraries.mdc
+.rules/operational/missing-dependency.mdc
