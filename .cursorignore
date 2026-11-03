@@ -4,3 +4,4 @@ http/.rules/how-to-use.mdc
 .rules/operational/bai-overview.mdc
 auth/oauth/.rules/how-to-use.mdc
 db-api/.rules/how-to-use.mdc
+permissions/.rules/how-to-use.mdc
