@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval, mongoTestReplicaSetCommand} from '../../main/units/implementations/firebase/mongo-emulator.js';
+import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval, mongoTestContainerRunCommand, mongoTestReplicaSetCommand} from '../../main/units/implementations/firebase/mongo-emulator.js';
 
 
 describe('mongo emulator naming', () => {
@@ -23,6 +23,13 @@ describe('mongoReplicaSetEnsureEval', () => {
 		expect(evalJs).to.include('sleep(2)');
 		expect(evalJs).to.not.include('sleep(200)');
 		expect(evalJs).to.include('Date.now()+30000');
+	});
+});
+
+describe('mongoTestContainerRunCommand', () => {
+	it('runs as the mongodb user so the process can create the journal directory', () => {
+		const command = mongoTestContainerRunCommand('mongo-test--app-knowledge-tree-backend', 27019);
+		expect(command).to.equal('docker run -d --user mongodb --name mongo-test--app-knowledge-tree-backend -p 27019:27019 mongo:7 --replSet rs0 --port 27019');
 	});
 });
 

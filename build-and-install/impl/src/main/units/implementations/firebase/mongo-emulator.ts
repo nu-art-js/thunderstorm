@@ -24,6 +24,13 @@ export const mongoReplicaSetEnsureEval = (port: number): string => {
 };
 
 /**
+ * This host starts a container as uid 1000 unless `--user` is set.
+ * `/data/db` belongs to `mongodb`, so uid 1000 cannot create `/data/db/journal`.
+ */
+export const mongoTestContainerRunCommand = (containerName: string, port: number): string =>
+	`docker run -d --user mongodb --name ${containerName} -p ${port}:${port} mongo:7 --replSet rs0 --port ${port}`;
+
+/**
  * One shell line. Commando backgrounds the command with `&`, and `&` applies to the last line only.
  * Poll every 2s. At 30s, print the container log and fail. Then initiate and wait for a primary the same way.
  */
