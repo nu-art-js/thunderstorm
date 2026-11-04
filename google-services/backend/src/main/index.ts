@@ -22,5 +22,6 @@ export * from './modules/ModuleBE_GoogleContacts.js';
 export * from './modules/ModuleBE_Auth.js';
 export * from './modules/ModuleBE_GooglePubSub.js';
 export * from './modules/ModuleBE_SecretManager.js';
+export * from './modules/MemorySecretManager.js';
 export * from './modules/ModuleBE_WhoAmI_GCP.js';
 

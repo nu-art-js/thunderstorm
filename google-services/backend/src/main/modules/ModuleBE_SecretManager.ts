@@ -200,7 +200,7 @@ export class ModuleBE_SecretManager_Class
 	private readonly generated = new Map<string, Promise<string>>();
 
 	/**
-	 * Replaces the GCP client. Tests use this so a missing auto-generated secret can be exercised without Secret Manager.
+	 * Replaces the GCP client. Pass a MemorySecretManager for an in-memory store.
 	 * Clears the in-process cache of generated values.
 	 */
 	public useClient(client: SecretManagerApi) {
