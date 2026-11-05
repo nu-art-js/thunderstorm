@@ -54,6 +54,18 @@ describe('MongoCollection.ensureIndices — current ordered indexes', () => {
 		expect(await ensure([])).to.deep.equal([]);
 	});
 
+	it('indexes _path ascending and passes unique', async () => {
+		const calls = await ensure([{
+			id: 'by-path',
+			keys: '_path',
+			params: {unique: true, multiEntry: false},
+		}]);
+		expect(calls).to.deep.equal([{
+			spec: {_path: 1},
+			options: {name: 'by-path', unique: true},
+		}]);
+	});
+
 	it('indexes one key ascending and passes unique', async () => {
 		const calls = await ensure([{
 			id: 'by-chatId',
