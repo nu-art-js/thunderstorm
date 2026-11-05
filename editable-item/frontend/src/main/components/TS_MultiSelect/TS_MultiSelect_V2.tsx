@@ -6,9 +6,9 @@
 
 import * as React from 'react';
 import {Component, ReactNode} from 'react';
-import {SubsetKeys} from '@nu-art/ts-common';
+import {SubsetKeys, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {_className} from '@nu-art/thunder-core';
-import {LL_H_C, LL_V_L} from '@nu-art/thunder-widgets';
+import {LL_H_C, LL_V_L, TS_ListOrganizer, type TS_ListOrganizer_RendererProps} from '@nu-art/thunder-widgets';
 import {EditableItem} from '../../core/EditableItem.js';
 import './TS_MultiSelect.scss';
 
@@ -86,5 +86,66 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 				queryFilter: this.props.itemFilter
 			})}
 		</Wrapper>;
+	}
+}
+
+export class TS_MultiSelect_Sortable<Binder extends Binder_MultiSelect<any, any, any>>
+	extends Component<Props_TS_MultiSelect_V2<Binder>> {
+
+	static prepare<EnclosingItem, K extends keyof EnclosingItem, InnerType>(_props: StaticProps_TS_MultiSelect_V2<InnerType>) {
+		return <EnclosingItem_, Prop extends SubsetKeys<keyof EnclosingItem_, EnclosingItem_, InnerType[] | undefined>>(props: DynamicProps_TS_MultiSelect_V2<EnclosingItem_, Prop> & Partial<StaticProps_TS_MultiSelect_V2<InnerType>>) =>
+			<TS_MultiSelect_Sortable<Binder_MultiSelect<EnclosingItem_, Prop, InnerType>> {..._props} {...props}/>;
+	}
+
+	private renderItem = (editable: EditableItem<Binder['InnerType'][]>, props: TS_ListOrganizer_RendererProps<Binder['InnerType']>) => {
+		const className = _className('multi-select__item-wrapper', props.dragged && 'dragged');
+		return <LL_H_C
+			className={className}
+			draggable={!this.props.disabled}
+			onDragStart={e => {
+				if (this.props.disabled)
+					return;
+				if (!e.dataTransfer)
+					throw new ThisShouldNotHappenException('dragstart without dataTransfer');
+
+				e.dataTransfer.effectAllowed = 'move';
+				e.dataTransfer.setData('text/plain', 'multi-select');
+				e.dataTransfer.setDragImage(e.currentTarget, 150, 30);
+				props.onDragStart(e, props.index);
+			}}
+			onDragEnd={props.onDragEnd}
+			onDragOver={e => props.onDragOver(e, props.index)}
+			onDragLeave={e => props.onDragLeave(e, props.index)}
+		>
+			{this.props.itemRenderer(props.item, async () => {
+				await editable.removeArrayItem(props.index);
+				this.forceUpdate();
+			}, this.props.disabled)}
+		</LL_H_C>;
+	};
+
+	render() {
+		const editable = this.props.editable.editProp(this.props.prop, []) as EditableItem<Binder['InnerType'][]>;
+		const className = _className('ts-multi-select__sortable', this.props.disabled && 'disabled', this.props.className);
+		const SelectionRenderer = this.props.selectionRenderer as React.FC<MultiSelect_Selector<Binder['InnerType']>>;
+		return <LL_V_L className={className}>
+			<TS_ListOrganizer
+				items={editable.item}
+				renderer={item => this.renderItem(editable, item)}
+				onOrderChanged={async items => {
+					await this.props.editable.updateObj({[this.props.prop]: items} as Partial<Binder['EnclosingItem']>);
+					this.forceUpdate();
+				}}
+			/>
+			{!this.props.disabled && SelectionRenderer({
+				className: 'ts-multi-select__selector',
+				existingItems: editable.item,
+				queryFilter: this.props.itemFilter,
+				onSelected: async (item: Binder['InnerType']) => {
+					await editable.updateArrayAt(item);
+					this.forceUpdate();
+				},
+			})}
+		</LL_V_L>;
 	}
 }

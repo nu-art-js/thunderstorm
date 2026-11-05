@@ -22,6 +22,8 @@ export abstract class ModuleBE_BaseFunction<Config extends TS_Object = any>
 
 	abstract getFunction(): any
 
+	serve?(port: number | undefined): Promise<void>;
+
 	protected async handleCallback(callback: () => Promise<any>) {
 		if (this.isReady)
 			return await callback();

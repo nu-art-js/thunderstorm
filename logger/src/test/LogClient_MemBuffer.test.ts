@@ -95,6 +95,22 @@ describe('LogClient_MemBuffer - Log Transformer', () => {
 	});
 });
 
+describe('LogClient_MemBuffer - disableColors', () => {
+	it('stores the message without ANSI color codes', () => {
+		const buffer = new LogClient_MemBuffer('test');
+		buffer.disableColors();
+
+		BeLogged.addClient(buffer);
+		const logger = new Logger('TestLogger');
+		logger.logInfo('plain message');
+
+		expect(buffer.buffers[0]).to.include('plain message');
+		expect(buffer.buffers[0]).to.not.include('\x1b[');
+
+		BeLogged.removeClient(buffer);
+	});
+});
+
 describe('LogClient_MemBuffer - Log Appended Listener', () => {
 	it('should call listener when log is appended', () => {
 		const buffer = new LogClient_MemBuffer('test');

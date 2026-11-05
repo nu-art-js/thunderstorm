@@ -1,7 +1,7 @@
 /*
  * Thunderstorm is a full web app framework!
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ const modules: Module[] = [
 export class Storm
 	extends BaseStorm {
 
-	private functions: unknown[] = [];
+	private functions: ModuleBE_BaseFunction[] = [];
 
 	constructor(config: StormConfig | string) {
 		super(config);
@@ -60,8 +60,7 @@ export class Storm
 			});
 
 		return this.functions.reduce<Record<string, unknown>>((toRet, fn) => {
-			const f = fn as ModuleBE_BaseFunction;
-			toRet[f.getName()] = f.getFunction();
+			toRet[fn.getName()] = fn.getFunction();
 			return toRet;
 		}, {});
 	}
@@ -86,10 +85,37 @@ export class Storm
 		if (this.config.printRoutes === true)
 			httpServer.printRoutes();
 
-		await httpServer.startServer();
-		await Promise.all(this.functions.map((fn) => (fn as ModuleBE_BaseFunction).onFunctionReady()));
+		const active = this.resolveActiveFunction();
+		if (active)
+			this.logInfo(`Starting function ${active.getName()}`);
+		if (active && typeof active.serve === 'function')
+			await active.serve(httpServer.getPort());
+		else
+			await httpServer.startServer();
+		await Promise.all(this.functions.map(fn => fn.onFunctionReady()));
 		await this.runPostBuildActions();
 		await onStarted?.();
+	}
+
+	/**
+	 * Cloud Run sets K_SERVICE to the service name. BAI names that service with
+	 * dashes, and FUNCTION_TARGET keeps the function name. One image hosts every
+	 * function; only the matching one may bind the port.
+	 */
+	private resolveActiveFunction(): ModuleBE_BaseFunction | undefined {
+		const service = process.env.K_SERVICE;
+		if (!service)
+			return undefined;
+
+		const target = process.env.FUNCTION_TARGET;
+		const match = this.functions.find(fn => {
+			const name = fn.getName();
+			return name === service || name.replace(/_/g, '-') === service || name === target;
+		});
+		if (!match)
+			this.logWarning(`K_SERVICE=${service} matches no function. Starting the HTTP server.`);
+
+		return match;
 	}
 
 	static getInstance(): Storm {

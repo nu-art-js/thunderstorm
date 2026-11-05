@@ -1,7 +1,15 @@
+/*
+ * @nu-art/firebase-backend - Firebase wrappers and Cloud Function modules
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import {addItemToArray, ImplementationMissingException} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_BaseFunction} from './ModuleBE_BaseFunction.js';
 import {onSchedule, ScheduleFunction, ScheduleOptions} from 'firebase-functions/v2/scheduler';
+import express from 'express';
+import {listenOnPort} from './listen-on-port.js';
 
 /**
  An abstract class representing a scheduled Firebase Cloud Function.
@@ -55,6 +63,21 @@ export abstract class ModuleBE_FirebaseScheduler<ConfigType = any>
 			return;
 		}
 		return this.onScheduledEvent();
+	};
+
+	serve = (port: number | undefined) => {
+		const app = express();
+		app.post('/', async (_req, res) => {
+			try {
+				await this.handleCallback(() => new MemStorage().init(this._onScheduledEvent));
+				res.status(200).send();
+			} catch (e: unknown) {
+				const message = e instanceof Error ? e.message : String(e);
+				this.logError('Scheduled run failed', message);
+				res.status(500).send(message);
+			}
+		});
+		return listenOnPort(app, port);
 	};
 
 	getFunction = () => {

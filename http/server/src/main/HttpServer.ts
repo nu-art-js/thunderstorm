@@ -277,6 +277,10 @@ export class HttpServer
 		return createHttpsServer({key, cert, rejectUnauthorized: false, requestCert: false}, this.getExpress());
 	}
 
+	getPort(): number | undefined {
+		return this.config.port;
+	}
+
 	public async startServer(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			this.server = this.createServer();

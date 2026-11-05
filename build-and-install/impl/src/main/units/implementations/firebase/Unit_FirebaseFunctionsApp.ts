@@ -11,13 +11,14 @@ import {
 import {FirebasePackageConfig} from '../../../config/types/package/package.js';
 import {__stringify, _keys, _logger_logPrefixes, deepClone, ImplementationMissingException, LogLevel, Second, sleep, StringMap} from '@nu-art/ts-common';
 import {Const_FirebaseConfigKeys, Const_FirebaseDefaultsKeyToFile, Default_Files, FunctionBuildTemplateFiles} from '../../../templates/consts.js';
-import {Commando_NVM, CommandoException} from '@nu-art/commando';
+import {Commando_NVM, CommandoException, CommandoInteractive} from '@nu-art/commando';
 import {Phase_BuildPushImage, Phase_Deploy, Phase_DeployImage, Phase_Launch} from '../../../phases/definitions/consts.js';
 import {dirname, resolve} from 'path';
 import {existsSync} from 'fs';
 import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils/FileSystemUtils';
 import {Unit_TypescriptLib, Unit_TypescriptLib_Config} from '../Unit_TypescriptLib.js';
 import {deployLogFilter, ensureArtifactRegistryRepository, resolveCloudRunRegion, resolveDatabaseURL} from './common.js';
+import {cloudSchedulerCron, invokerIamDisabled} from './cloud-scheduler.js';
 import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval} from './mongo-emulator.js';
 import {vendoredFileSpecifier} from './vendored-file-specifier.js';
 
@@ -730,153 +731,125 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const envConfig = this.getEnvConfig();
 		const runtimeProjectId = envConfig.projectId;
 
-		// Deploy each function separately with the same image but different entry points
-		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.config.fullPath)
-			.setLogLevelFilter(deployLogFilter);
-
-
-		this.logInfo(`Deploying ${functionsToDeploy.length} function(s): ${functionsToDeploy.map(f => f.name).join(', ')}`);
-
-		// Deploy each function
 		for (const functionConfig of functionsToDeploy) {
-			const functionName = functionConfig.name;
-			const trigger = functionConfig.trigger;
-
-			// Cloud Run service names cannot contain underscores, convert to dashes
-			// But FUNCTION_TARGET must use the original function name (with underscore) as it's exported in code
-			const serviceName = functionName.replace(/_/g, '-');
-
-			this.logInfo(`Deploying function: ${functionName}`);
-			this.logInfo(`  Service name: ${serviceName} (Cloud Run requires dashes, not underscores)`);
-			this.logInfo(`  Function target: ${functionName} (original function name for FUNCTION_TARGET)`);
-			this.logInfo(`  Trigger type: ${trigger}`);
-
-			// Validate trigger-specific requirements
-			if (trigger === 'schedule' && !functionConfig.schedule) {
-				throw new ImplementationMissingException(`Function '${functionName}' has trigger type 'schedule' but no schedule expression is configured. Add 'schedule' property to function config.`);
-			}
-
-			// Construct Firebase configuration JSON (matches Firebase Functions deployment format)
-			// Convert region format (e.g., "us-central1" -> "us-central")
-			const locationId = region.replace(/\d+$/, ''); // Remove trailing digits
-			const firebaseConfig = {
-				projectId: runtimeProjectId,
-				databaseURL: resolveDatabaseURL(runtimeProjectId, region),
-				storageBucket: `${runtimeProjectId}.appspot.com`,
-				locationId: locationId
-			};
-
-			// Set required environment variables for Firebase Admin SDK
-			// FIREBASE_CONFIG is required by Firebase Admin SDK to determine database URL and other services
-			// Use env-vars-file to avoid shell escaping issues with JSON values containing special characters
-			const firebaseConfigJson = JSON.stringify(firebaseConfig);
-
-			// Create temporary file for environment variables
-			// This avoids shell escaping issues with JSON values containing braces, commas, and quotes
-			const buildOutputDir = resolve(this.config.fullPath, CONST_TrashDir);
-			const envVarsFile = resolve(buildOutputDir, `env-vars-${functionName}.json`);
-			const envVars: Record<string, string> = {
-				FUNCTION_TARGET: functionName,
-				GCLOUD_PROJECT: runtimeProjectId,
-				GOOGLE_CLOUD_PROJECT: runtimeProjectId,
-				FIREBASE_CONFIG: firebaseConfigJson,
-				EVENTARC_CLOUD_EVENT_SOURCE: `projects/${runtimeProjectId}/locations/${region}/services/${serviceName}`,
-				LOG_EXECUTION_ID: 'true'
-			};
-
-			// Add schedule-specific environment variable if needed
-			if (trigger === 'schedule' && functionConfig.schedule) {
-				envVars.SCHEDULE = functionConfig.schedule;
-			}
-
-			await FileSystemUtils.file.write.json(envVarsFile, envVars);
-
-			// Build Cloud Run service YAML definition using template
-			const resources = functionConfig.resources;
-
-			// Generate environment variables as YAML array
-			// Indentation: 8 spaces for list item, 10 spaces for value (under env: which is at 8 spaces)
-			const envVarsYaml = Object.entries(envVars)
-				.map(([name, value]) => {
-					// Always quote string values to prevent YAML from interpreting them as booleans/numbers
-					// This is critical for values like 'true', 'false', 'yes', 'no', etc.
-					const escapedValue = typeof value === 'string'
-						? JSON.stringify(value) // JSON.stringify adds quotes and escapes special characters
-						: value;
-					return `        - name: ${name}\n          value: ${escapedValue}`;
-				})
-				.join('\n');
-
-			// Generate service account line conditionally
-			const serviceAccountYaml = functionConfig.serviceAccountName
-				? `      serviceAccountName: ${functionConfig.serviceAccountName}`
-				: '';
-
-			// Build template parameters
-			// Convert cpu to string if it's a number
-			const cpuValue = resources?.cpu !== undefined
-				? (typeof resources.cpu === 'number' ? resources.cpu.toString() : resources.cpu)
-				: '1';
-
-			const serviceYamlParams = {
-				SERVICE_NAME: serviceName,
-				FUNCTION_NAME: functionName,
-				REGION: region,
-				RUNTIME_PROJECT_ID: runtimeProjectId,
-				IMAGE_REFERENCE: imageReference,
-				TRIGGER_TYPE: trigger === 'http' ? 'HTTP_TRIGGER' : 'EVENT_TRIGGER',
-				MAX_INSTANCES: (resources?.maxInstances ?? 100).toString(),
-				MIN_INSTANCES: (resources?.minInstances ?? 0).toString(),
-				CONCURRENCY: (resources?.concurrency ?? 100).toString(),
-				TIMEOUT: (resources?.timeout ?? 540).toString(),
-				CPU: cpuValue,
-				MEMORY: resources?.memory || '2Gi',
-				ENV_VARS: envVarsYaml,
-				SERVICE_ACCOUNT: serviceAccountYaml
-			};
-
-			// Generate service YAML from template
-			const serviceYamlFile = resolve(buildOutputDir, `service-${functionName}.yaml`);
-			await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.serviceYaml, serviceYamlFile, serviceYamlParams);
-			this.logInfo(`Created service YAML at ${serviceYamlFile}`);
-
-			// Deploy using gcloud run services replace
-			const serviceYamlFileRelative = serviceYamlFile.replace(`${this.config.fullPath}/`, '');
-			const gcloudDeployCommand = `gcloud run services replace ${serviceYamlFileRelative} --region=${region} --project=${runtimeProjectId}`;
-
-			if (this.runtimeContext.runtimeParams.dryRun) {
-				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
-				continue;
-			}
-
-			await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
-				if (exitCode === 0) {
-					// Get service URL after successful deployment
-					return;
-				}
-
-				throw new CommandoException(`Failed to deploy function ${functionName} with exit code ${exitCode}`, stdout, stderr, exitCode);
-			});
-
-			// Get service URL after deployment
-			const getUrlCommand = `gcloud run services describe ${serviceName} --region=${region} --project=${runtimeProjectId} --format="value(status.url)"`;
-			await this.executeAsyncCommando(commando, getUrlCommand, (stdout, stderr, exitCode) => {
-				if (exitCode === 0) {
-					const url = stdout.trim();
-					if (url) {
-						this.functions[functionName] = url;
-						this.logInfo(`Function ${functionName} deployed at: ${url}`);
-					}
-					return;
-				}
-
-				// URL retrieval failure is not critical, log warning but don't fail
-				this.logWarning(`Failed to retrieve URL for function ${functionName}: ${stderr || stdout}`);
-			});
+			if (functionConfig.trigger === 'schedule' && !functionConfig.schedule)
+				throw new ImplementationMissingException(`Function '${functionConfig.name}' has trigger type 'schedule' but no schedule expression is configured. Add 'schedule' property to function config.`);
 		}
 
+		await this.prepareFunctionDeployDirs(functionsToDeploy.map(functionConfig => functionConfig.name));
+
+		this.logInfo(`Deploying ${functionsToDeploy.length} function(s) in parallel: ${functionsToDeploy.map(f => f.name).join(', ')}`);
+
+		await Promise.all(functionsToDeploy.map(functionConfig =>
+			this.deployOneFunction(functionConfig, imageReference, region, runtimeProjectId)
+		));
+
 		this.logInfo(`Functions deployed: `, this.functions);
+	}
+
+	private async deployOneFunction(functionConfig: FunctionConfig, imageReference: string, region: string, runtimeProjectId: string) {
+		const functionName = functionConfig.name;
+		const trigger = functionConfig.trigger;
+		// Cloud Run service names cannot contain underscores, convert to dashes.
+		// FUNCTION_TARGET must use the original function name (with underscore) as it's exported in code.
+		const serviceName = functionName.replace(/_/g, '-');
+		const deployDir = this.functionDeployDir(functionName);
+
+		this.logInfo(`Deploying function: ${functionName}`);
+		this.logInfo(`  Service name: ${serviceName} (Cloud Run requires dashes, not underscores)`);
+		this.logInfo(`  Function target: ${functionName} (original function name for FUNCTION_TARGET)`);
+		this.logInfo(`  Trigger type: ${trigger}`);
+		this.logInfo(`  Deploy dir: ${deployDir}`);
+
+		const locationId = region.replace(/\d+$/, '');
+		const firebaseConfig = {
+			projectId: runtimeProjectId,
+			databaseURL: resolveDatabaseURL(runtimeProjectId, region),
+			storageBucket: `${runtimeProjectId}.appspot.com`,
+			locationId: locationId
+		};
+
+		const firebaseConfigJson = JSON.stringify(firebaseConfig);
+		const envVars: Record<string, string> = {
+			FUNCTION_TARGET: functionName,
+			GCLOUD_PROJECT: runtimeProjectId,
+			GOOGLE_CLOUD_PROJECT: runtimeProjectId,
+			FIREBASE_CONFIG: firebaseConfigJson,
+			EVENTARC_CLOUD_EVENT_SOURCE: `projects/${runtimeProjectId}/locations/${region}/services/${serviceName}`,
+			LOG_EXECUTION_ID: 'true'
+		};
+
+		if (trigger === 'schedule' && functionConfig.schedule)
+			envVars.SCHEDULE = functionConfig.schedule;
+
+		await FileSystemUtils.file.write.json(resolve(deployDir, 'env-vars.json'), envVars);
+
+		const resources = functionConfig.resources;
+		const envVarsYaml = Object.entries(envVars)
+			.map(([name, value]) => {
+				const escapedValue = typeof value === 'string'
+					? JSON.stringify(value)
+					: value;
+				return `        - name: ${name}\n          value: ${escapedValue}`;
+			})
+			.join('\n');
+
+		const serviceAccountYaml = functionConfig.serviceAccountName
+			? `      serviceAccountName: ${functionConfig.serviceAccountName}`
+			: '';
+
+		const cpuValue = resources?.cpu !== undefined
+			? (typeof resources.cpu === 'number' ? resources.cpu.toString() : resources.cpu)
+			: '1';
+
+		const serviceYamlParams = {
+			SERVICE_NAME: serviceName,
+			FUNCTION_NAME: functionName,
+			REGION: region,
+			RUNTIME_PROJECT_ID: runtimeProjectId,
+			IMAGE_REFERENCE: imageReference,
+			TRIGGER_TYPE: trigger === 'http' ? 'HTTP_TRIGGER' : 'EVENT_TRIGGER',
+			MAX_INSTANCES: (resources?.maxInstances ?? 100).toString(),
+			MIN_INSTANCES: (resources?.minInstances ?? 0).toString(),
+			CONCURRENCY: (resources?.concurrency ?? 100).toString(),
+			TIMEOUT: (resources?.timeout ?? 540).toString(),
+			CPU: cpuValue,
+			MEMORY: resources?.memory || '2Gi',
+			ENV_VARS: envVarsYaml,
+			SERVICE_ACCOUNT: serviceAccountYaml,
+			INVOKER_IAM_DISABLED: invokerIamDisabled(trigger),
+		};
+
+		const serviceYamlFile = resolve(deployDir, 'service.yaml');
+		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.serviceYaml, serviceYamlFile, serviceYamlParams);
+		this.logInfo(`Created service YAML at ${serviceYamlFile}`);
+
+		const gcloudDeployCommand = `gcloud run services replace service.yaml --region=${region} --project=${runtimeProjectId}`;
+
+		if (this.runtimeContext.runtimeParams.dryRun) {
+			this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
+			this.logScheduleDryRun(functionConfig, serviceName, region);
+			return;
+		}
+
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.setUID(`${this.config.key}--${serviceName}`)
+			.cd(deployDir)
+			.setLogLevelFilter(deployLogFilter);
+
+		await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
+			if (exitCode === 0)
+				return;
+
+			throw new CommandoException(`Failed to deploy function ${functionName} with exit code ${exitCode}`, stdout, stderr, exitCode);
+		});
+
+		const serviceUrl = await this.readServiceUrl(commando, serviceName, region, runtimeProjectId, functionName);
+		if (serviceUrl) {
+			this.functions[functionName] = serviceUrl;
+			this.logInfo(`Function ${functionName} deployed at: ${serviceUrl}`);
+		}
+		await this.ensureCloudScheduler(commando, functionConfig, serviceName, region, runtimeProjectId, serviceUrl);
 	}
 
 	private async deployNodeContainer(imageReference: string, region: string) {
@@ -884,96 +857,190 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 		const runtimeProjectId = envConfig.projectId;
 		const allFunctionConfigs = this.normalizeFunctionConfigs();
 
-		const commando = this.allocateCommando(Commando_NVM).applyNVM()
-			.cd(this.config.fullPath)
-			.setLogLevelFilter(deployLogFilter);
+		await this.prepareFunctionDeployDirs(allFunctionConfigs.map(functionConfig => functionConfig.name));
 
-		for (const functionConfig of allFunctionConfigs) {
-			const serviceName = functionConfig.name.replace(/_/g, '-');
-			const resources = functionConfig.resources;
-			const buildOutputDir = resolve(this.config.fullPath, CONST_TrashDir);
-
-			this.logInfo(`Deploying Node container as Cloud Run service: ${serviceName}`);
-
-			const locationId = region.replace(/\d+$/, '');
-			const envVars: Record<string, string> = {
-				GCLOUD_PROJECT: runtimeProjectId,
-				GOOGLE_CLOUD_PROJECT: runtimeProjectId,
-				FIREBASE_CONFIG: JSON.stringify({
-					projectId: runtimeProjectId,
-					databaseURL: resolveDatabaseURL(runtimeProjectId, region),
-					storageBucket: `${runtimeProjectId}.appspot.com`,
-					locationId: locationId,
-				}),
-			};
-
-			const envVarsYaml = Object.entries(envVars)
-				.map(([name, value]) => {
-					const escapedValue = typeof value === 'string' ? JSON.stringify(value) : value;
-					return `        - name: ${name}\n          value: ${escapedValue}`;
-				})
-				.join('\n');
-
-			const serviceAccountYaml = functionConfig.serviceAccountName
-				? `      serviceAccountName: ${functionConfig.serviceAccountName}`
-				: '';
-
-			const cpuValue = resources?.cpu !== undefined
-				? (typeof resources.cpu === 'number' ? resources.cpu.toString() : resources.cpu)
-				: '1';
-
-			const serviceYamlParams = {
-				SERVICE_NAME: serviceName,
-				REGION: region,
-				RUNTIME_PROJECT_ID: runtimeProjectId,
-				IMAGE_REFERENCE: imageReference,
-				MAX_INSTANCES: (resources?.maxInstances ?? 100).toString(),
-				MIN_INSTANCES: (resources?.minInstances ?? 0).toString(),
-				CONCURRENCY: (resources?.concurrency ?? 100).toString(),
-				TIMEOUT: (resources?.timeout ?? 540).toString(),
-				CPU: cpuValue,
-				MEMORY: resources?.memory || '2Gi',
-				ENV_VARS: envVarsYaml,
-				SERVICE_ACCOUNT: serviceAccountYaml,
-			};
-
-			const serviceYamlFile = resolve(buildOutputDir, `service-${functionConfig.name}.yaml`);
-			await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.serviceNodeYaml, serviceYamlFile, serviceYamlParams);
-			this.logInfo(`Created service YAML at ${serviceYamlFile}`);
-
-			const serviceYamlFileRelative = serviceYamlFile.replace(`${this.config.fullPath}/`, '');
-			const gcloudDeployCommand = `gcloud run services replace ${serviceYamlFileRelative} --region=${region} --project=${runtimeProjectId}`;
-
-			if (this.runtimeContext.runtimeParams.dryRun) {
-				this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
-				continue;
-			}
-
-			await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
-				if (exitCode === 0)
-					return;
-
-				throw new CommandoException(`Failed to deploy service ${serviceName} with exit code ${exitCode}`, stdout, stderr, exitCode);
-			});
-
-			const getUrlCommand = `gcloud run services describe ${serviceName} --region=${region} --project=${runtimeProjectId} --format="value(status.url)"`;
-			await this.executeAsyncCommando(commando, getUrlCommand, (stdout, stderr, exitCode) => {
-				if (exitCode === 0) {
-					const url = stdout.trim();
-					if (url) {
-						this.functions[functionConfig.name] = url;
-						this.logInfo(`Service ${serviceName} deployed at: ${url}`);
-					}
-					return;
-				}
-
-				this.logWarning(`Failed to retrieve URL for service ${serviceName}: ${stderr || stdout}`);
-			});
-		}
+		await Promise.all(allFunctionConfigs.map(functionConfig =>
+			this.deployOneNodeService(functionConfig, imageReference, region, runtimeProjectId)
+		));
 
 		this.logInfo(`Node services deployed: `, this.functions);
 	}
 
+	private async deployOneNodeService(functionConfig: FunctionConfig, imageReference: string, region: string, runtimeProjectId: string) {
+		const serviceName = functionConfig.name.replace(/_/g, '-');
+		const resources = functionConfig.resources;
+		const deployDir = this.functionDeployDir(functionConfig.name);
+
+		this.logInfo(`Deploying Node container as Cloud Run service: ${serviceName}`);
+		this.logInfo(`  Deploy dir: ${deployDir}`);
+
+		const locationId = region.replace(/\d+$/, '');
+		const envVars: Record<string, string> = {
+			GCLOUD_PROJECT: runtimeProjectId,
+			GOOGLE_CLOUD_PROJECT: runtimeProjectId,
+			FIREBASE_CONFIG: JSON.stringify({
+				projectId: runtimeProjectId,
+				databaseURL: resolveDatabaseURL(runtimeProjectId, region),
+				storageBucket: `${runtimeProjectId}.appspot.com`,
+				locationId: locationId,
+			}),
+		};
+
+		const envVarsYaml = Object.entries(envVars)
+			.map(([name, value]) => {
+				const escapedValue = typeof value === 'string' ? JSON.stringify(value) : value;
+				return `        - name: ${name}\n          value: ${escapedValue}`;
+			})
+			.join('\n');
+
+		const serviceAccountYaml = functionConfig.serviceAccountName
+			? `      serviceAccountName: ${functionConfig.serviceAccountName}`
+			: '';
+
+		const cpuValue = resources?.cpu !== undefined
+			? (typeof resources.cpu === 'number' ? resources.cpu.toString() : resources.cpu)
+			: '1';
+
+		const serviceYamlParams = {
+			SERVICE_NAME: serviceName,
+			REGION: region,
+			RUNTIME_PROJECT_ID: runtimeProjectId,
+			IMAGE_REFERENCE: imageReference,
+			MAX_INSTANCES: (resources?.maxInstances ?? 100).toString(),
+			MIN_INSTANCES: (resources?.minInstances ?? 0).toString(),
+			CONCURRENCY: (resources?.concurrency ?? 100).toString(),
+			TIMEOUT: (resources?.timeout ?? 540).toString(),
+			CPU: cpuValue,
+			MEMORY: resources?.memory || '2Gi',
+			ENV_VARS: envVarsYaml,
+			SERVICE_ACCOUNT: serviceAccountYaml,
+			INVOKER_IAM_DISABLED: invokerIamDisabled(functionConfig.trigger),
+		};
+
+		const serviceYamlFile = resolve(deployDir, 'service.yaml');
+		await FileSystemUtils.file.template.copy(FunctionBuildTemplateFiles.serviceNodeYaml, serviceYamlFile, serviceYamlParams);
+		this.logInfo(`Created service YAML at ${serviceYamlFile}`);
+
+		const gcloudDeployCommand = `gcloud run services replace service.yaml --region=${region} --project=${runtimeProjectId}`;
+
+		if (this.runtimeContext.runtimeParams.dryRun) {
+			this.logInfo(`[DRY RUN] Would execute: ${gcloudDeployCommand}`);
+			this.logScheduleDryRun(functionConfig, serviceName, region);
+			return;
+		}
+
+		const commando = this.allocateCommando(Commando_NVM).applyNVM()
+			.setUID(`${this.config.key}--${serviceName}`)
+			.cd(deployDir)
+			.setLogLevelFilter(deployLogFilter);
+
+		await this.executeAsyncCommando(commando, gcloudDeployCommand, (stdout, stderr, exitCode) => {
+			if (exitCode === 0)
+				return;
+
+			throw new CommandoException(`Failed to deploy service ${serviceName} with exit code ${exitCode}`, stdout, stderr, exitCode);
+		});
+
+		const serviceUrl = await this.readServiceUrl(commando, serviceName, region, runtimeProjectId, functionConfig.name);
+		if (serviceUrl) {
+			this.functions[functionConfig.name] = serviceUrl;
+			this.logInfo(`Service ${serviceName} deployed at: ${serviceUrl}`);
+		}
+		await this.ensureCloudScheduler(commando, functionConfig, serviceName, region, runtimeProjectId, serviceUrl);
+	}
+
+	private functionDeployDir(functionName: string): string {
+		return resolve(this.config.fullPath, CONST_TrashDir, 'deploy-image', functionName.replace(/_/g, '-'));
+	}
+
+	private async prepareFunctionDeployDirs(functionNames: string[]) {
+		const root = resolve(this.config.fullPath, CONST_TrashDir, 'deploy-image');
+		await FileSystemUtils.folder.delete(root);
+		await FileSystemUtils.folder.create(root);
+
+		const seen = new Map<string, string>();
+		for (const functionName of functionNames) {
+			const dir = this.functionDeployDir(functionName);
+			const owner = seen.get(dir);
+			if (owner)
+				throw new ImplementationMissingException(`Functions '${owner}' and '${functionName}' both deploy into ${dir}`);
+
+			seen.set(dir, functionName);
+			await FileSystemUtils.folder.create(dir);
+		}
+	}
+
+
+	private logScheduleDryRun(functionConfig: FunctionConfig, serviceName: string, region: string) {
+		if (functionConfig.trigger !== 'schedule')
+			return;
+
+		const cron = cloudSchedulerCron(functionConfig.schedule ?? '');
+		this.logInfo(`[DRY RUN] Would create Cloud Scheduler job ${serviceName} in ${region} on '${cron}', private to its invoker`);
+	}
+
+	private async readServiceUrl(commando: CommandoInteractive, serviceName: string, region: string, projectId: string, functionName: string): Promise<string> {
+		let url = '';
+		const getUrlCommand = `gcloud run services describe ${serviceName} --region=${region} --project=${projectId} --format="value(status.url)"`;
+		await this.executeAsyncCommando(commando, getUrlCommand, (stdout, stderr, exitCode) => {
+			if (exitCode === 0) {
+				url = stdout.trim();
+				return;
+			}
+
+			this.logWarning(`Failed to retrieve URL for function ${functionName}: ${stderr || stdout}`);
+		});
+		return url;
+	}
+
+	/**
+	 * A schedule trigger is a private Cloud Run service plus a Cloud Scheduler
+	 * HTTP job. The job calls the service with an OIDC token from the service
+	 * account that is allowed to invoke it.
+	 */
+	private async ensureCloudScheduler(commando: CommandoInteractive, functionConfig: FunctionConfig, serviceName: string, region: string, projectId: string, serviceUrl: string) {
+		if (functionConfig.trigger !== 'schedule')
+			return;
+
+		if (!serviceUrl)
+			throw new ImplementationMissingException(`Scheduled function '${functionConfig.name}' deployed without a Cloud Run URL, so no scheduler job was created`);
+
+		const cron = cloudSchedulerCron(functionConfig.schedule ?? '');
+		const invoker = functionConfig.serviceAccountName ?? await this.defaultComputeServiceAccount(commando, projectId);
+		const bindInvoker = `gcloud run services add-iam-policy-binding ${serviceName} --region=${region} --project=${projectId} --member=serviceAccount:${invoker} --role=roles/run.invoker`;
+		await this.executeAsyncCommando(commando, bindInvoker, (stdout, stderr, exitCode) => {
+			if (exitCode !== 0)
+				throw new CommandoException(`Failed to grant ${invoker} run.invoker on ${serviceName}`, stdout, stderr, exitCode);
+		});
+
+		const describeJob = `gcloud scheduler jobs describe ${serviceName} --location=${region} --project=${projectId}`;
+		let jobExists = false;
+		await this.executeAsyncCommando(commando, describeJob, (stdout, stderr, exitCode) => {
+			jobExists = exitCode === 0;
+		});
+
+		const verb = jobExists ? 'update' : 'create';
+		const upsertJob = `gcloud scheduler jobs ${verb} http ${serviceName} --location=${region} --project=${projectId} --schedule='${cron}' --uri='${serviceUrl}' --http-method=POST --oidc-service-account-email=${invoker} --oidc-token-audience='${serviceUrl}'`;
+		await this.executeAsyncCommando(commando, upsertJob, (stdout, stderr, exitCode) => {
+			if (exitCode !== 0)
+				throw new CommandoException(`Failed to ${verb} Cloud Scheduler job ${serviceName}`, stdout, stderr, exitCode);
+		});
+		this.logInfo(`Cloud Scheduler job ${serviceName} ${verb}d on '${cron}'`);
+	}
+
+	private async defaultComputeServiceAccount(commando: CommandoInteractive, projectId: string): Promise<string> {
+		let projectNumber = '';
+		const describeProject = `gcloud projects describe ${projectId} --format="value(projectNumber)"`;
+		await this.executeAsyncCommando(commando, describeProject, (stdout, stderr, exitCode) => {
+			if (exitCode !== 0)
+				throw new CommandoException(`Failed to read project number for ${projectId}`, stdout, stderr, exitCode);
+			projectNumber = stdout.trim();
+		});
+		if (!projectNumber)
+			throw new ImplementationMissingException(`Project ${projectId} has no project number, so the scheduler has no invoker service account`);
+
+		return `${projectNumber}-compute@developer.gserviceaccount.com`;
+	}
 
 	//######################### ResolveConfig Logic #########################
 

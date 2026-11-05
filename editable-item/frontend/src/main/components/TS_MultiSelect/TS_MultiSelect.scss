@@ -18,3 +18,26 @@
     min-width: var(--ts-multi-select--selector-min-width);
   }
 }
+
+.ts-multi-select__sortable {
+  gap: 8px;
+  width: 100%;
+
+  .ts-list-organizer__list {
+    gap: 8px;
+  }
+
+  .multi-select__item-wrapper {
+    gap: 8px;
+  }
+
+  &:not(.disabled) {
+    .multi-select__item-wrapper {
+      cursor: grab;
+
+      &.dragged {
+        cursor: grabbing;
+      }
+    }
+  }
+}

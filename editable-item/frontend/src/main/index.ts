@@ -59,6 +59,7 @@ export {
 } from './editables/editable-generic-dropdown.js';
 export {
 	TS_MultiSelect_V2,
+	TS_MultiSelect_Sortable,
 	type StaticProps_TS_MultiSelect_V2,
 	type DynamicProps_TS_MultiSelect_V2,
 	type MultiSelect_Selector,

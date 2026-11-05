@@ -27,6 +27,7 @@
   "author": "TacB0sS",
   "dependencies": {
     "@nu-art/ts-common": "?",
+    "@google-cloud/kms": "?",
     "@google-cloud/pubsub": "?",
     "@google-cloud/secret-manager": "?",
     "google-auth-library": "?",

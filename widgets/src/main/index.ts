@@ -24,6 +24,7 @@ export * from './component-transition/v1/TS_ComponentTransition.js';
 export * from './components/HeightBounder.js';
 export * from './components/Show.js';
 export * from './components/TS_Overlay/TS_Overlay.js';
+export * from './components/TS_ListOrganizer/TS_ListOrganizer.js';
 export * from './copy-to-clipboard/ModuleFE_Clipboard.js';
 export * from './copy-to-clipboard/v1/TS_CopyToClipboard.js';
 export * from './dialog/ModuleFE_Dialog.js';
