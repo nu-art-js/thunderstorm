@@ -144,6 +144,11 @@ export type Database<Proto extends DB_Prototype> = {
 	modifiablePropsValidator: Proto['modifiablePropsValidator'];
 	uniqueKeys?: Proto['uniqueKeys'];
 	versions: Proto['versions']['versions'];
+	/**
+	 * Ordinary index list for this entity. This is the only declaration.
+	 * Mongo collection init creates each entry with `createIndex`.
+	 * IndexedDB creates `keys` and `params` when the frontend db config carries this same list.
+	 */
 	indices?: Proto['indices'];
 	/**
 	 * Atlas Search indexes. Startup creates each one when it is missing and updates it when the field list changes.
