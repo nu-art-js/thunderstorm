@@ -7,6 +7,9 @@ type Props = React.PropsWithChildren<{
 	className?: string;
 	containerSelector?: string; //A container for the tooltip direction calculation
 	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+	/** overflow shows the tooltip only when the content is clipped. always shows it on hover. */
+	tooltipWhen?: 'overflow' | 'always';
+	'aria-label'?: string;
 }>;
 type State = {
 	tooltip: React.ReactNode;
@@ -50,20 +53,25 @@ export class Label
 		const el = this.labelRef.current;
 		if (!el)
 			return;
+
 		const content = el.querySelector('.ts-label__content');
 		const measureEl = content instanceof HTMLElement ? content : el;
 		const overflowing = measureEl.scrollWidth > measureEl.clientWidth;
+		const showTooltip = !!this.state.tooltip && (this.props.tooltipWhen === 'always' || overflowing);
 		if (!overflowing) {
 			if (el.classList.contains(this.activeTruncationClass))
 				el.classList.remove(this.activeTruncationClass);
-			if (el.classList.contains(this.activeTooltipClass))
-				el.classList.remove(this.activeTooltipClass);
+		} else if (!el.classList.contains(this.activeTruncationClass))
+			el.classList.add(this.activeTruncationClass);
+
+		if (showTooltip) {
+			if (!el.classList.contains(this.activeTooltipClass))
+				el.classList.add(this.activeTooltipClass);
 			return;
 		}
-		if (!el.classList.contains(this.activeTruncationClass))
-			el.classList.add(this.activeTruncationClass);
-		if (!el.classList.contains(this.activeTooltipClass) && this.state.tooltip)
-			el.classList.add(this.activeTooltipClass);
+
+		if (el.classList.contains(this.activeTooltipClass))
+			el.classList.remove(this.activeTooltipClass);
 	};
 	private checkTooltipDir = () => {
 		const el = this.labelRef.current;
@@ -84,7 +92,7 @@ export class Label
 		}
 	};
 	private getProps = () => {
-		const {tooltip, className, containerSelector, onClick, ...rest} = this.props;
+		const {tooltip, className, containerSelector, onClick, tooltipWhen, ...rest} = this.props;
 		return {
 			...rest,
 			className: _className('ts-label', className),
