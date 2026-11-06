@@ -38,7 +38,7 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "@nu-art/http-client": "?"
   },
   "devDependencies": {

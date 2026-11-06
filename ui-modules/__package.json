@@ -41,7 +41,7 @@
     "@nu-art/db-api-frontend": "?",
     "@nu-art/http-client": "?",
     "@nu-art/ts-styles": "?",
-    "react-router-dom": "?"
+    "react-router": "?"
   },
   "devDependencies": {
     "@types/react": "?",

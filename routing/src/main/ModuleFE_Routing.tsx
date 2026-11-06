@@ -1,5 +1,5 @@
-import {useEffect} from 'react';
-import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes, useLocation} from 'react-router-dom';
+import {useEffect, type MouseEvent} from 'react';
+import {BrowserRouter, Navigate, NavLink, NavLinkProps, Route, Routes, useLocation} from 'react-router';
 import {TS_Route} from './types.js';
 import {TS_RoutePage} from './TS_RoutePage.js';
 import {UrlQueryParams} from '@nu-art/api-types';
@@ -365,12 +365,12 @@ export const TS_NavLink = (props: {
 		{..._props}
 		to={fullPath}
 		key={route.key}
-		onClick={e => {
+		onClick={(e: MouseEvent<HTMLAnchorElement>) => {
 			const pathname = window.location.pathname;
 			if (props.ignoreClickOnSameRoute && pathname === fullPath)
 				stopPropagation(e);
 		}}
-		onMouseUp={e => mouseEventHandler(e, {
+		onMouseUp={(e: MouseEvent<HTMLAnchorElement>) => mouseEventHandler(e, {
 			middle: () => window.open(fullPath, '_blank'),
 		})}
 	>{children}</NavLink>;

@@ -1,4 +1,4 @@
-import {useLocation} from 'react-router-dom';
+import {useLocation} from 'react-router';
 import type {TS_Route} from './types.js';
 
 /** Remount key for routes that declare `paramKeys` — changes when those query params change. */

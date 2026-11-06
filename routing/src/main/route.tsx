@@ -21,7 +21,7 @@
 
 import {composeUrl, RouteParams} from '@nu-art/ts-common';
 import * as React from 'react';
-import {Link, NavLink, Route} from 'react-router-dom';
+import {Link, NavLink, Route} from 'react-router';
 
 
 export class RoutePath {

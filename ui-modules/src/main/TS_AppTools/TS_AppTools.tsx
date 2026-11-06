@@ -23,7 +23,7 @@ import './TS_AppTools.scss';
 import {LL_H_C, LL_V_L, TS_CollapsableContainer, TS_ErrorBoundary} from '@nu-art/thunder-widgets/v2';
 import {TS_NavLink, TS_Route} from '@nu-art/thunder-routing';
 import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
-import {Outlet} from 'react-router-dom';
+import {Outlet} from 'react-router';
 import {TS_AppTools_Default} from './TS_AppTools_Default.js';
 import {AppToolsScreen} from './types.js';
 import {TS_Icons} from '@nu-art/ts-styles';

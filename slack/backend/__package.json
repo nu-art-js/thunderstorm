@@ -34,15 +34,13 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "@nu-art/http-server": "?",
     "@nu-art/api-types": "?"
   },
   "devDependencies": {
     "@types/react": "?",
-    "@types/react-dom": "?",
-    "@types/react-router": "?",
-    "@types/react-router-dom": "?"
+    "@types/react-dom": "?"
   },
   "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {

@@ -39,7 +39,7 @@
     "firebase-functions": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "moment": "?",
     "express": "?",
     "@nu-art/api-types": "?"

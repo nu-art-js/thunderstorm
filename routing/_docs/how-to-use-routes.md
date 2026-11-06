@@ -174,7 +174,7 @@ The root page component (`Page_Main`) renders shared layout (sidebar, header) an
 
 ```typescript
 import {Suspense} from 'react';
-import {Outlet} from 'react-router-dom';
+import {Outlet} from 'react-router';
 
 export class Page_Main extends AppPage {
 	render() {

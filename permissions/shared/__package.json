@@ -37,7 +37,7 @@
     "firebase-functions": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "moment": "?",
     "saml2-js": "^4.0.1",
     "express": "?",
@@ -48,8 +48,6 @@
     "@types/react": "?",
     "@types/express": "?",
     "@types/react-dom": "?",
-    "@types/react-router": "?",
-    "@types/react-router-dom": "?",
     "@types/history": "^4.7.2",
     "@types/request": "^2.48.1",
     "@types/saml2-js": "^1.6.8"

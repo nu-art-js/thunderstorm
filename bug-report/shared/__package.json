@@ -32,7 +32,7 @@
     "firebase-admin": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "express": "?",
     "jszip": "^3.3.0",
     "moment": "?",

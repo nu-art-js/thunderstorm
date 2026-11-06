@@ -34,16 +34,14 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "@nu-art/http-client": "?",
     "@nu-art/thunder-widgets": "?",
     "@nu-art/thunder-ui-modules": "?"
   },
   "devDependencies": {
     "@types/react": "?",
-    "@types/react-dom": "?",
-    "@types/react-router": "?",
-    "@types/react-router-dom": "?"
+    "@types/react-dom": "?"
   },
   "publishConfig": {"directory": "dist", "linkDirectory": true},
   "unitConfig": {

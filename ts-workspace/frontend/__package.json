@@ -27,7 +27,7 @@
     "moment": "?",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "@nu-art/thunder-core": "?",
     "@nu-art/thunder-widgets": "?"
   },

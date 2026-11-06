@@ -77,7 +77,7 @@
     "qs": "^6.6.0",
     "react": "?",
     "react-dom": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "react-chartjs-2": "^2.11.1",
     "react-color": "^2.14.1",
     "sass": "^1.49.9",
@@ -97,7 +97,6 @@
   },
   "devDependencies": {
     "@types/react": "?",
-    "@types/react-router-dom": "?",
     "@types/chart.js": "^2.9.4",
     "@types/d3-array": "^2.8.0",
     "@types/d3-scale": "^3.2.1",

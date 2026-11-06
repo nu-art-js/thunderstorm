@@ -34,14 +34,12 @@
     "@nu-art/ts-common": "?",
     "history": "^4.9.0",
     "react": "?",
-    "react-router-dom": "?",
+    "react-router": "?",
     "@nu-art/api-types": "?"
   },
   "devDependencies": {
     "@types/react": "?",
     "@types/react-dom": "?",
-    "@types/react-router": "?",
-    "@types/react-router-dom": "?",
     "@types/history": "^4.7.2"
   },
   "publishConfig": {"directory": "dist", "linkDirectory": true},
