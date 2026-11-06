@@ -47,6 +47,16 @@ function defaultAccessFields(callerAccessIds: UniqueId[]): DocumentAccessFields 
 	};
 }
 
+// Same id as GroupId_PermissionsAdmin. Kept local to avoid a cycle with ModuleBE_Permissions.
+const permissionsAdminGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/permissions-admin');
+
+function withAdminReader(access: DocumentAccessInner): DocumentAccessInner {
+	return {
+		...access,
+		readers: filterDuplicates([...(access.readers ?? []), permissionsAdminGroupId]),
+	};
+}
+
 function assertCallerAccess(access: Partial<DocumentAccessInner>, callerIds: UniqueId[], ...keys: (keyof DocumentAccessInner)[]): void {
 	if (!keys.some(key => access[key]?.length))
 		return;
@@ -94,6 +104,9 @@ function createPreWriteInterceptor<Database extends DB_Prototype>(
 				const selfIds = scopedDict[AccessScope_Self] ?? [];
 				item.__access = defaultAccessFields(selfIds).__access;
 			}
+
+			if (item.__access)
+				item.__access = withAdminReader(item.__access);
 
 			return;
 		}
