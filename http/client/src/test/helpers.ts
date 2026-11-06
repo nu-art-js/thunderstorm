@@ -4,7 +4,7 @@
  * Typescript & Express backend infrastructure that natively runs on firebase function
  * Typescript & React frontend infrastructure
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,19 @@
  * limitations under the License.
  */
 
-import {ApiDef, GeneralApi, HttpClient, HttpConfig, HttpMethod} from '../main/index.js';
 import {AxiosRequestConfig, AxiosResponse} from 'axios';
 
+import {ApiDef, GeneralApi, HttpClient, HttpConfig, HttpMethod} from '../main/index.js';
+import {testEchoOrigin, testEchoServer} from './echo-server.js';
+
+export {testEchoOrigin};
+
+before(() => testEchoServer.start());
+
 /**
- * Creates a test HttpClient with the specified origin and optional config
+ * Creates a test HttpClient pointed at the local echo server unless an origin is passed.
  */
-export function createTestClient(origin: string = 'https://httpbin.org', config?: Partial<HttpConfig>): HttpClient {
+export function createTestClient(origin: string = testEchoOrigin, config?: Partial<HttpConfig>): HttpClient {
 	return new HttpClient({
 		origin,
 		timeout: 30000,

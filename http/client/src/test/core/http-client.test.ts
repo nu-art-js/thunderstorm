@@ -4,7 +4,7 @@
  * Typescript & Express backend infrastructure that natively runs on firebase function
  * Typescript & React frontend infrastructure
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 import {HttpClient, HttpMethod, QueryApi} from '../../main/index.js';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
-import {createTestApiDef, createTestClient} from '../helpers.js';
+import {createTestApiDef, createTestClient, testEchoOrigin} from '../helpers.js';
 import {expect} from 'chai';
 
 type Input = {
@@ -79,10 +79,10 @@ const runTestCase = (testCase: TestCase_HttpClient) => () => runSingleTestCase(t
 describe('HttpClient - Configuration', () => {
 	it('Default origin configuration', runTestCase({
 		input: {
-			client: createTestClient('https://httpbin.org')
+			client: createTestClient('https://example.org')
 		},
 		result: {
-			origin: 'https://httpbin.org',
+			origin: 'https://example.org',
 			timeout: 30000,
 			compress: false,
 			headers: {}
@@ -91,10 +91,10 @@ describe('HttpClient - Configuration', () => {
 
 	it('Origin with trailing slash removed', runTestCase({
 		input: {
-			client: createTestClient('https://httpbin.org/')
+			client: createTestClient('https://example.org/')
 		},
 		result: {
-			origin: 'https://httpbin.org',
+			origin: 'https://example.org',
 			timeout: 30000,
 			compress: false,
 			headers: {}
@@ -110,7 +110,7 @@ describe('HttpClient - Configuration', () => {
 		},
 		result: async (actual) => {
 			expect(actual.timeout).to.equal(5000);
-			expect(actual.origin).to.equal('https://httpbin.org');
+			expect(actual.origin).to.equal(testEchoOrigin);
 		}
 	})).timeout(30000);
 
@@ -122,7 +122,7 @@ describe('HttpClient - Configuration', () => {
 			}
 		},
 		result: {
-			origin: 'https://httpbin.org',
+			origin: testEchoOrigin,
 			timeout: 30000,
 			compress: true,
 			headers: {}
