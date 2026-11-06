@@ -24,6 +24,7 @@ import {ReactComponent as Download} from './svgs/icon__download.svg';
 import {ReactComponent as Copy} from './svgs/icon__copy.svg';
 import {ReactComponent as AddImage} from './svgs/icon__add-image.svg';
 import {ReactComponent as Link} from './svgs/icon__link.svg';
+import {ReactComponent as Lock} from './svgs/icon__lock.svg';
 import {ReactComponent as Crosshair} from './svgs/icon__crosshair.svg';
 import {ReactComponent as Pin} from './svgs/icon__pin.svg';
 import {ReactComponent as Pulse} from './svgs/icon__pulse.svg';
@@ -89,6 +90,7 @@ export const TS_Icons = {
 	addImage: {component: genIcon(AddImage)},
 	user: {component: genIcon(User)},
 	link: {component: genIcon(Link)},
+	lock: {component: genIcon(Lock)},
 	crosshair: {component: genIcon(Crosshair)},
 	pin: {component: genIcon(Pin)},
 	pulse: {component: genIcon(Pulse)},
