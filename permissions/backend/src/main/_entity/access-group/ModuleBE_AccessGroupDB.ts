@@ -4,7 +4,7 @@ import {HttpCodes} from '@nu-art/api-types';
 import {ModuleBE_BaseDB, PostWriteProcessingDataShape} from '@nu-art/db-api-backend';
 import type {DatabaseDef_AccessGroup, DB_AccessGroup} from '@nu-art/permissions-shared';
 import {DBDef_AccessGroup} from '@nu-art/permissions-shared';
-import {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
+import {CollectionActionType} from '@nu-art/firebase-backend';
 
 
 export interface OnAccessGroupChanged {

@@ -27,13 +27,11 @@ import {
 	currentTimeMillis,
 	DB_Object,
 	DB_Object_validator,
-	dbIdLength,
 	deepClone,
 	DefaultDBVersion,
 	exists,
 	filterDuplicates,
 	filterInstances,
-	generateHex,
 	InvalidResult,
 	keepPartialObject,
 	Logger,
@@ -50,7 +48,7 @@ import {composeDbObjectUniqueId, _EmptyQuery, maxBatch} from '@nu-art/firebase-s
 import {addDeletedToTransaction, drainTransactionPreClose, getActiveTransaction, markTransactionWrite, MemKey_FirestoreTransaction} from './consts.js';
 import {MongoInterface, type MqlCompiledQuery} from './MongoInterface.js';
 import {assertOneTextIndex, compileMongoIndex} from './mongo-index.js';
-import {FirestoreCollectionHooks} from './FirestoreCollection.js';
+import {assertUniqueId, CollectionHooks} from './collection-hooks.js';
 import type {ClientSession, Collection as MongoDriverCollection, Db as MongoDriverDb, Document, UpdateFilter} from 'mongodb';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
 
@@ -123,9 +121,9 @@ export class MongoCollection<Proto extends DB_Prototype>
 	readonly dbDef: Database<Proto>;
 	readonly uniqueKeys: Proto['uniqueKeys'];
 	private readonly validator;
-	readonly hooks?: FirestoreCollectionHooks<Proto['dbType']>;
+	readonly hooks?: CollectionHooks<Proto['dbType']>;
 
-	constructor(resolveDb: () => Promise<MongoDriverDb>, _dbDef: Database<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>) {
+	constructor(resolveDb: () => Promise<MongoDriverDb>, _dbDef: Database<Proto>, hooks?: CollectionHooks<Proto['dbType']>) {
 		super();
 		this.resolveDb = resolveDb;
 		if (!/[a-z-]{3,}/.test(_dbDef.backend.name))
@@ -197,20 +195,15 @@ export class MongoCollection<Proto extends DB_Prototype>
 	}
 
 	private getSession(): ClientSession | undefined {
-		const tx = getActiveTransaction();
-		if (!tx)
+		const session = getActiveTransaction();
+		if (!session)
 			return undefined;
 
-		if ('abortTransaction' in tx) {
-			const session = tx as unknown as ClientSession;
-			const txState = (session as any).transaction?.state;
-			if (txState === 'TRANSACTION_COMMITTED' || txState === 'TRANSACTION_ABORTED')
-				this.logWarning(`SESSION-STALE [${this.dbDef.dbKey}] txState=${txState}`);
+		const txState = (session.transaction as { state?: string } | undefined)?.state;
+		if (txState === 'TRANSACTION_COMMITTED' || txState === 'TRANSACTION_ABORTED')
+			this.logWarning(`SESSION-STALE [${this.dbDef.dbKey}] txState=${txState}`);
 
-			return session;
-		}
-
-		return undefined;
+		return session;
 	}
 
 	private sessionOpts() {
@@ -219,14 +212,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 	}
 
 	private assertUniqueId(item: Proto['uiType']): Proto['dbType']['_id'] {
-		if (compare(this.uniqueKeys, Const_UniqueKeys as Proto['uniqueKeys']))
-			return (item._id ?? generateHex(dbIdLength)) as Proto['dbType']['_id'];
-
-		const _id = composeDbObjectUniqueId(item, this.uniqueKeys) as Proto['dbType']['_id'];
-		if (exists(item._id) && _id !== item._id)
-			throw new MUSTNeverHappenException(`Composed _id does not match existing _id! expected: ${_id}, actual: ${item._id}`);
-
-		return _id;
+		return assertUniqueId<Proto>(item as Proto['dbType'], this.uniqueKeys);
 	}
 
 	private async _findCompiled(compiled: MqlCompiledQuery<Proto['dbType']>): Promise<Proto['dbType'][]> {
@@ -856,7 +842,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 		try {
 			let result: ReturnType;
 			const wrapper = {
-				transaction: session as any,
+				transaction: session,
 				active: true,
 				writeCount: 0,
 				beginTransaction: () => session.startTransaction(),

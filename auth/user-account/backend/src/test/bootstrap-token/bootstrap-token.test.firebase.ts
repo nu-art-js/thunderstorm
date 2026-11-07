@@ -3,8 +3,10 @@ import {runSingleTestCase} from '@nu-art/testalot';
 import {stormTester, StormTestInput} from '@nu-art/storm-testalot';
 import {expect} from 'chai';
 import {stringToUniqueId} from '@nu-art/db-api-shared';
+import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {DatabaseDef_Account} from '@nu-art/user-account-shared';
 import {ModuleBE_BootstrapTokenDB, ModuleBE_SessionDB} from '../_main.js';
+import {bindUserAccountMongoDb, dropUserAccountTestDatabase, userAccountMongoConfig} from '../utils/helpers.js';
 
 const accountId = stringToUniqueId<DatabaseDef_Account['dbKey']>(generateHex(32));
 
@@ -12,10 +14,12 @@ let secretGet: any;
 
 const DefaultTestConfig: StormTestInput = {
 	modules: [
+		ModuleBE_Firebase,
 		ModuleBE_SessionDB,
 		ModuleBE_BootstrapTokenDB,
 	],
 	config: {
+		...userAccountMongoConfig,
 		ModuleBE_SessionDB: {
 			sessionTTLms: 86_400_000,
 			rotationFactor: 0.5,
@@ -26,14 +30,15 @@ const DefaultTestConfig: StormTestInput = {
 		}
 	},
 	before: async () => {
+		bindUserAccountMongoDb();
 		secretGet = ModuleBE_BootstrapTokenDB['jwtHandler']['secret'].get;
 		ModuleBE_BootstrapTokenDB['jwtHandler']['secret'].get = async () => ['bootstrap-test-secret'];
 		ModuleBE_SessionDB['jwtHandler']['secret'].get = async () => ['session-test-secret'];
 		TEST_JwtTools.beforeAll();
-		await ModuleBE_BootstrapTokenDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await dropUserAccountTestDatabase();
 	},
 	after: async () => {
-		await ModuleBE_BootstrapTokenDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await dropUserAccountTestDatabase();
 		TEST_JwtTools.afterAll();
 		ModuleBE_BootstrapTokenDB['jwtHandler']['secret'].get = secretGet;
 	}

@@ -23,7 +23,6 @@ const TEST_MONGO_DB = 'permissions-rematerialize-coalesce-test';
 const DEFAULT_MONGO_PORT = 27019;
 
 /** Production login path is Mongo — coalesce is a Mongo TX preClose invariant. */
-ModuleBE_BaseDB.setDefaultBackend('mongo');
 ModuleBE_BaseDB.setMongoDbName(TEST_MONGO_DB);
 
 function resolveMongoUrl(): string {

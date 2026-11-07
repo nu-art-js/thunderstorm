@@ -6,7 +6,7 @@
 
 import {expect} from 'chai';
 import {BadImplementationException} from '@nu-art/ts-common';
-import {MongoCollection} from '../main/firestore/MongoCollection.js';
+import {MongoCollection} from '../main/mongo/MongoCollection.js';
 
 type IndexCall = {spec: Record<string, unknown>; options: Record<string, unknown>};
 

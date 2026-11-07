@@ -17,11 +17,11 @@
  */
 
 import {StaticLogger} from '@nu-art/ts-common';
-import {FirestoreWrapperBE, MongoWrapperBE} from '@nu-art/firebase-backend';
+import {MongoWrapperBE} from '@nu-art/firebase-backend';
 import {BaseDBDefBE} from './backend-types.js';
 
 
-type CollectionWrapper = FirestoreWrapperBE | MongoWrapperBE;
+type CollectionWrapper = MongoWrapperBE;
 
 const DefaultChunkSize = 200;
 

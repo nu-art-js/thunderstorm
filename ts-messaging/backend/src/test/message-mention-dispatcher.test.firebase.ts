@@ -40,7 +40,6 @@ const StormTest_MentionDispatcher: StormTestInput = {
 	modules: [...StormTest_MessagingAcl.modules, MentionSpy],
 };
 
-ModuleBE_BaseDB.setDefaultBackend('mongo');
 ModuleBE_BaseDB.setMongoDbName(TEST_MONGO_DB);
 
 describe('ts-messaging mention resolve + dispatcher', () => {

@@ -37,8 +37,7 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {CollectionActionType, FirestoreCollection, getActiveTransaction, MemKey_DeletedDocs, MongoCollection, MongoInterface} from '@nu-art/firebase-backend';
-import {DocWrapper} from '@nu-art/firebase-backend/firestore/DocWrapper';
+import {CollectionActionType, getActiveTransaction, MemKey_DeletedDocs, MongoCollection, MongoInterface} from '@nu-art/firebase-backend';
 import {
 	DBApiBEConfig,
 	DBEntityDependencies,
@@ -50,8 +49,6 @@ import {
 import {CrudClause_Where, Database as Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {BaseDBDefBE, PostWriteInterceptor, PostWriteProcessingDataShape, PreDeleteInterceptor, PreWriteInterceptor, QueryInterceptor} from './backend-types.js';
 import type {CrudJoinQuerySpec, CrudJoinRow} from './join-query-types.js';
-
-export type BackendType = 'firestore' | 'mongo';
 
 export type BaseDBApiConfig = {
 	projectId?: string;
@@ -72,44 +69,31 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	extends Module<Config & DBApiConfig>
 	implements EntityDependencyCollection {
 
-	private static defaultBackend: BackendType = 'firestore';
 	private static mongoDbName: string = 'default';
-
-	static setDefaultBackend(backend: BackendType) {
-		ModuleBE_BaseDB.defaultBackend = backend;
-	}
 
 	static setMongoDbName(dbName: string) {
 		ModuleBE_BaseDB.mongoDbName = dbName;
 	}
 
-	static resolveCollection<Proto extends DB_Prototype>(dbDef: Database<Proto>): FirestoreCollection<Proto> | MongoCollection<Proto> {
+	static resolveCollection<Proto extends DB_Prototype>(dbDef: Database<Proto>): MongoCollection<Proto> {
 		const session = ModuleBE_Firebase.createAdminSession();
-		switch (ModuleBE_BaseDB.defaultBackend) {
-			case 'mongo':
-				return session.getMongo(ModuleBE_BaseDB.mongoDbName).getCollection(dbDef as any);
-			case 'firestore':
-			default:
-				return session.getFirestore().getCollection(dbDef as any);
-		}
+		return session.getMongo(ModuleBE_BaseDB.mongoDbName).getCollection(dbDef as any);
 	}
 
 	// @ts-ignore
 	private readonly ModuleBE_BaseDBV2 = true;
 
-	protected backendType?: BackendType;
-	public collection!: FirestoreCollection<DatabaseProto> | MongoCollection<DatabaseProto>;
+	public collection!: MongoCollection<DatabaseProto>;
 	public readonly dbDef: BaseDBDefBE;
-	public query!: FirestoreCollection<DatabaseProto>['query'] & {
+	public query!: Omit<MongoCollection<DatabaseProto>['query'], 'join'> & {
 		join: (spec: CrudJoinQuerySpec<DatabaseProto['dbType']>) => Promise<CrudJoinRow[]>;
 	};
-	public create!: FirestoreCollection<DatabaseProto>['create'];
-	public set!: FirestoreCollection<DatabaseProto>['set'];
-	public delete!: FirestoreCollection<DatabaseProto>['delete'];
-	/** Pipeline patch. Present when the collection is Mongo. */
+	public create!: MongoCollection<DatabaseProto>['create'];
+	public set!: MongoCollection<DatabaseProto>['set'];
+	public delete!: MongoCollection<DatabaseProto>['delete'];
+	/** Pipeline patch. Present when the collection is a MongoCollection instance. */
 	public patch?: MongoCollection<DatabaseProto>['patch'];
-	public doc!: FirestoreCollection<DatabaseProto>['doc'];
-	public runTransaction!: FirestoreCollection<DatabaseProto>['runTransaction'];
+	public runTransaction!: MongoCollection<DatabaseProto>['runTransaction'];
 
 	private readonly preWriteInterceptors: PreWriteInterceptor<DatabaseProto>[] = [];
 	private readonly postWriteInterceptors: PostWriteInterceptor<DatabaseProto>[] = [];
@@ -211,16 +195,9 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 		}, {} as DBEntityDependencies['dependencyMap']);
 	};
 
-	public asFirestoreCollection(): FirestoreCollection<DatabaseProto> {
-		if (this.collection instanceof MongoCollection)
-			throw new BadImplementationException(`${this.getName()} requires FirestoreCollection but is configured with MongoDB`);
-
-		return this.collection as FirestoreCollection<DatabaseProto>;
-	}
-
 	public asMongoCollection(): MongoCollection<DatabaseProto> {
 		if (!(this.collection instanceof MongoCollection))
-			throw new BadImplementationException(`${this.getName()} requires MongoCollection but is configured with ${ModuleBE_BaseDB.defaultBackend}`);
+			throw new BadImplementationException(`${this.getName()} requires MongoCollection`);
 
 		return this.collection;
 	}
@@ -263,15 +240,16 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 			return acc;
 		}, {} as T);
 
-		this.query = wrapInTryCatch(this.collection.query, 'query') as ModuleBE_BaseDB<DatabaseProto>['query'];
-		this.query.join = (spec) => this.executeJoinQuery(spec);
+		const wrappedQuery = wrapInTryCatch(this.collection.query, 'query');
+		this.query = {
+			...wrappedQuery,
+			join: (spec) => this.executeJoinQuery(spec),
+		};
 		this.create = wrapInTryCatch(this.collection.create, 'create');
 		this.set = wrapInTryCatch(this.collection.set, 'set');
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
-		if (this.collection instanceof MongoCollection)
+		if (this.collection instanceof MongoCollection && this.collection.patch)
 			this.patch = wrapInTryCatch(this.collection.patch as unknown as Callable, 'patch') as unknown as MongoCollection<DatabaseProto>['patch'];
-		if ('doc' in this.collection)
-			this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 
 		if (this.collection instanceof MongoCollection) {
 			void this.collection.ensureIndices().catch((e: unknown) => this.logError(`ensureIndices failed: ${e}`));
@@ -291,17 +269,7 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 		};
 
 		const session = ModuleBE_Firebase.createAdminSession(this.config?.projectId);
-
-		switch (this.backendType ?? ModuleBE_BaseDB.defaultBackend) {
-			case 'mongo':
-				this.collection = session.getMongo(ModuleBE_BaseDB.mongoDbName).getCollection(this.dbDef as any, hooks);
-				break;
-
-			case 'firestore':
-			default:
-				this.collection = session.getFirestore().getCollection(this.dbDef as any, hooks);
-				break;
-		}
+		this.collection = session.getMongo(ModuleBE_BaseDB.mongoDbName).getCollection(this.dbDef as any, hooks);
 	}
 
 	private _preWriteProcessing = async (dbItem: DatabaseProto['uiType'], originalDbInstance: DatabaseProto['dbType']) => {
@@ -318,7 +286,7 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	 * Override this method to customize the processing that should be done before create, set or update.
 	 *
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
-	 * @param originalDbInstance - The DB instance fetched from remote firestore.
+	 * @param originalDbInstance - The DB instance fetched from Mongo.
 	 */
 	protected async preWriteProcessing(dbInstance: DatabaseProto['uiType'], originalDbInstance: DatabaseProto['dbType']) {
 	}
@@ -452,45 +420,18 @@ export abstract class ModuleBE_BaseDB<DatabaseProto extends DB_Prototype, Config
 	};
 
 	processCollection = async (processInstances: (instances: DatabaseProto['dbType'][]) => Promise<void>) => {
-		if (this.collection instanceof MongoCollection) {
-			const itemsCount = this.config.chunksSize ?? CONST_DefaultWriteChunkSize;
-			const query = {limit: {page: 0, itemsCount}};
-			let instances: DatabaseProto['dbType'][];
+		if (!(this.collection instanceof MongoCollection))
+			throw new BadImplementationException('processCollection requires MongoCollection');
 
-			// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
-			// Why: upgrade walks every page of the collection. Filtered pages skip rows and leave them on the old version.
-			while ((instances = await this.collection.query.unManipulatedQuery(query)).length > 0) {
-				(this as any).logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
-				await processInstances(instances);
-				query.limit.page++;
-			}
-			return;
-		}
-
-		const fsCollection = this.collection as FirestoreCollection<DatabaseProto>;
-		let docs: DocWrapper<any>[];
 		const itemsCount = this.config.chunksSize ?? CONST_DefaultWriteChunkSize;
-
-		const query = {
-			limit: {page: 0, itemsCount},
-		};
+		const query = {limit: {page: 0, itemsCount}};
+		let instances: DatabaseProto['dbType'][];
 
 		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
-		// Why: Firestore upgrade walk — same as the Mongo page walk: every row, not every visible row.
-		while ((docs = await fsCollection.doc.unManipulatedQuery(query)).length > 0) {
-			const toDelete = docs.filter(doc => {
-				return doc.ref.id !== doc.data!._id;
-			});
-
-			const instances = docs.map(d => d.data!);
+		// Why: upgrade walks every page of the collection. Filtered pages skip rows and leave them on the old version.
+		while ((instances = await this.collection.query.unManipulatedQuery(query)).length > 0) {
 			(this as any).logWarning(`Upgrading batch(${query.limit.page}) found instances(${instances.length}) for entity: "${this.dbDef.entityName}" ....`);
 			await processInstances(instances);
-
-			if (toDelete.length > 0) {
-				(this as any).logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);
-				await fsCollection.delete.multi.allDocs(toDelete);
-			}
-
 			query.limit.page++;
 		}
 	};

@@ -34,7 +34,6 @@
     "@nu-art/db-api-shared": "?",
     "@nu-art/firebase-shared": "?",
     "@google-cloud/common": "?",
-    "@google-cloud/firestore": "?",
     "@google-cloud/storage": "?",
     "@nu-art/google-services-backend": "?",
     "@nu-art/ts-common": "?",

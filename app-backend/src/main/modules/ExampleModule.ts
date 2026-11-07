@@ -17,7 +17,6 @@
  */
 import {ApiException, Dispatcher, Module, randomObject} from '@nu-art/ts-common';
 import {ApiDef_Examples, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {addRoutes, createBodyServerApi, createQueryServerApi,} from '@nu-art/thunderstorm-backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub-backend';
 
@@ -112,16 +111,11 @@ class ExampleModule_Class
 class DispatchModule_Class
 	extends Module<Config>
 	implements TestDispatch {
-	private numbers!: FirestoreCollection<{ n: number }>;
-
-	protected init(): void {
-		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
-		this.numbers = firestore.getCollection<{ n: number }>('test-dispatcher', ['n']);
-	}
+	private numbers: { n: number }[] = [];
 
 	testDispatch = async () => {
 		const max = await this.getMaxImpl();
-		await this.numbers.upsert({n: max + 1});
+		this.numbers.push({n: max + 1});
 	};
 
 	getMax = async () => {
@@ -130,12 +124,11 @@ class DispatchModule_Class
 	};
 
 	setMax = async (n: number) => {
-		await this.numbers.upsert({n});
+		this.numbers = [{n}];
 	};
 
 	private async getMaxImpl() {
-		const data = await this.numbers.getAll();
-		return data.length > 0 ? Math.max(...data.map(d => d.n)) : 0;
+		return this.numbers.length > 0 ? Math.max(...this.numbers.map(d => d.n)) : 0;
 	}
 }
 

@@ -1,16 +1,7 @@
 import {dataInChunksInput, getSpecificBucketInput, storage, WriteInChunks} from '../_core/consts.js';
-import {firestore} from '../../firestore-v3/_core/consts.js';
-import {
-	__stringify,
-	DB_Object,
-	OmitDBObject,
-	tsValidateNumber,
-	tsValidateString,
-	ValidatorTypeResolver
-} from '@nu-art/ts-common';
+import {__stringify} from '@nu-art/ts-common';
 import * as Stream from 'stream';
 import {END_OF_STREAM} from '../../../main/backend/index.js';
-import {_EmptyQuery} from '../../../main/index.js';
 
 export const writeInChunksTestCases: WriteInChunks['testcases'] = [
 	{
@@ -26,58 +17,16 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 	label: 'Firebase Storage - Write to file in chunks',
 	testcases: writeInChunksTestCases,
 	processor: async (testCase) => {
-		const collection1 = firestore.getCollection({
-			dbKey: 'collection1',
-			entityName: 'collection1',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collection2 = firestore.getCollection({
-			dbKey: 'collection2',
-			entityName: 'collection2',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collection3 = firestore.getCollection({
-			dbKey: 'collection3',
-			entityName: 'collection3',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collection4 = firestore.getCollection({
-			dbKey: 'collection4',
-			entityName: 'collection4',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collection5 = firestore.getCollection({
-			dbKey: 'collection5',
-			entityName: 'collection5',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collectionArray = [collection1, collection2, collection3, collection4, collection5];
-		await Promise.all(collectionArray.map((collection, index) => collection.create.item({collectionName: collection.name, index})));
+		const rows = [0, 1, 2, 3, 4].map(index => [{collectionName: `collection${index + 1}`, index}]);
 		const bucket = await storage.getOrCreateBucket(getSpecificBucketInput);
 		const file = await bucket.getFile('testFolder/write-in-chunks.csv');
 		let counter = 0;
 
 		const feeder = async (writable: Stream.Writable) => {
-			const data = await collectionArray[counter].query.custom(_EmptyQuery);
-			writable.write(__stringify(data) + '\n');
+			writable.write(__stringify(rows[counter]) + '\n');
 			counter++;
 
-			if (collectionArray[counter])
+			if (rows[counter])
 				return;
 
 			return END_OF_STREAM;

@@ -20,9 +20,7 @@
  */
 
 import {_EmptyQuery, FirestoreQuery} from '@nu-art/firebase-shared';
-import {DatabaseWrapperBE, getActiveTransaction, ModuleBE_Firebase} from '@nu-art/firebase-backend';
-import {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
-import {MongoCollection} from '@nu-art/firebase-backend/firestore/MongoCollection';
+import {DatabaseWrapperBE, getActiveTransaction, ModuleBE_Firebase, MongoCollection} from '@nu-art/firebase-backend';
 import {
 	__stringify,
 	arrayToMap,
@@ -93,7 +91,7 @@ export class ModuleBE_SyncManager_Class
 	extends Module<SyncManagerBEConfig>
 	implements OnModuleCleanupV2, OnSyncEnvCompleted {
 
-	public collection!: FirestoreCollection<DatabaseDef_DeletedDoc> | MongoCollection<DatabaseDef_DeletedDoc>;
+	public collection!: MongoCollection<DatabaseDef_DeletedDoc>;
 
 	private database!: DatabaseWrapperBE;
 	private dbModules!: ModuleBE_BaseDB<any>[];

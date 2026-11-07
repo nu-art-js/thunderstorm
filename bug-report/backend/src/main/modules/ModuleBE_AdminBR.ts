@@ -19,7 +19,7 @@
 
 import {Module} from '@nu-art/ts-common';
 import {API_AdminBugReport, ApiDef_AdminBugReport, DatabaseDef_BugReport, DBDef_BugReport, Paths} from '@nu-art/bug-report-shared/api';
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend';
+import {ModuleBE_Firebase, StorageWrapperBE, type MongoCollection} from '@nu-art/firebase-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 
@@ -32,7 +32,7 @@ type Config = {
 export class ModuleBE_AdminBR_Class
 	extends Module<Config> {
 
-	private bugReport!: FirestoreCollection<DatabaseDef_BugReport>;
+	private bugReport!: MongoCollection<DatabaseDef_BugReport>;
 	private storage!: StorageWrapperBE;
 
 	constructor() {
@@ -42,8 +42,7 @@ export class ModuleBE_AdminBR_Class
 	protected init(): void {
 		super.init();
 		const sessAdmin = ModuleBE_Firebase.createAdminSession();
-		const firestore = sessAdmin.getFirestore();
-		this.bugReport = firestore.getCollection(DBDef_BugReport);
+		this.bugReport = sessAdmin.getMongo('default').getCollection(DBDef_BugReport);
 		this.storage = sessAdmin.getStorage();
 	}
 

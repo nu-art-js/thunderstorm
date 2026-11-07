@@ -9,7 +9,7 @@ import {Const_ArchivedCollectionPath, ModuleBE_Archiving} from '../main/ModuleBE
 
 describe('archiving-backend', () => {
 	it('Const_ArchivedCollectionPath is /_archived', () => {
-		assert.equal(Const_ArchivedCollectionPath, '/_archived');
+		assert.equal(Const_ArchivedCollectionPath, '--archived');
 	});
 	it('ModuleBE_Archiving has registerModule and handler methods', () => {
 		assert.isFunction(ModuleBE_Archiving.registerModule);

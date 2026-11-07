@@ -34,7 +34,7 @@ import {
 	Request_UpdateDocument,
 } from '@nu-art/live-docs-shared';
 
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase-backend';
+import {ModuleBE_Firebase, type MongoCollection} from '@nu-art/firebase-backend';
 
 import {ApiHandler} from '@nu-art/http-server';
 import {ApiDef_LiveDoc, API_LiveDoc} from '@nu-art/live-docs-shared/api';
@@ -47,7 +47,7 @@ type Config = {
 export class ModuleBE_LiveDocs_Class
 	extends Module<Config> {
 
-	private livedocs!: FirestoreCollection<Proto_DocumentHistory>;
+	private livedocs!: MongoCollection<Proto_DocumentHistory>;
 
 	constructor() {
 		super();
@@ -56,8 +56,7 @@ export class ModuleBE_LiveDocs_Class
 	protected init(): void {
 		super.init();
 		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
-		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
-		this.livedocs = firestore.getCollection<Proto_DocumentHistory>(DBDef_DocumentHistory);
+		this.livedocs = ModuleBE_Firebase.createAdminSession(this.config.projectId).getMongo('default').getCollection<Proto_DocumentHistory>(DBDef_DocumentHistory);
 	}
 
 	@ApiHandler(ApiDef_LiveDoc.get)

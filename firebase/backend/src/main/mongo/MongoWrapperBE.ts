@@ -19,7 +19,7 @@
 import {Database, DB_Prototype} from '@nu-art/db-api-shared';
 import {ImplementationMissingException, Logger, Promise_all_sequentially, TypedMap} from '@nu-art/ts-common';
 import {MongoCollection} from './MongoCollection.js';
-import {FirestoreCollectionHooks} from './FirestoreCollection.js';
+import {CollectionHooks} from './collection-hooks.js';
 import {drainTransactionPreClose, getActiveTransaction, MemKey_FirestoreTransaction} from './consts.js';
 import type {Db as MongoDriverDb, MongoClient} from 'mongodb';
 import {MemStorage} from '@nu-art/ts-common/mem-storage';
@@ -99,7 +99,7 @@ export class MongoWrapperBE
 		try {
 			let result: ReturnType;
 			const wrapper = {
-				transaction: session as any,
+				transaction: session,
 				active: true,
 				writeCount: 0,
 				beginTransaction: () => session.startTransaction(),
@@ -137,7 +137,12 @@ export class MongoWrapperBE
 		}
 	};
 
-	public getCollection<Proto extends DB_Prototype>(dbDef: Database<Proto>, hooks?: FirestoreCollectionHooks<Proto['dbType']>): MongoCollection<Proto> {
+	public async readyDb(): Promise<MongoDriverDb> {
+		const client = await this.clientReady();
+		return client.db(this.dbName);
+	}
+
+	public getCollection<Proto extends DB_Prototype>(dbDef: Database<Proto>, hooks?: CollectionHooks<Proto['dbType']>): MongoCollection<Proto> {
 		const existing = this.collections[dbDef.dbKey];
 		if (existing)
 			return existing;

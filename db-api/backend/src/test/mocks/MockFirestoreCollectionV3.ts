@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0
  */
 
-import type {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
+import type {MongoCollection} from '@nu-art/firebase-backend';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
 import {DB_Object, generateHex, currentTimeMillis} from '@nu-art/ts-common';
 
@@ -59,7 +59,7 @@ function applyLimit<T>(items: T[], limit: { page?: number; itemsCount?: number }
  */
 export function createMockFirestoreCollectionV3(
 	options?: { manipulateQuery?: (query: FirestoreQuery<DB_Object>) => FirestoreQuery<DB_Object> }
-): FirestoreCollection<any> {
+): MongoCollection<any> {
 	const store = new Map<string, DB_Object>();
 	const manipulateQuery = options?.manipulateQuery ?? ((q: FirestoreQuery<DB_Object>) => q);
 
@@ -177,5 +177,5 @@ export function createMockFirestoreCollectionV3(
 		doc,
 		runTransaction,
 		upgradeInstances
-	} as unknown as FirestoreCollection<any>;
+	} as unknown as MongoCollection<any>;
 }

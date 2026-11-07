@@ -18,7 +18,7 @@
  */
 
 import {addItemToArray, auditBy, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
-import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase-backend';
+import {ModuleBE_Firebase, StorageWrapperBE, type MongoCollection} from '@nu-art/firebase-backend';
 import {ApiHandler} from '@nu-art/http-server';
 import JSZip from 'jszip';
 import {API_BugReport, ApiDef_BugReport, BugReport, BugReport_DbKey, DatabaseDef_BugReport, DBDef_BugReport, ReportLogFile, Request_BugReport, TicketDetails} from '@nu-art/bug-report-shared';
@@ -34,7 +34,7 @@ type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[], em
 export class ModuleBE_BugReport_Class
 	extends Module<Config> {
 
-	private bugReport!: FirestoreCollection<DatabaseDef_BugReport>;
+	private bugReport!: MongoCollection<DatabaseDef_BugReport>;
 	private storage!: StorageWrapperBE;
 	private ticketCreatorApis: TicketCreatorApi[] = [];
 
@@ -44,8 +44,7 @@ export class ModuleBE_BugReport_Class
 
 	protected init(): void {
 		const sessionAdmin = ModuleBE_Firebase.createAdminSession();
-		const firestore = sessionAdmin.getFirestore();
-		this.bugReport = firestore.getCollection(DBDef_BugReport);
+		this.bugReport = sessionAdmin.getMongo('default').getCollection(DBDef_BugReport);
 		this.storage = sessionAdmin.getStorage();
 	}
 

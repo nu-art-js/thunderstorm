@@ -19,7 +19,6 @@ import {
 	TEST_MONGO_DB,
 } from './utils/helpers.js';
 
-ModuleBE_BaseDB.setDefaultBackend('mongo');
 ModuleBE_BaseDB.setMongoDbName(TEST_MONGO_DB);
 
 describe('ts-messaging per-topic ACL', () => {

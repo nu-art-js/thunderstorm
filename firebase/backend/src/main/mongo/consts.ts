@@ -1,15 +1,25 @@
+/*
+ * @nu-art/firebase-backend - Mongo session transaction memory
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
+ * Licensed under the Apache License, Version 2.0
+ */
+
 import {Dispatcher, UniqueId} from '@nu-art/ts-common';
-import {CanDeleteDBEntitiesProto} from './types.js';
+import {DB_Prototype} from '@nu-art/db-api-shared';
 import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {PotentialDependenciesToDelete} from '@nu-art/firebase-shared';
-import {Transaction} from 'firebase-admin/firestore';
+import {DB_EntityDependencyV2, PotentialDependenciesToDelete} from '@nu-art/firebase-shared';
+import type {ClientSession} from 'mongodb';
+
+export type CanDeleteDBEntitiesProto = {
+	__canDeleteEntitiesProto: <T extends DB_Prototype>(type: T['dbKey'], itemIds: string[]) => Promise<DB_EntityDependencyV2>
+};
 
 export const canDeleteDispatcher = new Dispatcher<CanDeleteDBEntitiesProto, '__canDeleteEntitiesProto'>('__canDeleteEntitiesProto');
 
 export type TransactionPreCloseCallback = () => void | Promise<void>;
 
 export type TransactionWrapper = {
-	transaction: Transaction;
+	transaction: ClientSession;
 	active: boolean;
 	writeCount?: number;
 	beginTransaction?: () => void;
@@ -19,7 +29,7 @@ export type TransactionWrapper = {
 
 export const MemKey_FirestoreTransaction = new MemKey<TransactionWrapper>('firestore--transaction');
 
-export function getActiveTransaction(): Transaction | undefined {
+export function getActiveTransaction(): ClientSession | undefined {
 	const wrapper = MemKey_FirestoreTransaction.peak();
 	if (!wrapper?.active)
 		return undefined;
@@ -68,7 +78,7 @@ export async function drainTransactionPreClose(wrapper: TransactionWrapper): Pro
 }
 
 export type MemKey_DeletedDocs_Type = {
-	transaction: Transaction;
+	transaction: ClientSession;
 	deleted: { [dbKey: string]: Set<UniqueId> };
 }
 

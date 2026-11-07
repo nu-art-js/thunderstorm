@@ -8,7 +8,6 @@ import {arrayToMap, BadImplementationException, Dispatcher, Minute, Module, MUST
 import {HttpCodes} from '@nu-art/api-types';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {Transform, Writable} from 'stream';
-import {firestore} from 'firebase-admin';
 import {ApiDef_SyncEnv, Request_GetMetadata, type ApiStruct_SyncEnv} from '@nu-art/sync-env-shared';
 import {HttpMethod} from '@nu-art/api-types';
 import {ApiHandler} from '@nu-art/http-server';
@@ -49,19 +48,19 @@ class SyncCollectionFilter
 	}
 }
 
+type SyncDoc = {_id: string; [key: string]: unknown};
+
 function createCollectionBatchWriter(
 	paginationSize: number,
 	modulesMap: TypedMap<{ dbKey: string; collectionName: string }>,
 	logWarning: (msg: string) => void
 ): Writable {
-	const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-	const firestoreDb = firebaseSessionAdmin.getFirestore().firestore;
+	const dbPromise = ModuleBE_Firebase.createAdminSession().getMongo('default').readyDb();
 
 	return new class CollectionBatchWriter
 		extends Writable {
 
-		private itemCount = 0;
-		private batchWriter: firestore.WriteBatch = firestoreDb.batch();
+		private pending: { name: string; id: string; data: SyncDoc }[] = [];
 
 		constructor() {
 			super({objectMode: true});
@@ -71,23 +70,21 @@ function createCollectionBatchWriter(
 			try {
 				const c = chunk as { dbKey?: string; _id?: string; document?: string };
 				const module = c?.dbKey ? modulesMap[c.dbKey] : undefined;
-				if (!module) {
-					logWarning(`Could not get module for chunk with dbKey ${c?.dbKey}`);
+				if (!module || !c._id) {
+					if (!module)
+						logWarning(`Could not get module for chunk with dbKey ${c?.dbKey}`);
 					callback();
 					return;
 				}
-				const collectionName = module.collectionName;
-				const docRef = firestoreDb.doc(`${collectionName}/${c._id}`);
-				const data = JSON.parse(c.document ?? '{}');
-				this.batchWriter.set(docRef, data);
-				this.itemCount++;
-
-				if (this.itemCount === paginationSize) {
-					const prevBatch = this.batchWriter;
-					this.batchWriter = firestoreDb.batch();
-					this.itemCount = 0;
-					await prevBatch.commit();
-				}
+				const data = JSON.parse(c.document ?? '{}') as Record<string, unknown>;
+				data._id = c._id;
+				this.pending.push({
+					name: module.collectionName,
+					id: c._id,
+					data: data as SyncDoc,
+				});
+				if (this.pending.length === paginationSize)
+					await this.flush();
 				callback();
 			} catch (error) {
 				callback(error instanceof Error ? error : new Error(String(error)));
@@ -96,10 +93,36 @@ function createCollectionBatchWriter(
 
 		async _final(callback: (error?: Error | null) => void) {
 			try {
-				await this.batchWriter.commit();
+				await this.flush();
 				callback();
 			} catch (err) {
 				callback(err instanceof Error ? err : new Error(String(err)));
+			}
+		}
+
+		private async flush() {
+			if (this.pending.length === 0)
+				return;
+
+			const batch = this.pending;
+			this.pending = [];
+			const db = await dbPromise;
+			const byName = new Map<string, { name: string; id: string; data: SyncDoc }[]>();
+			for (const row of batch) {
+				const list = byName.get(row.name) ?? [];
+				list.push(row);
+				byName.set(row.name, list);
+			}
+
+			for (const [name, rows] of byName) {
+				const ops = rows.map(row => ({
+					replaceOne: {
+						filter: {_id: row.id},
+						replacement: row.data,
+						upsert: true,
+					},
+				}));
+				await db.collection<SyncDoc>(name).bulkWrite(ops, {ordered: false});
 			}
 		}
 	}();

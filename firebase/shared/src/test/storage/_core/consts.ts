@@ -1,7 +1,14 @@
-import {BucketWrapper, ModuleBE_Firebase} from '../../../main/backend/index.js';
+import {BucketWrapper, FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend/index.js';
+import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {TestSuite} from '@nu-art/testalot';
-import {BadImplementationException} from '@nu-art/ts-common';
-import '../../firestore-v3/_core/consts.js';
+import {BadImplementationException, generateHex} from '@nu-art/ts-common';
+
+const config = {
+	project_id: generateHex(4),
+	databaseURL: 'http://localhost:8102/?ns=quai-md-dev',
+	isEmulator: true
+};
+ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 
 export const storage = ModuleBE_Firebase.createAdminSession().getStorage();
 

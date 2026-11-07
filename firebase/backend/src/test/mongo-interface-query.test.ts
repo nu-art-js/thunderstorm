@@ -5,9 +5,8 @@
  */
 
 import {expect} from 'chai';
-import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
-import {FirestoreInterface} from '../main/firestore/FirestoreInterface.js';
-import {MongoInterface} from '../main/firestore/MongoInterface.js';
+import {BadImplementationException} from '@nu-art/ts-common';
+import {MongoInterface} from '../main/mongo/MongoInterface.js';
 
 type DemoDoc = {
 	_id: string
@@ -139,27 +138,5 @@ describe('MongoInterface.buildJoinPipeline', () => {
 			},
 			{$unwind: {path: '$doc', preserveNullAndEmptyArrays: false}},
 		]);
-	});
-});
-
-describe('FirestoreInterface.buildQuery — $regex / $or fail-fast', () => {
-	const collection = {collection: {}} as any;
-
-	it('throws on $or', () => {
-		expect(() => FirestoreInterface.buildQuery(collection, {
-			where: {$or: [{label: 'x'}]},
-		})).to.throw(ImplementationMissingException, /\$or/);
-	});
-
-	it('throws on $text', () => {
-		expect(() => FirestoreInterface.buildQuery(collection, {
-			where: {$text: {$search: 'bug'}},
-		})).to.throw(ImplementationMissingException, /\$text/);
-	});
-
-	it('throws on $regex', () => {
-		expect(() => FirestoreInterface.buildQuery(collection, {
-			where: {label: {$regex: /x/i}},
-		})).to.throw(ImplementationMissingException, /\$regex/);
 	});
 });

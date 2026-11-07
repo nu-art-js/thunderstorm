@@ -6,7 +6,7 @@
  * Mirrors db-api-backend test mocks for E2E isolation; same interface used by ModuleBE_BaseDB/BaseApi.
  */
 
-import type {FirestoreCollection} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
+import type {MongoCollection} from '@nu-art/firebase-backend';
 import type {FirestoreQuery} from '@nu-art/firebase-shared';
 import {DB_Object, generateHex, currentTimeMillis} from '@nu-art/ts-common';
 
@@ -55,7 +55,7 @@ function applyLimit<T>(items: T[], limit: { page?: number; itemsCount?: number }
 	return items.slice(start, start + size);
 }
 
-export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
+export function createMockFirestoreCollectionV3(): MongoCollection<any> {
 	const store = new Map<string, DB_Object>();
 
 	const runTransaction = async <T>(fn: () => Promise<T>): Promise<T> => fn();
@@ -166,5 +166,5 @@ export function createMockFirestoreCollectionV3(): FirestoreCollection<any> {
 		doc,
 		runTransaction,
 		upgradeInstances
-	} as unknown as FirestoreCollection<any>;
+	} as unknown as MongoCollection<any>;
 }

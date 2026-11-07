@@ -32,7 +32,6 @@
   "dependencies": {
     "@nu-art/firebase-shared": "?",
     "@google-cloud/common": "?",
-    "@google-cloud/firestore": "?",
     "@google-cloud/storage": "?",
     "@nu-art/ts-common": "?",
     "express": "?",

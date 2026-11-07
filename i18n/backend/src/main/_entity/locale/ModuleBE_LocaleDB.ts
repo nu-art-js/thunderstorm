@@ -4,7 +4,7 @@ import {HttpCodes} from '@nu-art/api-types';
 import type {I18nLocaleCode, UI_Locale} from '@nu-art/i18n-shared';
 import {DispatchKey_PermissionsGroups, ModuleBE_AccessGroupDB, ModuleBE_Permissions} from '@nu-art/permissions-backend';
 import type {DB_AccessGroup, UI_AccessGroup} from '@nu-art/permissions-shared';
-import type {CollectionActionType} from '@nu-art/firebase-backend/firestore/FirestoreCollection';
+import type {CollectionActionType} from '@nu-art/firebase-backend';
 import {asArray, filterInstances, OnDispatch} from '@nu-art/ts-common';
 import {DispatchKey_DefaultLocales, DispatchKey_LocaleAccess} from '../../project-setup.js';
 import {graph_ProjectSetup} from '@nu-art/action-processor-backend';

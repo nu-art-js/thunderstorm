@@ -24,8 +24,7 @@ import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE.js';
 import {StorageWrapperBE} from '../storage/StorageWrapperBE.js';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE.js';
 import {App} from 'firebase-admin/app';
-import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE.js';
-import {MongoWrapperBE} from '../firestore/MongoWrapperBE.js';
+import {MongoWrapperBE} from '../mongo/MongoWrapperBE.js';
 import {FirebaseConfig} from '@nu-art/firebase-shared';
 import {MongoClient} from 'mongodb';
 import {LazyMongoConnection} from '../LazyMongoConnection.js';
@@ -61,7 +60,6 @@ export abstract class FirebaseSession<Config>
 	app!: App;
 	protected databases: TypedMap<DatabaseWrapperBE> = {};
 	protected storage?: StorageWrapperBE;
-	protected firestores: TypedMap<FirestoreWrapperBE> = {};
 	protected mongos: TypedMap<MongoWrapperBE> = {};
 	protected mongoClient?: MongoClient;
 	private mongoLazy?: LazyMongoConnection<MongoClient>;
@@ -108,13 +106,6 @@ export abstract class FirebaseSession<Config>
 		if (this.storage)
 			return this.storage;
 		return this.storage = new StorageWrapperBE(this);
-	}
-
-	public getFirestore(dbName?: string): FirestoreWrapperBE {
-		if (!this.firestores[dbName ?? 'default'])
-			this.firestores[dbName ?? 'default'] = new FirestoreWrapperBE(this, dbName);
-
-		return this.firestores[dbName ?? 'default'];
 	}
 
 	public setMongoClient(client: MongoClient) {

@@ -33,7 +33,6 @@
     "@nu-art/ts-common": "?",
     "@google-cloud/common": "?",
     "@google-cloud/storage": "?",
-    "@google-cloud/firestore": "?",
     "google-auth-library": "?",
     "express": "?",
     "firebase": "?",

@@ -61,8 +61,6 @@ export class ModuleBE_PushPubSub_Class
 	extends Module<Config>
 	implements OnCleanupSchedulerAct {
 
-	// private pushSessions!: FirestoreCollection<DB_PushSession>;
-	// private topics!: FirestoreCollection<DB_PushSubscription>;
 	private messaging!: PushMessagesWrapperBE;
 
 	constructor() {

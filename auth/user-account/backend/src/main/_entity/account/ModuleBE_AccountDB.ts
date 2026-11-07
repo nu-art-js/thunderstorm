@@ -215,13 +215,13 @@ export class ModuleBE_AccountDB_Class
 			return {sessions: await ModuleBE_SessionDB.query.where({accountId: query._id})};
 		},
 		changeThumbnail: async (request: API_UserAccount['changeThumbnail']['Body']): Promise<API_UserAccount['changeThumbnail']['Response']> => {
-			const account = this.doc.unique(request.accountId);
+			const account = await this.query.unique(request.accountId);
 			if (!account)
 				throw HttpCodes._4XX.NOT_FOUND('Could not change account thumbnail', `Could not find account with id ${request.accountId}`);
 
-			await account.ref.update({thumbnail: request.hash});
+			account.thumbnail = request.hash;
 			return {
-				account: (await account.get())!,
+				account: await this.set.item(account),
 			};
 		},
 		delete: async (request: API_UserAccount['deleteAccount']['Params']): Promise<API_UserAccount['deleteAccount']['Response']> => {

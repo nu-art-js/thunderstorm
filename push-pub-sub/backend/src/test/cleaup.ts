@@ -18,9 +18,8 @@
 
 import {__custom, __scenario} from '@nu-art/testelot';
 import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub.js';
-import {assert, compare, currentTimeMillis, generateHex, Hour} from '@nu-art/ts-common';
-import {DB_PushSubscription, DB_PushSession, Request_PushRegister} from '../main/index.js';
-import {FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase-backend';
+import {assert, currentTimeMillis, generateHex, Hour} from '@nu-art/ts-common';
+import {DB_PushSession, Request_PushRegister} from '../main/index.js';
 
 
 const arrayOf2 = Array(2).fill(0);
@@ -36,21 +35,6 @@ const testRegister = async function (request: Request_PushRegister, timestamp: n
 
 	// @ts-ignore
 	await ModuleBE_PushPubSub.pushSessions.upsert(session);
-
-	const subscriptions = request.subscriptions.map((s): DB_PushSubscription => ({
-		pushSessionId: request.pushSessionId,
-		topic: s.topic,
-		props: s.props
-	}));
-
-	// @ts-ignore
-	const topicsCollection: FirestoreCollection<DB_PushSubscription> = ModuleBE_PushPubSub.topics;
-
-	return topicsCollection.runInTransaction(async (transaction: FirestoreTransaction) => {
-		const data = await transaction.query(topicsCollection, {where: {pushSessionId: request.pushSessionId}});
-		const toInsert = subscriptions.filter(s => !data.find((d: DB_PushSubscription) => compare(d, s)));
-		return Promise.all(toInsert.map(instance => transaction.insert(topicsCollection, instance)));
-	});
 };
 
 const processClean = __custom(async () => {
