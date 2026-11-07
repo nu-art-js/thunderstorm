@@ -25,6 +25,7 @@ function stubMongoCollection(dbName: string, joinImpl: (pipeline: unknown[]) => 
 	(stub as any).create = {item: async (x: unknown) => x, all: async (xs: unknown[]) => xs};
 	(stub as any).set = {item: async (x: unknown) => x, all: async (xs: unknown[]) => xs, multi: async (xs: unknown[]) => xs};
 	(stub as any).delete = {unique: async () => undefined, item: async () => undefined, all: async () => [], allItems: async () => [], multi: async () => []};
+	(stub as any).patch = {};
 	stub.ensureIndices = async () => undefined;
 	stub.query = Object.freeze({
 		unique: async () => undefined,
