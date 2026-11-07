@@ -1,6 +1,6 @@
 /*
  * @nu-art/http-client - Type-safe HTTP client for Thunderstorm
- * Copyright (C) 2024 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
 
@@ -10,7 +10,7 @@ import type {ResponseError} from '../../../main/index.js';
 import {expect} from 'chai';
 import {TestHttpClient} from '../../helpers.js';
 
-// httpbin.org response shapes
+// Local echo response shapes
 type GetResponse = { url: string; args: Record<string, string>; headers: Record<string, string> };
 type PostResponse = { url: string; json?: Record<string, unknown>; data?: string };
 type GetApi = QueryApi<GetResponse, { id?: string }>;

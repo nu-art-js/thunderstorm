@@ -4,7 +4,7 @@
  * Typescript & Express backend infrastructure that natively runs on firebase function
  * Typescript & React frontend infrastructure
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,7 +125,6 @@ describe('HttpRequest - Response Types', () => {
 	})).timeout(30000);
 
 	it('Empty response (204)', async () => {
-		// httpbin doesn't have a 204 endpoint, so we'll test with a status that returns minimal content
 		const client = createTestClient();
 		const request = client.createRequest({
 			method: HttpMethod.GET,

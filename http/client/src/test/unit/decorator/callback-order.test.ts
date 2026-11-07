@@ -1,6 +1,6 @@
 /*
  * @nu-art/http-client - Type-safe HTTP client for Thunderstorm
- * Copyright (C) 2024 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  * Licensed under the Apache License, Version 2.0
  */
 
@@ -8,7 +8,7 @@ import {ApiCallContext, ApiCaller, BodyApi, HttpMethod} from '../../../main/inde
 import {createTestClient} from '../../helpers.js';
 import {expect} from 'chai';
 
-// httpbin.org POST /post echoes json in response.json
+// Local echo POST /post echoes json in response.json
 type PostResponse = { url: string; json?: Record<string, unknown> };
 type UpsertApi = BodyApi<PostResponse, { name: string }>;
 

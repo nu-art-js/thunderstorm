@@ -4,7 +4,7 @@
  * Typescript & Express backend infrastructure that natively runs on firebase function
  * Typescript & React frontend infrastructure
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2026 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 import {ApiDef, BodyApi, HttpClient, HttpException, HttpMethod, HttpRequest, QueryApi, TS_Progress} from '../../main/index.js';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
-import {createTestApiDef, createTestClient} from '../helpers.js';
+import {createTestApiDef, createTestClient, testEchoOrigin} from '../helpers.js';
 import {expect} from 'chai';
 
 type Input = {
@@ -165,7 +165,7 @@ describe('HttpRequest - Advanced Features', () => {
 		},
 		result: async (actual) => {
 			expect(actual.status).to.equal(200);
-			expect(actual.data.url).to.include('httpbin.org/get');
+			expect(actual.data.url).to.include(`${testEchoOrigin}/get`);
 		}
 	})).timeout(30000);
 
