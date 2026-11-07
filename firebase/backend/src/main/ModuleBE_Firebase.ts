@@ -74,6 +74,10 @@ export class ModuleBE_Firebase_Class
 		FirebaseSession.setMongoUrlResolver((authKey) => this.resolveMongoUrl(authKey));
 	}
 
+	protected async destroy() {
+		await this.__resetForTests();
+	}
+
 	async __resetForTests() {
 		this.logWarning('__resetForTests');
 
