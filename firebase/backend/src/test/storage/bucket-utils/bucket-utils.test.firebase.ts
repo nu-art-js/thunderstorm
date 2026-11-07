@@ -49,20 +49,16 @@ const runTestCase_GetOrCreateBucket = (testCase: TestCase_GetOrCreateBucket) => 
 	} as TestModel<string | undefined, GetOrCreateBucketResult | undefined>);
 };
 
-const skipBucketUtilsWithoutStorageEmulator = new Set(['get main bucket', 'get specific bucket']);
-
 describe('Firebase Storage - Bucket Utils', () => {
 	describe('GetAdminBucket', () => {
 		TestCases_GetAdminBucket.forEach((testCase: TestCase_GetAdminBucket) => {
-			const desc = descriptionOf_GetAdminBucket(testCase);
-			(skipBucketUtilsWithoutStorageEmulator.has(desc) ? it.skip : it)(desc, runTestCase_GetAdminBucket(testCase));
+			it(descriptionOf_GetAdminBucket(testCase), runTestCase_GetAdminBucket(testCase));
 		});
 	});
 
 	describe('GetOrCreateBucket', () => {
 		TestCases_GetOrCreateBucket.forEach((testCase: TestCase_GetOrCreateBucket) => {
-			const desc = descriptionOf_GetOrCreateBucket(testCase);
-			(skipBucketUtilsWithoutStorageEmulator.has(desc) ? it.skip : it)(desc, runTestCase_GetOrCreateBucket(testCase));
+			it(descriptionOf_GetOrCreateBucket(testCase), runTestCase_GetOrCreateBucket(testCase));
 		});
 	});
 });

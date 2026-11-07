@@ -1,7 +1,18 @@
-import {BucketWrapper, ModuleBE_Firebase} from '../../../main/index.js';
+import {BucketWrapper, FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/index.js';
 import {TestModel} from '@nu-art/testalot';
 import {BadImplementationException} from '@nu-art/ts-common';
-import '../../_entity/_core/consts.js';
+import {ModuleBE_Auth} from '@nu-art/google-services-backend';
+
+const projectId = 'demo-test';
+ModuleBE_Auth.setDefaultConfig({
+	auth: {
+		[FIREBASE_DEFAULT_PROJECT_ID]: {
+			project_id: projectId,
+			databaseURL: 'http://localhost:8102/?ns=demo-test',
+			isEmulator: true
+		}
+	}
+});
 
 export const storage = ModuleBE_Firebase.createAdminSession().getStorage();
 
@@ -31,7 +42,7 @@ export const writeTestInput4: FileContent = {value: Buffer.from('string, is, lik
 export const writeTestInput5: FileContent = {value: undefined, filePath: 'testFolder/undefined-file.txt'};
 
 export const getMainBucketInput = undefined;
-export const getSpecificBucketInput = 'gs://testBucket.appspot.com';
+export const getSpecificBucketInput = 'gs://demo-test.appspot.com';
 export const invalidBucketNameInput = 'testBucket';
 
 export const deleteFileInput = 'testFolder/string-file.txt';

@@ -25,6 +25,8 @@ export const TestSuite_FileDelete: FileDelete = {
 		let result;
 		try {
 			const file = await bucket.getFile(testCase.input);
+			if ('result' in testCase && testCase.result === true)
+				await file.write('seed');
 			await file.delete();
 			result = true;
 		} catch (err) {

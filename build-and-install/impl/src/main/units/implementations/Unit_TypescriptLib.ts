@@ -232,8 +232,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 			const pathToProjectRoot = runtimeContext.parentUnit.config.fullPath;
 			await FileSystemUtils.file.copy(resolve(pathToProjectRoot, pathToTestsFirebaseRC), resolve(config.fullPath, CONST_FirebaseRC));
 			const baseEmulationPort = runtimeContext.baiConfig.files?.tests?.firebase?.baseEmulationPort ?? 8000;
-			const [rtdbPort, firestorePort, websocketPort] = await this.resolveConsecutiveAvailableHostPorts(baseEmulationPort + 1, 3);
-			this.firebaseTestEmulatorPorts = [rtdbPort, firestorePort, websocketPort];
+			const [rtdbPort, firestorePort, websocketPort, storagePort] = await this.resolveConsecutiveAvailableHostPorts(baseEmulationPort + 1, 4);
+			this.firebaseTestEmulatorPorts = [rtdbPort, firestorePort, websocketPort, storagePort];
 
 			const firebaseConfigFiles = runtimeContext.baiConfig.files?.firebase;
 			if (!firebaseConfigFiles)
@@ -246,6 +246,8 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				FIREBASE_DATABASE_RULES: resolve(pathToProjectRoot, firebaseConfigFiles.databaseRules!),
 				FIREBASE_FIRESTORE_RULES: resolve(pathToProjectRoot, firebaseConfigFiles.firestoreRules!),
 				FIREBASE_FIRESTORE_INDICES: resolve(pathToProjectRoot, firebaseConfigFiles.firestoreIndexesRules!),
+				FIREBASE_STORAGE_RULES: resolve(pathToProjectRoot, firebaseConfigFiles.storageRules!),
+				FIREBASE_STORAGE_PORT: `${storagePort}`,
 			}, DEFAULT_TEMPLATE_PATTERN);
 
 			// Emulator ports are resolved above — never releasePorts on them during setup
