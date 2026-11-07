@@ -19,6 +19,9 @@ import {
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 import {DatabaseDef_Type, DB_Type, TestInputValue} from '../../_entity/type/types.js';
+import {DB_Type_Complex} from '../../_entity/type-complex/types.js';
+
+const complexId = (id: string) => id as DB_Type_Complex['_id'];
 
 export type QueryTestInput = {
 	value: TestInputValue;
@@ -114,7 +117,7 @@ export const queryAllTestCases: TestModel<CollectionTestInput, TestInputValue>[]
 			outerCollection: outerQueryCollection,
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
-				const outerItems = await collectionOuter.query.all([id_outer1]);
+				const outerItems = await collectionOuter.query.all([complexId(id_outer1)]);
 				expect(outerItems.length).to.eql(1);
 				expect(outerValue1._id).to.eql(outerItems[0]?._id);
 			}
@@ -127,7 +130,7 @@ export const queryAllTestCases: TestModel<CollectionTestInput, TestInputValue>[]
 			outerCollection: outerQueryCollection,
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
-				const items = await collectionInner.query.all([id_inner1, id_inner2]);
+				const items = await collectionInner.query.all([complexId(id_inner1), complexId(id_inner2)]);
 				expect(items.length).to.eql(2);
 				expect(items[0]?._id).to.eql(id_inner1);
 			}
@@ -141,7 +144,7 @@ export const queryAllTestCases: TestModel<CollectionTestInput, TestInputValue>[]
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
 				await collectionInner.runTransaction(async () => {
-					const items = await collectionInner.query.all([id_inner1, id_inner2]);
+					const items = await collectionInner.query.all([complexId(id_inner1), complexId(id_inner2)]);
 					expect(items.length).to.eql(2);
 				});
 			}
@@ -158,9 +161,9 @@ export const queryComplexTestCases: TestModel<CollectionTestInput, TestInputValu
 			outerCollection: outerQueryCollection,
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
-				const outerItem = await collectionOuter.query.unique(id_outer1);
+				const outerItem = await collectionOuter.query.unique(complexId(id_outer1));
 				expect(true).to.eql(exists(outerItem));
-				const innerItems = await collectionInner.query.all(outerItem!.refs);
+				const innerItems = await collectionInner.query.all(outerItem!.refs.map(complexId));
 				expect(innerItems.length).to.eql(3);
 			}
 		}

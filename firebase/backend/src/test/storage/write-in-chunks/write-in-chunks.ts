@@ -1,16 +1,20 @@
 import {dataInChunksInput, getSpecificBucketInput, storage, WriteInChunks} from '../_core/consts.js';
 import {firestore} from '../../_entity/_core/consts.js';
-import {
-	__stringify,
-	DB_Object,
-	OmitDBObject,
-	tsValidateNumber,
-	tsValidateString,
-	ValidatorTypeResolver
-} from '@nu-art/ts-common';
+import {__stringify, tsValidateNumber, tsValidateString} from '@nu-art/ts-common';
+import {Database} from '@nu-art/db-api-shared';
+import {_EmptyQuery} from '@nu-art/firebase-shared';
 import * as Stream from 'stream';
-import {END_OF_STREAM} from '../../../main/backend/index.js';
-import {_EmptyQuery} from '../../../main/index.js';
+import {END_OF_STREAM} from '../../../main/index.js';
+
+const collectionDef = (name: string): Database<any> => ({
+	dbKey: name,
+	entityName: name,
+	versions: ['1.0.0'],
+	modifiablePropsValidator: {collectionName: tsValidateString(), index: tsValidateNumber()},
+	generatedPropsValidator: {},
+	frontend: {group: 'test', name},
+	backend: {name},
+});
 
 export const writeInChunksTestCases: WriteInChunks['testcases'] = [
 	{
@@ -26,48 +30,12 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 	label: 'Firebase Storage - Write to file in chunks',
 	testcases: writeInChunksTestCases,
 	processor: async (testCase) => {
-		const collection1 = firestore.getCollection({
-			dbKey: 'collection1',
-			entityName: 'collection1',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collection2 = firestore.getCollection({
-			dbKey: 'collection2',
-			entityName: 'collection2',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collection3 = firestore.getCollection({
-			dbKey: 'collection3',
-			entityName: 'collection3',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collection4 = firestore.getCollection({
-			dbKey: 'collection4',
-			entityName: 'collection4',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collection5 = firestore.getCollection({
-			dbKey: 'collection5',
-			entityName: 'collection5',
-			validator: {collectionName: tsValidateString(), index: tsValidateNumber()} as ValidatorTypeResolver<OmitDBObject<DB_Object & {
-				collectionName: string,
-				index: number
-			}>>
-		});
-		const collectionArray = [collection1, collection2, collection3, collection4, collection5];
-		await Promise.all(collectionArray.map((collection, index) => collection.create.item({collectionName: collection.name, index})));
+		const collectionArray = ['collection1', 'collection2', 'collection3', 'collection4', 'collection5']
+			.map(name => firestore.getCollection(collectionDef(name)));
+		await Promise.all(collectionArray.map((collection, index) => collection.create.item({
+			collectionName: collection.dbDef.backend.name,
+			index
+		})));
 		const bucket = await storage.getOrCreateBucket(getSpecificBucketInput);
 		const file = await bucket.getFile('testFolder/write-in-chunks.csv');
 		let counter = 0;

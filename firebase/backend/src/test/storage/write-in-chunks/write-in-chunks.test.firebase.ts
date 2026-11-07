@@ -1,10 +1,10 @@
-import {runSingleTestCase} from '@nu-art/testalot';
-import {TestCases_WriteInChunks, test_WriteInChunks} from './write-in-chunks.js';
+import {TestSuite_WriteInChunks, writeInChunksTestCases} from './write-in-chunks.js';
 
-const runTestCase = (testCase: typeof TestCases_WriteInChunks[number]) => () => runSingleTestCase(test_WriteInChunks, testCase);
+const titleOf = (description: string | undefined | ((...args: never[]) => string), fallback: string) =>
+	typeof description === 'function' ? description() : (description || fallback);
 
 describe('Firebase Storage - Write In Chunks', () => {
-	TestCases_WriteInChunks.forEach(testCase => {
-		it(testCase.description || 'write in chunks test', runTestCase(testCase));
+	writeInChunksTestCases.forEach(testCase => {
+		it(titleOf(testCase.description, 'write in chunks test'), () => TestSuite_WriteInChunks.processor!(testCase));
 	});
 });

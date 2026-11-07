@@ -17,6 +17,8 @@ export const TestSuite_DeleteFiles: DeleteFiles = {
 
 		await bucket.deleteFiles('testFolder');
 
+		if (!('result' in testCase))
+			throw new Error('Delete files test must have result');
 		expect((await bucket.listFiles()).length).to.eql(testCase.result);
 	}
 };

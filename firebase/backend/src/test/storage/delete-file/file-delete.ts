@@ -31,6 +31,8 @@ export const TestSuite_FileDelete: FileDelete = {
 			result = false;
 		}
 
+		if (!('result' in testCase))
+			throw new Error('File delete test must have result');
 		expect(result).to.eql(testCase.result);
 	}
 };

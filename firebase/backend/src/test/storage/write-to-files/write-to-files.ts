@@ -57,6 +57,8 @@ export const TestSuite_Storage_Write: WriteTests = {
 		}
 
 
+		if (!('result' in testCase))
+			throw new Error('Write test must have result');
 		expect(result.toString()).to.eql(testCase.input.stringify ? JSON.stringify(testCase.result) : testCase.result.toString());
 	}
 };

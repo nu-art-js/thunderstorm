@@ -12,14 +12,16 @@ import {
 import {expect} from 'chai';
 import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-common';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
-import {DatabaseDef_Type_Complex} from '../../_entity/type-complex/types.js';
+import {DatabaseDef_Type_Complex, DB_Type_Complex} from '../../_entity/type-complex/types.js';
+
+const complexId = (id: string) => id as DB_Type_Complex['_id'];
 
 
 const transaction_addInner4 = (collectionOuter: FirestoreCollection<DatabaseDef_Type_Complex>, now: number) => {
 	return firestore.runTransaction(async () => {
 		console.log(`pah1 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
+		const outerItem = (await collectionOuter.query.unique(complexId(id_outer1)))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs.push(id_inner4);
@@ -33,7 +35,7 @@ const transaction_removeInner2 = (collectionOuter: FirestoreCollection<DatabaseD
 	return firestore.runTransaction(async () => {
 		console.log(`pah2 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
+		const outerItem = (await collectionOuter.query.unique(complexId(id_outer1)))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs = outerItem.refs.filter((id: string) => id !== id_inner2);
@@ -47,7 +49,7 @@ const transaction_removeInner3 = (collectionOuter: FirestoreCollection<DatabaseD
 	return firestore.runTransaction(async () => {
 		console.log(`pah3 ${currentTimeMillis() - now}`);
 
-		const outerItem = (await collectionOuter.query.unique(id_outer1))!;
+		const outerItem = (await collectionOuter.query.unique(complexId(id_outer1)))!;
 		expect(true).to.eql(exists(outerItem));
 
 		outerItem.refs = outerItem.refs.filter((id: string) => id !== id_inner3);
@@ -72,11 +74,11 @@ export const transactionTestCases1: CollectionTest['testcases'] = [
 				expect(originalReferencedInnerItems.length).to.eql(5); // we know there are 5 items
 
 				await firestore.runTransaction(async () => {
-					const outerItem = (await collectionOuter.query.unique(id_outer1))!;
+					const outerItem = (await collectionOuter.query.unique(complexId(id_outer1)))!;
 
 					expect(true).to.eql(exists(outerItem));
 
-					const toUpdateInnerItems = filterInstances(await collectionInner.query.all(outerItem.refs));
+					const toUpdateInnerItems = filterInstances(await collectionInner.query.all(outerItem.refs.map(complexId)));
 					expect(toUpdateInnerItems.length).to.eql(3);
 
 					toUpdateInnerItems.forEach(item => item.parentId = id_outer1);
@@ -99,7 +101,7 @@ export const transactionTestCases1: CollectionTest['testcases'] = [
 					transaction_removeInner2(collectionOuter, now),
 				]);
 
-				const outerItem = await collectionOuter.query.unique(id_outer1);
+				const outerItem = await collectionOuter.query.unique(complexId(id_outer1));
 				expect(true).to.eql(compare(outerItem?.refs.sort(), [id_inner1, id_inner3, id_inner4].sort()));
 			}
 		}
@@ -119,7 +121,7 @@ export const transactionTestCases1: CollectionTest['testcases'] = [
 
 				]);
 
-				const outerItem = await collectionOuter.query.unique(id_outer1);
+				const outerItem = await collectionOuter.query.unique(complexId(id_outer1));
 				expect(true).to.eql(compare(outerItem?.refs.sort(), [id_inner1, id_inner4].sort()));
 			}
 		}
@@ -139,7 +141,7 @@ export const transactionTestCases1: CollectionTest['testcases'] = [
 
 				]);
 
-				const outerItem = await collectionOuter.query.unique(id_outer1);
+				const outerItem = await collectionOuter.query.unique(complexId(id_outer1));
 				expect(true).to.eql(compare(outerItem?.refs.sort(), [id_inner1, id_inner4].sort()));
 			}
 		}

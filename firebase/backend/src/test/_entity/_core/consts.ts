@@ -175,20 +175,25 @@ export const id_inner6 = 'f56cef2f6deecaf408992ac2075fcdc6';
 export const id_inner7 = '38318f4ef0df776aa9ffbe4cc7890e97';
 export const id_inner8 = '30a55a093a362355602ed3ae093d60bf';
 export const id_inner9 = 'fcfbd1ab066435a1bb1ffe182fcd6db8';
-export const outerValue1 = {_id: id_outer1, name: 'outer1', refs: [id_inner1, id_inner2, id_inner3]};
-export const outerQueryCollection = [
+const complexId = (id: string) => id as DB_Type_Complex['_id'];
+export const outerValue1: PreDB<DB_Type_Complex> = {
+	_id: complexId(id_outer1),
+	name: 'outer1',
+	refs: [id_inner1, id_inner2, id_inner3]
+};
+export const outerQueryCollection: PreDB<DB_Type_Complex>[] = [
 	outerValue1
 ];
-export const innerQueryCollection = [
-	{_id: id_inner1, name: 'inner1', refs: [], parentId: id_outer1},
-	{_id: id_inner2, name: 'inner2', refs: []},
-	{_id: id_inner3, name: 'inner3', refs: [], parentId: id_outer1},
-	{_id: id_inner4, name: 'inner4', refs: []},
-	{_id: id_inner5, name: 'inner5', refs: [], parentId: id_outer1},
-	{_id: id_inner6, name: 'inner6', refs: []},
-	{_id: id_inner7, name: 'inner7', refs: [], parentId: id_outer1},
-	{_id: id_inner8, name: 'inner8', refs: []},
-	{_id: id_inner9, name: 'inner9', refs: [], parentId: id_outer1},
+export const innerQueryCollection: PreDB<DB_Type_Complex>[] = [
+	{_id: complexId(id_inner1), name: 'inner1', refs: [], parentId: id_outer1},
+	{_id: complexId(id_inner2), name: 'inner2', refs: []},
+	{_id: complexId(id_inner3), name: 'inner3', refs: [], parentId: id_outer1},
+	{_id: complexId(id_inner4), name: 'inner4', refs: []},
+	{_id: complexId(id_inner5), name: 'inner5', refs: [], parentId: id_outer1},
+	{_id: complexId(id_inner6), name: 'inner6', refs: []},
+	{_id: complexId(id_inner7), name: 'inner7', refs: [], parentId: id_outer1},
+	{_id: complexId(id_inner8), name: 'inner8', refs: []},
+	{_id: complexId(id_inner9), name: 'inner9', refs: [], parentId: id_outer1},
 ];
 
 const Validator_Complex_Outer: DatabaseDef_Type_Complex['modifiablePropsValidator'] = {
