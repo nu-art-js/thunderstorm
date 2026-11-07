@@ -65,7 +65,8 @@ type OnCloseListener = (exitCode: number) => void;
  * - Graceful shutdown with timeout
  *
  * **Process Management**:
- * - Spawns `/bin/bash` as detached process
+ * - Spawns `/bin/bash` directly as a detached process
+ * - Does not use `shell: true`, because that wraps bash in `/bin/sh`
  * - Removes NODE_OPTIONS to prevent debug flags from propagating
  * - Tracks process lifecycle (alive state)
  * - Supports killing main shell or subprocesses independently
@@ -86,9 +87,10 @@ export class InteractiveShell
 	constructor() {
 		super();
 		this.setTag(`${this.constructor['name']}(${generateHex(4)})`);
-		this.shell = spawn('/bin/bash', {
+		// shell:true would run `/bin/sh -c /bin/bash`. On Linux, /bin/sh is dash.
+		// kill(SIGINT) then signals dash, dash waits on bash, and cleanup times out.
+		this.shell = spawn('/bin/bash', [], {
 			detached: true,  // This is important to make the process a session leader
-			shell: true,
 			env: {
 				...process.env,
 				NODE_OPTIONS: ''   // Remove any --inspect flags
