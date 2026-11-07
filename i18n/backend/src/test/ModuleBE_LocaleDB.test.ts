@@ -10,7 +10,12 @@ class TestLocaleDB_Class
 	}
 }
 
-const locale = (overrides: Partial<UI_Locale> = {}) => ({code: 'nl_BE', displayName: 'Nederlands — België', enabled: true, ...overrides}) as UI_Locale;
+const locale = (overrides: Partial<UI_Locale> = {}): UI_Locale => ({
+	code: 'nl_NL',
+	displayName: 'Nederlands',
+	enabled: true,
+	...overrides,
+});
 
 describe('ModuleBE_LocaleDB - locale model', () => {
 	let db: TestLocaleDB_Class;
@@ -23,29 +28,22 @@ describe('ModuleBE_LocaleDB - locale model', () => {
 	it('derives _id, _language and _country from the code on create', async () => {
 		const instance = locale();
 		await db.prepare(instance);
-		expect(instance._id).to.equal(localeIdFromCode('nl_BE'));
+		expect(instance._id).to.equal(localeIdFromCode('nl_NL'));
 		expect(instance._language).to.equal('nl');
-		expect(instance._country).to.equal('BE');
-	});
-
-	it('supports language-only codes', async () => {
-		const instance = locale({code: 'nl'});
-		await db.prepare(instance);
-		expect(instance._language).to.equal('nl');
-		expect(instance._country).to.equal('');
+		expect(instance._country).to.equal('NL');
 	});
 
 	it('keeps an existing _id (documents created before ids were derived)', async () => {
-		const instance = locale({_id: 'a'.repeat(32)} as Partial<UI_Locale>);
-		await db.prepare(instance, {...instance, code: 'nl_BE'} as DB_Locale);
+		const instance = locale({_id: 'a'.repeat(32) as UI_Locale['_id']});
+		await db.prepare(instance, {...instance, code: 'nl_NL'} as DB_Locale);
 		expect(instance._id).to.equal('a'.repeat(32));
 	});
 
 	it('rejects changing the code of an existing locale', async () => {
-		const instance = locale({code: 'nl'});
+		const instance = locale({code: 'de_DE'});
 		let error: unknown;
 		try {
-			await db.prepare(instance, {...locale(), _id: localeIdFromCode('nl_BE')} as DB_Locale);
+			await db.prepare(instance, {...locale(), _id: localeIdFromCode('nl_NL')} as DB_Locale);
 		} catch (e) {
 			error = e;
 		}

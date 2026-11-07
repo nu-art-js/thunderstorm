@@ -49,7 +49,7 @@ describe('Password Auth - Service Account Guard', () => {
 	it('allows login for user account with valid credentials', async () => {
 		await stormTester(StormTestConfig, async () => {
 			const account = await ModuleBE_AccountDB.impl.create({email: 'user@example.com', type: 'user'});
-			await ModuleBE_PasswordAuth['credentials'].create(account, 'testpass123');
+			await ModuleBE_PasswordAuth['credentials'].upsert(account, 'testpass123');
 
 			const result = await ModuleBE_PasswordAuth['account'].login({
 				email: 'user@example.com',
