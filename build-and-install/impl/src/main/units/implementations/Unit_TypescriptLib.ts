@@ -196,9 +196,11 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 	private stopFirebaseTestResources = async () => {
 		const containerName = this.firebaseTestMongoContainer;
 		const ports = this.firebaseTestEmulatorPorts;
+		const mongoPort = Number(this.firebaseTestMongoHost?.split(':').pop());
 		this.firebaseTestMongoContainer = undefined;
 		this.firebaseTestMongoHost = undefined;
 		this.firebaseTestEmulatorPorts = undefined;
+		this.releaseReservedHostPorts([...(ports ?? []), ...(Number.isFinite(mongoPort) ? [mongoPort] : [])]);
 
 		if (containerName) {
 			this.logInfo(`Stopping MongoDB test container (container: ${containerName})`);

@@ -12,6 +12,15 @@ import {Unit_NodeProject} from './Unit_NodeProject.js';
 import {FilesCache} from '../../core/FilesCache.js';
 import {loadJsonWithTemplateParams, resolveBaiTemplateParams} from '../../core/template-params.js';
 
+const reservedHostPorts = new Set<number>();
+let hostPortLock: Promise<void> = Promise.resolve();
+
+const withHostPortLock = <T>(fn: () => Promise<T>): Promise<T> => {
+	const run = hostPortLock.then(fn, fn);
+	hostPortLock = run.then(() => undefined, () => undefined);
+	return run;
+};
+
 
 /**
  * Configuration for PackageJson units (units with package.json).
@@ -222,25 +231,39 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 	}
 
 	protected async resolveAvailableHostPort(basePort: number, maxOffset = 10): Promise<number> {
-		for (let offset = 0; offset <= maxOffset; offset++) {
-			const port = basePort + offset;
-			const listeners = await this.describeHostPortListeners(port);
-			if (!listeners.length) {
-				if (offset > 0)
-					this.logInfo(`Port ${basePort} in use; using ${port}`);
-				return port;
+		return withHostPortLock(async () => {
+			for (let offset = 0; offset <= maxOffset; offset++) {
+				const port = basePort + offset;
+				if (reservedHostPorts.has(port))
+					continue;
+
+				const listeners = await this.describeHostPortListeners(port);
+				if (!listeners.length) {
+					reservedHostPorts.add(port);
+					if (offset > 0)
+						this.logInfo(`Port ${basePort} in use; using ${port}`);
+					return port;
+				}
+
+				this.logInfo(`Port ${port} in use (${this.formatHostPortListeners(listeners)}); skipping`);
 			}
 
-			this.logInfo(`Port ${port} in use (${this.formatHostPortListeners(listeners)}); skipping`);
-		}
+			throw new BadImplementationException(`No free host port in range ${basePort}–${basePort + maxOffset}`);
+		});
+	}
 
-		throw new BadImplementationException(`No free host port in range ${basePort}–${basePort + maxOffset}`);
+	protected releaseReservedHostPorts(ports: number[]) {
+		for (const port of ports)
+			reservedHostPorts.delete(port);
 	}
 
 	protected async resolveConsecutiveAvailableHostPorts(basePort: number, count: number, maxOffset = 10): Promise<number[]> {
+		return withHostPortLock(async () => {
 		for (let offset = 0; offset <= maxOffset; offset++) {
 			const startPort = basePort + offset;
 			const ports = Array.from({length: count}, (_, i) => startPort + i);
+			if (ports.some(port => reservedHostPorts.has(port)))
+				continue;
 			const blocked: { port: number; listeners: { pid: number; comm: string; command?: string }[] }[] = [];
 
 			for (const port of ports) {
@@ -250,6 +273,8 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 			}
 
 			if (!blocked.length) {
+				for (const port of ports)
+					reservedHostPorts.add(port);
 				if (offset > 0)
 					this.logInfo(`Ports ${basePort}–${basePort + count - 1} in use; using ${startPort}–${startPort + count - 1}`);
 				return ports;
@@ -260,6 +285,7 @@ export class Unit_PackageJson<C extends Unit_PackageJson_Config = Unit_PackageJs
 		}
 
 		throw new BadImplementationException(`No free consecutive host port block of ${count} in range ${basePort}–${basePort + maxOffset + count - 1}`);
+		});
 	}
 
 	protected async releasePorts(allPorts: string[]) {
