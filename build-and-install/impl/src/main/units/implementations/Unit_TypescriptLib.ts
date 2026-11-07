@@ -758,8 +758,7 @@ ${browserNames}
 		const targetPath = resolve(this.config.output, CONST_PackageJSON);
 		const params = this.deriveDistDependencies();
 		const packageJson = FileSystemUtils.file.template.transform(__stringify(this.config.packageJson, true), params);
-		this.logVerbose('Compiling params: ', params);
-		this.logVerbose('Compiling from package.json: ', packageJson);
+		this.logVerbose(`Compiling package.json with ${Object.keys(params).length} params`);
 		await FileSystemUtils.file.template.write(targetPath, packageJson, params, DEFAULT_TEMPLATE_PATTERN);
 	}
 

@@ -115,7 +115,7 @@ export class ModuleBE_Firebase_Class
 			serviceAccount = JSON.parse(readFileSync(serviceAccount, 'utf8'));
 
 		// define a unique key for the firebase session, and any following requests for this auth key
-		this.logInfo(`Creating Firebase session for auth key: ${authKey}`, serviceAccount);
+		this.logInfo(`Creating Firebase session for auth key: ${authKey} account=${serviceAccount !== undefined}`);
 		return this.adminSessions[authKey] = new FirebaseSession_Admin(authKey, serviceAccount).connect();
 	}
 
