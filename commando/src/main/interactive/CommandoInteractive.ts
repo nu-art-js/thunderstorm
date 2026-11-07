@@ -288,13 +288,15 @@ export class CommandoInteractive
 		const pidUniqueKey = generateHex(16);
 		const regexp = new RegExp(`${pidUniqueKey}=(\\d+)`);
 
-		const pidLogProcessor = async (log: string) => {
+		const pidLogProcessor = (log: string) => {
 			const match = log.match(regexp);
 			if (!match)
 				return true;
 
 			const pid = +match[1];
-			await pidListener?.(pid);
+			const pending = pidListener?.(pid);
+			if (pending instanceof Promise)
+				void pending.catch(err => this.shell.logError(err));
 			return false;
 		};
 

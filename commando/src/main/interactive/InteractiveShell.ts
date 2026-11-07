@@ -79,6 +79,8 @@ export class InteractiveShell
 	private onCloseListeners: (OnCloseListener)[] = [];
 	private shell: ChildProcessWithoutNullStreams | ChildProcess;
 	private alive: boolean;
+	private outputChain: Promise<void> = Promise.resolve();
+	private outputEpoch = 0;
 	private logLevelFilter: (log: string, std: LogTypes) => LogLevel | undefined = defaultLogLevelFilter;
 
 	/**
@@ -99,31 +101,13 @@ export class InteractiveShell
 
 		this.alive = true;
 
-		const printer = (std: LogTypes) => async (data: Buffer) => {
-			const messages = data.toString().trim().split('\n');
-			if (!messages.length)
-				return;
-
-			for (const message of messages) {
-				try {
-					let consumed = false;
-
-					for (const processor of this.logProcessors) {
-						const result = await processor(message, std);
-						if (!result) {
-							consumed = true;
-							break;
-						}
-					}
-
-					if (!consumed) {
-						const logLevel = this.logLevelFilter(message, std) ?? defaultLogLevelFilter(message, std);
-						this.log(logLevel, false, [message]);
-					}
-				} catch (e: any) {
-					this.logError(e);
-				}
-			}
+		const printer = (std: LogTypes) => (data: Buffer) => {
+			this.outputEpoch++;
+			this.outputChain = this.outputChain
+				.then(() => this.deliverLogs(data, std))
+				.catch(err => {
+					this.logError(err);
+				});
 		};
 
 		const stdoutPrinter = printer('out');
@@ -226,6 +210,7 @@ export class InteractiveShell
 		}
 
 		await this.waitForExit(this.shell.pid!, timeout);
+		await this.drainOutput();
 		this.logWarning(`Shell process PID ${this.shell.pid} terminated`);
 	};
 
@@ -233,6 +218,7 @@ export class InteractiveShell
 	killSubprocess = async (pid: number, signal: NodeJS.Signals = 'SIGINT', timeout = 10000): Promise<void> => {
 		if (!this.isAlive(pid)) {
 			this.logDebug(`Subprocess PID ${pid} already exited`);
+			await this.drainOutput();
 			return;
 		}
 
@@ -246,7 +232,53 @@ export class InteractiveShell
 		}
 
 		await this.waitForExit(pid, timeout);
+		await this.drainOutput();
 		this.logWarning(`Subprocess PID ${pid} terminated`);
+	};
+
+	/**
+	 * Delivers one stdout or stderr chunk, in order with earlier chunks.
+	 * A processor that returns false consumes the line.
+	 */
+	private deliverLogs = async (data: Buffer, std: LogTypes) => {
+		const messages = data.toString().trim().split('\n');
+		if (!messages.length)
+			return;
+
+		for (const message of messages) {
+			try {
+				let consumed = false;
+
+				for (const processor of this.logProcessors) {
+					const result = await processor(message, std);
+					if (!result) {
+						consumed = true;
+						break;
+					}
+				}
+
+				if (!consumed) {
+					const logLevel = this.logLevelFilter(message, std) ?? defaultLogLevelFilter(message, std);
+					this.log(logLevel, false, [message]);
+				}
+			} catch (e: any) {
+				this.logError(e);
+			}
+		}
+	};
+
+	/**
+	 * Waits until output already written to the shell pipe has been delivered.
+	 * setImmediate lets the poll phase read the pipe before the check.
+	 */
+	private drainOutput = async () => {
+		let idle = false;
+		while (!idle) {
+			const epoch = this.outputEpoch;
+			await new Promise<void>(resolve => setImmediate(resolve));
+			idle = epoch === this.outputEpoch;
+		}
+		await this.outputChain;
 	};
 
 	/**
