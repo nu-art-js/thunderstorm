@@ -13,10 +13,10 @@ export const TestCases_FirestoreV3_FreeForm = TestCases_FB_FreeForm;
 
 export const test_FirestoreV3_FreeForm = (input: TestCase_FreeForm): Promise<any> => input.run();
 
-export const TestSuite_FirestoreV3_FreeForm: TestModel_FreeForm = {
+export const TestSuite_FirestoreV3_FreeForm = {
 	label: 'Firestore transaction - Free Form',
 	testcases: TestCases_FB_FreeForm,
 	processor: async (testCase: TestModel_FreeForm['testcases'][number]) => {
 		await testCase.input.run();
 	}
-};
+} as TestModel_FreeForm;

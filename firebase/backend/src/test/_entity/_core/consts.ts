@@ -33,8 +33,8 @@ import {
 import {ModuleBE_Auth} from '@nu-art/google-services-backend';
 import {TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
-import {DB_Type, TestInputValue} from '../../firestore-v3/_entity/type/types.js';
-import {DB_Type_Complex, DatabaseDef_Type_Complex} from '../../firestore-v3/_entity/type-complex/types.js';
+import {DB_Type, TestInputValue} from '../type/types.js';
+import {DB_Type_Complex, DatabaseDef_Type_Complex} from '../type-complex/types.js';
 import {FB_ArrayType} from './types.js';
 import {FIREBASE_DEFAULT_PROJECT_ID, FirestoreCollection, ModuleBE_Firebase} from '../../../main/index.js';
 
@@ -146,7 +146,10 @@ export const testInstance5: PreDB<DB_Type> = Object.freeze({
 	nestedObject: {one: testItem2, two: testItem4}
 });
 
-export const duplicateObjectToCreate = Object.freeze({...testInstance1, _id: testInstance1._uniqueId});
+export const duplicateObjectToCreate: PreDB<DB_Type> = Object.freeze({
+	...testInstance1,
+	_id: testInstance1._uniqueId as DB_Type['_id'],
+});
 
 export type CollectionTestInput = {
 	outerCollection: PreDB<DB_Type_Complex>[];
@@ -194,7 +197,7 @@ const Validator_Complex_Outer: DatabaseDef_Type_Complex['modifiablePropsValidato
 	parentId: tsValidateString(-1, false),
 };
 
-const DBDef_Type_Complex_Outer: Database<DatabaseDef_Type_Complex> = {
+const DBDef_Type_Complex_Outer = {
 	modifiablePropsValidator: Validator_Complex_Outer,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-tests-outer',
@@ -207,9 +210,9 @@ const DBDef_Type_Complex_Outer: Database<DatabaseDef_Type_Complex> = {
 	backend: {
 		name: 'type--complex'
 	}
-};
+} as Database<DatabaseDef_Type_Complex>;
 
-const DBDef_Type_Complex_Inner: Database<DatabaseDef_Type_Complex> = {
+const DBDef_Type_Complex_Inner = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-tests-inner',
@@ -222,7 +225,7 @@ const DBDef_Type_Complex_Inner: Database<DatabaseDef_Type_Complex> = {
 	backend: {
 		name: 'type--complex'
 	}
-};
+} as Database<DatabaseDef_Type_Complex>;
 
 export async function prepareCollectionTest(testCase: TestModel<CollectionTestInput, TestInputValue>) {
 	const outerCollection = firestore.getCollection<DatabaseDef_Type_Complex>(DBDef_Type_Complex_Outer);

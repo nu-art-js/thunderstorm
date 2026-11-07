@@ -3,7 +3,7 @@ import chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {firestore, validateDBObject} from '../../_entity/_core/consts.js';
 import {Database} from '@nu-art/db-api-shared';
-import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
+import {DB_Object, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery, composeDbObjectUniqueId} from '@nu-art/firebase-shared';
 import {DB_Type_MultiKey, DatabaseDef_Type_MultiKey} from '../../_entity/type-multi-key/types.js';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
@@ -24,7 +24,7 @@ type Test = {
 	processor: (testCase: TestCase_MultiKeys) => Promise<void>;
 };
 
-const dbDef: Database<DatabaseDef_Type_MultiKey> = {
+const dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-multiKeys',
@@ -38,11 +38,11 @@ const dbDef: Database<DatabaseDef_Type_MultiKey> = {
 	backend: {
 		name: 'firestore-multiKeys',
 	},
-};
+} as Database<DatabaseDef_Type_MultiKey>;
 
 const sampleDoc1 = Object.freeze({aKey: 'aaaa', bKey: 9, content: 'content1'});
 const compareId = (origin: PreDB<DB_Type_MultiKey>, target: DB_Type_MultiKey) => {
-	expect(composeDbObjectUniqueId(origin, dbDef.uniqueKeys!)).to.eql(target._id);
+	expect(composeDbObjectUniqueId(origin as PreDB<DB_Object>, dbDef.uniqueKeys!)).to.eql(target._id);
 };
 
 export const TestCases_FB_MultiKeys: TestCase_MultiKeys[] = [

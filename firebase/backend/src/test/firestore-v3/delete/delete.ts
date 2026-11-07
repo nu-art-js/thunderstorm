@@ -15,7 +15,7 @@ import {
 } from '@nu-art/ts-common';
 import {Database} from '@nu-art/db-api-shared';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
-import {DB_Type, DatabaseDef_Type} from '../_entity/type/types.js';
+import {DB_Type, DatabaseDef_Type} from '../../_entity/type/types.js';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 
 chai.use(chaiAsPromised);
@@ -28,7 +28,7 @@ export type DeleteTestInput = {
 
 export type TestCase_FirestoreV3_Delete = TestModel<DeleteTestInput, PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 
-const dbDef: Database<DatabaseDef_Type> = {
+const dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	versions: ['1.0.0'],
@@ -41,7 +41,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 	backend: {
 		name: 'firestore-delete-tests'
 	}
-};
+} as Database<DatabaseDef_Type>;
 
 export const TestCases_FB_Delete: TestCase_FirestoreV3_Delete[] = [
 	{
@@ -112,7 +112,7 @@ export const TestCases_FB_Delete: TestCase_FirestoreV3_Delete[] = [
 		input: {
 			toInsert: [testInstance1],
 			deleteAction: async (collection, inserted) => {
-				await collection.delete.unique(generateHex(32));
+				await collection.delete.unique(generateHex(32) as DB_Type['_id']);
 			}
 		}
 	},
@@ -122,7 +122,7 @@ export const TestCases_FB_Delete: TestCase_FirestoreV3_Delete[] = [
 		input: {
 			toInsert: [testInstance1],
 			deleteAction: async (collection, inserted) => {
-				await expect(collection.delete.unique('')).to.be.rejectedWith(MUSTNeverHappenException);
+				await expect(collection.delete.unique('' as DB_Type['_id'])).to.be.rejectedWith(MUSTNeverHappenException);
 			}
 		}
 	},

@@ -3,7 +3,7 @@ import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {firestore, testInstance1} from '../../_entity/_core/consts.js';
 import {expect} from 'chai';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
-import {DB_Type, DatabaseDef_Type} from '../_entity/type/types.js';
+import {DB_Type, DatabaseDef_Type} from '../../_entity/type/types.js';
 
 type Input = {
 	action: (collection: FirestoreCollection<DatabaseDef_Type>, items: PreDB<DB_Type>[]) => Promise<void>
@@ -13,7 +13,7 @@ type Input = {
 type MultiWriteTestCase = { description?: string; input: Input; result: {} };
 type MultiWriteTestConfig = { label: string; testcases: MultiWriteTestCase[]; processor?: (testCase: MultiWriteTestCase) => Promise<void> };
 
-const dbDef: Database<DatabaseDef_Type> = {
+const dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-transaction-multi-write-tests',
@@ -26,7 +26,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 	backend: {
 		name: 'firestore-transaction-multi-write-tests'
 	},
-};
+} as Database<DatabaseDef_Type>;
 
 const testcases_MultiWrite: MultiWriteTestCase[] = [
 	{

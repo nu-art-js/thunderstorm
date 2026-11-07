@@ -2,10 +2,10 @@ import {queryAllTestCases, queryComplexTestCases, QueryTest, QueryTestInput, que
 import {CollectionTestInput, firestore, prepareCollectionTest} from '../../_entity/_core/consts.js';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, tsValidateMustExist} from '@nu-art/ts-common';
-import {DatabaseDef_Type, TestInputValue} from '../_entity/type/types.js';
+import {DatabaseDef_Type, TestInputValue} from '../../_entity/type/types.js';
 import {TestModel} from '@nu-art/testalot';
 
-const dbDef: Database<DatabaseDef_Type> = {
+const dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-query-tests',
@@ -18,7 +18,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 	backend: {
 		name: 'firestore-query-tests'
 	}
-};
+} as Database<DatabaseDef_Type>;
 
 export const TestCases_FB_QueryUnique: QueryTest[] = [
 	...queryTestCases

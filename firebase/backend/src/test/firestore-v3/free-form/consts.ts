@@ -4,7 +4,7 @@ import {Database} from '@nu-art/db-api-shared';
 import {ArrayType, exists, tsValidateMustExist} from '@nu-art/ts-common';
 import {DB_FreeForm, DatabaseDef_FreeForm, TestModel_FreeForm} from './types.js';
 
-const DBDef_FreeForm: Database<DatabaseDef_FreeForm> = {
+const DBDef_FreeForm = {
 	dbKey: 'free-form_testcase1',
 	versions: ['1.0.0'],
 	modifiablePropsValidator: tsValidateMustExist,
@@ -17,7 +17,7 @@ const DBDef_FreeForm: Database<DatabaseDef_FreeForm> = {
 	backend: {
 		name: 'free-from-test',
 	},
-};
+} as Database<DatabaseDef_FreeForm>;
 
 export const FreeForm_TestCase1: ArrayType<TestModel_FreeForm['testcases']> = {
 	description: 'transaction update',

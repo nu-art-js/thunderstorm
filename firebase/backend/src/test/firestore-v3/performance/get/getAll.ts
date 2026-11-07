@@ -8,7 +8,7 @@ import {FirestoreCollection} from '../../../../main/firestore/FirestoreCollectio
 type TestCase_GetAll = { description?: string; input: {}; result: {} };
 type Test_GetAll = { label: string; testcases: TestCase_GetAll[]; processor: (testCase: TestCase_GetAll) => Promise<void> };
 
-const dbDef: Database<DatabaseDef_Type> = {
+const dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-get-all-tests',
@@ -21,7 +21,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 	backend: {
 		name: 'firestore-get-all-tests'
 	}
-};
+} as Database<DatabaseDef_Type>;
 
 //firestore getAll performing much better
 const asyncGetAll = async (_ids: UniqueId[], collection: FirestoreCollection<any>) => {

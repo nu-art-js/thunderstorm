@@ -4,14 +4,14 @@ import {compare, DB_Object, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/
 import {expect} from 'chai';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
 import {firestore} from '../../_entity/_core/consts.js';
-import {DatabaseDef_Type, DB_Type} from '../_entity/type/types.js';
+import {DatabaseDef_Type, DB_Type} from '../../_entity/type/types.js';
 import {Database} from '@nu-art/db-api-shared';
 import {tsValidateMustExist} from '@nu-art/ts-common';
 
 const descriptionOf = (testCase: TestCase_FirestoreV3_Set): string =>
 	typeof testCase.description === 'function' ? testCase.description(testCase) : (testCase.description ?? 'set test');
 
-const dbDef: Database<DatabaseDef_Type> = {
+const dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-set-tests',
@@ -24,7 +24,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 	backend: {
 		name: 'firestore-set-tests',
 	}
-};
+} as Database<DatabaseDef_Type>;
 
 const runTestCase = (testCase: TestCase_FirestoreV3_Set) => async () => {
 	if (!('result' in testCase))

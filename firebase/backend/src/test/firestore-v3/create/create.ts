@@ -5,13 +5,13 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import {createTestCases, CreateTestInput} from './consts.js';
 import {expect} from 'chai';
-import {DB_Type, DatabaseDef_Type, TestInputValue} from '../_entity/type/types.js';
+import {DB_Type, DatabaseDef_Type, TestInputValue} from '../../_entity/type/types.js';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 import {TestModel} from '@nu-art/testalot';
 
 chai.use(chaiAsPromised);
 
-export const createTests_dbDef: Database<DatabaseDef_Type> = {
+export const createTests_dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-create-tests',
@@ -24,7 +24,7 @@ export const createTests_dbDef: Database<DatabaseDef_Type> = {
 	backend: {
 		name: 'firestore-create-tests',
 	}
-};
+} as Database<DatabaseDef_Type>;
 
 export type TestCase_FirestoreV3_Create = TestModel<CreateTestInput, TestInputValue>;
 

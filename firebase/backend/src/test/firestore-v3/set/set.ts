@@ -6,14 +6,14 @@ import {TestModel} from '@nu-art/testalot';
 import {Database} from '@nu-art/db-api-shared';
 import {asArray, compare, DB_Object, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {_EmptyQuery} from '@nu-art/firebase-shared';
-import {DB_Type, DatabaseDef_Type} from '../_entity/type/types.js';
+import {DB_Type, DatabaseDef_Type} from '../../_entity/type/types.js';
 import {FirestoreCollection} from '../../../main/firestore/FirestoreCollection.js';
 
 chai.use(chaiAsPromised);
 export const updatedStringValue1 = 'test update';
 export const updatedStringValue2 = 'test update 2';
 
-const dbDef: Database<DatabaseDef_Type> = {
+const dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-set-tests',
@@ -26,7 +26,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 	backend: {
 		name: 'firestore-set-tests',
 	}
-};
+} as Database<DatabaseDef_Type>;
 
 export type SetTestInput = {
 	setAction: (collection: FirestoreCollection<DatabaseDef_Type>, inserted: DB_Type[]) => Promise<void>

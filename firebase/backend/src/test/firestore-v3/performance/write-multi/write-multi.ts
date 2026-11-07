@@ -2,12 +2,12 @@ import {firestore, testInstance1} from '../../../_entity/_core/consts.js';
 import {Database} from '@nu-art/db-api-shared';
 import {deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {DB_Type, DatabaseDef_Type} from '../../_entity/type/types.js';
+import {DB_Type, DatabaseDef_Type} from '../../../_entity/type/types.js';
 
 type TestCase_WriteMulti = { description?: string; input: {}; result: {} };
 type Test_WriteMulti = { label: string; testcases: TestCase_WriteMulti[]; processor: (testCase: TestCase_WriteMulti) => Promise<void> };
 
-const dbDef: Database<DatabaseDef_Type> = {
+const dbDef = {
 	modifiablePropsValidator: tsValidateMustExist,
 	generatedPropsValidator: {},
 	dbKey: 'firestore-create-performance-tests',
@@ -20,7 +20,7 @@ const dbDef: Database<DatabaseDef_Type> = {
 	backend: {
 		name: 'firestore-create-performance-tests'
 	},
-};
+} as Database<DatabaseDef_Type>;
 
 const testCases_WriteMulti: TestCase_WriteMulti[] = [
 	{description: 'performance - set.all', result: [], input: {}}
@@ -39,7 +39,7 @@ const processor_WriteMulti = async (_testCase: TestCase_WriteMulti): Promise<voi
 
 	console.log('Starting bulk set');
 	let t0 = performance.now();
-	await collection.create.all(toCreate, undefined, 'bulk');
+	await collection.create.all(toCreate, 'bulk');
 	let t1 = performance.now();
 	let allDocs = await collection.collection.listDocuments();
 	console.log(`Created ${docNumber} items - time: ${(t1 - t0)} ms`);
@@ -50,7 +50,7 @@ const processor_WriteMulti = async (_testCase: TestCase_WriteMulti): Promise<voi
 
 	console.log('Starting batch set');
 	t0 = performance.now();
-	await collection.set.all(toCreate, undefined);
+	await collection.set.all(toCreate);
 	t1 = performance.now();
 	allDocs = await collection.collection.listDocuments();
 	console.log(`Created ${docNumber} items - time: ${(t1 - t0)} ms`);
