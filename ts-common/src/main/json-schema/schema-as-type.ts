@@ -83,6 +83,25 @@ const renderArray = (node: Record<string, unknown>, indent: number): string => {
 	return `${item}[]`;
 };
 
+const propertyLine = (pad: string, statement: string, rendered: string, note: string): string[] => {
+	if (rendered.includes('\n') && note)
+		return [`${pad}${note.trim()}`, `${statement}${rendered};`];
+
+	return [`${statement}${rendered};${note}`];
+};
+
+const indexLines = (node: Record<string, unknown>, indent: number): string[] => {
+	const extra = node.additionalProperties;
+	const pad = '  '.repeat(indent + 1);
+	if (extra === true)
+		return [`${pad}[key: string]: unknown;`];
+	if (!isRecord(extra))
+		return [];
+
+	const rendered = renderNode(extra, indent + 1);
+	return propertyLine(pad, `${pad}[key: string]: `, rendered, comment(extra));
+};
+
 const renderObject = (node: Record<string, unknown>, indent: number): string => {
 	const properties = isRecord(node.properties) ? node.properties : {};
 	const required = new Set(
@@ -90,22 +109,30 @@ const renderObject = (node: Record<string, unknown>, indent: number): string => 
 			? node.required.filter((name): name is string => typeof name === 'string')
 			: [],
 	);
+	if (Object.keys(properties).length === 0 && node.additionalProperties === true)
+		return 'Record<string, unknown>';
+
 	const pad = '  '.repeat(indent + 1);
 	const lines: string[] = [];
 	for (const [key, child] of Object.entries(properties)) {
 		const optional = required.has(key) ? '' : '?';
 		const rendered = renderNode(child, indent + 1);
-		const note = !rendered.includes('\n') && isRecord(child) ? comment(child) : '';
-		lines.push(`${pad}${fieldKey(key)}${optional}: ${rendered};${note}`);
+		const note = isRecord(child) ? comment(child) : '';
+		lines.push(...propertyLine(pad, `${pad}${fieldKey(key)}${optional}: `, rendered, note));
 	}
-	if (node.additionalProperties === true)
-		lines.push(`${pad}[key: string]: unknown;`);
+	lines.push(...indexLines(node, indent));
 	if (lines.length === 0)
-		return node.additionalProperties === true ? 'Record<string, unknown>' : '{}';
+		return '{}';
 
 	return `{\n${lines.join('\n')}\n${'  '.repeat(indent)}}`;
 };
 
 /** Default view of a schema: a TypeScript type. enum is a union. description is a comment. */
-export const schemaAsType = (name: string | undefined, schema: Record<string, unknown>): string =>
-	`type ${typeName(name)} = ${renderNode(schema, 0)};`;
+export const schemaAsType = (name: string | undefined, schema: Record<string, unknown>): string => {
+	const body = `type ${typeName(name)} = ${renderNode(schema, 0)};`;
+	const note = comment(schema).trim();
+	if (!note)
+		return body;
+
+	return `${note}\n${body}`;
+};

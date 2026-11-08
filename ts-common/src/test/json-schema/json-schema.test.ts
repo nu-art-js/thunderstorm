@@ -71,4 +71,65 @@ describe('JSON schema', () => {
 			'};',
 		].join('\n'),
 	}));
+
+	it('prints an open map as an index signature', runTestCase({
+		input: {
+			name: 'Children',
+			schema: {
+				type: 'object',
+				description: 'id to label',
+				additionalProperties: {type: 'string', description: 'One-liner'},
+			},
+		},
+		result: [
+			'// id to label',
+			'type Children = {',
+			'  [key: string]: string; // One-liner',
+			'};',
+		].join('\n'),
+	}));
+
+	it('prints a nested object description above the property', runTestCase({
+		input: {
+			name: 'Wrap',
+			schema: {
+				type: 'object',
+				properties: {
+					child: {
+						type: 'object',
+						description: 'The child',
+						properties: {name: {type: 'string', description: 'Name'}},
+						required: ['name'],
+					},
+				},
+				required: ['child'],
+			},
+		},
+		result: [
+			'type Wrap = {',
+			'  // The child',
+			'  child: {',
+			'    name: string; // Name',
+			'  };',
+			'};',
+		].join('\n'),
+	}));
+
+	it('prints a pattern on the field comment', runTestCase({
+		input: {
+			name: 'Ref',
+			schema: {
+				type: 'object',
+				properties: {
+					id: {type: 'string', description: 'Node id', pattern: '^[0-9a-f]{32}$'},
+				},
+				required: ['id'],
+			},
+		},
+		result: [
+			'type Ref = {',
+			'  id: string; // Node id, pattern ^[0-9a-f]{32}$',
+			'};',
+		].join('\n'),
+	}));
 });
