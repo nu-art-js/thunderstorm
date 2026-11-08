@@ -4,6 +4,7 @@ import {BaseSessionClaims, CollectSessionData, ModuleBE_AccountDB, ModuleBE_Sess
 import {ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
 import {ModuleBE_PasswordAuth, ModuleBE_PasswordCredentialDB} from '../_main.js';
 import {ModulePackBE_LoginAttemptDB, ModulePackBE_FailedLoginAttemptDB} from '../_main.js';
+import {ModuleBE_AccessGroupDB, ModuleBE_PermissionScopeDB, ModuleBE_UserPermissionsDB, ModulePackBE_Permissions} from '@nu-art/permissions-backend';
 
 export class DummyAccountModule_Class
 	extends Module
@@ -56,6 +57,7 @@ export const DefaultStormTestConfig_PasswordAuth = Object.freeze({
 		ModuleBE_PasswordCredentialDB,
 		...ModulePackBE_LoginAttemptDB,
 		...ModulePackBE_FailedLoginAttemptDB,
+		...ModulePackBE_Permissions,
 		ModuleDummy_Accounts,
 	],
 	config: {
@@ -81,11 +83,17 @@ export const DefaultStormTestConfig_PasswordAuth = Object.freeze({
 		await ModuleBE_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		await ModuleBE_SessionDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		await ModuleBE_PasswordCredentialDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_AccessGroupDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_PermissionScopeDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_UserPermissionsDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	},
 	after: async () => {
 		await ModuleBE_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		await ModuleBE_SessionDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		await ModuleBE_PasswordCredentialDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_AccessGroupDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_PermissionScopeDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_UserPermissionsDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		generalAfter();
 	}
 });

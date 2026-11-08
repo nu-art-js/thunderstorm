@@ -4,6 +4,7 @@ import {stormTester} from '@nu-art/storm-testalot';
 import {DefaultStormTestConfig_PasswordAuth} from './utils/helpers.js';
 import {ModuleBE_PasswordAuth} from './_main.js';
 import {ModuleBE_AccountDB} from '@nu-art/user-account-backend';
+import {ModuleBE_Permissions, ServiceAccountId_Bootstrap} from '@nu-art/permissions-backend';
 
 const StormTestConfig = {
 	...DefaultStormTestConfig_PasswordAuth,
@@ -48,8 +49,11 @@ describe('Password Auth - Service Account Guard', () => {
 
 	it('allows login for user account with valid credentials', async () => {
 		await stormTester(StormTestConfig, async () => {
-			const account = await ModuleBE_AccountDB.impl.create({email: 'user@example.com', type: 'user'});
-			await ModuleBE_PasswordAuth['credentials'].upsert(account, 'testpass123');
+			const account = await ModuleBE_Permissions.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
+				const created = await ModuleBE_AccountDB.impl.create({email: 'user@example.com', type: 'user'});
+				await ModuleBE_PasswordAuth['credentials'].upsert(created, 'testpass123');
+				return created;
+			});
 
 			const result = await ModuleBE_PasswordAuth['account'].login({
 				email: 'user@example.com',

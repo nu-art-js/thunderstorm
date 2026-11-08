@@ -63,7 +63,7 @@ describe('Accounts - Register', () => {
 				account: {email: 'test@email.com', password: '1234', passwordCheck: '1234', deviceId},
 				canRegister: false,
 			},
-			error: {expected: 'Registration is disabled'}
+			error: {expected: 'Password registration is disabled'}
 		}));
 	});
 
