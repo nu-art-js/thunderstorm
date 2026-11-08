@@ -4,10 +4,13 @@
  * Licensed under the Apache License, Version 2.0
  */
 
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {expect} from 'chai';
 import {AppConfigKey_BE, ModuleBE_AppConfigDB} from '../main/ModuleBE_AppConfigDB.js';
 import {cleanupAppConfigCollection, setupFirebaseEmulator} from './utils/helpers.js';
+
+const inStorage = (run: () => Promise<void>) => () => new MemStorage().init(run);
 
 type Input_GetResolver404 = { key: string };
 type Result_GetResolver404 = never;
@@ -84,32 +87,32 @@ describe('App-config - Firebase (emulator only)', () => {
 	before(async () => {
 		await setupFirebaseEmulator();
 	});
-	after(async () => {
+	after(inStorage(async () => {
 		await cleanupAppConfigCollection();
-	});
+	}));
 
 	describe('getResolverDataByKey', () => {
-		it('throws 404 when key is not registered', async () => {
+		it('throws 404 when key is not registered', inStorage(async () => {
 			await run_GetResolver404({
 				description: '404 for unregistered key',
 				input: {key: 'firebase-test-nonexistent-key'},
 				error: {expected: /Could not find an app config with key/},
 			})();
-		});
+		}));
 	});
 
 	describe('registerKey and getAppKey', () => {
-		it('returns resolver value and persists', async () => {
+		it('returns resolver value and persists', inStorage(async () => {
 			await run_RegisterAndGet({
 				description: 'resolver value persisted',
 				input: {key: 'firebase-test-register-1', resolverValue: {a: 1, b: 2}},
 				result: {a: 1, b: 2},
 			})();
-		});
+		}));
 	});
 
 	describe('setAppKey and getAppKey', () => {
-		it('set then get returns set value', async () => {
+		it('set then get returns set value', inStorage(async () => {
 			await run_SetAndGet({
 				description: 'set then get',
 				input: {
@@ -119,11 +122,11 @@ describe('App-config - Firebase (emulator only)', () => {
 				},
 				result: {x: 99},
 			})();
-		});
+		}));
 	});
 
 	describe('createDefaults', () => {
-		it('creates entries for all registered keys', async () => {
+		it('creates entries for all registered keys', inStorage(async () => {
 			await run_CreateDefaults({
 				description: 'createDefaults two keys',
 				input: {
@@ -134,16 +137,16 @@ describe('App-config - Firebase (emulator only)', () => {
 				},
 				result: true,
 			})();
-		});
+		}));
 	});
 
 	describe('getConfigByKey API', () => {
-		it('returns same as getResolverDataByKey', async () => {
+		it('returns same as getResolverDataByKey', inStorage(async () => {
 			await run_GetConfigByKeyApi({
 				description: 'API matches DB',
 				input: {key: 'firebase-test-api-1', resolverValue: {api: true}},
 				result: {api: true},
 			})();
-		});
+		}));
 	});
 });
