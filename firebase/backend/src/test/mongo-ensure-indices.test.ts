@@ -199,7 +199,10 @@ async function ensureSearch(opts: {
 				toArray: async () => {
 					if (opts.listError)
 						throw opts.listError;
-					return (opts.existing ?? []).filter(row => !name || row.name === name);
+					const rows = created.length > 0
+						? [{name: created[0]!.name, status: 'READY', queryable: true}]
+						: (opts.existing ?? []);
+					return rows.filter(row => !name || row.name === name);
 				},
 			}),
 			createSearchIndex: async (desc: SearchDesc) => {
@@ -247,5 +250,45 @@ describe('MongoCollection.ensureSearchIndices', () => {
 	it('returns without create when the server has no search command', async () => {
 		const created = await ensureSearch({listError: new Error('no mongot')});
 		expect(created).to.deep.equal([]);
+	});
+
+	it('creates the collection when the search list says it does not exist', async () => {
+		const created: SearchDesc[] = [];
+		const collections: string[] = [];
+		let listed = 0;
+		const db = {
+			createCollection: async (name: string) => {
+				collections.push(name);
+			},
+			collection: () => ({
+				listSearchIndexes: (name?: string) => ({
+					toArray: async () => {
+						listed += 1;
+						if (listed === 1)
+							throw new Error('Collection \'knowledge-window-test.nodes\' does not exist');
+						const rows = created.length > 0
+							? [{name: created[0]!.name, status: 'READY', queryable: true}]
+							: [];
+						return rows.filter(row => !name || row.name === name);
+					},
+				}),
+				createSearchIndex: async (desc: SearchDesc) => {
+					created.push(desc);
+					return desc.name ?? 'default';
+				},
+			}),
+		};
+		const collection = new MongoCollection(async () => db as never, {
+			dbKey: 'nodes',
+			entityName: 'node',
+			frontend: {name: 'nodes', group: 'knowledge'},
+			backend: {name: 'nodes'},
+			versions: ['1.0.0'],
+			generatedPropsValidator: {},
+			modifiablePropsValidator: {},
+		} as never);
+		await collection.ensureSearchIndices([{name: 'node-text', paths: ['label', '_path']}]);
+		expect(collections).to.deep.equal(['nodes']);
+		expect(created.map(desc => desc.name)).to.deep.equal(['node-text']);
 	});
 });

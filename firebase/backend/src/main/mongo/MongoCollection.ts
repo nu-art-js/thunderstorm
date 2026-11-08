@@ -78,6 +78,26 @@ const searchIndexDefinition = (index: SearchIndexSpec) => ({
 	},
 });
 
+const searchIndexWaitMs = 30_000;
+const searchRowWaitMs = 8_000;
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/** A row with no status is the unit-test shape and counts as ready. */
+const searchIndexReady = (row: {queryable?: boolean; status?: string} | undefined): boolean => {
+	if (!row)
+		return false;
+	if (row.queryable === true || row.status === 'READY')
+		return true;
+	return row.queryable === undefined && row.status === undefined;
+};
+
+const errorText = (e: unknown): string => e instanceof Error ? e.message : String(e);
+
+const missingCollection = (e: unknown): boolean => /does not exist/i.test(errorText(e));
+
+const indexAlreadyExists = (e: unknown): boolean => /already exists/i.test(errorText(e));
+
 const sameSearchFields = (
 	stored: {mappings?: {dynamic?: boolean; fields?: Record<string, {type?: string}>}},
 	wanted: {mappings: {dynamic: boolean; fields: Record<string, {type: string}>}},
@@ -605,37 +625,114 @@ export class MongoCollection<Proto extends DB_Prototype>
 	/**
 	 * Create each Atlas Search index when the name is missing.
 	 * Update it when the stored field list differs.
+	 * Wait until the index is queryable.
 	 * A server without mongot logs and returns. Search calls then fail.
 	 */
 	ensureSearchIndices = async (indices: readonly SearchIndexSpec[]): Promise<void> => {
-		for (const index of indices) {
-			let existing: {name?: string; definition?: unknown; latestDefinition?: unknown}[];
+		for (const index of indices)
+			await this.ensureOneSearchIndex(index);
+	};
+
+	/** List fails on a collection that has no documents yet. Create it, then build the index. */
+	private async ensureOneSearchIndex(index: SearchIndexSpec): Promise<void> {
+		try {
+			await this.writeSearchIndex(index);
+		} catch (e: unknown) {
+			if (!missingCollection(e))
+				throw e;
 			try {
-				existing = await this.mongoCollection.listSearchIndexes(index.name).toArray();
+				await (await this.getDb()).createCollection(this.dbDef.backend.name);
+			} catch (createError: unknown) {
+				if (!indexAlreadyExists(createError))
+					throw createError;
+			}
+			await this.writeSearchIndex(index);
+		}
+	}
+
+	private async writeSearchIndex(index: SearchIndexSpec): Promise<void> {
+		let existing: {name?: string; queryable?: boolean; status?: string; definition?: unknown; latestDefinition?: unknown}[];
+		try {
+			existing = await this.mongoCollection.listSearchIndexes(index.name).toArray();
+		} catch (e: unknown) {
+			if (missingCollection(e))
+				throw e;
+			this.logWarning(`Search index list failed on ${this.dbDef.backend.name}. ${e}`);
+			return;
+		}
+
+		const definition = searchIndexDefinition(index);
+		const stored = existing[0];
+		if (stored) {
+			const storedDef = (stored.latestDefinition ?? stored.definition) as {mappings?: {dynamic?: boolean; fields?: Record<string, {type?: string}>}} | undefined;
+			if (storedDef && !sameSearchFields(storedDef, definition)) {
+				await this.mongoCollection.updateSearchIndex(index.name, definition);
+				this.logInfo(`Updated search index ${index.name} on ${this.dbDef.backend.name}`);
+			}
+		} else {
+			try {
+				await this.mongoCollection.createSearchIndex({
+					name: index.name,
+					type: 'search',
+					definition,
+				});
+				this.logInfo(`Created search index ${index.name} on ${this.dbDef.backend.name} (${index.paths.join(', ')})`);
+			} catch (e: unknown) {
+				if (!indexAlreadyExists(e))
+					throw e;
+			}
+		}
+		await this.waitUntilSearchReady(index.name);
+	}
+
+	/** The test runner calls this before $search so a startup miss still builds the index. */
+	private async ensureNamedSearchIndex(name: string): Promise<void> {
+		const spec = this.dbDef.atlasSearch?.find(index => index.name === name);
+		if (!spec)
+			return;
+		await this.ensureSearchIndices([spec]);
+	}
+
+	/** Poll until the named search index can serve a query. A missing mongot returns. */
+	private async waitUntilSearchReady(name: string): Promise<void> {
+		const deadline = Date.now() + searchIndexWaitMs;
+		while (Date.now() <= deadline) {
+			try {
+				const rows = await this.mongoCollection.listSearchIndexes(name).toArray();
+				if (searchIndexReady(rows[0] as {queryable?: boolean; status?: string} | undefined))
+					return;
 			} catch (e: unknown) {
 				this.logWarning(`Search index list failed on ${this.dbDef.backend.name}. ${e}`);
 				return;
 			}
-
-			const definition = searchIndexDefinition(index);
-			const stored = existing[0];
-			if (stored) {
-				const storedDef = (stored.latestDefinition ?? stored.definition) as {mappings?: {dynamic?: boolean; fields?: Record<string, {type?: string}>}} | undefined;
-				if (storedDef && !sameSearchFields(storedDef, definition)) {
-					await this.mongoCollection.updateSearchIndex(index.name, definition);
-					this.logInfo(`Updated search index ${index.name} on ${this.dbDef.backend.name}`);
-				}
-				continue;
-			}
-
-			await this.mongoCollection.createSearchIndex({
-				name: index.name,
-				type: 'search',
-				definition,
-			});
-			this.logInfo(`Created search index ${index.name} on ${this.dbDef.backend.name} (${index.paths.join(', ')})`);
+			await delay(250);
 		}
-	};
+		throw new Error(`Search index ${name} on ${this.dbDef.backend.name} was not queryable`);
+	}
+
+	/**
+	 * On the test Mongo, a new row is searchable only after mongot indexes it.
+	 * Two identical non-empty reads mean the rows are in the index.
+	 * An empty read waits until the deadline, then returns empty.
+	 */
+	private async readUntilIndexed<T>(read: () => Promise<T[]>, idOf: (row: T) => string): Promise<T[]> {
+		if (!process.env.MONGODB_EMULATOR_HOST)
+			return read();
+
+		const deadline = Date.now() + searchRowWaitMs;
+		let previous = '';
+		let latest: T[] = [];
+		while (true) {
+			latest = await read();
+			const key = latest.map(idOf).sort().join('\n');
+			if (latest.length > 0 && key === previous)
+				return latest;
+			previous = key;
+			if (Date.now() >= deadline)
+				return latest;
+			await delay(250);
+		}
+	}
 
 	/**
 	 * Newest matching ids, capped by `window.limit`.
@@ -673,17 +770,22 @@ export class MongoCollection<Proto extends DB_Prototype>
 				: {text}),
 		};
 
-		const rows = await this.mongoCollection.aggregate<{_id: string; updated?: number; token?: string}>([
-			{$search: search},
-			{$limit: window.limit},
-			{$project: {_id: 1, updated: `$${sortField}`, token: {$meta: 'searchSequenceToken'}}},
-		]).toArray();
+		if (process.env.MONGODB_EMULATOR_HOST)
+			await this.ensureNamedSearchIndex(indexName);
 
-		return rows.map(row => ({
-			id: String(row._id),
-			updated: typeof row.updated === 'number' ? row.updated : 0,
-			...(row.token ? {token: row.token} : {}),
-		}));
+		return this.readUntilIndexed(async () => {
+			const rows = await this.mongoCollection.aggregate<{_id: string; updated?: number; token?: string}>([
+				{$search: search},
+				{$limit: window.limit},
+				{$project: {_id: 1, updated: `$${sortField}`, token: {$meta: 'searchSequenceToken'}}},
+			]).toArray();
+
+			return rows.map(row => ({
+				id: String(row._id),
+				updated: typeof row.updated === 'number' ? row.updated : 0,
+				...(row.token ? {token: row.token} : {}),
+			}));
+		}, row => row.id);
 	};
 
 	/** Ids whose analyzed fields match any word. Throws when mongot or the index is not ready. */
@@ -691,21 +793,26 @@ export class MongoCollection<Proto extends DB_Prototype>
 		if (words.length === 0)
 			return [];
 
-		const rows = await this.mongoCollection.aggregate<{_id: string}>([
-			{
-				$search: {
-					index: indexName,
-					text: {
-						query: [...words],
-						path: [...paths],
-						matchCriteria: 'any',
+		if (process.env.MONGODB_EMULATOR_HOST)
+			await this.ensureNamedSearchIndex(indexName);
+
+		return this.readUntilIndexed(async () => {
+			const rows = await this.mongoCollection.aggregate<{_id: string}>([
+				{
+					$search: {
+						index: indexName,
+						text: {
+							query: [...words],
+							path: [...paths],
+							matchCriteria: 'any',
+						},
 					},
 				},
-			},
-			{$project: {_id: 1}},
-		]).toArray();
+				{$project: {_id: 1}},
+			]).toArray();
 
-		return rows.map(row => String(row._id));
+			return rows.map(row => String(row._id));
+		}, row => row);
 	};
 
 	private _deleteAll = async (ids: UniqueId[]): Promise<Proto['dbType'][]> => {
