@@ -199,7 +199,7 @@ export class MongoCollection<Proto extends DB_Prototype>
 		if (!session)
 			return undefined;
 
-		const txState = (session.transaction as { state?: string } | undefined)?.state;
+		const txState = (session as { transaction?: { state?: string } }).transaction?.state;
 		if (txState === 'TRANSACTION_COMMITTED' || txState === 'TRANSACTION_ABORTED')
 			this.logWarning(`SESSION-STALE [${this.dbDef.dbKey}] txState=${txState}`);
 
