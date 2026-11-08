@@ -5,6 +5,7 @@ import {phaseKey_Test} from './definitions/consts.js';
 import {BaseUnit} from '../units/base/BaseUnit.js';
 import {PhaseAggregatedException} from '../exceptions/PhaseAggregatedException.js';
 import {UnitPhaseException} from '../exceptions/UnitPhaseException.js';
+import {createPhaseGate} from './phase-gate.js';
 
 /**
  * Scheduled execution step (before mapping to actual phases/units).
@@ -33,7 +34,7 @@ export type ExecutionStep = {
  * **Execution Flow**:
  * 1. `calculateExecutionSteps()`: Plans which phases run on which units
  * 2. `execute()`: Executes steps sequentially, phases in parallel within steps
- * 3. Units in same layer run phases in parallel (Promise.all)
+ * 3. Units in the same layer run at once, up to each phase `parallel` cap
  *
  * **Eligibility Rules**:
  * - Unit must implement the phase method (e.g., `compile()`, `test()`)
@@ -84,6 +85,8 @@ export class PhaseManager
 		for (const phase of flatPhases) {
 			if (phasesSet.has(phase.key))
 				throw new BadImplementationException(`Found duplicate phase '${phase.key}' in the project`);
+			if (phase.parallel !== undefined && (!Number.isInteger(phase.parallel) || phase.parallel < 1))
+				throw new BadImplementationException(`Phase '${phase.key}' parallel must be an integer of 1 or more`);
 			phasesSet.add(phase.key);
 		}
 
@@ -183,7 +186,7 @@ export class PhaseManager
 	 *
 	 * **Execution Model**:
 	 * - Steps run sequentially (one after another)
-	 * - Units within a step run phases in parallel (Promise.all)
+	 * - Units within a step run at once (Promise.all), capped by phase.parallel
 	 * - Phases for a unit run sequentially (in phase group order)
 	 *
 	 * **Resume Support**:
@@ -221,6 +224,15 @@ export class PhaseManager
 
 			const errors: UnitPhaseException[] = [];
 			let failedStep;
+			const phaseGates = new Map<string, ReturnType<typeof createPhaseGate>>();
+			const gateFor = (phase: Phase<string>) => {
+				let gate = phaseGates.get(phase.key);
+				if (!gate) {
+					gate = createPhaseGate(phase.parallel);
+					phaseGates.set(phase.key, gate);
+				}
+				return gate;
+			};
 			await Promise.all(
 				step.units.map(async (unit) => {
 					if (this.runningStatus.isCompleted(unit.config.key))
@@ -236,38 +248,48 @@ export class PhaseManager
 							continue;
 						}
 
-						addItemToArray(this.runningUnits, unit);
+						let stopUnit = false;
+						await gateFor(phase)(async () => {
+							if (this.killed)
+								return;
 
-						const dtCounter = timeCounter();
-						try {
-							this.logInfo(`Phase(${phase.name}) - Running - ${unit.config.key}`);
-							if (typeof unit[phase.method as keyof BaseUnit] === 'function')
-								await (unit[phase.method as keyof BaseUnit] as Function).call(unit);
+							addItemToArray(this.runningUnits, unit);
 
-							let operationDuration = '';
-							if (dtCounter.dt() > 1500)
-								operationDuration = ` (${dtCounter.format('mm:ss')})`;
+							const dtCounter = timeCounter();
+							try {
+								this.logInfo(`Phase(${phase.name}) - Running - ${unit.config.key}`);
+								if (typeof unit[phase.method as keyof BaseUnit] === 'function')
+									await (unit[phase.method as keyof BaseUnit] as Function).call(unit);
 
-							this.logInfo(`Phase(${phase.name}) - Completed${operationDuration} - ${unit.config.key}`);
-						} catch (error: any) {
-							this.logError(`Phase(${phase.name}) - Error - ${unit.config.key}`, error);
-							const unitError = new UnitPhaseException(error, unit, phase.key);
-							errors.push(unitError);
-							allErrors.push(unitError);
-							failedStep ??= scheduledStep;
-							firstFailedStep ??= scheduledStep;
+								let operationDuration = '';
+								if (dtCounter.dt() > 1500)
+									operationDuration = ` (${dtCounter.format('mm:ss')})`;
 
-							if (keepGoing && phase.key === phaseKey_Test) {
+								this.logInfo(`Phase(${phase.name}) - Completed${operationDuration} - ${unit.config.key}`);
+							} catch (error: any) {
+								this.logError(`Phase(${phase.name}) - Error - ${unit.config.key}`, error);
+								const unitError = new UnitPhaseException(error, unit, phase.key);
+								errors.push(unitError);
+								allErrors.push(unitError);
+								failedStep ??= scheduledStep;
+								firstFailedStep ??= scheduledStep;
+
+								if (keepGoing && phase.key === phaseKey_Test) {
+									failed = true;
+									stopUnit = true;
+									return;
+								}
+
+								this.killed = true;
 								failed = true;
-								break;
+								stopUnit = true;
+							} finally {
+								removeItemFromArray(this.runningUnits, unit);
 							}
+						});
 
-							this.killed = true;
-							failed = true;
+						if (stopUnit)
 							break;
-						} finally {
-							removeItemFromArray(this.runningUnits, unit);
-						}
 					}
 					if (!failed)
 						await this.runningStatus.onUnitCompleted(unit.config.key);

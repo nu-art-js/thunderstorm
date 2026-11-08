@@ -173,6 +173,7 @@ export const phase_Test: Phase<'runTests'> = {
 	name: 'Test',
 	method: 'runTests',
 	filter: (baiParams) => baiParams.test,
+	parallel: 2,
 };
 
 export type Phase_Watch = typeof phase_Watch;

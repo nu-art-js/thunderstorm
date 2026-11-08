@@ -38,4 +38,6 @@ export type Phase<PhaseMethod extends string> = {
 	dependencyPhase?: Phase<string>[];
 	/** Unit category: 'project' = all project units (active + dependencies), 'active' = only active units (default) */
 	unitCategory?: 'project' | 'active';
+	/** Max packages in this phase at once. Omitted means every package in the layer. */
+	parallel?: number;
 }
