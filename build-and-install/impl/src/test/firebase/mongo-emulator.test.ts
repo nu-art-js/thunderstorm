@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval, mongoTestReplicaSetCommand} from '../../main/units/implementations/firebase/mongo-emulator.js';
+import {mongoEmuContainerBaseName, mongoEmuContainerName, mongoReplicaSetEnsureEval, mongoTestContainerNoFile, mongoTestContainerRunCommand, mongoTestReplicaSetCommand} from '../../main/units/implementations/firebase/mongo-emulator.js';
 
 
 describe('mongo emulator naming', () => {
@@ -23,6 +23,14 @@ describe('mongoReplicaSetEnsureEval', () => {
 		expect(evalJs).to.include('sleep(2)');
 		expect(evalJs).to.not.include('sleep(200)');
 		expect(evalJs).to.include('Date.now()+30000');
+	});
+});
+
+describe('mongoTestContainerRunCommand', () => {
+	it('raises the container file limit above the WiredTiger handle floor', () => {
+		const command = mongoTestContainerRunCommand('mongo-test--app-knowledge-tree-backend', 27019);
+		expect(mongoTestContainerNoFile).to.equal(64000);
+		expect(command).to.equal('docker run -d --name mongo-test--app-knowledge-tree-backend --ulimit nofile=64000:64000 -p 27019:27019 mongo:7 --replSet rs0 --port 27019');
 	});
 });
 

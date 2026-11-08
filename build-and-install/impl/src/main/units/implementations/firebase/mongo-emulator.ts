@@ -24,6 +24,17 @@ export const mongoReplicaSetEnsureEval = (port: number): string => {
 };
 
 /**
+ * MongoDB asks for 64000 open files.
+ * Docker gives the container a soft limit of 1024.
+ * WiredTiger keeps each table file open until 2000 handles, so 1024 kills mongod first.
+ */
+export const mongoTestContainerNoFile = 64000;
+
+/** Detached test mongod. The nofile limit is on the container, not the host. */
+export const mongoTestContainerRunCommand = (containerName: string, port: number): string =>
+	`docker run -d --name ${containerName} --ulimit nofile=${mongoTestContainerNoFile}:${mongoTestContainerNoFile} -p ${port}:${port} mongo:7 --replSet rs0 --port ${port}`;
+
+/**
  * One shell line. Commando backgrounds the command with `&`, and `&` applies to the last line only.
  * Poll every 2s. At 30s, print the container log and fail. Then initiate and wait for a primary the same way.
  */

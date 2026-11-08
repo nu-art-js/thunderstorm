@@ -36,7 +36,7 @@ import {DEFAULT_TEMPLATE_PATTERN, FileSystemUtils} from '@nu-art/ts-common/utils
 import path from 'node:path';
 import {ExportMapper} from '../../exports/ExportMapper.js';
 import {TsConfig} from '../base/types.js';
-import {mongoTestReplicaSetCommand} from './firebase/mongo-emulator.js';
+import {mongoTestContainerRunCommand, mongoTestReplicaSetCommand} from './firebase/mongo-emulator.js';
 
 
 export type Unit_TypescriptLib_Config = Unit_PackageJson_Config & {
@@ -274,7 +274,7 @@ export class Unit_TypescriptLib<C extends Unit_TypescriptLib_Config = Unit_Types
 				const rmCommando = this.allocateCommando();
 				await this.executeAsyncCommando(rmCommando, `docker rm -f ${containerName} 2>/dev/null || true`, () => {});
 				const commando = this.allocateCommando();
-				await this.executeAsyncCommando(commando, `docker run -d --name ${containerName} -p ${mongoPort}:${mongoPort} mongo:7 --replSet rs0 --port ${mongoPort}`, (stdout, stderr, exitCode) => {
+				await this.executeAsyncCommando(commando, mongoTestContainerRunCommand(containerName, mongoPort), (stdout, stderr, exitCode) => {
 					if (exitCode !== 0)
 						throw new CommandoException('Failed to start MongoDB test container', stdout, stderr, exitCode);
 				});
