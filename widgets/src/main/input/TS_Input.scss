@@ -38,6 +38,54 @@
   }
 }
 
+.ts-input-field {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 50px;
+  gap: var(--space-xs);
+  padding: var(--ts-input--padding);
+  background: var(--ts-input--bg);
+  color: var(--ts-input--placeholder);
+  font-size: var(--ts-input--font-size);
+  border: 1px solid var(--ts-input--border);
+  border-radius: var(--ts-input--radius);
+  box-sizing: border-box;
+  min-height: var(--size-control-height);
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
+
+  &:focus-within {
+    border-color: var(--ts-input--border-focus);
+    box-shadow: 0 0 0 3px var(--ts-input--focus-ring);
+  }
+
+  &.error { border-color: var(--ts-input--error-border); }
+
+  &.disabled {
+    background: var(--color-surface-disabled);
+    color: var(--color-text-disabled);
+    border-color: var(--color-border-disabled);
+  }
+
+  > :not(.ts-input) { flex: none; }
+
+  .ts-input {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+
+    &:focus, &:disabled, &.disabled {
+      border-color: transparent;
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+}
+
 .align-center {
   text-align: center;
 }

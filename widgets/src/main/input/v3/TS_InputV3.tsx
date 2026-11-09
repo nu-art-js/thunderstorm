@@ -27,6 +27,7 @@ import {
 	guardKeyDownWhenDisabled,
 	resolveCopyFriendlyDisabledAttrs
 } from '../copy-friendly-disabled.js';
+import {TS_InputField} from '../TS_InputField.js';
 import type {NativeProps_TS_InputV2, Props_TS_InputV2, TemplatingProps_TS_InputV2} from '../v2/TS_InputV2.js';
 
 export type {
@@ -55,6 +56,9 @@ export function TS_InputV3(props: Props_TS_InputV2) {
 					onBlur,
 					disabled,
 					onKeyDown: propsOnKeyDown,
+					leading,
+					trailing,
+					className,
 					...rest
 				} = props;
 
@@ -126,7 +130,8 @@ export function TS_InputV3(props: Props_TS_InputV2) {
 		[disabled]
 	);
 
-	return (
+	const adorned = !!(leading || trailing);
+	return <TS_InputField leading={leading} trailing={trailing} className={className} disabled={!!disabled} error={error?.level === 'error'}>
 		<input
 			{...rest}
 			{...resolveCopyFriendlyDisabledAttrs(disabled)}
@@ -137,13 +142,13 @@ export function TS_InputV3(props: Props_TS_InputV2) {
 			onBlur={handleBlur}
 			onFocus={handleFocus}
 			name={rest.name ?? rest.id}
-			className={_className('ts-input', disabled && 'disabled', error?.level === 'error' && 'error', rest.className)}
+			className={_className('ts-input', disabled && 'disabled', error?.level === 'error' && 'error', !adorned && className)}
 			value={value}
 			onChange={changeValue}
 			onKeyDown={guardKeyDownWhenDisabled(disabled, onKeyDown)}
 			autoComplete={rest.autoComplete ? 'on' : 'off'}
 		/>
-	);
+	</TS_InputField>;
 }
 
 TS_InputV3.displayName = 'TS_InputV3';

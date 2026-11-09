@@ -22,6 +22,7 @@ export type Props_TS_CheckboxV2 = {
 	disabled?: boolean;
 	className?: string;
 	id?: string;
+	ellipsis?: boolean;
 	customIcons?: Partial<IconSpec_TS_CheckboxV2>;
 };
 type State = {
@@ -65,7 +66,7 @@ export class TS_CheckboxV2
 	};
 
 	render() {
-		const className = _className('ts-checkbox-v2', this.state.className);
+		const className = _className('ts-checkbox-v2', this.props.ellipsis && 'ts-checkbox-v2--ellipsis', this.state.className);
 		return <label className={className} onClick={e => e.stopPropagation()}>
 			{this.render_Input()}
 			{this.render_Icon()}

@@ -9,6 +9,7 @@ type ButtonProps = Omit<React.HTMLProps<HTMLButtonElement>, 'type' | 'ref'>;
 type Props = ButtonProps & {
 	loader?: ResolvableContent<React.ReactNode>;
 	variant?: ButtonVariant;
+	size?: 'icon';
 	innerRef?: React.RefObject<HTMLButtonElement>;
 	actionInProgress?: boolean;
 	onDisabledClick?: (e: React.MouseEvent<HTMLButtonElement>) => any;
@@ -48,12 +49,14 @@ export class Button
 	};
 	private getProps = () => {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const {loader, variant, innerRef, onDisabledClick, actionInProgress, ...rest} = this.props;
+		const {loader, variant, size, innerRef, onDisabledClick, actionInProgress, ...rest} = this.props;
 		const props = rest as any;
 		props.className = this.getClassName();
 		props.disabled = this.state.disabled;
 		props.ref = innerRef;
 		props['data-variant'] = variant ?? 'tertiary';
+		if (size)
+			props['data-size'] = size;
 		return props as React.HTMLProps<HTMLButtonElement>;
 	};
 	private handleAction = async (e: React.MouseEvent<HTMLButtonElement>) => {

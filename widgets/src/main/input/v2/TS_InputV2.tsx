@@ -27,6 +27,7 @@ import {
 	guardKeyDownWhenDisabled,
 	resolveCopyFriendlyDisabledAttrs
 } from '../copy-friendly-disabled.js';
+import {TS_InputField} from '../TS_InputField.js';
 
 type MetaKeys = 'shiftKey' | 'altKey' | 'ctrlKey' | 'metaKey';
 type InputState = {
@@ -60,6 +61,8 @@ export type BaseAppLevelProps_TS_InputV2 =
 	focus?: boolean;
 	innerRef?: React.RefObject<HTMLInputElement>;
 	onCancel?: () => void;
+	leading?: React.ReactNode;
+	trailing?: React.ReactNode;
 };
 export type TemplatingProps_TS_InputV2 = TypeProps_TS_Input & BaseInfraProps_TS_InputV2;
 export type Props_TS_InputV2 = BaseAppLevelProps_TS_InputV2 & TypeProps_TS_Input & {
@@ -165,13 +168,17 @@ export class TS_InputV2
 	}
 
 	render() {
-		const {onAccept, allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, disabled, onKeyDown, ...props} = this.props;
-		return <input {...props} {...resolveCopyFriendlyDisabledAttrs(disabled)} {...convertToHTMLDataAttributes(this.props.error, 'error')} {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
+		const {onAccept, allowAccept, showErrorTooltip, error, trim, forceAcceptKeys, focus, saveEvent, disabled, onKeyDown, leading, trailing, className, ...props} = this.props;
+		const adorned = !!(leading || trailing);
+		const input = <input {...props} {...resolveCopyFriendlyDisabledAttrs(disabled)} {...convertToHTMLDataAttributes(this.props.error, 'error')} {...getErrorTooltip(this.props.error, this.props.showErrorTooltip)}
 									autoFocus={focus} ref={this.inputRef} onBlur={(event) => {
 			const value = event.target.value;
 			this.setState({value, focused: false});
 			props.onBlur?.(value, event);
-		}} onFocus={blurOnFocusWhenDisabled(disabled, () => this.setState({focused: true}))} name={props.name || props.id} className={_className('ts-input', disabled && 'disabled', error?.level === 'error' && 'error', props.className)} value={this.state.value} onChange={this.changeValue}
+		}} onFocus={blurOnFocusWhenDisabled(disabled, () => this.setState({focused: true}))} name={props.name || props.id} className={_className('ts-input', disabled && 'disabled', error?.level === 'error' && 'error', !adorned && className)} value={this.state.value} onChange={this.changeValue}
 									onKeyDown={guardKeyDownWhenDisabled(disabled, this.onKeyDown)} autoComplete={props.autoComplete ? 'on' : 'off'}/>;
+		return <TS_InputField leading={leading} trailing={trailing} className={className} disabled={!!disabled} error={error?.level === 'error'}>
+			{input}
+		</TS_InputField>;
 	}
 }

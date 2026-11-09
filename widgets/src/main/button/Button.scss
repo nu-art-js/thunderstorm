@@ -18,6 +18,13 @@
   box-sizing: border-box;
   overflow: hidden;
 
+  &[data-size='icon'] {
+    --ts-button--min-height: var(--ts-button--icon-size);
+    --ts-button--min-width: var(--ts-button--icon-size);
+    --ts-button--padding: 0;
+    --ts-button--border-width: 0;
+  }
+
   .ts-button__content {
     display: flex;
     align-items: center;

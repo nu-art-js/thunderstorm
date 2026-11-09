@@ -8,6 +8,18 @@
   align-items: center;
   position: relative;
 
+  &--ellipsis {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    .ts-checkbox-v2__label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
   .ts-checkbox-v2__icon {
     width: var(--ts-checkbox--icon-size);
     height: var(--ts-checkbox--icon-size);
