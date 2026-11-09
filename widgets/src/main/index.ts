@@ -28,6 +28,7 @@ export * from './components/TS_ListOrganizer/TS_ListOrganizer.js';
 export * from './copy-to-clipboard/ModuleFE_Clipboard.js';
 export * from './copy-to-clipboard/v1/TS_CopyToClipboard.js';
 export * from './dialog/ModuleFE_Dialog.js';
+export * from './drop-zone/TS_DropZone.js';
 export * from './dialog/TS_DialogOverlay.js';
 export * from './dialog/TS_Dialog.js';
 export * from './error-boundary/TS_ErrorBoundary.js';
