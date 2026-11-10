@@ -11,7 +11,8 @@ import {ModuleFE_ActionProcessor} from '../ModuleFE_ActionProcessor.js';
 import {Dialog_ActionProcessorConfirmation} from '../dialogs/Dialog_ActionProcessorConfirmation/index.js';
 import './ATS_ActionProcessor.scss';
 
-export function ATS_ActionProcessor() {
+export function ATS_ActionProcessor(props: {canRun?: boolean}) {
+	const canRun = props.canRun !== false;
 	const [actions, setActions] = useState<ActionMetaData[]>([]);
 	const [actionsInProgress, setActionsInProgress] = useState<string[]>([]);
 	const [confirmAction, setConfirmAction] = useState<ActionMetaData | null>(null);
@@ -57,7 +58,7 @@ export function ATS_ActionProcessor() {
 									type="button"
 									className="action-group__button"
 									onClick={() => onButtonClick(action)}
-									disabled={actionsInProgress.includes(action.key)}
+									disabled={!canRun || actionsInProgress.includes(action.key)}
 								>
 									{action.key.replace(/-/g, ' ')}
 								</button>

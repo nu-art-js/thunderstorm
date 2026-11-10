@@ -22,6 +22,7 @@ import {
 	getPermissionScopeValues,
 	getRegisteredGroupDefinitions,
 	GroupId_ReadBucket,
+	PermissionScope_Developer,
 	PermissionScope_ServiceAccount,
 	permissionScopeId,
 	type PermissionScope,
@@ -44,6 +45,7 @@ import {type AccessContextResolver, wireDocumentAccess} from '../document-access
 import {DispatchKey_AccountPermissions, graph_OnAccountDeleted, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {DB_Account, DatabaseDef_Account, DatabaseDef_Session} from '@nu-art/user-account-shared';
 import {HttpCodes} from '@nu-art/api-types';
+import {developerAdminGroupIds, developerRunActionsScopeId, groupsMissingDeveloperRunActions, permissionsAdminScopeEntries, scopeEntriesForDefinedGroup, shouldStampDeveloperAdminGroups} from '../developer-admin-scope.js';
 
 export type ShareAccessContext = Partial<DocumentAccessInner>;
 
@@ -380,6 +382,8 @@ class ModuleBE_Permissions_Class
 			this.logDebug(`__onUserLogin: checkAdminGrantFlag done`);
 			await this.resolveAdditionalGroupMemberships(account, 'login');
 			this.logDebug(`__onUserLogin: resolveAdditionalGroupMemberships done`);
+			await this.ensureDeveloperScopeOnAdminGroups();
+			this.logDebug(`__onUserLogin: ensureDeveloperScopeOnAdminGroups done`);
 			await this.scheduleAccountPermissionsRefresh(account._id);
 			this.logDebug(`__onUserLogin: scheduleAccountPermissionsRefresh done`);
 		});
@@ -1008,12 +1012,35 @@ class ModuleBE_Permissions_Class
 
 	// --- Bootstrap: permissions admin group ---
 
+	/**
+	 * First sign-in after this scope exists stamps every admin group.
+	 * Later sign-ins stop once Permissions Admin already holds run-actions.
+	 * Setup keeps the same grant, so a later recompute does not drop it.
+	 */
+	private async ensureDeveloperScopeOnAdminGroups() {
+		const runId = developerRunActionsScopeId();
+		const admin = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
+		if (!shouldStampDeveloperAdminGroups(admin, runId))
+			return;
+
+		const viewId = permissionScopeId(PermissionScope_Developer.key, 'view');
+		await ModuleBE_PermissionScopeDB.set.all([
+			{_id: viewId, key: PermissionScope_Developer.key, value: 'view'},
+			{_id: runId, key: PermissionScope_Developer.key, value: 'run-actions'},
+		]);
+
+		const adminGroupIds = new Set<UniqueId>(developerAdminGroupIds(getRegisteredGroupDefinitions()));
+		const groups = await ModuleBE_AccessGroupDB.query.where({});
+		const dirty = groupsMissingDeveloperRunActions(groups, adminGroupIds, runId);
+		dirty.forEach(group => {
+			group.scopeEntries = [...(group.scopeEntries ?? []), runId];
+		});
+		if (dirty.length > 0)
+			await ModuleBE_AccessGroupDB.set.all(dirty);
+	}
+
 	private async ensurePermissionsAdminGroup() {
-		const scopeEntries = [
-			permissionScopeId('permissions-ui', 'view'),
-			permissionScopeId('access-group', 'create'),
-			permissionScopeId(PermissionScope_ServiceAccount.key, 'run'),
-		];
+		const scopeEntries = permissionsAdminScopeEntries();
 
 		const existingAdmin = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
 		const adminMembers = filterDuplicates([GroupId_BootstrapServiceAccount, ...(existingAdmin?.members ?? [])]);
@@ -1057,7 +1084,7 @@ class ModuleBE_Permissions_Class
 				key: e.def.scopeKey ?? e.def.key,
 				label: e.def.label,
 				members: mergedMembers,
-				scopeEntries: filterDuplicates(e.def.scopes.map(({scope, value}) => permissionScopeId(scope.key, value))),
+				scopeEntries: scopeEntriesForDefinedGroup(e.def),
 			};
 		});
 
