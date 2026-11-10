@@ -191,8 +191,10 @@ export class Unit_FirebaseFunctionsApp<C extends Unit_FirebaseFunctionsApp_Confi
 	}
 
 	async resolveConfigs() {
-		await this.resolveFunctionsRC();
 		await this.resolveConfigDir();
+		if (!this.runtimeContext.runtimeParams.environment)
+			return;
+		await this.resolveFunctionsRC();
 		await this.resolveFunctionsRuntimeConfig();
 		await this.resolveFunctionsJSON();
 	}

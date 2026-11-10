@@ -56,7 +56,9 @@ export class Unit_FirebaseHostingApp<C extends Unit_FirebaseHostingApp_Config = 
 		const devServerPort = wp?.devServerPort ?? this.config.servingPort;
 		const sslKey = wp?.sslKey ? `"${wp.sslKey}"` : 'undefined';
 		const sslCert = wp?.sslCert ? `"${wp.sslCert}"` : 'undefined';
-		const envName = this.runtimeContext.runtimeParams.environment ?? 'local';
+		const envName = this.runtimeContext.runtimeParams.environment;
+		if (!envName)
+			return;
 		const targetPath = resolve(this.config.fullPath, 'webpack-env.generated.ts');
 
 		const fileContent = [

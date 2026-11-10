@@ -1,5 +1,5 @@
 import {BaseCliParam, CliParams} from '@nu-art/cli-params';
-import {BadImplementationException, tsValidate, tsValidateRegexp} from '@nu-art/ts-common';
+import {BadImplementationException, ImplementationMissingException, tsValidate, tsValidateRegexp} from '@nu-art/ts-common';
 
 
 export const BaiParam_AllUnits: BaseCliParam<'allUnits', boolean> = {
@@ -24,9 +24,16 @@ export const BaiParam_SetEnv: BaseCliParam<'environment', string> = {
 	keyName: 'environment',
 	type: 'string',
 	group: 'Build',
-	initialValue: 'local',
-	description: 'Will set the .config-${environment}.json as the current .config.json and prepare it as base 64 for local usage \ninput required: envName(string)'
+	description: 'Selects the project env. There is no default. The value local is refused. A test run with no value still uses the local project block.'
 };
+
+export function resolveSetEnv(environment: string | undefined, test: boolean | undefined): string | undefined {
+	if (environment === 'local' && !test)
+		throw new ImplementationMissingException('Refusing --set-env=local.');
+	if (!environment && test)
+		return 'local';
+	return environment;
+}
 
 export const BaiParam_Install: BaseCliParam<'install', boolean> = {
 	keys: ['--install', '-i'],

@@ -9,7 +9,7 @@ import {
 	LogLevel,
 	merge
 } from '@nu-art/ts-common';
-import {AllBaiParams, BaiParams} from './core/params.js';
+import {AllBaiParams, BaiParams, resolveSetEnv} from './core/params.js';
 import {phase_Help, Unit_HelpPrinter} from './core/Unit_HelpPrinter.js';
 import type {Phase} from './phases/definitions/types.js';
 import {phases_Build, phases_Deploy, phases_Launch, phases_Terminating} from './phases/definitions/consts.js';
@@ -78,6 +78,9 @@ export class BuildAndInstall
 
 		this._init = true;
 		await this.runningStatus.init();
+		this.runtimeParams.environment = resolveSetEnv(this.runtimeParams.environment, this.runtimeParams.test);
+		if ((this.runtimeParams.launch || this.runtimeParams.deploy) && !this.runtimeParams.environment)
+			throw new ImplementationMissingException('Pass --set-env. local is not a valid value.');
 
 		if (this.runtimeParams.debug)
 			DebugFlag.DefaultLogLevel = LogLevel.Debug;

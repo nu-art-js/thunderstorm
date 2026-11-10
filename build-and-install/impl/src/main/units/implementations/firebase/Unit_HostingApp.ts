@@ -76,6 +76,8 @@ export abstract class Unit_HostingApp<C extends Unit_HostingApp_Config = Unit_Ho
 
 	async prepare() {
 		await super.prepare();
+		if (!this.runtimeContext.runtimeParams.environment)
+			return;
 		await this.resolveHostingRC();
 		await this.resolveHostingJSON();
 		await this.resolveHostingRuntimeConfig();
