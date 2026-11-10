@@ -753,11 +753,8 @@ class ModuleBE_Permissions_Class
 	// --- Service account elevation ---
 
 	async runAsSystemContext<R>(extraSelfAccessIds: UniqueId[], action: () => Promise<R>): Promise<R> {
-		const baseAccessIds = await this.materializeBootstrapAccessIds();
-		const accessIds: ScopedAccessIds = {
-			...baseAccessIds,
-			[AccessScope_Self]: filterDuplicates([...(baseAccessIds[AccessScope_Self] ?? []), ...extraSelfAccessIds]),
-		};
+		const accessIds = await this.materializeBootstrapAccessIds();
+		await this.mergeExpandedGroupAccess(accessIds, extraSelfAccessIds);
 
 		const memStorage = new MemStorage();
 		return memStorage.init(async () => {
@@ -766,6 +763,22 @@ class ModuleBE_Permissions_Class
 			MemKey_UserAccessIds.set(accessIds);
 			return action();
 		});
+	}
+
+	/** Add each group id plus the groups that contain it, using the same walk as a user access list. */
+	private async mergeExpandedGroupAccess(accessIds: ScopedAccessIds, groupIds: UniqueId[]): Promise<void> {
+		if (groupIds.length === 0)
+			return;
+
+		// NEVER USE THIS CALL WITHOUT USER EXPLICIT CONSENT.
+		// Why: parent groups must be visible. A filtered query hides groups the current caller cannot read, and the walk then misses them.
+		const allGroups = await ModuleBE_AccessGroupDB.query.unManipulatedQuery({where: {}});
+		for (const groupId of filterDuplicates(groupIds)) {
+			accessIds[AccessScope_Self] = filterDuplicates([...(accessIds[AccessScope_Self] ?? []), groupId]);
+			for (const group of this.walkGroupGraphUp(groupId, allGroups)) {
+				accessIds[group.key] = filterDuplicates([...(accessIds[group.key] ?? []), group._id]);
+			}
+		}
 	}
 
 	async runAsServiceAccount<R>(saId: string, action: () => Promise<R>): Promise<R> {
