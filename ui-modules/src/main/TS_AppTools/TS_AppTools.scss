@@ -65,7 +65,7 @@ $headerHeight: 40px;
 
   .ts-app-tools__nav-bar {
     height: 100%;
-    width: 300px;
+    width: 380px;
     transition: width 200ms ease-out;
     flex-shrink: 0;
     overflow-y: auto;
@@ -189,5 +189,227 @@ $headerHeight: 40px;
       size: 32px;
       weight: bold;
     }
+  }
+}
+
+.ts-app-tools__registry {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+
+  .ts-app-tools__registry__controls {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .ts-app-tools__registry__search {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .ts-app-tools__registry__search-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--color-icon-default);
+  }
+
+  .ts-app-tools__registry__search-input {
+    width: 100%;
+    height: var(--size-control-height);
+    padding: 0 44px 0 34px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-input);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+  }
+
+  .ts-app-tools__registry__kbd {
+    position: absolute;
+    right: 8px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xs);
+    padding: 0 6px;
+    color: var(--color-text-muted);
+  }
+
+  .ts-app-tools__registry__scopes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .ts-app-tools__registry__chip {
+    height: var(--size-control-height);
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    background: var(--color-surface-base);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+
+    &.on {
+      background: var(--color-action-primary-soft);
+      border-color: var(--color-action-primary-border);
+    }
+  }
+
+  .ts-app-tools__registry__meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    color: var(--color-text-muted);
+  }
+
+  .ts-app-tools__registry__group-by {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    select {
+      height: var(--size-control-height);
+      border: 1px solid var(--color-border-strong);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface-input);
+      color: var(--color-text-primary);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-semibold);
+    }
+  }
+
+  .ts-app-tools__registry__nav {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--space-sm);
+  }
+
+  .ts-app-tools__registry__empty {
+    margin: 0;
+    padding: var(--space-lg) var(--space-md);
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+
+  .ts-app-tools__registry__group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin-top: var(--space-sm);
+    border: 0;
+    background: transparent;
+    padding: 6px var(--space-sm);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .ts-app-tools__registry__chev {
+    transition: transform var(--motion-default);
+
+    &.open {
+      transform: rotate(0deg);
+    }
+
+    &:not(.open) {
+      transform: rotate(-90deg);
+    }
+  }
+
+  .ts-app-tools__registry__count {
+    margin-left: auto;
+    color: var(--color-text-muted);
+  }
+
+  .ts-app-tools__registry__row {
+    position: relative;
+  }
+
+  .ts-app-tools__registry__link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 32px 8px var(--space-md);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
+    text-decoration: none;
+
+    &.selected {
+      background: var(--color-action-primary-soft);
+    }
+  }
+
+  .ts-app-tools__registry__desc {
+    color: var(--color-text-muted);
+  }
+
+  .ts-app-tools__registry__pin {
+    position: absolute;
+    right: 4px;
+    top: 6px;
+    display: flex;
+    border: 0;
+    background: transparent;
+    color: var(--color-icon-default);
+    cursor: pointer;
+
+    &.on {
+      color: var(--color-action-primary-bg);
+    }
+  }
+}
+
+.ts-app-tools__toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: var(--space-base);
+  padding: var(--space-base);
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+
+  .ts-app-tools__toolbar__title {
+    margin: 0;
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .ts-app-tools__toolbar__desc {
+    margin: 4px 0 0;
+    color: var(--color-text-muted);
+  }
+
+  .ts-app-tools__toolbar__actions {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  .ts-app-tools__toolbar__button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: var(--size-control-height);
+    padding: 0 var(--space-md);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    cursor: pointer;
   }
 }

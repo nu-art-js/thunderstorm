@@ -15,4 +15,5 @@ export type ActionDeclaration = {
 	processor: ActionProcessor;
 	description: string;
 	group: string;
+	destructive?: boolean;
 };

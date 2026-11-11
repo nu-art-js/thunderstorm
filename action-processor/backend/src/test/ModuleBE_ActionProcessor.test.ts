@@ -33,6 +33,8 @@ describe('ModuleBE_ActionProcessor', () => {
 			expect(setupProject).to.have.property('description');
 			expect(setupProject).to.have.property('group');
 			expect(setupProject!.group).to.equal('Initialization');
+			expect(setupProject!.label).to.equal('Setup project');
+			expect(setupProject!.destructive).to.equal(true);
 		});
 	});
 

@@ -75,6 +75,7 @@ export class ModuleBE_ActionProcessor_Class
 					label: declaration.label ?? declaration.key,
 					description: declaration.description,
 					group: declaration.group,
+					destructive: declaration.destructive === true,
 				};
 			});
 	}

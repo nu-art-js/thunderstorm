@@ -8,7 +8,13 @@ import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/api-types';
 import {Minute} from '@nu-art/ts-common';
 
 export type Request_ActionToProcess = { key: string; data?: any };
-export type ActionMetaData = { key: string; description: string; group: string };
+export type ActionMetaData = {
+	key: string;
+	description: string;
+	group: string;
+	label?: string;
+	destructive?: boolean;
+};
 
 export type ApiStruct_ActionProcessing = {
 	vv1: {

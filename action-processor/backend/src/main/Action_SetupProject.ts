@@ -49,7 +49,9 @@ export const runProjectSetup = () => Action_SetupProject(logger_SetupProject);
 
 export const RAD_SetupProject: ActionDeclaration = {
 	key: 'setup-project',
+	label: 'Setup project',
 	group: 'Initialization',
-	description: '...',
+	description: 'Run the project setup graph from the configured roots.',
+	destructive: true,
 	processor: Action_SetupProject,
 };

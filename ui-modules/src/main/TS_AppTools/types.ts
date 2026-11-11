@@ -7,6 +7,7 @@ import {ModuleFE_BaseDB} from '@nu-art/db-api-frontend';
 export type AppToolsScreen = {
 	key?: string;
 	name: string;
+	description?: string;
 	renderer: React.ComponentType<any>;
 	icon?: React.ComponentType; //Icon for rendering in the navigator
 	group?: string; //For grouping in the navigator

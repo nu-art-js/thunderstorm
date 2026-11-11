@@ -20,26 +20,32 @@
  */
 import * as React from 'react';
 import './TS_AppTools.scss';
-import {LL_H_C, LL_V_L, TS_CollapsableContainer, TS_ErrorBoundary} from '@nu-art/thunder-widgets/v2';
-import {TS_NavLink, TS_Route} from '@nu-art/thunder-routing';
-import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
+import {LL_H_C, LL_V_L, TS_ErrorBoundary} from '@nu-art/thunder-widgets/v2';
+import {TS_Route} from '@nu-art/thunder-routing';
+import {md5, TypedMap} from '@nu-art/ts-common';
 import {Outlet} from 'react-router';
 import {TS_AppTools_Default} from './TS_AppTools_Default.js';
 import {AppToolsScreen} from './types.js';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {_className, StorageKey} from '@nu-art/thunder-core';
+import {RegistryList, RegistryToolbar, routeForScreen} from './RegistryList.js';
+import {rememberRecent, togglePinned, type RegistryGroupBy, type RegistryScope} from './registry-model.js';
 
 type CollapseState = {
 	navbarCollapse: boolean;
-	groups: TypedMap<boolean>;
 };
-type ScreenGroup = {
-	label: string;
-	screens: AppToolsScreen[];
+type RegistryPrefs = {
+	pinned: string[];
+	recent: string[];
+	collapsed: TypedMap<boolean>;
+	groupBy: RegistryGroupBy;
 };
-const noGroupLabel = 'Other';
 const collapseStateStorage = new StorageKey<CollapseState>('app-tools-collapse-state');
-type State = CollapseState;
+const registryStorage = new StorageKey<RegistryPrefs>('app-tools-registry');
+type State = CollapseState & RegistryPrefs & {
+	query: string;
+	scope: RegistryScope;
+};
 
 export class TS_AppTools
 	extends React.Component<{}, State> {
@@ -76,57 +82,76 @@ export class TS_AppTools
 		return <div className={'app-tools-page__page__header'}>{title}</div>;
 	}
 
+	private readonly searchRef = React.createRef<HTMLInputElement>();
+
 	// ######################### Life Cycle #########################
 	constructor(props: {}) {
 		super(props);
 		const collapse = collapseStateStorage.get();
+		const registry = registryStorage.get();
 		this.state = {
 			navbarCollapse: collapse?.navbarCollapse ?? false,
-			groups: collapse?.groups ?? {},
+			query: '',
+			scope: 'all',
+			groupBy: registry?.groupBy ?? 'category',
+			pinned: registry?.pinned ?? [],
+			recent: registry?.recent ?? [],
+			collapsed: registry?.collapsed ?? {},
 		};
 	}
 
 	componentDidMount() {
+		window.addEventListener('keydown', this.onSearchKey);
 		TS_AppTools.onMountCallback?.();
 	}
 
+	componentWillUnmount() {
+		window.removeEventListener('keydown', this.onSearchKey);
+	}
+
 	// ######################### Logic #########################
-	private toggleGroupCollapse = (key: string) => {
-		const collapse = {...this.state};
-		collapse.groups[key] = !collapse.groups[key];
-		this.setState(collapse);
-		collapseStateStorage.set(collapse);
+	private onSearchKey = (event: KeyboardEvent) => {
+		if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+			event.preventDefault();
+			this.searchRef.current?.focus();
+		}
+	};
+	private saveRegistry = (next: RegistryPrefs) => {
+		registryStorage.set(next);
 	};
 	private toggleNavBarCollapse = () => {
-		const collapse = {...this.state};
-		collapse.navbarCollapse = !collapse.navbarCollapse;
-		this.setState(collapse);
-		collapseStateStorage.set(collapse);
+		const navbarCollapse = !this.state.navbarCollapse;
+		this.setState({navbarCollapse});
+		collapseStateStorage.set({navbarCollapse});
 	};
-	private groupsSort = (g1: ScreenGroup, g2: ScreenGroup): number => {
-		if (g1.label === noGroupLabel)
-			return 1;
-		if (g2.label === noGroupLabel)
-			return -1;
-		return g1.label > g2.label ? -1 : 1;
+	private setQuery = (query: string) => {
+		this.setState({query});
 	};
-	private groupScreens = (screens: AppToolsScreen[]): ScreenGroup[] => {
-		let groups = screens.reduce<ScreenGroup[]>((acc, curr) => {
-			if (!curr.group) {
-				acc[0].screens.push(curr);
-				return acc;
-			}
-			let index = acc.findIndex(i => i.label === curr.group);
-			if (index < 0) {
-				acc.push({label: curr.group, screens: []});
-				index = acc.length - 1;
-			}
-			acc[index].screens.push(curr);
-			return acc;
-		}, [{label: noGroupLabel, screens: []}]);
-		groups = groups.sort(this.groupsSort);
-		return groups;
+	private setScope = (scope: RegistryScope) => {
+		this.setState({scope});
 	};
+	private setGroupBy = (groupBy: RegistryGroupBy) => {
+		const next = {pinned: this.state.pinned, recent: this.state.recent, collapsed: this.state.collapsed, groupBy};
+		this.setState(next);
+		this.saveRegistry(next);
+	};
+	private toggleGroup = (name: string) => {
+		const collapsed = {...this.state.collapsed, [name]: !this.state.collapsed[name]};
+		const next = {pinned: this.state.pinned, recent: this.state.recent, collapsed, groupBy: this.state.groupBy};
+		this.setState(next);
+		this.saveRegistry(next);
+	};
+	private togglePin = (key: string) => {
+		const next = {pinned: togglePinned(this.state.pinned, key), recent: this.state.recent, collapsed: this.state.collapsed, groupBy: this.state.groupBy};
+		this.setState(next);
+		this.saveRegistry(next);
+	};
+	private openScreen = (key: string) => {
+		const next = {pinned: this.state.pinned, recent: rememberRecent(this.state.recent, key), collapsed: this.state.collapsed, groupBy: this.state.groupBy};
+		this.setState(next);
+		this.saveRegistry(next);
+	};
+	private routeFor = (key: string) => routeForScreen(TS_AppTools.Route.children, key);
 
 	// ######################### Render #########################
 	render() {
@@ -144,38 +169,36 @@ export class TS_AppTools
 	private renderHeader = () => {
 		return <LL_H_C className={'ts-app-tools__header'}>
 			<TS_Icons.menu.component className={'ts-app-tools__header__caret'} onClick={this.toggleNavBarCollapse}/>
-			<span className={'ts-app-tools__header__title'}>App-Tools</span>
+			<span className={'ts-app-tools__header__title'}>Dev Tools</span>
 			{TS_AppTools.headerTail && TS_AppTools.headerTail()}
 		</LL_H_C>;
 	};
 	private renderNavbar = () => {
-		const screens = sortArray(TS_AppTools.screens, i => i.name);
-		const groups = this.groupScreens(screens);
 		const className = _className('ts-app-tools__nav-bar', this.state.navbarCollapse ? 'ts-app-tools__nav-bar-collapsed' : undefined);
-		if (groups.length === 1) {
-			return <LL_V_L className={className}>
-				{screens.map(this.renderNavbarItem)}
-			</LL_V_L>;
-		}
 		return <LL_V_L className={className}>
-			{groups.map(group => {
-				return <TS_CollapsableContainer key={group.label} headerRenderer={group.label} containerRenderer={group.screens.map(this.renderNavbarItem)}
-																				customCaret={<TS_Icons.treeCollapse.component/>}
-																				onCollapseToggle={() => this.toggleGroupCollapse(group.label)} collapsed={this.state.groups[group.label]}/>;
-			})}
+			<RegistryList
+				screens={TS_AppTools.screens}
+				query={this.state.query}
+				scope={this.state.scope}
+				groupBy={this.state.groupBy}
+				pinned={this.state.pinned}
+				recent={this.state.recent}
+				collapsed={this.state.collapsed}
+				searchRef={this.searchRef}
+				onQuery={this.setQuery}
+				onScope={this.setScope}
+				onGroupBy={this.setGroupBy}
+				onToggleGroup={this.toggleGroup}
+				onTogglePin={this.togglePin}
+				onOpen={this.openScreen}
+				routeFor={this.routeFor}
+			/>
 		</LL_V_L>;
 	};
-	private renderNavbarItem = (screen: AppToolsScreen) => {
-		const route = TS_AppTools.Route.children!.find(i => i.key === screen.key);
-		if (!route)
-			throw new ThisShouldNotHappenException(`Couldn't find route for screen with key ${screen.name}`);
-		const Icon = screen.icon ?? TS_Icons.gear.component;
-		return <TS_NavLink key={screen.key} route={route} className={({isActive}) => _className('ts-app-tools__nav-bar__item', isActive ? 'selected' : undefined)}>
-			<Icon/>
-			<div className={'ts-app-tools__nav-bar__item__title'}>{screen.name}</div>
-		</TS_NavLink>;
-	};
 	private renderPage = () => {
-		return <div className="ts-app-tools__page"><Outlet/></div>;
+		return <div className="ts-app-tools__page">
+			<RegistryToolbar screens={TS_AppTools.screens} pinned={this.state.pinned} onTogglePin={this.togglePin} routeFor={this.routeFor}/>
+			<Outlet/>
+		</div>;
 	};
 }
