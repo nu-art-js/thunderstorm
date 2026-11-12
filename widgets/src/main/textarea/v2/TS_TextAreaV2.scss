@@ -24,6 +24,12 @@
   &::placeholder { color: var(--ts-textarea--placeholder); }
   &.no-resize { resize: none; }
 
+  // A host `* { white-space: nowrap }` beats the textarea default. wrap puts line breaks back.
+  &.wrap {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
   // Unified disabled (shared --color-*-disabled contract).
   &:disabled, &.disabled {
     cursor: default;

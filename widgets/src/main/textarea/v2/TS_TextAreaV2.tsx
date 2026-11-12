@@ -42,13 +42,15 @@ type BaseInfraProps_TS_TextAreaV2 = {
 	className?: string;
 	style?: CSSProperties;
 	resizeWithText?: boolean;
+	/** When true, long lines wrap. Host apps set nowrap on every element. */
+	wrap?: boolean;
 	trim?: boolean;
 	autoComplete?: string;
 	spellCheck?: boolean;
 };
 export type BaseAppLevelProps_TS_TextAreaV2 =
 	ComponentProps_Error
-	& Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref'>
+	& Omit<HTMLProps<HTMLTextAreaElement>, 'onChange' | 'onBlur' | 'ref' | 'wrap'>
 	& BaseInfraProps_TS_TextAreaV2
 	& {
 	id?: string;
@@ -190,7 +192,7 @@ export class TS_TextAreaV2
 	}
 
 	render() {
-		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, focus, innerRef, disabled, onKeyDown, ...props} = this.props;
+		const {onAccept, error, trim, saveEvent, forceAcceptKeys, resizeWithText, wrap, focus, innerRef, disabled, onKeyDown, ...props} = this.props;
 		return <textarea {...props} {...resolveCopyFriendlyDisabledAttrs(disabled)} {...convertToHTMLDataAttributes(this.props.error, 'error')} ref={input => {
 			if (this.ref || !input)
 				return;
@@ -206,7 +208,7 @@ export class TS_TextAreaV2
 			const value = event.target.value;
 			this.setState({value});
 			props.onBlur?.(value, event);
-		}} onFocus={blurOnFocusWhenDisabled(disabled)} name={props.name || props.id} className={_className('ts-textarea', disabled && 'disabled', error?.level === 'error' && 'error', props.className, this.props.resizeWithText && 'no-resize')} value={this.state.value}
+		}} onFocus={blurOnFocusWhenDisabled(disabled)} name={props.name || props.id} className={_className('ts-textarea', disabled && 'disabled', error?.level === 'error' && 'error', wrap && 'wrap', props.className, this.props.resizeWithText && 'no-resize')} value={this.state.value}
 										 onChange={this.changeValue} onKeyDown={guardKeyDownWhenDisabled(disabled, this.onKeyDown)} autoComplete={props.autoComplete ? 'on' : 'off'}/>;
 	}
 }
