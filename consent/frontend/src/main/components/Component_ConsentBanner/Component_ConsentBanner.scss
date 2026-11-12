@@ -1,33 +1,30 @@
-// Theme through custom properties; the defaults are neutral.
+// Colors and sizes come from --ts-consent--* in thunder-widgets theme.scss.
 .ts-consent {
 	position: fixed;
-	right: 16px;
-	bottom: 16px;
-	z-index: var(--ts-consent-z, 1000);
+	inset-inline-end: var(--ts-consent--inset);
+	bottom: var(--ts-consent--inset);
+	z-index: var(--ts-consent--z);
 	box-sizing: border-box;
-	width: min(360px, calc(100vw - 32px));
-	max-height: calc(100vh - 32px);
+	width: min(var(--ts-consent--width), calc(100vw - (2 * var(--ts-consent--inset))));
+	max-height: calc(100vh - (2 * var(--ts-consent--inset)));
 	overflow: auto;
-	padding: 16px;
-	border-radius: 12px;
-	background: var(--ts-consent-bg, #fff);
-	color: var(--ts-consent-fg, #1a1a1a);
-	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-	font-size: 14px;
-	line-height: 1.45;
-
-	[dir='rtl'] & {
-		right: auto;
-		left: 16px;
-	}
+	padding: var(--ts-consent--padding);
+	border: var(--ts-consent--button-border-width) solid var(--ts-consent--border);
+	border-radius: var(--ts-consent--radius);
+	background: var(--ts-consent--bg);
+	color: var(--ts-consent--fg);
+	box-shadow: var(--ts-consent--shadow);
+	font-size: var(--ts-consent--font-size);
+	line-height: var(--ts-consent--line-height);
 
 	.ts-consent__title {
-		margin: 0 0 6px;
-		font-size: 16px;
+		margin: 0 0 var(--ts-consent--gap);
+		font-size: var(--ts-consent--font-size);
+		font-weight: var(--ts-consent--title-weight);
 	}
 
 	.ts-consent__message {
-		margin: 0 0 12px;
+		margin: 0 0 var(--ts-consent--block-gap);
 
 		a {
 			color: inherit;
@@ -36,48 +33,48 @@
 	}
 
 	.ts-consent__categories {
-		margin: 0 0 12px;
+		margin: 0 0 var(--ts-consent--block-gap);
 		padding: 0;
 		list-style: none;
 	}
 
 	.ts-consent__category {
-		padding: 4px 0;
+		padding: var(--space-xs) 0;
 
 		label {
 			display: flex;
-			gap: 8px;
+			gap: var(--ts-consent--gap);
 			align-items: center;
 		}
 	}
 
 	.ts-consent__description {
-		margin-inline-start: 24px;
-		opacity: 0.75;
-		font-size: 12px;
+		margin-inline-start: var(--space-lg);
+		color: var(--ts-consent--muted);
+		font-size: var(--ts-consent--font-size);
 	}
 
 	.ts-consent__actions {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 8px;
+		gap: var(--ts-consent--gap);
 	}
 
 	// Accept and Reject must look the same (Dutch AP): one class, one style.
 	.ts-consent__button {
 		flex: 1 1 0;
-		min-width: 96px;
-		padding: 8px 12px;
-		border: 1px solid var(--ts-consent-button-border, #1a1a1a);
-		border-radius: 8px;
-		background: var(--ts-consent-button-bg, #fff);
-		color: var(--ts-consent-button-fg, #1a1a1a);
+		min-width: var(--ts-consent--button-min-width);
+		padding: var(--ts-consent--button-padding);
+		border: var(--ts-consent--button-border-width) solid var(--ts-consent--button-border);
+		border-radius: var(--ts-consent--button-radius);
+		background: var(--ts-consent--button-bg);
+		color: var(--ts-consent--button-fg);
 		font: inherit;
 		cursor: pointer;
 
 		&:focus-visible {
-			outline: 2px solid var(--ts-consent-focus, #2563eb);
-			outline-offset: 2px;
+			outline: var(--ts-consent--focus-offset) solid var(--ts-consent--focus);
+			outline-offset: var(--ts-consent--focus-offset);
 		}
 	}
 }
