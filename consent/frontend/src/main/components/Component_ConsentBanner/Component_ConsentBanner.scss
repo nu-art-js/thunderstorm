@@ -21,14 +21,20 @@
 		margin: 0 0 var(--ts-consent--gap);
 		font-size: var(--ts-consent--font-size);
 		font-weight: var(--ts-consent--title-weight);
+		white-space: normal;
+		overflow-wrap: break-word;
 	}
 
 	.ts-consent__message {
 		margin: 0 0 var(--ts-consent--block-gap);
+		min-width: 0;
+		white-space: normal;
+		overflow-wrap: break-word;
 
 		a {
 			color: inherit;
 			text-decoration: underline;
+			white-space: normal;
 		}
 	}
 
@@ -52,6 +58,8 @@
 		margin-inline-start: var(--space-lg);
 		color: var(--ts-consent--muted);
 		font-size: var(--ts-consent--font-size);
+		white-space: normal;
+		overflow-wrap: break-word;
 	}
 
 	.ts-consent__actions {
