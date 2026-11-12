@@ -156,8 +156,9 @@ $headerHeight: 40px;
 
   .ts-app-tools__page {
     height: 100%;
-    flex-grow: 1;
-    display: inline-block;
+    width: 0;
+    flex: 1;
+    min-width: 0;
 
     .app-tools-page__page__header {
       padding: 8px 0;
