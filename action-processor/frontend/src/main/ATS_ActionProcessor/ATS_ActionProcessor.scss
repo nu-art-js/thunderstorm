@@ -39,7 +39,7 @@
 
   &__body {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: var(--space-base);
     align-items: flex-start;
     min-height: 0;
