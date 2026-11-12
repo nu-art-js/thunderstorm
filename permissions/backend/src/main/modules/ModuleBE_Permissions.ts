@@ -1043,7 +1043,7 @@ class ModuleBE_Permissions_Class
 		]);
 
 		const adminGroupIds = new Set<UniqueId>(developerAdminGroupIds(getRegisteredGroupDefinitions()));
-		const groups = await ModuleBE_AccessGroupDB.query.where({});
+		const groups = await ModuleBE_AccessGroupDB.query.unManipulatedQuery({where: {}});
 		const dirty = groupsMissingDeveloperRunActions(groups, adminGroupIds, runId);
 		dirty.forEach(group => {
 			group.scopeEntries = [...(group.scopeEntries ?? []), runId];
