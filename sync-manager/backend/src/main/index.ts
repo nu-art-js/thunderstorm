@@ -5,6 +5,7 @@
  */
 
 export {ModuleBE_SyncManager_Class, ModuleBE_SyncManager, DispatchKey_SyncBackfill} from './ModuleBE_SyncManager.js';
+export {withSyncNotificationsSuppressed} from './sync-notifications.js';
 export {SyncApiHandler} from './SyncApiHandler.js';
 export type {SyncManagerBEConfig, OnSyncEnvCompleted, OnModuleCleanupV2} from './ModuleBE_SyncManager.js';
 export * from './deleted-doc/types.js';

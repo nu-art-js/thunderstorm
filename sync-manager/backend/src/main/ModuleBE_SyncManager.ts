@@ -58,6 +58,7 @@ import {
 import type {DatabaseDef_DeletedDoc, DB_DeletedDoc} from './deleted-doc/types.js';
 import {DBDef_DeletedDoc} from './deleted-doc/db-def.js';
 import {ApiHandler, HttpServer} from '@nu-art/http-server';
+import {syncNotificationsSuppressed, syncWriteEffect} from './sync-notifications.js';
 import {emptyWrittenSync, MemKey_WrittenSync, recordWrittenSync} from './written-sync.js';
 
 export interface OnSyncEnvCompleted {
@@ -117,7 +118,8 @@ export class ModuleBE_SyncManager_Class
 			const dbKey = dbModule.dbDef.dbKey;
 			const uniqueKeys = [...(dbModule.dbDef.uniqueKeys ?? ['_id'])];
 			dbModule.registerPostWriteInterceptor(async (data) => {
-				recordWrittenSync(dbKey, data);
+				if (!syncNotificationsSuppressed())
+					recordWrittenSync(dbKey, data);
 				await this.onPostWrite(dbKey, data, uniqueKeys);
 			});
 		}
@@ -291,22 +293,31 @@ export class ModuleBE_SyncManager_Class
 		data: PostWriteProcessingDataShape<DB_Object>,
 		uniqueKeys: string[],
 	): Promise<void> {
-		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
+		const effect = syncWriteEffect({
+			suppressed: syncNotificationsSuppressed(),
+			hasUpdated: hasWrittenRows(data.updated),
+			hasDeleted: data.deleted !== null && hasWrittenRows(data.deleted),
+			wiped: data.deleted === null,
+		});
+
+		if (effect.stampUpdated && data.updated) {
 			const latestUpdated = asArray(data.updated).reduce((acc, item) => Math.max(acc, item.__updated ?? 0), 0);
 			if (latestUpdated > 0)
 				await this.setLastUpdated(collectionName, latestUpdated);
 		}
 
 		if (data.deleted === null) {
-			await this.setOldestDeleted(collectionName, currentTimeMillis());
+			if (effect.stampWiped)
+				await this.setOldestDeleted(collectionName, currentTimeMillis());
 			return;
 		}
 
-		if (data.deleted && !(Array.isArray(data.deleted) && data.deleted.length === 0)) {
+		if (effect.recordDeleted && data.deleted) {
 			const items = asArray(data.deleted);
 			await this.afterTransaction(async () => {
 				await this.onItemsDeleted(collectionName, items, uniqueKeys);
-				await this.setLastUpdated(collectionName, currentTimeMillis());
+				if (effect.stampDeleted)
+					await this.setLastUpdated(collectionName, currentTimeMillis());
 			});
 		}
 	}
@@ -431,5 +442,8 @@ export class ModuleBE_SyncManager_Class
 		return modules;
 	};
 }
+
+const hasWrittenRows = (rows: DB_Object | DB_Object[] | null | undefined): boolean =>
+	!!rows && !(Array.isArray(rows) && rows.length === 0);
 
 export const ModuleBE_SyncManager = new ModuleBE_SyncManager_Class();

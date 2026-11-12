@@ -5,9 +5,27 @@ import type {DatabaseDef_AccessGroup, DocumentAccessFields, DocumentAccessInner,
 import {AccessScope_Self, AllDocumentAccessKeys} from '@nu-art/permissions-shared';
 import {filterDuplicates, tsValidateResult, tsValidator_arrayOfUniqueIds, UniqueId} from '@nu-art/ts-common';
 import {HttpCodes} from '@nu-art/api-types';
+import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_UserAccessIds} from './consts.js';
 
 type AccessCarrier = { __access?: DocumentAccessInner };
+
+/** True only inside an already-authorized purge. Document writer and deleter checks stay off. */
+export const MemKey_DocumentAccessBypass = new MemKey<boolean>('permissions--document-access-bypass');
+
+export async function withDocumentAccessBypass<T>(action: () => Promise<T>): Promise<T> {
+	const previous = MemKey_DocumentAccessBypass.get(false);
+	MemKey_DocumentAccessBypass.set(true);
+	try {
+		return await action();
+	} finally {
+		MemKey_DocumentAccessBypass.set(previous);
+	}
+}
+
+function documentAccessBypassed(): boolean {
+	return MemKey_DocumentAccessBypass.get(false);
+}
 
 const documentAccessInnerValidator: Record<keyof DocumentAccessInner, typeof tsValidator_arrayOfUniqueIds> = {
 	readers: tsValidator_arrayOfUniqueIds,
@@ -88,6 +106,9 @@ function createPreWriteInterceptor<Database extends DB_Prototype>(
 	scopeKeysProvider: () => string[] | undefined
 ): PreWriteInterceptor<Database> {
 	return async (dbItem, original) => {
+		if (documentAccessBypassed())
+			return;
+
 		const scopedDict = getCallerScopedAccessIds();
 		if (!scopedDict)
 			return;
@@ -124,6 +145,9 @@ function createPreDeleteInterceptor<Database extends DB_Prototype>(
 	scopeKeysProvider: () => string[] | undefined
 ): PreDeleteInterceptor<Database> {
 	return async (dbItems) => {
+		if (documentAccessBypassed())
+			return;
+
 		const scopedDict = getCallerScopedAccessIds();
 		if (!scopedDict)
 			return;

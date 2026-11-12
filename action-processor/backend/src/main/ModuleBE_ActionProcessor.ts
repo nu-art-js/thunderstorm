@@ -10,6 +10,7 @@ import {ApiDef_ActionProcessing, type ApiStruct_ActionProcessing} from '@nu-art/
 import {ApiHandler} from '@nu-art/http-server';
 import {ActionDeclaration} from './types.js';
 import {RAD_SetupProject} from './Action_SetupProject.js';
+import {withRefactoringActionLock} from './refactoring-action-lock.js';
 
 type Action = {
 	action: (data: any) => Promise<any>;
@@ -52,7 +53,9 @@ export class ModuleBE_ActionProcessor_Class
 		const refactoringAction = actionObj.action;
 		try {
 			this.logWarning(`ACTION '${action.key}' - EXECUTING`);
-			await refactoringAction?.(action.data);
+			await withRefactoringActionLock(action.key, async () => {
+				await refactoringAction?.(action.data);
+			});
 			this.logWarning(`ACTION '${action.key}' - SUCCESSFUL`);
 		} catch (e: unknown) {
 			this.logError(`ACTION '${action.key}' - FAILED`, e as Error);

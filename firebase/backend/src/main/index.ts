@@ -41,3 +41,4 @@ export * from './functions/ModuleBE_PubSubFunction.js';
 export * from './functions/ModuleBE_StorageListener.js';
 
 export * from './ModuleBE_Firebase.js';
+export {lockedOperation, OperationLockedException} from './tools/lock-operation.js';
