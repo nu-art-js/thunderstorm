@@ -174,6 +174,33 @@
   --ts-button--dangerous-disabled-text: var(--color-text-disabled);
   --ts-button--dangerous-disabled-border: var(--color-border-disabled);
 
+  // Consent banner (consent/frontend Component_ConsentBanner.scss)
+  // Colors point at the semantic layer, so dark and light both restyle the card.
+  --ts-consent--z: 1000;
+  --ts-consent--inset: var(--space-base);
+  --ts-consent--width: 360px;
+  --ts-consent--padding: var(--space-base);
+  --ts-consent--radius: var(--radius-xl);
+  --ts-consent--bg: var(--color-surface-raised);
+  --ts-consent--fg: var(--color-text-primary);
+  --ts-consent--muted: var(--color-text-muted);
+  --ts-consent--border: var(--color-border-strong);
+  --ts-consent--shadow: 0 var(--space-xs) var(--space-lg) rgba(0, 0, 0, 0.18);
+  --ts-consent--font-size: var(--font-size-control);
+  --ts-consent--title-weight: var(--font-weight-semibold);
+  --ts-consent--line-height: 1.45;
+  --ts-consent--gap: var(--space-sm);
+  --ts-consent--block-gap: var(--space-md);
+  --ts-consent--button-min-width: var(--ts-button--min-width);
+  --ts-consent--button-padding: var(--ts-button--padding);
+  --ts-consent--button-radius: var(--ts-button--radius);
+  --ts-consent--button-border-width: var(--ts-button--border-width);
+  --ts-consent--button-bg: var(--ts-button--secondary-bg);
+  --ts-consent--button-fg: var(--color-text-primary);
+  --ts-consent--button-border: var(--ts-button--secondary-border);
+  --ts-consent--focus: var(--color-focus-ring);
+  --ts-consent--focus-offset: 2px;
+
   // Input (input/TS_Input.scss)
   --ts-input--padding: var(--space-sm) var(--space-md);
   --ts-input--bg: var(--color-surface-input);
