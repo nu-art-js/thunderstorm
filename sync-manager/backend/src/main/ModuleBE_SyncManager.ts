@@ -53,7 +53,10 @@ import {
 	isSyncApiDef,
 	SmartSync_UpToDateSync,
 	SyncDataFirebaseState,
-	SyncManagerAPI_SmartSync
+	SyncManagerAPI_SmartSync,
+	privateModuleStatePath,
+	publicModuleStatePath,
+	publicSyncDataPath as syncDataNodePath,
 } from '@nu-art/sync-manager-shared';
 import type {DatabaseDef_DeletedDoc, DB_DeletedDoc} from './deleted-doc/types.js';
 import {DBDef_DeletedDoc} from './deleted-doc/db-def.js';
@@ -96,7 +99,13 @@ export class ModuleBE_SyncManager_Class
 
 	private database!: DatabaseWrapperBE;
 	private dbModules!: ModuleBE_BaseDB<any>[];
-	private resolvableFirebaseBasePath: ResolvableContent<string> = `/state/${this.getName()}`;
+	/** Private node. Holds deletedCount. Example: /state/ModuleBE_SyncManager/deletedCount */
+	private resolvableFirebaseBasePath: ResolvableContent<string> = privateModuleStatePath(this.getName());
+
+	/** Public sync stamps. Example: /public/state/ModuleBE_SyncManager/syncData */
+	private publicSyncDataPath(): string {
+		return syncDataNodePath(this.getName());
+	}
 	private deletedDocsCollectionReady = false;
 
 	constructor() {
@@ -107,6 +116,7 @@ export class ModuleBE_SyncManager_Class
 
 	async __onSyncEnvCompleted(env: string, baseUrl: string, requiredHeaders: TypedMap<string>) {
 		await this.database.delete(resolveContent(this.resolvableFirebaseBasePath));
+		await this.database.delete(publicModuleStatePath(this.getName()));
 	}
 
 	init() {
@@ -135,7 +145,7 @@ export class ModuleBE_SyncManager_Class
 	/** Setup action: stamps lastUpdated for synced modules that have none. */
 	@OnDispatch(graph_ProjectSetup, {key: DispatchKey_SyncBackfill})
 	async backfillStaleSyncTimestamps() {
-		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
+		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${this.publicSyncDataPath()}`);
 		const rtdbSyncData = await syncDataRef.get({});
 
 		const staleModules = this.dbModules.filter(dbModule => {
@@ -233,8 +243,8 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	public getOrCreateSyncData = async () => {
-		this.logVerbose('Current node path', `${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
-		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
+		this.logVerbose('Current node path', `${this.publicSyncDataPath()}`);
+		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${this.publicSyncDataPath()}`);
 		const rtdbSyncData = await syncDataRef.get({});
 
 		const dbModuleDbKeys: string[] = filterInstances(this.dbModules.map(module => module.dbDef.dbKey));
@@ -413,12 +423,12 @@ export class ModuleBE_SyncManager_Class
 	};
 
 	public getFullSyncData = async () => {
-		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData`);
+		const syncDataRef = this.database.ref<SyncDataFirebaseState>(`${this.publicSyncDataPath()}`);
 		return (await syncDataRef.get({}));
 	};
 
 	async setLastUpdated(collectionName: string, lastUpdated: number) {
-		return this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/syncData/${collectionName}`, {lastUpdated});
+		return this.database.patch<LastUpdated>(`${this.publicSyncDataPath()}/${collectionName}`, {lastUpdated});
 	}
 
 	async setOldestDeleted(collectionName: string, oldestDeleted: number) {

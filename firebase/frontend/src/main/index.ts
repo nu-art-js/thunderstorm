@@ -21,3 +21,4 @@ export * from './ModuleFE_Firebase.js';
 export * from './analytics/ModuleFE_Analytics.js';
 export * from './messaging/MessagingWrapperFE.js';
 export * from './ModuleFE_FirebaseListener/ModuleFE_FirebaseListener.js';
+export * from './ModuleFE_FirebaseListener/public-tree.js';
