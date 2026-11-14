@@ -33,9 +33,7 @@ import {ModuleBE_UserPermissionsDB} from '../_entity/user-permissions/ModuleBE_U
 import type {OnAccessGroupChanged} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {ModuleBE_AccessGroupDB} from '../_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {
-	FirebaseRef,
 	MemKey_FirestoreTransaction,
-	ModuleBE_Firebase,
 	MongoCollection,
 	registerTransactionPreClose,
 	type TransactionWrapper,
@@ -129,7 +127,6 @@ class ModuleBE_Permissions_Class
 	extends Module<Config>
 	implements OnAccessGroupChanged, OnNewUserRegistered, OnUserLogin, OnAccountDeleted {
 
-	private adminGrantFlagRef!: FirebaseRef<boolean>;
 	private readonly accessResolvers = new Map<string, AccessContextResolver<any>>();
 	private readonly moduleScopeKeys = new Map<string, string[]>();
 	// Per-entry expiry cache (keyed by SA personal group id). Each entry carries
@@ -217,7 +214,6 @@ class ModuleBE_Permissions_Class
 
 	protected init() {
 		super.init();
-		this.adminGrantFlagRef = ModuleBE_Firebase.createModuleStateFirebaseRef<boolean>(this, 'grantAdminOnLogin');
 		this.setAccessContextResolver(ModuleBE_AccessGroupDB, this.permissionsAccessResolver);
 		this.setAccessContextResolver(ModuleBE_PermissionScopeDB, this.permissionsAccessResolver);
 		this.setAccessContextResolver(ModuleBE_UserPermissionsDB, this.permissionsAccessResolver);
@@ -318,10 +314,6 @@ class ModuleBE_Permissions_Class
 		}
 	}
 
-	public getAdminGrantFlagRef(): FirebaseRef<boolean> {
-		return this.adminGrantFlagRef;
-	}
-
 	// --- Project setup ---
 
 	async ensureDefinedGroups() {
@@ -378,8 +370,6 @@ class ModuleBE_Permissions_Class
 			await this.addToReadBucket(account);
 			await this.promoteIfNoAdmin(account);
 			this.logDebug(`__onUserLogin: promoteIfNoAdmin done`);
-			await this.checkAdminGrantFlag(account);
-			this.logDebug(`__onUserLogin: checkAdminGrantFlag done`);
 			await this.resolveAdditionalGroupMemberships(account, 'login');
 			this.logDebug(`__onUserLogin: resolveAdditionalGroupMemberships done`);
 			await this.ensureDeveloperScopeOnAdminGroups();
@@ -484,27 +474,6 @@ class ModuleBE_Permissions_Class
 			adminGroupId: GroupId_PermissionsAdmin,
 		}));
 		this.logDebug(`[FIRST_USER] promoteIfNoAdmin: promoted ${personalGroupId} to admin`);
-	}
-
-	private async checkAdminGrantFlag(account: DB_Account) {
-		const flagValue = await this.adminGrantFlagRef.get(false);
-		if (!flagValue)
-			return;
-
-		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
-		const adminGroup = await ModuleBE_AccessGroupDB.query.unique(GroupId_PermissionsAdmin);
-		if (!adminGroup)
-			return;
-
-		if (adminGroup.members.includes(personalGroupId)) {
-			await this.adminGrantFlagRef.set(false);
-			return;
-		}
-
-		adminGroup.members.push(personalGroupId);
-		await ModuleBE_AccessGroupDB.set.item(adminGroup);
-		await this.adminGrantFlagRef.set(false);
-		this.logInfo(`Granted Permissions Admin to user ${account._id} via RTDB flag (one-shot)`);
 	}
 
 	private async resolveAdditionalGroupMemberships(account: DB_Account, context: 'register' | 'login') {
