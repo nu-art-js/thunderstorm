@@ -17,6 +17,7 @@ describe('refactoring action lock', () => {
 		expect(refactoringActionLockKey('setup-project')).to.equal('refactoring-action--setup-project');
 		expect(refactoringActionLockKey('knowledge-access-restamp')).to.equal('refactoring-action--knowledge-access-restamp');
 		expect(refactoringActionLockKey('setup-project')).to.not.equal(refactoringActionLockKey('knowledge-access-restamp'));
+		expect(refactoringActionLockKey('maintenance.set')).to.equal('refactoring-action--maintenance-set');
 	});
 
 	it('holds the lock for the function time limit', () => {
