@@ -7,3 +7,4 @@
 export type {GeneralApi} from '@nu-art/api-types';
 export * from './types.js';
 export * from './apis.js';
+export * from './public-paths.js';

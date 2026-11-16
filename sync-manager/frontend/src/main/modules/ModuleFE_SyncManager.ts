@@ -49,7 +49,8 @@ import {
 	SyncDataFirebaseState,
 	SyncDbData,
 	SyncDelta,
-	SyncManagerAPI_SmartSync
+	SyncManagerAPI_SmartSync,
+	publicSyncDataPath,
 } from '@nu-art/sync-manager-shared';
 import {ThunderDispatcher, OnClearWebsiteData} from '@nu-art/thunder-core';
 import {EventType_Query} from '@nu-art/db-api-shared';
@@ -67,7 +68,7 @@ export interface PermissibleModulesUpdated {
 	__onPermissibleModulesUpdated: () => void;
 }
 
-export const Default_SyncManagerNodePath = '/state/ModuleBE_SyncManager/syncData';
+export const Default_SyncManagerNodePath = publicSyncDataPath('ModuleBE_SyncManager');
 
 const dispatch_OnPermissibleModulesUpdated = new ThunderDispatcher<PermissibleModulesUpdated, '__onPermissibleModulesUpdated'>('__onPermissibleModulesUpdated');
 
