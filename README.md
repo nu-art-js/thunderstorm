@@ -13,9 +13,6 @@ This boilerplate is a unification of both frontend and backend in one repo..
 
 Right after you've cloned the repo you will see:
 
-* **app-backend** - Contains all the backend files.
-* **app-frontend** - Contains all the frontend files.
-* **app-shared** - where all the shared types between the frontend and backend are stored.
 * **ts-common** - Typescript infra that should have been a part of Typescript release but isn't.
 * **thunderstorm** - The Typescript & React Frontend along side a Typescript & Express Backend framework with core components you can use.
 * **bug-report** - A bug report infra that you can attach to your web app
@@ -31,32 +28,7 @@ Right after you've cloned the repo you will see:
 
 # Start Using Thunderstorm:
 
-To start using Thunderstorm go to the [boilerplate app](https://github.com/nu-art-js/thunderstorm-app) and follow up on the how to fork Thunderstorm section
-
-### Set Environment
-
-Before you can run the project you need to set it up...
-
-You can setup **dev** environment using this command: `bash build-and-install.sh --install --set-env=dev`
-
-* Finally (if you have configured everything correctly) you can launch the "Hello World" sample from your own firebase project by
-  executing: `bash build-and-install.sh --launch-frontend --launch-backend`
-
-### Run your app locally
-
-Once you have configured everything correctly, you can launch the "Hello World" sample from your own firebase project by executing:
-
-`bash build-and-install.sh --launch=app-frontend --launch=app-backend`
-
-**NOTE:** you can run each individually
-
-### Deploy your app to firebase
-
-Once you have configured everything correctly, executing the following command would deploy the frontend and backend to the firebase function:
-
-`bash build-and-install.sh --set-env=${env} --deploy=app-frontend --deploy=app-backend`
-
-**NOTE:** you can deploy each individually
+The sample app lives in [thunderstorm-sample](https://github.com/nu-art-js/thunderstorm-sample). This repo is the framework.
 
 # More stuff...
 
