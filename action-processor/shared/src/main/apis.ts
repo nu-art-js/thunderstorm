@@ -25,7 +25,7 @@ export type ApiStruct_ActionProcessing = {
 
 export const ApiDef_ActionProcessing: ApiDefResolver<ApiStruct_ActionProcessing> = {
 	vv1: {
-		execute: {method: HttpMethod.POST, path: 'v1/action-processor/execute', timeout: 5 * Minute},
+		execute: {method: HttpMethod.POST, path: 'v1/action-processor/execute', timeout: 60 * Minute},
 		list: {method: HttpMethod.GET, path: 'v1/action-processor/list'},
 	},
 };

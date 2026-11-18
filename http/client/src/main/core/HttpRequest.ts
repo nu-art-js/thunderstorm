@@ -15,6 +15,7 @@ import {HttpException} from '../exceptions/HttpException.js';
 import {TS_Progress} from '../types/error-types.js';
 import type {HttpClient} from './HttpClient.js';
 import {ApiDef, HttpMethod, GeneralApi} from '../types/api-types.js';
+import {httpStatusFromTransportError} from './no-response-status.js';
 
 /**
  * Typed HTTP request with fluent builder API and comprehensive logging.
@@ -396,7 +397,7 @@ export class HttpRequest<API extends GeneralApi>
 
 			// Extract response and status from Axios error
 			this.response = e?.response;
-			this.status = this.response?.status ?? 500;
+			this.status = httpStatusFromTransportError(this.response?.status);
 			this.logError('Request failed', {status: this.status, error: e.message, responseBody: this.response?.data});
 
 			// Convert AxiosError to HttpException for non-2xx status codes

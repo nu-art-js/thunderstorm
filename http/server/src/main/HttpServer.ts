@@ -284,6 +284,9 @@ export class HttpServer
 	public async startServer(): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			this.server = this.createServer();
+			// 0 disables the limit. The 60 second header default cuts a long refactoring call.
+			this.server.headersTimeout = 0;
+			this.server.requestTimeout = 0;
 			this.server.listen(this.config.port);
 			this.server.on('connection', (socket: Socket) => {
 				this.logInfo(`New connection (${this.socketId++}): ${socket}`);

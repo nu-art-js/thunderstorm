@@ -8,8 +8,8 @@ import {HttpCodes} from '@nu-art/api-types';
 import {lockedOperation, ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {Minute} from '@nu-art/ts-common';
 
-/** Matches the Cloud Function limit so a killed action cannot leave the lock held. */
-export const RefactoringActionLockTimeoutMs = 9 * Minute;
+/** Matches the Cloud Run maximum of 60 minutes so a killed action cannot leave the lock held. */
+export const RefactoringActionLockTimeoutMs = 60 * Minute;
 
 /** RTDB rejects . # $ [ ] in a path. Example: refactoringActionLockKey('maintenance.set') */
 export function refactoringActionLockKey(actionKey: string): string {

@@ -20,8 +20,8 @@ describe('refactoring action lock', () => {
 		expect(refactoringActionLockKey('maintenance.set')).to.equal('refactoring-action--maintenance-set');
 	});
 
-	it('holds the lock for the function time limit', () => {
-		expect(RefactoringActionLockTimeoutMs).to.equal(9 * Minute);
+	it('holds the lock for the Cloud Run maximum', () => {
+		expect(RefactoringActionLockTimeoutMs).to.equal(60 * Minute);
 	});
 
 	it('runs the action when this process has no Realtime Database', async () => {

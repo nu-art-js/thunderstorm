@@ -6,7 +6,7 @@ describe('vendoredFileSpecifier', () => {
 	const root = resolve('/workspace/dist/.dependencies');
 
 	it('cross-scope: @app/foo → @nu-art/bar goes up out of @app', () => {
-		expect(vendoredFileSpecifier(resolve(root, '@app/organization-backend'), '@nu-art/passkey-backend', root))
+		expect(vendoredFileSpecifier(resolve(root, '@app/project-backend'), '@nu-art/passkey-backend', root))
 			.to.equal('file:../../@nu-art/passkey-backend');
 	});
 
