@@ -379,7 +379,6 @@ export const TS_NavLink = (props: {
 /** Index redirect that keeps the current query and hash (handoff `?Authorization=`). */
 const IndexPathRedirect = (props: {to: string}) => {
 	const location = useLocation();
-	console.info('[s0-route] IndexPathRedirect', {from: window.location.href, to: props.to, search: location.search});
 	return <Navigate to={{pathname: props.to, search: location.search, hash: location.hash}} replace/>;
 };
 
@@ -392,7 +391,6 @@ const IndexPathRedirect = (props: {to: string}) => {
  */
 const RoutingFallbackRedirect = (props: { to: string }) => {
 	useEffect(() => {
-		console.info('[s0-route] fallback fired', {attempted: window.location.pathname + window.location.search, to: props.to});
 		ModuleFE_Routing.logWarning(`[routing] fallback fired: attempted='${window.location.pathname}${window.location.search}', redirectingTo='${props.to}'`);
 	}, []);
 	return <Navigate to={props.to}/>;
