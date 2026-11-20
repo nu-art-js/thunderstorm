@@ -34,10 +34,12 @@
     overflow-x: hidden;
     overflow-y: auto;
     max-height: 60vh;
-    border-radius: 2px;
-    box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.3);
-    border: solid 1px transparent;
-    background-color: white;
+    border-radius: var(--ts-popup--radius);
+    box-shadow: var(--ts-popup--shadow);
+    border: 1px solid var(--ts-popup--border);
+    background-color: var(--ts-popup--bg);
+    background-clip: padding-box;
+    color: var(--ts-popup--text);
 
     .ts-popup__content__menu {
       .ts-tree__node {
@@ -45,7 +47,7 @@
         white-space: nowrap;
 
         &:hover {
-          background: cornsilk;
+          background: var(--color-action-primary-soft);
         }
       }
     }

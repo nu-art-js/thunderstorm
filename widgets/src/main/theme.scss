@@ -273,6 +273,14 @@
   --ts-toggle--knob-bg-checked: var(--color-action-primary-bg);
   --ts-toggle--transition: var(--motion-default);
 
+  // PopUp (mouse-interactivity TS_PopUp.scss). The content fill must not be white:
+  // a transparent border paints the fill in the border box and leaves a light frame.
+  --ts-popup--bg: var(--color-surface-raised);
+  --ts-popup--border: var(--color-border-strong);
+  --ts-popup--text: var(--color-text-primary);
+  --ts-popup--radius: var(--radius-2xl);
+  --ts-popup--shadow: 0 10px 28px 2px rgba(0, 0, 0, 0.65);
+
   // DropDown (adapter/dropdown/TS_DropDown.scss)
   --ts-dropdown--header-height: 32px;
   --ts-dropdown--bg: var(--color-surface-input);
