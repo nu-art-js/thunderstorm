@@ -39,7 +39,7 @@ import {
 	type TransactionWrapper,
 } from '@nu-art/firebase-backend';
 import {MemKey_ServiceAccountId, MemKey_UserAccessIds, MemKey_UserScopePermissions} from '../consts.js';
-import {type AccessContextResolver, wireDocumentAccess} from '../document-access-enforcement.js';
+import {type AccessContextResolver, wireDocumentAccess, withDocumentAccessBypass} from '../document-access-enforcement.js';
 import {DispatchKey_AccountPermissions, graph_OnAccountDeleted, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {DB_Account, DatabaseDef_Account, DatabaseDef_Session} from '@nu-art/user-account-shared';
 import {HttpCodes} from '@nu-art/api-types';
@@ -165,7 +165,7 @@ class ModuleBE_Permissions_Class
 		if (item._id === GroupId_BootstrapServiceAccount)
 			return {
 				__access: {
-					readers: [GroupId_BootstrapServiceAccount],
+					readers: [GroupId_PermissionsAdmin, GroupId_BootstrapServiceAccount],
 					writers: [GroupId_BootstrapServiceAccount],
 					creators: [],
 					deleters: [],
@@ -877,18 +877,36 @@ class ModuleBE_Permissions_Class
 	// --- Bootstrap: ensure service account access group ---
 
 	private async ensureBootstrapSAAccessGroup() {
-		const existing = await ModuleBE_AccessGroupDB.query.unique(GroupId_BootstrapServiceAccount);
-		if (existing)
+		const existing = await ModuleBE_AccessGroupDB.query.uniqueUnmanipulated(GroupId_BootstrapServiceAccount) as (DB_AccessGroup & { __access?: DocumentAccessInner }) | undefined;
+		if (!existing) {
+			await ModuleBE_AccessGroupDB.create.item({
+				_id: GroupId_BootstrapServiceAccount,
+				type: 'service-account',
+				key: ServiceAccountId_Bootstrap,
+				label: 'Bootstrap Admin (SA)',
+				members: [],
+			});
+			this.logInfoBold('Created bootstrap service account access group');
+			return;
+		}
+
+		const readers = existing.__access?.readers ?? [];
+		if (readers.includes(GroupId_PermissionsAdmin))
 			return;
 
-		await ModuleBE_AccessGroupDB.create.item({
-			_id: GroupId_BootstrapServiceAccount,
-			type: 'service-account',
-			key: ServiceAccountId_Bootstrap,
-			label: 'Bootstrap Admin (SA)',
-			members: [],
-		});
-		this.logInfoBold('Created bootstrap service account access group');
+		// A normal save copies the old access and drops this change. The bypass keeps the new readers.
+		const next = {
+			...existing,
+			__access: {
+				readers: filterDuplicates([...readers, GroupId_PermissionsAdmin]),
+				writers: existing.__access?.writers?.length ? existing.__access.writers : [GroupId_BootstrapServiceAccount],
+				creators: existing.__access?.creators ?? [],
+				deleters: existing.__access?.deleters ?? [],
+				owners: existing.__access?.owners ?? [],
+			},
+		};
+		await withDocumentAccessBypass(() => ModuleBE_AccessGroupDB.set.item(next as DB_AccessGroup));
+		this.logInfoBold('Permissions Admin can read the bootstrap service account group');
 	}
 
 	private async ensureServiceAccountAccessGroups() {

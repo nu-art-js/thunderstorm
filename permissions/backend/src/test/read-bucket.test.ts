@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 import {GroupId_ReadBucket} from '@nu-art/permissions-shared';
 import {stringToUniqueId} from '@nu-art/db-api-shared';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {projectSetupReaches as graphReaches, setProjectSetupRoots} from '@nu-art/action-processor-backend';
 import {ModuleBE_AccessGroupDB} from '../main/_entity/access-group/ModuleBE_AccessGroupDB.js';
 import {GroupId_BootstrapServiceAccount, GroupId_PermissionsAdmin, ModuleBE_Permissions, DispatchKey_PermissionsGroups, DispatchKey_PermissionsReadBucket, ServiceAccountId_Bootstrap} from '../main/index.js';
@@ -20,6 +21,65 @@ describe('Read bucket', () => {
 
 	it('permissions admins can still write ordinary groups', () => {
 		expect(resolve({_id: 'some-group'}).__access.writers).to.deep.equal([GroupId_PermissionsAdmin]);
+	});
+
+	it('permissions admins can read the bootstrap service account group, and only that group can write it', () => {
+		const access = resolve({_id: GroupId_BootstrapServiceAccount}).__access;
+		expect(access.readers).to.deep.equal([GroupId_PermissionsAdmin, GroupId_BootstrapServiceAccount]);
+		expect(access.writers).to.deep.equal([GroupId_BootstrapServiceAccount]);
+		expect(access.owners).to.deep.equal([]);
+		expect(access.deleters).to.deep.equal([]);
+		expect(access.creators).to.deep.equal([]);
+	});
+
+	it('an existing bootstrap group gains a permissions-admin reader', async () => {
+		const groups = ModuleBE_AccessGroupDB as any;
+		const original = {query: groups.query, set: groups.set};
+		const written: {__access: {readers: string[]}}[] = [];
+		groups.query = {
+			uniqueUnmanipulated: async () => ({
+				_id: GroupId_BootstrapServiceAccount,
+				__access: {
+					readers: [GroupId_BootstrapServiceAccount],
+					writers: [GroupId_BootstrapServiceAccount],
+					creators: [],
+					deleters: [],
+					owners: [],
+				},
+			}),
+		};
+		groups.set = {item: async (item: {__access: {readers: string[]}}) => written.push(item)};
+		try {
+			await new MemStorage().init(() => (ModuleBE_Permissions as any).ensureBootstrapSAAccessGroup());
+		} finally {
+			groups.query = original.query;
+			groups.set = original.set;
+		}
+		expect(written).to.have.length(1);
+		expect(written[0]!.__access.readers).to.deep.equal([
+			GroupId_BootstrapServiceAccount,
+			GroupId_PermissionsAdmin,
+		]);
+	});
+
+	it('a bootstrap group that permissions admins can already read is left as stored', async () => {
+		const groups = ModuleBE_AccessGroupDB as any;
+		const original = {query: groups.query, set: groups.set};
+		const written: unknown[] = [];
+		groups.query = {
+			uniqueUnmanipulated: async () => ({
+				_id: GroupId_BootstrapServiceAccount,
+				__access: {readers: [GroupId_PermissionsAdmin, GroupId_BootstrapServiceAccount]},
+			}),
+		};
+		groups.set = {item: async (item: unknown) => written.push(item)};
+		try {
+			await new MemStorage().init(() => (ModuleBE_Permissions as any).ensureBootstrapSAAccessGroup());
+		} finally {
+			groups.query = original.query;
+			groups.set = original.set;
+		}
+		expect(written).to.deep.equal([]);
 	});
 
 	type Harness = { ranAs: string[]; group: { _id: string; members: string[] }; written: unknown[] };
