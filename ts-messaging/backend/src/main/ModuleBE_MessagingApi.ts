@@ -6,7 +6,7 @@ import {
 	ApiDef_Messaging,
 	PaginatedMessagesRequest,
 	PaginatedMessagesResponse,
-	PermissionScope_Messaging,
+	PermissionScope_MessagingRead,
 } from '@nu-art/ts-messaging-shared';
 import {ModuleBE_MessageDB} from './ModuleBE_MessageDB.js';
 
@@ -19,7 +19,7 @@ export class ModuleBE_MessagingApi_Class
 		super('MessagingApi');
 	}
 
-	@RequirePermission(PermissionScope_Messaging, 'read')
+	@RequirePermission(PermissionScope_MessagingRead, 'read')
 	@ApiHandler(ApiDef_Messaging.getMessages)
 	async getMessages(body: API_Messaging['getMessages']['Body']): Promise<PaginatedMessagesResponse> {
 		return this.listMessages(body);

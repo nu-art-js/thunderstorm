@@ -43,7 +43,7 @@ import {type AccessContextResolver, wireDocumentAccess, withDocumentAccessBypass
 import {DispatchKey_AccountPermissions, graph_OnAccountDeleted, ModuleBE_AccountDB, ModuleBE_SessionDB, OnAccountDeleted, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account-backend';
 import {DB_Account, DatabaseDef_Account, DatabaseDef_Session} from '@nu-art/user-account-shared';
 import {HttpCodes} from '@nu-art/api-types';
-import {developerAdminGroupIds, developerRunActionsScopeId, groupsMissingDeveloperRunActions, permissionsAdminScopeEntries, scopeEntriesForDefinedGroup, shouldStampDeveloperAdminGroups} from '../developer-admin-scope.js';
+import {developerAdminGroupIds, developerRunActionsScopeId, groupsMissingDeveloperRunActions, permissionsAdminScopeEntries, retainDeclaredGroupMembers, scopeEntriesForDefinedGroup, shouldStampDeveloperAdminGroups} from '../developer-admin-scope.js';
 
 export type ShareAccessContext = Partial<DocumentAccessInner>;
 
@@ -1072,12 +1072,13 @@ class ModuleBE_Permissions_Class
 		const existing = filterInstances(await ModuleBE_AccessGroupDB.query.all(entries.map(e => e.groupId)));
 		const existingMap = new Map(existing.map(g => [g._id, g]));
 
+		const definedGroupIds = new Set(entries.map(entry => entry.groupId));
 		const items = entries.map(e => {
 			const existingGroup = existingMap.get(e.groupId);
 			const declaredMemberIds = (e.def.memberKeys ?? []).map(key =>
 				hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>(`group/${key}`)
 			);
-			const mergedMembers = filterDuplicates([...declaredMemberIds, ...(existingGroup?.members ?? [])]);
+			const mergedMembers = retainDeclaredGroupMembers(declaredMemberIds, existingGroup?.members, definedGroupIds);
 			return {
 				_id: e.groupId,
 				type: 'custom' as const,

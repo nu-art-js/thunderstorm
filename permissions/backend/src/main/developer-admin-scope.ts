@@ -48,6 +48,19 @@ export function developerAdminGroupIds(definitions: readonly {key: string}[]): U
 	]);
 }
 
+/**
+ * Keep declared group-to-group links and any member that is not a defined group.
+ * A defined group that left memberKeys is dropped on the next ensure. A user stays.
+ */
+export function retainDeclaredGroupMembers(
+	declaredMemberIds: readonly UniqueId[],
+	existingMemberIds: readonly UniqueId[] | undefined,
+	definedGroupIds: ReadonlySet<UniqueId>,
+): UniqueId[] {
+	const kept = (existingMemberIds ?? []).filter(id => !definedGroupIds.has(id));
+	return filterDuplicates([...declaredMemberIds, ...kept]);
+}
+
 export function scopeEntriesForDefinedGroup(def: DeveloperAdminGroupDef) {
 	const scopeEntries = def.scopes.map(({scope, value}) => permissionScopeId(scope.key, value));
 	if (def.key.endsWith('-admin'))

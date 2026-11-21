@@ -1,39 +1,38 @@
 import {defineAccessGroup} from '@nu-art/permissions-shared';
 import {hashToUniqueId} from '@nu-art/db-api-shared';
 import type {DatabaseDef_AccessGroup} from '@nu-art/permissions-shared';
-import {PermissionScope_Messaging} from './permission-scope.js';
-
-const MessagingScopeKey = 'messaging';
+import {
+	PermissionScope_MessagingAdmin,
+	PermissionScope_MessagingDelete,
+	PermissionScope_MessagingRead,
+	PermissionScope_MessagingWrite,
+} from './permission-scope.js';
 
 export const AccessGroup_MessagingRead = defineAccessGroup({
 	key: 'messaging-read',
 	label: 'Messaging Read',
-	scopeKey: MessagingScopeKey,
-	scopes: [{scope: PermissionScope_Messaging, value: 'read'}],
+	scopes: [{scope: PermissionScope_MessagingRead, value: 'read'}],
 	memberKeys: ['messaging-admin'],
 });
 
+// Admin is not a member. Admin is not write. Delete is not a member either.
 export const AccessGroup_MessagingWrite = defineAccessGroup({
 	key: 'messaging-write',
 	label: 'Messaging Write',
-	scopeKey: MessagingScopeKey,
-	scopes: [{scope: PermissionScope_Messaging, value: 'write'}],
-	memberKeys: ['messaging-admin'],
+	scopes: [{scope: PermissionScope_MessagingWrite, value: 'write'}],
 });
 
 export const AccessGroup_MessagingDelete = defineAccessGroup({
 	key: 'messaging-delete',
 	label: 'Messaging Delete',
-	scopeKey: MessagingScopeKey,
-	scopes: [{scope: PermissionScope_Messaging, value: 'delete'}],
+	scopes: [{scope: PermissionScope_MessagingDelete, value: 'delete'}],
 	memberKeys: ['messaging-admin'],
 });
 
 export const AccessGroup_MessagingAdmin = defineAccessGroup({
 	key: 'messaging-admin',
 	label: 'Messaging Admin',
-	scopeKey: MessagingScopeKey,
-	scopes: [{scope: PermissionScope_Messaging, value: 'admin'}],
+	scopes: [{scope: PermissionScope_MessagingAdmin, value: 'admin'}],
 });
 
 export const MessagingReadGroupId = hashToUniqueId<DatabaseDef_AccessGroup['dbKey']>('group/messaging-read');

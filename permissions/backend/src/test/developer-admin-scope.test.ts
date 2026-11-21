@@ -15,6 +15,7 @@ import {
 	developerRunActionsScopeId,
 	groupsMissingDeveloperRunActions,
 	permissionsAdminScopeEntries,
+	retainDeclaredGroupMembers,
 	scopeEntriesForDefinedGroup,
 	shouldStampDeveloperAdminGroups,
 } from '../main/developer-admin-scope.js';
@@ -102,5 +103,17 @@ describe('developer admin scope', () => {
 			{_id: readerId, key: 'messaging-read', scopeEntries: []},
 		], adminIds, runId);
 		expect(dirty.map(group => group._id)).to.deep.equal([messagingAdminId]);
+	});
+
+	it('drops a defined group that is no longer declared and keeps a user', () => {
+		const adminId = hashToUniqueId('group/messaging-admin');
+		const writeId = hashToUniqueId('group/messaging-write');
+		const deleteId = hashToUniqueId('group/messaging-delete');
+		const userId = hashToUniqueId('account-user');
+		const defined = new Set([adminId, writeId, deleteId]);
+
+		expect(retainDeclaredGroupMembers([], [adminId, userId], defined)).to.deep.equal([userId]);
+		expect(retainDeclaredGroupMembers([adminId], [adminId, userId], defined)).to.deep.equal([adminId, userId]);
+		expect(retainDeclaredGroupMembers([adminId], [writeId], defined)).to.deep.equal([adminId]);
 	});
 });

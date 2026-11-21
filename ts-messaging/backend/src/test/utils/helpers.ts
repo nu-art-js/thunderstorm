@@ -12,8 +12,8 @@ import type {StormTestInput} from '@nu-art/storm-testalot';
 import {ModuleBE_Firebase} from '@nu-art/firebase-backend';
 import {MemKey_AccountId, MemKey_SessionData, ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account-backend';
 import type {DB_Account, UI_SessionAccount} from '@nu-art/user-account-shared';
-import {MemKey_UserAccessIds, MemKey_UserScopePermissions, ModuleBE_Permissions, ModuleBE_UserPermissionsDB, ModulePackBE_Permissions, ServiceAccountId_Bootstrap} from '@nu-art/permissions-backend';
-import type {DatabaseDef_UserPermissions} from '@nu-art/permissions-shared';
+import {deriveEntityGroupId, MemKey_UserAccessIds, MemKey_UserScopePermissions, ModuleBE_AccessGroupDB, ModuleBE_Permissions, ModuleBE_UserPermissionsDB, ModulePackBE_Permissions, ServiceAccountId_Bootstrap} from '@nu-art/permissions-backend';
+import type {DatabaseDef_AccessGroup, DatabaseDef_UserPermissions, DocumentAccessInner} from '@nu-art/permissions-shared';
 import {ModulePackBE_Messaging} from '../../main/module-pack.js';
 import {ModuleBE_TopicDB} from '../../main/ModuleBE_TopicDB.js';
 
@@ -84,6 +84,37 @@ export async function provisionAccounts(...emails: string[]): Promise<DB_Account
 
 	await ModuleBE_Permissions.recomputePermissionsForUsers(accounts.map(account => account._id));
 	return accounts;
+}
+
+export async function grantTopicBucket(
+	topicId: string,
+	accountId: string,
+	bucket: keyof DocumentAccessInner,
+): Promise<void> {
+	const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(accountId);
+	const groupId = deriveEntityGroupId(topicId, bucket);
+	await ModuleBE_Permissions.runAsSystemContext([], async () => {
+		const group = await ModuleBE_AccessGroupDB.query.uniqueAssert(groupId);
+		if (group.members.includes(personalGroupId))
+			return;
+
+		group.members.push(personalGroupId);
+		await ModuleBE_AccessGroupDB.set.item(group);
+	});
+	await ModuleBE_Permissions.recomputePermissionsForUsers([accountId]);
+}
+
+export async function addAccountToGroup(accountId: string, groupId: DatabaseDef_AccessGroup['id']): Promise<void> {
+	const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(accountId);
+	await ModuleBE_Permissions.runAsSystemContext([], async () => {
+		const group = await ModuleBE_AccessGroupDB.query.uniqueAssert(groupId);
+		if (group.members.includes(personalGroupId))
+			return;
+
+		group.members.push(personalGroupId);
+		await ModuleBE_AccessGroupDB.set.item(group);
+	});
+	await ModuleBE_Permissions.recomputePermissionsForUsers([accountId]);
 }
 
 export async function createTopicForTest() {

@@ -26,7 +26,7 @@ import {
 } from '@nu-art/permissions-backend';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import type {DB_Account} from '@nu-art/user-account-shared';
-import {parseMessageMentionIds, type DatabaseDef_Message, type DatabaseDef_Topic} from '@nu-art/ts-messaging-shared';
+import {MessagingAdminGroupId, parseMessageMentionIds, type DatabaseDef_Message, type DatabaseDef_Topic} from '@nu-art/ts-messaging-shared';
 
 type AccessCarrier = {
 	__access?: DocumentAccessInner;
@@ -51,6 +51,7 @@ export class ModuleBE_MessagingAccess_Class
 	public wireMessage(dbModule: ModuleBE_BaseDB<DatabaseDef_Message>): void {
 		ModuleBE_Permissions.setAccessContextResolver(dbModule, item => this.resolveMessageAccess(item));
 		dbModule.registerPreWriteInterceptor((dbItem, original) => this.onMessageWrite(dbItem, original));
+		dbModule.registerPreDeleteInterceptor(dbItems => this.onMessageDelete(dbItems));
 	}
 
 	private async resolveTopicAccess(item: DatabaseDef_Topic['uiType']): Promise<DocumentAccessFields> {
@@ -64,38 +65,57 @@ export class ModuleBE_MessagingAccess_Class
 
 	private async resolveMessageAccess(item: DatabaseDef_Message['uiType']): Promise<DocumentAccessFields> {
 		const topic = await this.loadTopicUnmanipulated(item.topicId);
-		const fields = copyAccessFields(topic);
+		const topicAccess = copyAccessFields(topic).__access;
 		const authorId = item._auditorId ?? MemKey_AccountId.get();
-		const authorPersonalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(authorId);
-		fields.__access.deleters = filterDuplicates([...(fields.__access.deleters ?? []), authorPersonalGroupId]);
-		return fields;
+		const authorGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(authorId);
+
+		// read: everyone on the topic. write: the author only.
+		// delete: the author, the topic delete list, and an admin. owner: the topic owner.
+		return {
+			__access: {
+				readers: [...(topicAccess.readers ?? [])],
+				writers: [authorGroupId],
+				creators: [],
+				deleters: filterDuplicates([
+					authorGroupId,
+					...(topicAccess.deleters ?? []),
+					MessagingAdminGroupId,
+				]),
+				owners: [...(topicAccess.owners ?? [])],
+			},
+		};
 	}
 
 	private async onMessageWrite(dbItem: DatabaseDef_Message['uiType'], original: DatabaseDef_Message['dbType']): Promise<void> {
 		const topicId = dbItem.topicId ?? original?.topicId;
 		const topic = await this.loadTopicUnmanipulated(topicId);
-		const access = (topic as AccessCarrier).__access;
 		const callerIds = resolveCallerAccessIds(MemKey_UserAccessIds.get());
 
 		if (!original) {
-			this.assertCallerInBuckets(access, callerIds, topic._id, 'writers', 'owners');
+			this.assertCallerInBuckets((topic as AccessCarrier).__access, callerIds, topic._id, 'writers', 'owners');
 			return;
 		}
 
-		this.assertAuthorOrTopicOwner(original, access, callerIds, topic._id);
+		this.assertBucket((original as AccessCarrier).__access, callerIds, 'writers');
 	}
 
-	private assertAuthorOrTopicOwner(
-		original: DatabaseDef_Message['dbType'],
-		access: DocumentAccessInner | undefined,
+	private async onMessageDelete(dbItems: DatabaseDef_Message['dbType'][]): Promise<void> {
+		const callerIds = resolveCallerAccessIds(MemKey_UserAccessIds.get());
+		for (const item of dbItems)
+			this.assertBucket((item as AccessCarrier).__access, callerIds, 'deleters');
+	}
+
+	/** Fail closed. An empty bucket grants nobody. Owner does not stand in for this bucket. */
+	private assertBucket(
+		access: Partial<DocumentAccessInner> | undefined,
 		callerIds: UniqueId[],
-		topicId: UniqueId,
+		bucket: keyof DocumentAccessInner,
 	): void {
-		const accountId = MemKey_AccountId.get();
-		if (original._auditorId === accountId)
+		if (access?.[bucket]?.some(id => callerIds.includes(id)))
 			return;
 
-		this.assertCallerInBuckets(access, callerIds, topicId, 'owners');
+		this.logWarning(`REJECTED: message ${bucket} denied`);
+		throw HttpCodes._4XX.FORBIDDEN('Insufficient document access');
 	}
 
 	private assertCallerInBuckets(
