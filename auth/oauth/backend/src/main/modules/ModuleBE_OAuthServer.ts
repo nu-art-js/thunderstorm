@@ -11,7 +11,7 @@ import * as jose from 'jose';
 import {randomUUID, createHash} from 'node:crypto';
 import type {OAuthServerMetadata, OAuthTokenClaims, OAuthClientRegistrationResponse, OAuthContextBinder, OAuthResourceMatcher} from '@nu-art/oauth-shared';
 import {API_OAuth, ApiDef_OAuth, OAuthGrantUserId_PendingConsent, OAuthTokenKind_OAuthJwt, OAuthTokenKind_SessionJwt} from '@nu-art/oauth-shared';
-import type {DB_OAuthClient, DB_OAuthGrant} from '@nu-art/oauth-shared';
+import type {DB_OAuthClient, DB_OAuthGrant, DB_OAuthToken} from '@nu-art/oauth-shared';
 import {ModuleBE_OAuthClientDB} from './ModuleBE_OAuthClientDB.js';
 import {ModuleBE_OAuthGrantDB} from './ModuleBE_OAuthGrantDB.js';
 import {ModuleBE_OAuthSigningKeyDB} from './ModuleBE_OAuthSigningKeyDB.js';
@@ -69,11 +69,17 @@ export class ModuleBE_OAuthServer_Class
 	private kid!: string;
 	private keysReady!: Promise<void>;
 	private userResolver?: OAuthUserResolver;
+	private sessionRefreshRejected?: (token: DB_OAuthToken) => Promise<void>;
 	private readonly contextBinders: {matches: OAuthResourceMatcher; binder: OAuthContextBinder}[] = [];
 
 	constructor() {
 		super();
 		this.setDefaultConfig(DefaultConfig);
+	}
+
+	/** Beamz ends a session service account when its refresh will not be renewed. */
+	registerSessionRefreshRejected(handler: (token: DB_OAuthToken) => Promise<void>): void {
+		this.sessionRefreshRejected = handler;
 	}
 
 	setUserResolver(resolver: OAuthUserResolver): this {
@@ -321,16 +327,17 @@ export class ModuleBE_OAuthServer_Class
 			deviceId,
 			label: oauthClient.name,
 		};
-		const sessionId = await binder.mintSession({claims});
+		const sessionId = await binder.mintSession({claims, resource: grant.resource});
 		this.logInfo(`  session minted: sessionId=${sessionId}`);
+		const mintedSession = await ModuleBE_SessionDB._session.query.byId(sessionId);
 
 		await ModuleBE_OAuthGrantDB.set.item({
 			...grant,
-			userId: accountId,
+			userId: mintedSession.accountId,
 			sessionId,
 			used: false,
 		});
-		this.logInfo(`  grant updated: userId=${accountId} redirectUri=${grant.redirectUri}`);
+		this.logInfo(`  grant updated: userId=${mintedSession.accountId} redirectUri=${grant.redirectUri}`);
 
 		return {
 			redirectUri: grant.redirectUri,
@@ -534,6 +541,8 @@ export class ModuleBE_OAuthServer_Class
 		const tokenRecord = (await ModuleBE_OAuthTokenDB.query.custom({where: {tokenHash}, limit: 1}))[0];
 
 		if (!tokenRecord || tokenRecord.revoked || tokenRecord.expiresAt < Date.now()) {
+			if (tokenRecord && (tokenRecord.revoked || tokenRecord.expiresAt < Date.now()))
+				await this.sessionRefreshRejected?.(tokenRecord);
 			res.status(400).json({error: 'invalid_grant', error_description: 'Invalid or expired refresh token'});
 			return;
 		}

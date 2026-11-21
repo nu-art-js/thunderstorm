@@ -28,6 +28,8 @@ export type OAuthCompleteAuthorizationResponse = {
 // only the binder (and app session collectors) read keys inside it.
 export type OAuthContextMintParams = {
 	claims?: TS_Object;
+	/** RFC 8707 resource. Beamz reads the connection id from its mcpScope query. */
+	resource?: string;
 };
 
 // App-owned extension point. Each consuming module registers a binder for the resource(s) it owns;
