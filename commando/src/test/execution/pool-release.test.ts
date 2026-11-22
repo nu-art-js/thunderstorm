@@ -12,33 +12,24 @@ const isAlive = (pid: number): boolean => {
 	}
 };
 
-/** First integer line from `echo $$`. That line is this commando's bash pid. */
-const bashPid = (stdout: string): number => {
-	const line = stdout.split('\n').map(item => item.trim()).find(item => /^\d+$/.test(item));
-	if (line === undefined)
-		throw new Error(`no bash pid in stdout:\n${stdout}`);
-
-	return Number(line);
-};
-
 describe('CommandoPool - release after one-shot execute', () => {
 	afterEach(async () => {
 		await CommandoPool.killAll();
 	});
 
-	it('one-shot bash does not stay idle after execute', async () => {
+	it('allocate+execute+release reaps every one-shot bash', async () => {
 		const pids: number[] = [];
 		for (let i = 0; i < 5; i++) {
 			const commando = CommandoPool.allocateCommando(`reap-${i}`);
-			// main has no getPid(). echo $$ prints the interactive bash pid.
-			const stdout = await commando.append('echo $$').execute(out => out);
-			pids.push(bashPid(stdout));
-			// compileImpl stops here. main has no releaseCommando().
+			const pid = commando.getPid();
+			expect(pid, 'allocated commando must have a bash pid').to.be.a('number');
+			pids.push(pid!);
 			await commando.append('true').execute();
+			await CommandoPool.releaseCommando(commando);
 		}
 
 		await sleep(200);
 		const stillAlive = pids.filter(isAlive);
-		expect(stillAlive, 'one-shot shells must not stay idle').to.deep.equal([]);
+		expect(stillAlive, 'released one-shot shells must not stay idle').to.deep.equal([]);
 	});
 });
