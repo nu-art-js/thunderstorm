@@ -42,6 +42,14 @@ type RegistryPrefs = {
 };
 const collapseStateStorage = new StorageKey<CollapseState>('app-tools-collapse-state');
 const registryStorage = new StorageKey<RegistryPrefs>('app-tools-registry');
+
+/** page draws the Dev Tools header. content draws the tool pane only. The host keeps its header. */
+export type AppToolsChrome = 'page' | 'content';
+export type AppToolsRouteOptions = {
+	headerTail?: () => React.ReactNode;
+	onMount?: () => void;
+	chrome?: AppToolsChrome;
+};
 type State = CollapseState & RegistryPrefs & {
 	query: string;
 	scope: RegistryScope;
@@ -54,11 +62,16 @@ export class TS_AppTools
 	static screens: AppToolsScreen[];
 	static headerTail?: () => React.ReactNode;
 	static onMountCallback?: () => void;
+	static chrome: AppToolsChrome = 'page';
 
-	static createRoute(screens: AppToolsScreen[], path = 'app-tools', headerTail?: () => React.ReactNode, onMountCallback?: () => void): TS_Route {
+	static createRoute(screens: AppToolsScreen[], path = 'app-tools', headerTailOrOptions?: (() => React.ReactNode) | AppToolsRouteOptions, onMountCallback?: () => void): TS_Route {
+		const options: AppToolsRouteOptions = typeof headerTailOrOptions === 'function' || headerTailOrOptions === undefined
+			? {headerTail: headerTailOrOptions, onMount: onMountCallback}
+			: headerTailOrOptions;
 		this.screens = screens;
-		this.headerTail = headerTail;
-		this.onMountCallback = onMountCallback;
+		this.headerTail = options.headerTail;
+		this.onMountCallback = options.onMount;
+		this.chrome = options.chrome ?? 'page';
 		return this.Route = {
 			path,
 			key: 'app-tools',
@@ -155,8 +168,9 @@ export class TS_AppTools
 
 	// ######################### Render #########################
 	render() {
-		return <LL_V_L className={'ts-app-tools'}>
-			{this.renderHeader()}
+		const content = TS_AppTools.chrome === 'content';
+		return <LL_V_L className={_className('ts-app-tools', content ? 'ts-app-tools--content' : undefined)}>
+			{!content && this.renderHeader()}
 			<LL_H_C className={'ts-app-tools__main'}>
 				{this.renderNavbar()}
 				<TS_ErrorBoundary>
