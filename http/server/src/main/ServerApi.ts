@@ -35,6 +35,7 @@ import {
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl,
 	MemKey_HttpResponse,
+	MemKey_PostCallActions,
 	MemKey_ServerApi
 } from './consts.js';
 
@@ -48,7 +49,6 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	private url!: string;
 	private middlewares?: ServerApi_Middleware[];
 	readonly apiDef: ApiDef<API>;
-	private postCallActions: (() => Promise<any>)[] = [];
 
 	protected constructor(apiDef: ApiDef<API>, tag?: string) {
 		super(tag ?? apiDef.path);
@@ -61,8 +61,12 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		return this;
 	}
 
-	addPostCallAction(sideEffect: () => Promise<any>) {
-		this.postCallActions.push(sideEffect);
+	/**
+	 * Runs after the response bytes are flushed.
+	 * Example: MemKey_ServerApi.get().addPostCallAction(() => database.ref('/').patch(cutover))
+	 */
+	addPostCallAction(sideEffect: () => Promise<unknown>) {
+		MemKey_PostCallActions.get().push(sideEffect);
 		return this;
 	}
 
@@ -95,17 +99,39 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	}
 
 	private callWrapper = async (req: ExpressRequest, res: ExpressResponse) => {
-		await this.call(req, res);
-		await this.performPostCallActions();
+		await new MemStorage().init(async () => {
+			const postCallActions: Array<() => Promise<unknown>> = [];
+			MemKey_PostCallActions.set(postCallActions);
+			await this.call(req, res);
+			if (postCallActions.length === 0)
+				return;
+
+			// Finish first. A side effect that calls process.exit cannot drop this response.
+			await this.waitForResponseFlush(res);
+			await this.performPostCallActions();
+		});
 	};
+
+	private waitForResponseFlush(res: ExpressResponse): Promise<void> {
+		if (res.writableFinished)
+			return Promise.resolve();
+
+		return new Promise(resolve => {
+			const done = () => {
+				res.removeListener('finish', done);
+				res.removeListener('close', done);
+				resolve();
+			};
+			res.once('finish', done);
+			res.once('close', done);
+		});
+	}
 
 	private performPostCallActions = async () => {
 		try {
-			await Promise_all_sequentially(this.postCallActions);
+			await Promise_all_sequentially(MemKey_PostCallActions.get());
 		} catch (e: unknown) {
 			this.logError('Error while performing post call actions', e instanceof Error ? e : new Error(String(e)));
-		} finally {
-			this.postCallActions = [];
 		}
 	};
 

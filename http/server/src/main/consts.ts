@@ -11,6 +11,8 @@ import type {ExpressRequest, ExpressResponse} from './types.js';
 import type {ApiResponse, ServerApi} from './ServerApi.js';
 
 export const MemKey_ServerApi = new MemKey<ServerApi<any>>('server-api', true);
+/** Side effects for this request. Example: addPostCallAction(() => patchServerConfig()) */
+export const MemKey_PostCallActions = new MemKey<Array<() => Promise<unknown>>>('server-api--post-call-actions', true);
 export const MemKey_HttpRequest = new MemKey<ExpressRequest>('http-request', true);
 export const MemKey_HttpRawResponse = new MemKey<ExpressResponse>('http-raw-response', true);
 export const MemKey_HttpResponse = new MemKey<ApiResponse>('http-response', true);
