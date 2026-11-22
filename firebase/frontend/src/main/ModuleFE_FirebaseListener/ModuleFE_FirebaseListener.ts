@@ -1,4 +1,5 @@
 import {FirebaseApp, initializeApp} from 'firebase/app';
+import {browserLocalPersistence, getAuth, onAuthStateChanged, setPersistence, signInWithCustomToken, signOut} from 'firebase/auth';
 import {connectDatabaseEmulator, Database, DataSnapshot, get, getDatabase, onValue, query, ref, Unsubscribe} from 'firebase/database';
 import {__stringify, _keys, exists, filterInstances, ImplementationMissingException, Logger, Module} from '@nu-art/ts-common';
 import 'firebase/database';
@@ -37,6 +38,56 @@ export class ModuleFE_FirebaseListener_Class
 	extends Module<FirebaseListenerConfig> {
 	public app!: FirebaseApp;
 	public database!: Database;
+	private signedToken?: string;
+
+	/**
+	 * Login captured X-Firebase-Token. Sign this app in before a ruled node is read.
+	 * Example: __onFirebaseListenerToken(token) then watchSignedIn starts the forest listen.
+	 */
+	__onFirebaseListenerToken = (token: string): void => {
+		void this.signInWithToken(token).catch((err: unknown) => this.logError('Firebase listener sign-in failed', err));
+	};
+
+	/** The app session was cleared. Example: logout calls __onFirebaseListenerSignOut(). */
+	__onFirebaseListenerSignOut = (): void => {
+		void this.signOutListener().catch((err: unknown) => this.logError('Firebase listener sign-out failed', err));
+	};
+
+	/**
+	 * Signs this app in once. Firebase Auth stores the refresh token in the browser and renews the ID token by itself.
+	 * Example: await listener.signInWithToken(customToken)
+	 */
+	async signInWithToken(token: string): Promise<void> {
+		if (!this.app)
+			throw new ImplementationMissingException('Firebase listener app is not ready');
+
+		const auth = getAuth(this.app);
+		if (token === this.signedToken && auth.currentUser)
+			return;
+
+		await setPersistence(auth, browserLocalPersistence);
+		await signInWithCustomToken(auth, token);
+		this.signedToken = token;
+	}
+
+	async signOutListener(): Promise<void> {
+		this.signedToken = undefined;
+		if (!this.app)
+			return;
+
+		await signOut(getAuth(this.app));
+	}
+
+	/**
+	 * Fires with the current user, then on each change.
+	 * Example: watchSignedIn(signedIn => { if (signedIn) listener.startListening(onValue); })
+	 */
+	watchSignedIn(onChange: (signedIn: boolean) => void): () => void {
+		if (!this.app)
+			throw new ImplementationMissingException('Firebase listener app is not ready');
+
+		return onAuthStateChanged(getAuth(this.app), user => onChange(user != null));
+	}
 
 	protected init() {
 		if (!this.config.firebaseConfig)

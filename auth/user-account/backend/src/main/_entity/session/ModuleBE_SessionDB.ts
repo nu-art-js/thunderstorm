@@ -46,6 +46,13 @@ export interface CollectSessionData<R extends TypedKeyValue<any, AnyPrimitive>> 
 }
 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, RecursiveObjectOfPrimitives>>, '__collectSessionData'>('__collectSessionData');
+
+/** A browser session was just issued. Example: password login calls create.andReturn, which calls return. */
+export interface AttachFirebaseListenerToken {
+	__attachFirebaseListenerToken(accountId: DatabaseDef_Account['id']): Promise<void>;
+}
+
+export const dispatch_attachFirebaseListenerToken = new Dispatcher<AttachFirebaseListenerToken, '__attachFirebaseListenerToken'>('__attachFirebaseListenerToken');
 export const Const_Default_SessionJWT_SecretKey = 'jwt-signer--account-session';
 
 type Config = {
@@ -217,6 +224,7 @@ export class ModuleBE_SessionDB_Class
 		return: async (dbSession: DB_Session) => {
 			const jwt = dbSession.sessionIdJwt;
 			MemKey_HttpResponse.get().setHeader(ResponseHeaderKey_JWTToken, jwt);
+			await dispatch_attachFirebaseListenerToken.dispatchModuleAsyncSerial(dbSession.accountId);
 			MemKey_SessionData.set(await JwtTools.decode(jwt));
 			MemKey_Jwt.set(jwt);
 			return jwt;

@@ -27,3 +27,10 @@ export const ResponseHeaderKey_Location = 'Location';
 export const ResponseHeaderKey_SetCookie = 'Set-Cookie';
 /** Custom header for JWT / session token in responses. */
 export const ResponseHeaderKey_JWTToken = 'X-Auth-Token';
+/**
+ * Firebase custom token for the Realtime Database listener.
+ * Example: a login response carries ResponseHeaderKey_FirebaseToken next to ResponseHeaderKey_JWTToken.
+ */
+export const ResponseHeaderKey_FirebaseToken = 'X-Firebase-Token';
+/** Social login puts the same token on the redirect. The browser cannot read a header on that 302. */
+export const QueryParam_FirebaseToken = 'firebaseToken';

@@ -13,7 +13,7 @@ import {
 import {QueryParam_SessionId} from '@nu-art/user-account-shared';
 import {OnAuthRequiredListener} from './no-auth-listener.js';
 import {HttpClient} from '@nu-art/http-client';
-import {HeaderKey_Authorization, ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
+import {HeaderKey_Authorization, QueryParam_FirebaseToken, ResponseHeaderKey_FirebaseToken, ResponseHeaderKey_JWTToken} from '@nu-art/api-types';
 import {ModuleFE_Routing} from '@nu-art/thunder-routing';
 
 export interface OnSessionUpdated {
@@ -22,6 +22,19 @@ export interface OnSessionUpdated {
 
 
 export const dispatch_onSessionUpdated = new ThunderDispatcher<OnSessionUpdated, '__onSessionUpdated'>('__onSessionUpdated');
+
+/** The login response carried a Firebase custom token. Example: __onFirebaseListenerToken(token) signs the RTDB listener in. */
+export interface OnFirebaseListenerToken {
+	__onFirebaseListenerToken(token: string): void;
+}
+
+/** The app session is gone. Example: __onFirebaseListenerSignOut() signs the RTDB listener out. */
+export interface OnFirebaseListenerSignOut {
+	__onFirebaseListenerSignOut(): void;
+}
+
+export const dispatch_onFirebaseListenerToken = new ThunderDispatcher<OnFirebaseListenerToken, '__onFirebaseListenerToken'>('__onFirebaseListenerToken');
+export const dispatch_onFirebaseListenerSignOut = new ThunderDispatcher<OnFirebaseListenerSignOut, '__onFirebaseListenerSignOut'>('__onFirebaseListenerSignOut');
 export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
 
 export class SessionKey_FE<Binder extends TypedKeyValue<string | number | 'account', any>> {
@@ -88,13 +101,23 @@ class ModuleFE_Session_Class
 				return;
 
 			const responseHeader = request.getResponseHeader(ResponseHeaderKey_JWTToken);
-			if (!responseHeader)
-				return;
+			if (responseHeader) {
+				const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
+				this.logInfo(`[session-auth] auto-captured JWT from ${ResponseHeaderKey_JWTToken} header — url=${request.getUrl()}, jwt=${sessionId.slice(0, 8)}…`);
+				this.StorageKey_SessionId.set(sessionId);
+			}
 
-			const sessionId = typeof responseHeader === 'string' ? responseHeader : responseHeader[0];
-			this.logInfo(`[session-auth] auto-captured JWT from ${ResponseHeaderKey_JWTToken} header — url=${request.getUrl()}, jwt=${sessionId.slice(0, 8)}…`);
-			this.StorageKey_SessionId.set(sessionId);
+			const firebaseHeader = request.getResponseHeader(ResponseHeaderKey_FirebaseToken);
+			const firebaseToken = typeof firebaseHeader === 'string' ? firebaseHeader : firebaseHeader?.[0];
+			if (firebaseToken)
+				dispatch_onFirebaseListenerToken.dispatchAll(firebaseToken);
 		});
+
+		const firebaseToken = ModuleFE_Routing.getQueryParameter(QueryParam_FirebaseToken);
+		if (firebaseToken) {
+			setTimeout(() => ModuleFE_Routing.removeQueryParam(QueryParam_FirebaseToken), 5000);
+			dispatch_onFirebaseListenerToken.dispatchAll(firebaseToken);
+		}
 
 		const prevSessionId = this.StorageKey_SessionId.get();
 		let sessionId = ModuleFE_Routing.getQueryParameter(QueryParam_SessionId);
@@ -156,8 +179,10 @@ class ModuleFE_Session_Class
 			} catch (e: any) {
 				this.logError('Error decoding session data', e);
 			}
-		else
+		else {
 			this.sessionData = undefined;
+			dispatch_onFirebaseListenerSignOut.dispatchAll();
+		}
 
 		dispatch_onSessionUpdated.dispatchAll();
 	}
