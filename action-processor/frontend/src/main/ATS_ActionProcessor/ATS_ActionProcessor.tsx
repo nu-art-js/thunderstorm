@@ -11,11 +11,17 @@ import {DevToolsActionDetail, type DevToolsLogLine} from './DevToolsActionDetail
 import {DevToolsActionList} from './DevToolsActionList.js';
 import {
 	actionTitle,
+	browserSelectionStore,
+	clearStoredSelection,
 	errorText,
 	filterDevToolsActions,
 	formatClock,
+	formatDuration,
 	groupDevToolsActions,
+	readStoredSelection,
+	resolveSelectedAction,
 	runEnabled,
+	writeStoredSelection,
 	type DevToolsAction,
 } from './dev-tools-model.js';
 import './ATS_ActionProcessor.scss';
@@ -40,7 +46,7 @@ export function ATS_ActionProcessor(props: {canRun?: boolean}) {
 	const [loadError, setLoadError] = useState<string | undefined>();
 	const [query, setQuery] = useState('');
 	const [destructiveOnly, setDestructiveOnly] = useState(false);
-	const [selectedKey, setSelectedKey] = useState<string | undefined>();
+	const [selectedKey, setSelectedKey] = useState<string | undefined>(() => readStoredSelection(browserSelectionStore()));
 	const [confirm, setConfirm] = useState('');
 	const [runningKey, setRunningKey] = useState<string | undefined>();
 	const [lastRuns, setLastRuns] = useState<Record<string, string>>({});
@@ -74,7 +80,7 @@ export function ATS_ActionProcessor(props: {canRun?: boolean}) {
 
 	const visible = filterDevToolsActions(actions, query, destructiveOnly);
 	const groups = groupDevToolsActions(visible);
-	const selected = visible.find(action => action.key === selectedKey) ?? visible[0];
+	const selected = resolveSelectedAction(actions, visible, selectedKey);
 	const running = selected !== undefined && runningKey === selected.key;
 	const runIsEnabled = runEnabled({canRun, running, action: selected, confirm});
 	const environment = typeof window === 'undefined' ? '' : window.location.host;
@@ -83,23 +89,48 @@ export function ATS_ActionProcessor(props: {canRun?: boolean}) {
 		setConfirm('');
 	}, [selected?.key]);
 
+	useEffect(() => {
+		if (phase !== 'ready' || !selectedKey)
+			return;
+
+		if (actions.some(action => action.key === selectedKey))
+			return;
+
+		setSelectedKey(undefined);
+		clearStoredSelection(browserSelectionStore());
+	}, [phase, actions, selectedKey]);
+
+	const onSelect = (key: string) => {
+		setSelectedKey(key);
+		writeStoredSelection(browserSelectionStore(), key);
+	};
+
 	const onRun = () => {
 		if (!selected || !runEnabled({canRun, running, action: selected, confirm}))
 			return;
 
 		const action = selected;
 		const key = action.key;
+		const started = Date.now();
 		setRunningKey(key);
 		void ModuleFE_ActionProcessor.vv1.execute({key}).executeSync()
 			.then(() => {
 				const clock = formatClock(new Date());
-				setLastRuns(prev => ({...prev, [key]: `Executed at ${clock}`}));
-				setLog(prev => [...prev, {time: clock, ok: true, text: `${actionTitle(action)} completed.`}]);
+				const took = formatDuration(Date.now() - started);
+				setLastRuns(prev => ({...prev, [key]: clock}));
+				setLog(prev => [{time: clock, ok: true, name: actionTitle(action), took}, ...prev]);
 				setConfirm('');
 			})
 			.catch((error: unknown) => {
 				const clock = formatClock(new Date());
-				setLog(prev => [...prev, {time: clock, ok: false, text: errorText(error, 'The action failed.')}]);
+				const took = formatDuration(Date.now() - started);
+				setLog(prev => [{
+					time: clock,
+					ok: false,
+					name: actionTitle(action),
+					detail: errorText(error, 'The action failed.'),
+					took,
+				}, ...prev]);
 			})
 			.finally(() => {
 				setRunningKey(current => current === key ? undefined : current);
@@ -109,6 +140,7 @@ export function ATS_ActionProcessor(props: {canRun?: boolean}) {
 	return (
 		<div className="dev-tools" id="dev-tools">
 			<header className="dev-tools__header">
+				<span className="dev-tools__crumb">Backend</span>
 				<h1 className="dev-tools__title">Refactoring Actions</h1>
 				<p className="dev-tools__lede">Registered actions for this environment.</p>
 			</header>
@@ -124,7 +156,7 @@ export function ATS_ActionProcessor(props: {canRun?: boolean}) {
 						selectedKey={selected?.key}
 						onQuery={setQuery}
 						onDestructiveOnly={setDestructiveOnly}
-						onSelect={setSelectedKey}
+						onSelect={onSelect}
 					/>
 					<DevToolsActionDetail
 						action={selected}

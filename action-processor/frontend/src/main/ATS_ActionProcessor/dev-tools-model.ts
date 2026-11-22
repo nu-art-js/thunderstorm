@@ -41,6 +41,93 @@ export function formatClock(date: Date): string {
 	return `${hours}:${minutes}:${seconds}`;
 }
 
+/** Clock shown on the action. Example: lastRunLabel('14:02:11') is "Today 14:02:11". */
+export function lastRunLabel(clock: string | undefined): string {
+	if (!clock)
+		return 'Not run in this session';
+
+	return `Today ${clock}`;
+}
+
+/** Elapsed time for one log row. Example: formatDuration(1200) is "1.2 s". */
+export function formatDuration(elapsedMs: number): string {
+	const seconds = Math.max(0, elapsedMs) / 1000;
+	if (seconds < 10)
+		return `${seconds.toFixed(1)} s`;
+
+	return `${Math.round(seconds)} s`;
+}
+
+/** localStorage key for the action that stays selected after a refresh. */
+export const DevToolsSelectedActionKey = 'dev-tools.refactoring-actions.selected';
+
+export type SelectionStore = {
+	getItem: (key: string) => string | null;
+	setItem: (key: string, value: string) => void;
+	removeItem: (key: string) => void;
+};
+
+export function browserSelectionStore(): SelectionStore | undefined {
+	if (typeof window === 'undefined')
+		return undefined;
+
+	try {
+		return window.localStorage;
+	} catch {
+		return undefined;
+	}
+}
+
+export function readStoredSelection(store: SelectionStore | undefined): string | undefined {
+	if (!store)
+		return undefined;
+
+	try {
+		const value = store.getItem(DevToolsSelectedActionKey)?.trim();
+		return value ? value : undefined;
+	} catch {
+		return undefined;
+	}
+}
+
+export function writeStoredSelection(store: SelectionStore | undefined, key: string): void {
+	const value = key.trim();
+	if (!store || !value)
+		return;
+
+	try {
+		store.setItem(DevToolsSelectedActionKey, value);
+	} catch {
+		// Private mode can reject storage. The open view still keeps the selection.
+	}
+}
+
+export function clearStoredSelection(store: SelectionStore | undefined): void {
+	if (!store)
+		return;
+
+	try {
+		store.removeItem(DevToolsSelectedActionKey);
+	} catch {
+		// A rejected clear leaves the previous key. The next explicit choice overwrites it.
+	}
+}
+
+/**
+ * The stored action wins when it is still in the catalog.
+ * A filter can hide that row. The detail keeps it.
+ * Example: resolveSelectedAction(all, destructiveOnly, 'read-diagnostics') returns the read action.
+ */
+export function resolveSelectedAction(actions: DevToolsAction[], visible: DevToolsAction[], selectedKey: string | undefined): DevToolsAction | undefined {
+	if (selectedKey) {
+		const stored = actions.find(action => action.key === selectedKey);
+		if (stored)
+			return stored;
+	}
+
+	return visible[0];
+}
+
 export function filterDevToolsActions(actions: DevToolsAction[], query: string, destructiveOnly: boolean): DevToolsAction[] {
 	const needle = query.trim().toLowerCase();
 	return actions.filter(action => {

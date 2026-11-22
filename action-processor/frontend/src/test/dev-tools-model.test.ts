@@ -8,12 +8,20 @@ import {expect} from 'chai';
 import {runSingleTestCase, TestModel} from '@nu-art/testalot';
 import {
 	actionTitle,
+	clearStoredSelection,
 	confirmReady,
+	DevToolsSelectedActionKey,
 	errorText,
 	filterDevToolsActions,
+	formatDuration,
 	groupDevToolsActions,
+	lastRunLabel,
+	readStoredSelection,
+	resolveSelectedAction,
 	runEnabled,
+	writeStoredSelection,
 	type DevToolsAction,
+	type SelectionStore,
 } from '../main/ATS_ActionProcessor/dev-tools-model.js';
 
 const setup: DevToolsAction = {
@@ -87,8 +95,43 @@ const test = async (input: Input): Promise<Result> => {
 		expect(errorText({code: 500}, 'The action list failed.')).to.equal('The action list failed.');
 	}
 
+	if (input.name === 'a stored selection survives and a missing key falls back') {
+		const store = memoryStore();
+		expect(readStoredSelection(store)).to.equal(undefined);
+		expect(readStoredSelection(undefined)).to.equal(undefined);
+		writeStoredSelection(store, '  ');
+		expect(store.getItem(DevToolsSelectedActionKey)).to.equal(null);
+		writeStoredSelection(store, 'read-diagnostics');
+		expect(readStoredSelection(store)).to.equal('read-diagnostics');
+		clearStoredSelection(store);
+		expect(readStoredSelection(store)).to.equal(undefined);
+
+		const visible = filterDevToolsActions([setup, read], '', true);
+		expect(resolveSelectedAction([setup, read], visible, 'read-diagnostics')?.key).to.equal('read-diagnostics');
+		expect(resolveSelectedAction([setup, read], visible, 'gone')?.key).to.equal('setup-project');
+		expect(resolveSelectedAction([setup, read], visible, undefined)?.key).to.equal('setup-project');
+		expect(resolveSelectedAction([], [], 'gone')).to.equal(undefined);
+		expect(formatDuration(1200)).to.equal('1.2 s');
+		expect(formatDuration(20000)).to.equal('20 s');
+		expect(lastRunLabel(undefined)).to.equal('Not run in this session');
+		expect(lastRunLabel('14:02:11')).to.equal('Today 14:02:11');
+	}
+
 	return {ok: true};
 };
+
+function memoryStore(): SelectionStore {
+	const data = new Map<string, string>();
+	return {
+		getItem: key => data.get(key) ?? null,
+		setItem: (key, value) => {
+			data.set(key, value);
+		},
+		removeItem: key => {
+			data.delete(key);
+		},
+	};
+}
 
 const runTestCase = (testCase: TestCase_DevTools) => () => runSingleTestCase(test, testCase);
 
@@ -99,4 +142,5 @@ describe('Dev Tools view model', () => {
 	it('groups keep arrival order and counts', runTestCase({input: {name: 'groups keep arrival order and counts'}, result: {ok: true}}));
 	it('a destructive action runs only after the title is typed', runTestCase({input: {name: 'a destructive action runs only after the title is typed'}, result: {ok: true}}));
 	it('error text keeps a message and falls back otherwise', runTestCase({input: {name: 'error text keeps a message and falls back otherwise'}, result: {ok: true}}));
+	it('a stored selection survives and a missing key falls back', runTestCase({input: {name: 'a stored selection survives and a missing key falls back'}, result: {ok: true}}));
 });
