@@ -45,13 +45,30 @@ export class ModuleFE_FirebaseListener_Class
 	 * Example: __onFirebaseListenerToken(token) then watchSignedIn starts the forest listen.
 	 */
 	__onFirebaseListenerToken = (token: string): void => {
-		void this.signInWithToken(token).catch((err: unknown) => this.logError('Firebase listener sign-in failed', err));
+		void this.signInWithToken(token).catch((err: unknown) => this.logListenerFailure('Firebase listener sign-in failed', err));
 	};
 
 	/** The app session was cleared. Example: logout calls __onFirebaseListenerSignOut(). */
 	__onFirebaseListenerSignOut = (): void => {
-		void this.signOutListener().catch((err: unknown) => this.logError('Firebase listener sign-out failed', err));
+		void this.signOutListener().catch((err: unknown) => this.logListenerFailure('Firebase listener sign-out failed', err));
 	};
+
+	/**
+	 * Logs a rejected listener promise. An Error keeps its stack. A LogParam value is logged as itself. A function becomes a string.
+	 * Example: this.logListenerFailure('Firebase listener sign-in failed', err)
+	 */
+	private logListenerFailure(message: string, err: unknown): void {
+		if (err instanceof Error)
+			return this.logError(message, err);
+
+		if (typeof err === 'string' || typeof err === 'number' || typeof err === 'boolean' || typeof err === 'bigint' || typeof err === 'symbol' || err == null)
+			return this.logError(message, err);
+
+		if (typeof err === 'object')
+			return this.logError(message, err);
+
+		this.logError(message, String(err));
+	}
 
 	/**
 	 * Signs this app in once. Firebase Auth stores the refresh token in the browser and renews the ID token by itself.
