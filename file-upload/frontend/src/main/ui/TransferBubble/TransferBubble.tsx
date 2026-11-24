@@ -48,21 +48,24 @@ export class TransferBubble
 	}
 
 	__onFileTransferStateChanged = (fileState: FileTransferState) => {
-		const files = new Map(this.state.files);
-		// Older events keyed the row by name, then again by asset id, so one file drew twice.
-		if (fileState.assetId)
-			for (const [key, existing] of files)
-				if (!existing.transferId && !existing.assetId && existing.name === fileState.name && existing.direction === fileState.direction)
-					files.delete(key);
-
-		files.set(fileState.transferId, {...fileState});
-
 		this.clearAutoHideTimer();
+		// Read the pending state. A confirm burst shares one React batch, and this.state still
+		// shows Validating for every row except the last write.
+		this.setState(prev => {
+			const files = new Map(prev.files);
+			// Older events keyed the row by name, then again by asset id, so one file drew twice.
+			if (fileState.assetId)
+				for (const [key, existing] of files)
+					if (!existing.transferId && !existing.assetId && existing.name === fileState.name && existing.direction === fileState.direction)
+						files.delete(key);
 
-		if (this.isAllDoneFrom(files))
-			this.autoHideTimer = setTimeout(() => this.setState({visible: false, trayOpen: false}), AutoHideDelayMs);
-
-		this.setState({files, visible: true});
+			files.set(fileState.transferId, {...fileState});
+			return {files, visible: true};
+		}, () => {
+			this.clearAutoHideTimer();
+			if (this.isAllDone())
+				this.autoHideTimer = setTimeout(() => this.setState({visible: false, trayOpen: false}), AutoHideDelayMs);
+		});
 	};
 
 	private clearAutoHideTimer() {
