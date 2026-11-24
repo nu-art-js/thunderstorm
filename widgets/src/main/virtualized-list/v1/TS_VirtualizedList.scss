@@ -1,0 +1,27 @@
+@use '@nu-art/ts-styles' as S;
+
+.virtual-list {
+	height: 0;
+	flex: 1;
+	width: 100%;
+	min-width: 0;
+	overflow: auto;
+	box-sizing: border-box;
+	@include S.customScrollbar('vertical', true);
+}
+
+.virtual-list__spacer {
+	position: relative;
+	width: 100%;
+}
+
+.virtual-list__window {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+.virtual-list__row {
+	width: 100%;
+	box-sizing: border-box;
+}

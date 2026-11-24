@@ -75,6 +75,7 @@ export type QueryComparator<T> =
 	| { $aca: T extends (infer I)[] ? I[] : never }
 	| { $nin: T extends (any)[] ? never : T[] }
 	| { $in: T extends (any)[] ? never : T[] }
+	| { $exists: boolean }
 	| QueryNumberComparator
 	| { $neq: T }
 	| { $regex: RegExp };
@@ -103,6 +104,7 @@ export type FilterKeys<T extends TS_Object> = MandatoryKeys<T, string | number>[
 export type FirestoreType_OrderByDirection = 'desc' | 'asc';
 export type WhereValue<Value> =
 	QueryComparator<Value>
+	| null
 	| (Value extends TS_Object ? Clause_Where<Value> : Value | [Value]);
 /** Mongo text search. The collection’s text index decides which fields are searched. */
 export type Clause_TextSearch = { $search: string };

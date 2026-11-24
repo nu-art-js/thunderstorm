@@ -46,6 +46,7 @@ export type CrudQueryComparator<T> =
 	| { $aca: T extends (infer I)[] ? I[] : never }
 	| { $nin: T extends (any)[] ? never : T[] }
 	| { $in: T extends (any)[] ? never : T[] }
+	| { $exists: boolean }
 	| CrudNumberComparator
 	| { $neq: T }
 	| { $regex: RegExp };
@@ -54,6 +55,7 @@ export type CrudOrderByDirection = 'desc' | 'asc';
 
 export type CrudWhereValue<Value> =
 	| CrudQueryComparator<Value>
+	| null
 	| (Value extends DB_Object ? CrudClause_Where<Value> : Value | [Value]);
 
 /** Mongo text search. The collection’s text index decides which fields are searched. */

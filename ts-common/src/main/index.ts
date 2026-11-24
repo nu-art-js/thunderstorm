@@ -31,6 +31,7 @@ export * from './tools/Replacer.js';
 export * from './core/logger/index.js';
 
 export * from './utils/queue.js';
+export * from './utils/queue-v2.js';
 export * from './utils/types.js';
 export * from './utils/crypto-tools.js';
 export * from './utils/random-tools.js';

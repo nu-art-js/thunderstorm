@@ -65,4 +65,5 @@ export * from './video/types.js';
 export * from './video/Video.js';
 export * from './video/VideoDialog.js';
 export * from './virtualized-list/v1/TS_VirtualizedList.js';
+export * from './virtualized-list/v1/virtual-window.js';
 export * from './pages/index.js';
