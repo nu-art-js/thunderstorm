@@ -9,13 +9,13 @@ import {
 } from '../main/query-url.js';
 
 const origin = 'https://beamz-staging.com';
-const consentUrl = `${origin}/oauth/consent/beamz?authReqId=34accf9cb5b469d7b0a8f937ef68779c`;
-const encodedConsent = 'https%3A%2F%2Fbeamz-staging.com%2Foauth%2Fconsent%2Fbeamz%3FauthReqId%3D34accf9cb5b469d7b0a8f937ef68779c';
+const consentUrl = `${origin}/oauth/consent/plain?authReqId=34accf9cb5b469d7b0a8f937ef68779c`;
+const encodedConsent = 'https%3A%2F%2Fbeamz-staging.com%2Foauth%2Fconsent%2Fplain%3FauthReqId%3D34accf9cb5b469d7b0a8f937ef68779c';
 const signIn = `${origin}/sign-in?redirectUrl=${encodedConsent}&Authorization=jwt#kept`;
 /** The sign-in address that already carries the MCP consent redirect. */
 const consentSignIn = `${origin}/sign-in?redirectUrl=${encodedConsent}`;
 /** The address left on screen after Google, once the consent redirect had been encoded again. */
-const doubleEncodedSignIn = `${origin}/sign-in?redirectUrl=https%253A%252F%252Fbeamz-staging.com%252Foauth%252Fconsent%252Fbeamz%253FauthReqId%253D34accf9cb5b469d7b0a8f937ef68779c`;
+const doubleEncodedSignIn = `${origin}/sign-in?redirectUrl=https%253A%252F%252Fbeamz-staging.com%252Foauth%252Fconsent%252Fplain%253FauthReqId%253D34accf9cb5b469d7b0a8f937ef68779c`;
 
 describe('readQueryParams', () => {
 	it('no query', () => {
