@@ -172,8 +172,11 @@ export class ModuleBE_MessagingAccess_Class
 	}
 
 	async listTopicWriterAccountIds(topicId: UniqueId): Promise<Set<string>> {
+		const topic = await this.loadTopicUnmanipulated(topicId);
+		const writerGroupIds = ((topic as AccessCarrier).__access?.writers ?? [])
+			.map(id => stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(id));
 		const accountIds = new Set<string>();
-		const pending: DatabaseDef_AccessGroup['id'][] = [deriveEntityGroupId(topicId, 'writers')];
+		const pending: DatabaseDef_AccessGroup['id'][] = [...writerGroupIds];
 		const seen = new Set<string>();
 
 		while (pending.length > 0) {
