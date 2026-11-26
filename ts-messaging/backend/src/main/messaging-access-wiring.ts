@@ -32,6 +32,9 @@ type AccessCarrier = {
 	__access?: DocumentAccessInner;
 };
 
+/** Topic rows still mint these groups. Delete and own stay on the owning document. */
+const TopicEntityAccessKeys = ['readers', 'writers', 'creators'] as const satisfies readonly (keyof DocumentAccessInner)[];
+
 function resolveCallerAccessIds(scopedDict: ScopedAccessIds): UniqueId[] {
 	const selfIds = scopedDict[AccessScope_Self] ?? [];
 	return filterDuplicates([...selfIds, ...Object.values(scopedDict).flat()]);
@@ -60,7 +63,11 @@ export class ModuleBE_MessagingAccess_Class
 			throw new BadImplementationException('Topic _id is required before access groups can be minted');
 
 		await this.mintTopicGroups(topicId);
-		return deriveEntityAccessFields(topicId);
+		const fields = deriveEntityAccessFields(topicId);
+		// Delete and own are not per-topic groups. The owner of the topic writes those buckets.
+		fields.__access.deleters = [];
+		fields.__access.owners = [];
+		return fields;
 	}
 
 	private async resolveMessageAccess(item: DatabaseDef_Message['uiType']): Promise<DocumentAccessFields> {
@@ -194,7 +201,7 @@ export class ModuleBE_MessagingAccess_Class
 	async addAccountToTopic(topicId: UniqueId, accountId: UniqueId): Promise<void> {
 		const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(accountId);
 		await ModuleBE_Permissions.runAsSystemContext([], async () => {
-			for (const accessKey of AllDocumentAccessKeys) {
+			for (const accessKey of TopicEntityAccessKeys) {
 				const groupId = await this.ensureEntityGroup(topicId, accessKey);
 				await this.addMemberGroupToAccessGroup(groupId, personalGroupId);
 			}
@@ -207,7 +214,7 @@ export class ModuleBE_MessagingAccess_Class
 		// Nested MemStorage as bootstrap — runAsServiceAccount(Bootstrap) is systemOnly
 		// and 403s when LoadPermissionsMiddleware has already set UserScopePermissions.
 		await ModuleBE_Permissions.runAsSystemContext([], async () => {
-			for (const accessKey of AllDocumentAccessKeys) {
+			for (const accessKey of TopicEntityAccessKeys) {
 				const groupId = await this.ensureEntityGroup(topicId, accessKey);
 				await this.addMemberGroupToAccessGroup(groupId, creatorPersonalGroupId);
 			}
@@ -220,6 +227,9 @@ export class ModuleBE_MessagingAccess_Class
 		topicId: UniqueId,
 		accessKey: keyof DocumentAccessInner,
 	): Promise<DatabaseDef_AccessGroup['id']> {
+		if (accessKey === 'deleters' || accessKey === 'owners')
+			throw new BadImplementationException(`Topic ${accessKey} is not an entity group`);
+
 		const groupId = deriveEntityGroupId(topicId, accessKey);
 		const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
 		if (existing)
