@@ -383,21 +383,20 @@ class ModuleBE_Permissions_Class
 	async __onAccountDeleted(account: DB_Account) {
 		await this.runAsServiceAccount(ServiceAccountId_Bootstrap, async () => {
 			const personalGroupId = stringToUniqueId<DatabaseDef_AccessGroup['dbKey']>(account._id);
-			const personalGroup = await ModuleBE_AccessGroupDB.query.unique(personalGroupId);
-			if (personalGroup)
-				await ModuleBE_AccessGroupDB.delete.unique(personalGroupId);
-
 			const userPermId = stringToUniqueId<DatabaseDef_UserPermissions['dbKey']>(account._id);
-			const userPerm = await ModuleBE_UserPermissionsDB.query.unique(userPermId);
-			if (userPerm)
-				await ModuleBE_UserPermissionsDB.delete.unique(userPermId);
-
-			const allGroups = await ModuleBE_AccessGroupDB.query.where({});
-			const groupsContainingUser = allGroups.filter(g => g.members.includes(personalGroupId));
-			for (const group of groupsContainingUser) {
-				group.members = group.members.filter(m => m !== personalGroupId);
-				await ModuleBE_AccessGroupDB.set.item(group);
-			}
+			const [personalGroup, userPerm, parents] = await Promise.all([
+				ModuleBE_AccessGroupDB.query.unique(personalGroupId),
+				ModuleBE_UserPermissionsDB.query.unique(userPermId),
+				ModuleBE_AccessGroupDB.query.unManipulatedQuery({where: {members: {$ac: personalGroupId}}}),
+			]);
+			const released = parents
+				.filter(group => group._id !== personalGroupId)
+				.map(group => ({...group, members: group.members.filter(memberId => memberId !== personalGroupId)}));
+			await Promise.all([
+				personalGroup ? ModuleBE_AccessGroupDB.delete.unique(personalGroupId) : undefined,
+				userPerm ? ModuleBE_UserPermissionsDB.delete.unique(userPermId) : undefined,
+				released.length > 0 ? ModuleBE_AccessGroupDB.set.all(released) : undefined,
+			]);
 		});
 	}
 
