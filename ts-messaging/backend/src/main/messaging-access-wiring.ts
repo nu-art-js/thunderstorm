@@ -21,12 +21,15 @@ import {
 	deriveEntityAccessFields,
 	deriveEntityGroupId,
 	MemKey_UserAccessIds,
+	MemKey_UserScopePermissions,
 	ModuleBE_AccessGroupDB,
+	ModuleBE_PermissionScopeDB,
 	ModuleBE_Permissions,
+	withDocumentAccessBypass,
 } from '@nu-art/permissions-backend';
 import {MemKey_AccountId} from '@nu-art/user-account-backend';
 import type {DB_Account} from '@nu-art/user-account-shared';
-import {MessagingAdminGroupId, parseMessageMentionIds, type DatabaseDef_Message, type DatabaseDef_Topic} from '@nu-art/ts-messaging-shared';
+import {MessagingAdminGroupId, parseMessageMentionIds, topicWriteScopeId, topicWriteScopeToken, type DatabaseDef_Message, type DatabaseDef_Topic} from '@nu-art/ts-messaging-shared';
 
 type AccessCarrier = {
 	__access?: DocumentAccessInner;
@@ -63,11 +66,7 @@ export class ModuleBE_MessagingAccess_Class
 			throw new BadImplementationException('Topic _id is required before access groups can be minted');
 
 		await this.mintTopicGroups(topicId);
-		const fields = deriveEntityAccessFields(topicId);
-		// Delete and own are not per-topic groups. The owner of the topic writes those buckets.
-		fields.__access.deleters = [];
-		fields.__access.owners = [];
-		return fields;
+		return deriveEntityAccessFields(topicId);
 	}
 
 	private async resolveMessageAccess(item: DatabaseDef_Message['uiType']): Promise<DocumentAccessFields> {
@@ -99,7 +98,7 @@ export class ModuleBE_MessagingAccess_Class
 		const callerIds = resolveCallerAccessIds(MemKey_UserAccessIds.get());
 
 		if (!original) {
-			this.assertCallerInBuckets((topic as AccessCarrier).__access, callerIds, topic._id, 'writers', 'owners');
+			this.assertTopicWriteScope(topic._id);
 			return;
 		}
 
@@ -125,20 +124,108 @@ export class ModuleBE_MessagingAccess_Class
 		throw HttpCodes._4XX.FORBIDDEN('Insufficient document access');
 	}
 
-	private assertCallerInBuckets(
-		access: Partial<DocumentAccessInner> | undefined,
-		callerIds: UniqueId[],
-		topicId: UniqueId,
-		...keys: (keyof DocumentAccessInner)[]
-	): void {
-		if (!keys.some(key => access?.[key]?.length))
+	/** Fail closed. The caller holds `${topicId}:write`, or the post is forbidden. */
+	private assertTopicWriteScope(topicId: UniqueId): void {
+		const token = topicWriteScopeToken(topicId);
+		const scopes = MemKey_UserScopePermissions.peak() ?? [];
+		if (scopes.includes(token))
 			return;
 
-		if (keys.some(key => access?.[key]?.some(id => callerIds.includes(id))))
-			return;
-
-		this.logWarning(`REJECTED: insufficient document access — topicId=${topicId} keys=${keys.join('|')}`);
+		this.logWarning(`REJECTED: message write denied topicId=${topicId}`);
 		throw HttpCodes._4XX.FORBIDDEN('Insufficient document access');
+	}
+
+	/**
+	 * Store `${topicId}:write` on one group. A member of that group keeps the scope on this request.
+	 * Example: `grantTopicWriteScope(projectTasksWriterId, topicId)` lets a tasks writer post.
+	 */
+	async grantTopicWriteScope(groupId: DatabaseDef_AccessGroup['id'], topicId: UniqueId): Promise<void> {
+		await ModuleBE_Permissions.runAsSystemContext([], () => this.persistTopicWriteScope(groupId, topicId));
+		this.addTopicWriteScopeWhenMember(groupId, topicId);
+	}
+
+	/**
+	 * Drop `${topicId}:write` from this request when the caller is outside `groupId`.
+	 * Example: retainTopicWriteScope(projectTasksWriterId, topicId) after the topic groups are deleted.
+	 */
+	retainTopicWriteScope(groupId: DatabaseDef_AccessGroup['id'], topicId: UniqueId): void {
+		const access = MemKey_UserAccessIds.peak();
+		const holds = !!access && resolveCallerAccessIds(access).includes(groupId);
+		if (!holds)
+			this.dropTopicWriteScope(topicId);
+	}
+
+	/**
+	 * Remove `${topicId}:write` from one writer group and from this request.
+	 * Example: revokeTopicWriteScope(projectTasksWriterId, topicId) after the task topic is deleted.
+	 */
+	async revokeTopicWriteScope(groupId: DatabaseDef_AccessGroup['id'], topicId: UniqueId): Promise<void> {
+		await ModuleBE_Permissions.runAsSystemContext([], () => this.removeTopicWriteScope(groupId, topicId));
+		this.dropTopicWriteScope(topicId);
+	}
+
+	private async persistTopicWriteScope(groupId: DatabaseDef_AccessGroup['id'], topicId: UniqueId): Promise<void> {
+		const scopeId = topicWriteScopeId(topicId);
+		await withDocumentAccessBypass(async () => {
+			const existingScope = await ModuleBE_PermissionScopeDB.query.uniqueUnmanipulated(scopeId);
+			if (!existingScope)
+				await ModuleBE_PermissionScopeDB.create.item({
+					_id: scopeId,
+					key: topicId,
+					value: 'write',
+				});
+
+			const group = await ModuleBE_AccessGroupDB.query.uniqueAssert(groupId);
+			if (group.scopeEntries?.includes(scopeId))
+				return;
+
+			group.scopeEntries = filterDuplicates([...(group.scopeEntries ?? []), scopeId]);
+			await ModuleBE_AccessGroupDB.set.item(group);
+		});
+	}
+
+	private async removeTopicWriteScope(groupId: DatabaseDef_AccessGroup['id'], topicId: UniqueId): Promise<void> {
+		const scopeId = topicWriteScopeId(topicId);
+		await withDocumentAccessBypass(async () => {
+			const group = await ModuleBE_AccessGroupDB.query.unique(groupId);
+			if (group?.scopeEntries?.includes(scopeId)) {
+				group.scopeEntries = group.scopeEntries.filter(id => id !== scopeId);
+				await ModuleBE_AccessGroupDB.set.item(group);
+			}
+
+			const scope = await ModuleBE_PermissionScopeDB.query.uniqueUnmanipulated(scopeId);
+			if (scope)
+				await ModuleBE_PermissionScopeDB.delete.unique(scopeId);
+		});
+	}
+
+	/** A member of `groupId` holds `${topicId}:write` for the rest of this request. */
+	private addTopicWriteScopeWhenMember(groupId: DatabaseDef_AccessGroup['id'], topicId: UniqueId): void {
+		const scopes = MemKey_UserScopePermissions.peak();
+		if (!scopes)
+			return;
+
+		const access = MemKey_UserAccessIds.peak();
+		if (!access || !resolveCallerAccessIds(access).includes(groupId))
+			return;
+
+		const token = topicWriteScopeToken(topicId);
+		if (scopes.includes(token))
+			return;
+
+		MemKey_UserScopePermissions.set([...scopes, token]);
+	}
+
+	private dropTopicWriteScope(topicId: UniqueId): void {
+		const scopes = MemKey_UserScopePermissions.peak();
+		if (!scopes)
+			return;
+
+		const token = topicWriteScopeToken(topicId);
+		if (!scopes.includes(token))
+			return;
+
+		MemKey_UserScopePermissions.set(scopes.filter(entry => entry !== token));
 	}
 
 	/**
@@ -221,18 +308,19 @@ export class ModuleBE_MessagingAccess_Class
 				const groupId = await this.ensureEntityGroup(topicId, accessKey);
 				await this.addMemberGroupToAccessGroup(groupId, creatorPersonalGroupId);
 			}
+			await this.ensureEntityGroup(topicId, 'deleters');
+			await this.ensureEntityGroup(topicId, 'owners');
 		});
 
 		this.mergeTopicGroupsIntoCallerAccessIds(topicId);
+		await this.grantTopicWriteScope(deriveEntityGroupId(topicId, 'writers'), topicId);
+		await this.grantTopicWriteScope(deriveEntityGroupId(topicId, 'owners'), topicId);
 	}
 
 	private async ensureEntityGroup(
 		topicId: UniqueId,
 		accessKey: keyof DocumentAccessInner,
 	): Promise<DatabaseDef_AccessGroup['id']> {
-		if (accessKey === 'deleters' || accessKey === 'owners')
-			throw new BadImplementationException(`Topic ${accessKey} is not an entity group`);
-
 		const groupId = deriveEntityGroupId(topicId, accessKey);
 		const existing = await ModuleBE_AccessGroupDB.query.unique(groupId);
 		if (existing)

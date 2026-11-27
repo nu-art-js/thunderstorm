@@ -8,6 +8,8 @@ import {expect} from 'chai';
 import {generateHex} from '@nu-art/ts-common';
 import {ModuleBE_BaseDB} from '@nu-art/db-api-backend';
 import {stormTester} from '@nu-art/storm-testalot';
+import {deriveEntityGroupId, ModuleBE_AccessGroupDB, ModuleBE_Permissions} from '@nu-art/permissions-backend';
+import {topicWriteScopeId} from '@nu-art/ts-messaging-shared';
 import {ModuleBE_MessageDB} from '../main/ModuleBE_MessageDB.js';
 import {ModuleBE_TopicDB} from '../main/ModuleBE_TopicDB.js';
 import {
@@ -27,6 +29,10 @@ describe('ts-messaging per-topic ACL', () => {
 			const [creator] = await provisionAccounts(`creator-${generateHex(8)}@test.local`);
 			await asAccount(creator, async () => {
 				const topic = await createTopicForTest();
+				const writers = await ModuleBE_AccessGroupDB.query.uniqueUnmanipulated(
+					deriveEntityGroupId(topic._id, 'writers'),
+				);
+				expect(writers?.scopeEntries).to.include(topicWriteScopeId(topic._id));
 				await asAccount(creator, async () => {
 					const message = await ModuleBE_MessageDB.create.item({
 						topicId: topic._id,
@@ -36,6 +42,26 @@ describe('ts-messaging per-topic ACL', () => {
 					expect(message._auditorId).to.equal(creator._id);
 				});
 			});
+		});
+	});
+
+	it('topic writer without the topic write scope cannot create a Message', async () => {
+		await stormTester(StormTest_MessagingAcl, async () => {
+			const [creator] = await provisionAccounts(`creator-${generateHex(8)}@test.local`);
+			const topic = await asAccount(creator, () => createTopicForTest());
+			const scopeId = topicWriteScopeId(topic._id);
+
+			await ModuleBE_Permissions.runAsSystemContext([], async () => {
+				const group = await ModuleBE_AccessGroupDB.query.uniqueAssert(deriveEntityGroupId(topic._id, 'writers'));
+				group.scopeEntries = (group.scopeEntries ?? []).filter(id => id !== scopeId);
+				await ModuleBE_AccessGroupDB.set.item(group);
+			});
+			await ModuleBE_Permissions.recomputePermissionsForUsers([creator._id]);
+
+			await asAccount(creator, () => expectForbidden(() => ModuleBE_MessageDB.create.item({
+				topicId: topic._id,
+				text: 'scope removed',
+			})));
 		});
 	});
 
