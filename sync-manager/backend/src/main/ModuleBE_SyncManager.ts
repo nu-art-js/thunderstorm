@@ -379,24 +379,26 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	/**
-	 * Hand rows written outside the module to the same post-write path a normal delete uses.
-	 * Example: two deleted access groups become tombstones and one lastUpdated stamp.
+	 * Mark each rewritten collection so the next smart sync is a full sync.
+	 * `oldestDeleted` and `lastUpdated` share one time, so a client that completes that sync does not full-sync again.
+	 * Example: `permissions--access-groups` drops groups the browser still holds after a raw delete.
 	 */
 	async recalculateSyncState(changes: readonly SyncCollectionRewrite[]): Promise<void> {
-		if (!this.dbModules || changes.length === 0)
+		if (!this.database || !this.dbModules || changes.length === 0)
 			return;
 
+		const seen = new Set<string>();
+		const now = currentTimeMillis();
 		for (const change of changes) {
 			const dbModule = this.dbModules.find(module => module.collection?.dbDef.backend.name === change.collection);
-			if (!dbModule)
+			if (!dbModule || seen.has(dbModule.dbDef.dbKey))
 				continue;
 
-			const deleted = deletedObjects(change.deleted);
-			if (deleted.length === 0)
-				continue;
-
-			const uniqueKeys = [...(dbModule.dbDef.uniqueKeys ?? ['_id'])];
-			await this.onPostWrite(dbModule.dbDef.dbKey, {deleted}, uniqueKeys);
+			seen.add(dbModule.dbDef.dbKey);
+			await this.database.patch<LastUpdated>(`${this.publicSyncDataPath()}/${dbModule.dbDef.dbKey}`, {
+				lastUpdated: now,
+				oldestDeleted: now,
+			});
 		}
 	}
 
@@ -460,7 +462,7 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	async setOldestDeleted(collectionName: string, oldestDeleted: number) {
-		return this.database.patch<LastUpdated>(`${resolveContent(this.resolvableFirebaseBasePath)}/deletedCount/${collectionName}`, {oldestDeleted});
+		return this.database.patch<LastUpdated>(`${this.publicSyncDataPath()}/${collectionName}`, {oldestDeleted});
 	}
 
 	setModuleFilter = (filter: (modules: ModuleBE_BaseDB<any>[]) => Promise<ModuleBE_BaseDB<any>[]>) => {
@@ -483,23 +485,5 @@ export class ModuleBE_SyncManager_Class
 
 const hasWrittenRows = (rows: DB_Object | DB_Object[] | null | undefined): boolean =>
 	!!rows && !(Array.isArray(rows) && rows.length === 0);
-
-const deletedObjects = (
-	rows: readonly {_id?: unknown; __created?: unknown; __updated?: unknown}[],
-): DB_Object[] => {
-	const deleted: DB_Object[] = [];
-	for (const row of rows) {
-		if (typeof row._id !== 'string')
-			continue;
-
-		deleted.push({
-			...row,
-			_id: row._id,
-			__created: typeof row.__created === 'number' ? row.__created : 0,
-			__updated: typeof row.__updated === 'number' ? row.__updated : 0,
-		});
-	}
-	return deleted;
-};
 
 export const ModuleBE_SyncManager = new ModuleBE_SyncManager_Class();
