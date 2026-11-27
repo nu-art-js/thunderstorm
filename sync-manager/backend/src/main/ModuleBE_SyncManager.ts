@@ -76,6 +76,12 @@ export type SyncManagerBEConfig = {
 	retainDeletedCount: number
 }
 
+/** One collection written outside the module. `deleted` holds the rows removed by that write. */
+export type SyncCollectionRewrite = {
+	collection: string;
+	deleted: readonly {_id?: unknown; __created?: unknown; __updated?: unknown}[];
+};
+
 /**
  * # ModuleBE_SyncManager
  *
@@ -372,6 +378,28 @@ export class ModuleBE_SyncManager_Class
 		await deletedCountRef.set(deletedCount);
 	}
 
+	/**
+	 * Hand rows written outside the module to the same post-write path a normal delete uses.
+	 * Example: two deleted access groups become tombstones and one lastUpdated stamp.
+	 */
+	async recalculateSyncState(changes: readonly SyncCollectionRewrite[]): Promise<void> {
+		if (!this.dbModules || changes.length === 0)
+			return;
+
+		for (const change of changes) {
+			const dbModule = this.dbModules.find(module => module.collection?.dbDef.backend.name === change.collection);
+			if (!dbModule)
+				continue;
+
+			const deleted = deletedObjects(change.deleted);
+			if (deleted.length === 0)
+				continue;
+
+			const uniqueKeys = [...(dbModule.dbDef.uniqueKeys ?? ['_id'])];
+			await this.onPostWrite(dbModule.dbDef.dbKey, {deleted}, uniqueKeys);
+		}
+	}
+
 	async queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>): Promise<DB_DeletedDoc[]> {
 		const finalQuery = {
 			...query,
@@ -455,5 +483,23 @@ export class ModuleBE_SyncManager_Class
 
 const hasWrittenRows = (rows: DB_Object | DB_Object[] | null | undefined): boolean =>
 	!!rows && !(Array.isArray(rows) && rows.length === 0);
+
+const deletedObjects = (
+	rows: readonly {_id?: unknown; __created?: unknown; __updated?: unknown}[],
+): DB_Object[] => {
+	const deleted: DB_Object[] = [];
+	for (const row of rows) {
+		if (typeof row._id !== 'string')
+			continue;
+
+		deleted.push({
+			...row,
+			_id: row._id,
+			__created: typeof row.__created === 'number' ? row.__created : 0,
+			__updated: typeof row.__updated === 'number' ? row.__updated : 0,
+		});
+	}
+	return deleted;
+};
 
 export const ModuleBE_SyncManager = new ModuleBE_SyncManager_Class();
